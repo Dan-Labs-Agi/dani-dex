@@ -154,7 +154,8 @@ export const messages = {
   "error.team.browserViewUnavailable": "תצוגת הדפדפן החיה אינה זמינה.",
   "error.team.browserSessionNotFound": "סשן תצוגת הדפדפן לא נמצא.",
   "error.team.mcpUnsupported": "שרתי MCP אינם נתמכים בחיבור הזה.",
-  "error.team.mcpServerListNeedsUpdate": "יש לעדכן את Dani Dex במכשיר הזה כדי להשתמש ביותר מ-{limit} שרתי MCP בשרת הזה.",
+  "error.team.mcpServerListNeedsUpdate":
+    "יש לעדכן את Dani Dex במכשיר הזה כדי להשתמש ביותר מ-{limit} שרתי MCP בשרת הזה.",
   "error.team.providerAccountListNeedsUpdate":
     "יש לעדכן את Dani Dex במכשיר הזה כדי להשתמש ביותר מ-{limit} חשבונות של ספק אחד בשרת הזה.",
   "error.team.storageUnsupported": "אחסון אינו נתמך בחיבור הזה.",

@@ -1,6 +1,6 @@
-import { DANI_PICTURES } from "@openbot/brand/dani-pictures";
-import { daniVariantForAvatar } from "@openbot/brand/dani-identity";
 import { type AvatarMood, avatarMoodPresentation } from "@openbot/brand/bloub-avatar-motion";
+import { daniVariantForAvatar } from "@openbot/brand/dani-identity";
+import { DANI_PICTURES } from "@openbot/brand/dani-pictures";
 import type { AvatarColor, AvatarHue } from "@openbot/contracts/ipc";
 import { Image } from "expo-image";
 import { memo } from "react";
@@ -9,6 +9,7 @@ import { useMobileWorkspaceSelector } from "@/features/workspace/context/mobile-
 import { agentActivityMood } from "@/features/workspace/model/agent-activity";
 import { showsOnline } from "@/features/workspace/model/server-status";
 import { AgentPhoto, type AgentPhotoProps } from "./agent-photo";
+
 interface BloubAvatarProps extends AgentPhotoProps {
   agentId: string;
   hue: AvatarHue | null;
@@ -104,15 +105,51 @@ export const BloubAvatarPreview = memo(function BloubAvatarPreview(
   );
 });
 
-function PlushAvatar(props: {seed: string; hue: AvatarHue | null; color: AvatarColor | null; size: number; mood?: AvatarMood; animateIdle?: boolean; paused?: boolean; disconnected?: boolean; transition?: PlushTransition}) {
+function PlushAvatar(props: {
+  seed: string;
+  hue: AvatarHue | null;
+  color: AvatarColor | null;
+  size: number;
+  mood?: AvatarMood;
+  animateIdle?: boolean;
+  paused?: boolean;
+  disconnected?: boolean;
+  transition?: PlushTransition;
+}) {
   const variant = daniVariantForAvatar(props.seed, props.color, props.hue);
-  return <Image source={{uri: DANI_PICTURES[variant]}} contentFit="contain" recyclingKey={`dani-v1-${variant}`} style={{width:props.size,height:props.size,opacity:props.disconnected ? 0.5 : 1}} accessibilityLabel={variant === "dani" ? "Dani" : `Dani ${variant}`} />;
+  return (
+    <Image
+      source={{ uri: DANI_PICTURES[variant] }}
+      contentFit="contain"
+      recyclingKey={`dani-v1-${variant}`}
+      style={{ width: props.size, height: props.size, opacity: props.disconnected ? 0.5 : 1 }}
+      accessibilityLabel={variant === "dani" ? "Dani" : `Dani ${variant}`}
+    />
+  );
 }
 
-export const BloubAvatarThumbnail = memo(function BloubAvatarThumbnail(props: Omit<BloubAvatarProps, "agentId"> & AgentPhotoProps & { disconnected?: boolean }) {
-  return <AgentPhoto {...props} size={props.size ?? 48}><AvatarThumbnail {...props} /></AgentPhoto>;
+export const BloubAvatarThumbnail = memo(function BloubAvatarThumbnail(
+  props: Omit<BloubAvatarProps, "agentId"> & AgentPhotoProps & { disconnected?: boolean },
+) {
+  return (
+    <AgentPhoto {...props} size={props.size ?? 48}>
+      <AvatarThumbnail {...props} />
+    </AgentPhoto>
+  );
 });
-export const AvatarThumbnail = memo(function AvatarThumbnail(props: Omit<BloubAvatarProps, "agentId"> & { disconnected?: boolean; animateColor?: boolean }) {
-  return <PlushAvatar seed={props.seed} hue={props.hue} color={props.color ?? null} size={props.size ?? 48} disconnected={props.disconnected} />;
+export const AvatarThumbnail = memo(function AvatarThumbnail(
+  props: Omit<BloubAvatarProps, "agentId"> & { disconnected?: boolean; animateColor?: boolean },
+) {
+  return (
+    <PlushAvatar
+      seed={props.seed}
+      hue={props.hue}
+      color={props.color ?? null}
+      size={props.size ?? 48}
+      disconnected={props.disconnected}
+    />
+  );
 });
-export function thumbnailColor(color: string, disconnected: boolean) { return disconnected ? "#888888" : color; }
+export function thumbnailColor(color: string, disconnected: boolean) {
+  return disconnected ? "#888888" : color;
+}

@@ -88,7 +88,8 @@ export const messages = {
   "error.agent.changedWhileDuplicating": "הסוכן השתנה בזמן השכפול. יש לנסות שוב.",
   "error.agent.duplicatedAgentGone": "הסוכן המשוכפל כבר לא קיים.",
   "error.agent.stateCorrupt": "מצב הסוכנים פגום או מגרסה חדשה יותר של Dani Dex; Dani Dex מסרב לדרוס אותו.",
-  "error.agent.oldRoleField": "פרופילי הסוכנים השמורים משתמשים בשדה role הישן; יש לעדכן את הנתונים לפני הפעלת Dani Dex.",
+  "error.agent.oldRoleField":
+    "פרופילי הסוכנים השמורים משתמשים בשדה role הישן; יש לעדכן את הנתונים לפני הפעלת Dani Dex.",
   "error.agent.duplicateIds": "מצב הסוכנים מכיל מזהי סוכן כפולים; Dani Dex מסרב לדרוס אותו.",
   "error.agent.copyNameFailed": "Dani Dex לא הצליח ליצור שם ייחודי להעתק הסוכן.",
   "error.agent.endpointRemoved": "נקודת הקצה שהסוכן הזה השתמש בה הוסרה. יש לבחור עבורו מודל אחר.",

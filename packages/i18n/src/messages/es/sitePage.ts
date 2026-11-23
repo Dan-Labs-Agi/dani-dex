@@ -45,7 +45,8 @@ export const messages = {
   "sitePage.connect.failure.tabClosed":
     "La pestaña de Dani Dex que inició la conexión con {name} no respondió. Abre Dani Dex en tu navegador y vuelve a conectar {name}.",
   "sitePage.connect.failure.failed": "{name} no terminó la conexión. Inténtalo de nuevo.",
-  "sitePage.connect.restartHint": "En Dani Dex, abre {marketplace}, luego {apps}, luego {name}, y selecciona {connect}.",
+  "sitePage.connect.restartHint":
+    "En Dani Dex, abre {marketplace}, luego {apps}, luego {name}, y selecciona {connect}.",
   "sitePage.connect.notOpened":
     "Inicia Dani Dex y vuelve a intentarlo. Si Dani Dex no está en este ordenador, descárgalo y conecta {name} desde la app.",
   "sitePage.openApp.title": "¿No se abrió nada?",
@@ -218,7 +219,8 @@ export const messages = {
     "Lo creó otra persona en Dani Dex. Dani Dex lo revisó antes de publicarlo. Cuando lo añadas, puede actuar en tu nombre.",
   "sitePage.marketplace.trust.agentPending":
     "Su creador lo compartió antes de que Dani Dex lo revisara. Cuando lo añadas, puede actuar en tu nombre.",
-  "sitePage.marketplace.trust.skillReviewed": "Lo creó otra persona en Dani Dex. Dani Dex lo revisó antes de publicarlo.",
+  "sitePage.marketplace.trust.skillReviewed":
+    "Lo creó otra persona en Dani Dex. Dani Dex lo revisó antes de publicarlo.",
   "sitePage.marketplace.source.verified": "Verificado por Dani Dex",
   "sitePage.marketplace.source.reviewed": "Revisado por Dani Dex",
   "sitePage.marketplace.source.pending": "Sin revisar todavía",

@@ -646,7 +646,8 @@ export const messages = {
   "mobile.server.route.connectors": "コネクター",
   "mobile.server.connectors.unavailable":
     "コネクターを管理するには、オーナーまたは管理者としてこのサーバーに接続してください。",
-  "mobile.server.connectors.unsupported": "ここでコネクターを管理するには、このサーバーの Dani Dex を更新してください。",
+  "mobile.server.connectors.unsupported":
+    "ここでコネクターを管理するには、このサーバーの Dani Dex を更新してください。",
   "mobile.server.connectors.loading": "コネクターを読み込んでいます…",
   "mobile.server.connectors.localOnly": "デスクトップアプリのみ",
   "mobile.server.connectors.statusConnected": "接続済み",

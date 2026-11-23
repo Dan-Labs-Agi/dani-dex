@@ -127,7 +127,8 @@ export const messages = {
   "server.local.limitReached":
     "Na tym komputerze możesz mieć najwyżej {limit} serwerów. Skasuj jeden, aby utworzyć kolejny.",
   "server.local.deleteConfirmTitle": "Skasować: {name}?",
-  "server.local.deleteConfirmDescription": "Dani Dex zatrzyma serwer i przeniesie jego agentów, czaty i pliki do kosza.",
+  "server.local.deleteConfirmDescription":
+    "Dani Dex zatrzyma serwer i przeniesie jego agentów, czaty i pliki do kosza.",
   "server.local.deleting": "Kasowanie serwera…",
   "server.local.deletedTitle": "Skasowano: {name}",
   "server.install.title": "Nowy serwer na innym komputerze",

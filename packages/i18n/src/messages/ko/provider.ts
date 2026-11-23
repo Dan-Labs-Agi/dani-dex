@@ -378,7 +378,8 @@ export const messages = {
   "provider.settings.makeDefault": "기본으로 지정",
   "provider.settings.useTitle": "{name} 사용",
   "provider.settings.deleteTitle": "{name} 삭제",
-  "provider.settings.deleteOn": "{name}을 끄고 Dani Dex이 다운로드한 CLI를 삭제해요. 계정, 로그인, 에이전트는 유지돼요.",
+  "provider.settings.deleteOn":
+    "{name}을 끄고 Dani Dex이 다운로드한 CLI를 삭제해요. 계정, 로그인, 에이전트는 유지돼요.",
   "provider.settings.deleteOff":
     "Dani Dex이 {name}용으로 다운로드한 CLI({size})를 삭제해요. 계정, 로그인, 에이전트는 유지돼요.",
   "provider.settings.removeDownloadFailed": "다운로드를 삭제하지 못했어요.",

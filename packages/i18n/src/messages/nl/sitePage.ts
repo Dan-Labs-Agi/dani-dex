@@ -41,7 +41,8 @@ export const messages = {
     "Een andere Dani Dex-server beantwoordt deze Slack-werkruimte al. Verbreek daar de verbinding en probeer het opnieuw.",
   "sitePage.connect.failure.takenDiscord":
     "Een andere Dani Dex-server beantwoordt deze Discord-server al. Verbreek daar de verbinding en probeer het opnieuw.",
-  "sitePage.connect.failure.unavailable": "Dani Dex kan nu geen verbinding maken met {name}. Probeer het later opnieuw.",
+  "sitePage.connect.failure.unavailable":
+    "Dani Dex kan nu geen verbinding maken met {name}. Probeer het later opnieuw.",
   "sitePage.connect.failure.tabClosed":
     "Het Dani Dex-tabblad dat de verbinding met {name} startte, reageert niet. Open Dani Dex in je browser en verbind {name} opnieuw.",
   "sitePage.connect.failure.failed": "{name} heeft de verbinding niet afgerond. Probeer het opnieuw.",

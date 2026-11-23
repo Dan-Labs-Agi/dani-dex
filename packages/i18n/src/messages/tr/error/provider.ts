@@ -50,7 +50,8 @@ export const messages = {
   "error.provider.credentialFileTooLarge": "Sağlayıcı kimlik bilgisi dosyası çok büyük.",
   "error.provider.environmentNameInvalid":
     "{name} geçerli bir değişken adı değil. Harf, rakam ve _ kullanın ve rakamla başlamayın.",
-  "error.provider.environmentNameReserved": "Dani Dex bu sağlayıcı için {name} değerini ayarlar. Bu değişkeni kaldırın.",
+  "error.provider.environmentNameReserved":
+    "Dani Dex bu sağlayıcı için {name} değerini ayarlar. Bu değişkeni kaldırın.",
   "error.provider.environmentNameDuplicate": "{name} listede birden fazla kez var.",
   "error.provider.environmentValueTooLong": "{name} değeri çok uzun.",
   "error.provider.environmentTooMany": "Bir sağlayıcının en fazla {limit} değişkeni olabilir.",

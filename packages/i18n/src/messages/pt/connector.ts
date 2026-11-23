@@ -20,7 +20,8 @@ export const messages = {
   "connector.github.chooseRepositories": "Escolher repositórios",
   "connector.github.repositoriesLoading": "Lendo os repositórios do GitHub",
   "connector.github.repositoriesFailed": "O Dani Dex não conseguiu ler os repositórios do GitHub.",
-  "connector.github.noRepositories": "O aplicativo Dani Dex para GitHub ainda não está instalado em nenhum repositório.",
+  "connector.github.noRepositories":
+    "O aplicativo Dani Dex para GitHub ainda não está instalado em nenhum repositório.",
   "connector.github.moreRepositories": { one: "E mais {count} repositório", other: "E mais {count} repositórios" },
   "connector.github.private": "Privado",
   "connector.github.disconnect": "Desconectar",
@@ -228,7 +229,8 @@ export const messages = {
     other: "{count} servidores do Discord · O Orquestrador do Discord responde",
   },
   "connector.discord.accessTitle": "Quem pode usar o Dani Dex",
-  "connector.discord.accessDescription": "O Dani Dex responde só a essas pessoas. Ele ignora menções de outras pessoas.",
+  "connector.discord.accessDescription":
+    "O Dani Dex responde só a essas pessoas. Ele ignora menções de outras pessoas.",
   "connector.discord.accessEveryone": "Todos no servidor",
   "connector.discord.accessEveryoneDescription":
     "Qualquer pessoa que pode postar em um canal que o Dani Dex vê pode mencioná-lo.",

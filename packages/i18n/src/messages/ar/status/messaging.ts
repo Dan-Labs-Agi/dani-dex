@@ -35,7 +35,8 @@ export const messages = {
   "status.messaging.signInUnknown": "لم يبدأ Dani Dex تثبيت Slack هذا. ابدأه مرة أخرى في Dani Dex.",
   "status.messaging.telegramNoAgent":
     "لا يوجد وكيل يستطيع الإجابة هنا بعد. في Dani Dex، افتح المتجر > التطبيقات > Telegram وانقر على إضافة وكيل.",
-  "status.messaging.telegramLinked": "Dani Dex متصل بهذه الدردشة. اذكر {bot} أو ردّ على رسالة من Dani Dex لسؤال الوكلاء.",
+  "status.messaging.telegramLinked":
+    "Dani Dex متصل بهذه الدردشة. اذكر {bot} أو ردّ على رسالة من Dani Dex لسؤال الوكلاء.",
   "status.messaging.telegramNotLinked":
     "Dani Dex غير متصل بهذه الدردشة. لربطه، افتح تطبيق Dani Dex وانتقل إلى المتجر ← التطبيقات ← Telegram، ثم اختر «إضافة إلى مجموعة» أو «فتح دردشة مباشرة».",
   "status.messaging.telegramOrchestratorName": "Telegram Orchestrator",

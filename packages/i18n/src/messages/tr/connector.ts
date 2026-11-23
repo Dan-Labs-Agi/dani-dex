@@ -138,7 +138,8 @@ export const messages = {
     "Dani Dex {workspace} içinde yanıt vermeyi durdurur ve Slack belirtecini bu bilgisayardan kaldırır.",
   "connector.slack.disconnectDescriptionHost":
     "Dani Dex {workspace} içinde yanıt vermeyi durdurur ve Slack belirtecini {host} sunucusundan kaldırır.",
-  "connector.slack.disconnectEffect": "{workspace} içindeki kişiler artık @Dani Dex aracılığıyla ajanlarınıza ulaşamaz.",
+  "connector.slack.disconnectEffect":
+    "{workspace} içindeki kişiler artık @Dani Dex aracılığıyla ajanlarınıza ulaşamaz.",
   "connector.slack.removeEffectKept": "Konuşmalar ve Slack Düzenleyicisi Dani Dex'ta kalır.",
   "connector.slack.removeEffectDeleted": "Slack Düzenleyicisi ve konuşmaları Dani Dex'tan silinir.",
   "connector.slack.keep": "Bağlı tut",
@@ -201,7 +202,8 @@ export const messages = {
   "connector.discord.connectInDiscord": "Discord'da bağlan",
   "connector.discord.connectWaiting": "Discord bekleniyor. Yetkilendirmeyi tarayıcınızda tamamlayın.",
   "connector.discord.agentStepTitle": "Discord Düzenleyicisini ekleyin",
-  "connector.discord.agentStepDescription": "Bu yeni ajan, {workspace} içinde @Dani Dex'a gönderilen her şeyi yanıtlar.",
+  "connector.discord.agentStepDescription":
+    "Bu yeni ajan, {workspace} içinde @Dani Dex'a gönderilen her şeyi yanıtlar.",
   "connector.discord.orchestratorName": "Discord Düzenleyicisi",
   "connector.discord.orchestratorRole": "Discord'da yanıt verir ve ekibe sorar",
   "connector.discord.orchestratorDoesReceive": "Her Discord isteğini ilk olarak alır",

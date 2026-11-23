@@ -475,7 +475,8 @@ export const messages = {
     "Сервис модели отклонил запрос. Выберите другую модель или проверьте свой доступ к этой модели в сервисе.",
   "error.provider.modelServiceRefusedReason":
     "Сервис модели отклонил запрос: {reason}. Выберите другую модель или проверьте свой доступ к этой модели в сервисе.",
-  "error.provider.messageTooLarge": "Dani Dex остановил {provider}, потому что он отправил сообщение больше {limit} МБ.",
+  "error.provider.messageTooLarge":
+    "Dani Dex остановил {provider}, потому что он отправил сообщение больше {limit} МБ.",
   "error.provider.customAgentIdInvalid":
     "ID агента должен состоять из строчных букв, цифр или `-` и не может совпадать с ID встроенного провайдера.",
   "error.provider.customAgentEnvInvalid":

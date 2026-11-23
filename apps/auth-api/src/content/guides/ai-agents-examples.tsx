@@ -10,9 +10,9 @@ export function AIAgentsExamples() {
       </p>
 
       <p>
-        In Dani Dex, you can give an agent instructions, let it work with files and approved web pages, and return to the
-        same conversation later. You can also pass work to another agent when a separate reviewer or writer helps. The
-        20 examples below are tasks to try, not customer case studies or promises that every result will be correct.
+        In Dani Dex, you can give an agent instructions, let it work with files and approved web pages, and return to
+        the same conversation later. You can also pass work to another agent when a separate reviewer or writer helps.
+        The 20 examples below are tasks to try, not customer case studies or promises that every result will be correct.
       </p>
 
       <h2>Research and knowledge</h2>

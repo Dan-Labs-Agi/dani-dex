@@ -72,7 +72,8 @@ export const VIKTOR_COMPARISON: Comparison = {
     {
       icon: "puzzle",
       topic: "Integrations",
-      openbot: "Agents use MCP servers, plugins from the Dani Dex catalog, and the command-line tools on your computer.",
+      openbot:
+        "Agents use MCP servers, plugins from the Dani Dex catalog, and the command-line tools on your computer.",
       rival: "More than 9,800 apps, such as Salesforce, HubSpot, Linear, Notion, Stripe and Google Ads.",
       better: "rival",
     },

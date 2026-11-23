@@ -70,8 +70,8 @@ export function ComparisonPage(props: ComparisonPageProps) {
 
       <RevealSection class="compare-plans" titleId="compare-plans-title" title="Use the plans you already pay for">
         <p class="compare-plans-lead">
-          Dani Dex sells you no model. Sign in to the AI plans you already have, or connect your own model, and give each
-          agent the one that fits its job.
+          Dani Dex sells you no model. Sign in to the AI plans you already have, or connect your own model, and give
+          each agent the one that fits its job.
         </p>
         <ul class="compare-plans-grid">
           <For each={OPENBOT_PLANS}>{(plan, index) => <PlanCard plan={plan} index={index()} />}</For>

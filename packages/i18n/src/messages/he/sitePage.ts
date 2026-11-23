@@ -173,7 +173,8 @@ export const messages = {
   "sitePage.marketplace.agents.description":
     "סוכנים שאנשים יצרו ב-Dani Dex. אפשר להוסיף סוכן ל-Dani Dex יחד עם המיומנויות והשגרות שלו.",
   "sitePage.marketplace.skills.title": "מיומנויות — חנות Dani Dex",
-  "sitePage.marketplace.skills.description": "מיומנויות שסוכן Dani Dex יכול להשתמש בהן. אפשר להוסיף מיומנות ל-Dani Dex.",
+  "sitePage.marketplace.skills.description":
+    "מיומנויות שסוכן Dani Dex יכול להשתמש בהן. אפשר להוסיף מיומנות ל-Dani Dex.",
   "sitePage.marketplace.apps.title": "אפליקציות — חנות Dani Dex",
   "sitePage.marketplace.apps.description":
     "אפליקציות וכלים שסוכן Dani Dex יכול להשתמש בהם. פותחים אפליקציה ב-Dani Dex ושם מחליטים למה היא מתחברת.",

@@ -15,5 +15,6 @@ export const messages = {
     "Dani Dex לא יכול לקרוא את האסימונים השמורים במחשב הזה. יש לנתק את שרת ה-Discord ואז לחבר אותו מחדש.",
   "messaging.discordHelp.relay_unavailable":
     "Dani Dex לא יכול לקבל אירועי Discord במחשב הזה. יש להתחבר, לתת למחשב הזה שם בהגדרות השרת ולהשאיר את Dani Dex פתוח.",
-  "messaging.discordHelp.not_linked": 'שרת ה-Discord הזה לא מקושר לשרת ה-Dani Dex הזה. בחרו "חיבור מחדש" כדי לקשר אותו.',
+  "messaging.discordHelp.not_linked":
+    'שרת ה-Discord הזה לא מקושר לשרת ה-Dani Dex הזה. בחרו "חיבור מחדש" כדי לקשר אותו.',
 } as const satisfies PartialTranslation<typeof source>;

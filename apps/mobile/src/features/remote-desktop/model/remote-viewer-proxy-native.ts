@@ -24,4 +24,5 @@ declare class RemoteViewerProxyModule extends NativeModule<ViewerProxyEvents> {
   setSecure(enabled: boolean): Promise<void>;
 }
 
-export const remoteViewerProxyNative = requireOptionalNativeModule<RemoteViewerProxyModule>("Dani DexRemoteViewerProxy");
+export const remoteViewerProxyNative =
+  requireOptionalNativeModule<RemoteViewerProxyModule>("Dani DexRemoteViewerProxy");

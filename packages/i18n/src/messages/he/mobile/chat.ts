@@ -393,7 +393,8 @@ export const messages = {
   "mobile.chat.browserSecret.submitFailed": "לא ניתן להשלים את הבקשה. יש לבדוק את החיבור ולנסות שוב.",
   "mobile.chat.browserSecret.vaultSkip.agentScript":
     "Dani Dex לא השתמש בפרטי ההתחברות השמורים כי הסוכן הריץ סקריפט בדף הזה. כדי להשתמש בהם, צריך לבקש מהסוכן לטעון מחדש את הדף ולנסות שוב.",
-  "mobile.chat.browserSecret.vaultSkip.fieldKind": "Dani Dex לא השתמש בפרטי ההתחברות השמורים כי הסוכן בחר שדה שגוי בדף.",
+  "mobile.chat.browserSecret.vaultSkip.fieldKind":
+    "Dani Dex לא השתמש בפרטי ההתחברות השמורים כי הסוכן בחר שדה שגוי בדף.",
   "mobile.chat.browserSecret.vaultSkip.loginChoice":
     "Dani Dex לא השתמש בפרטי התחברות שמורים כי הסוכן לא בחר אף אחד מפרטי ההתחברות השמורים לאתר הזה. צריך לומר לסוכן באיזה חשבון להשתמש.",
   "mobile.chat.browserSecret.vaultSkip.noPassword":

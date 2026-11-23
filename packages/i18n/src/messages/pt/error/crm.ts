@@ -2,7 +2,8 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/crm";
 
 export const messages = {
-  "error.crm.serverTooOld": "Este servidor não oferece suporte ao CRM. Atualize o Dani Dex no computador que o executa.",
+  "error.crm.serverTooOld":
+    "Este servidor não oferece suporte ao CRM. Atualize o Dani Dex no computador que o executa.",
   "error.crm.tooLargeToSend": "Esta página do CRM é grande demais para enviar a este aplicativo.",
   "error.crm.customerMissing": "Este cliente não existe mais.",
   "error.crm.planMissing": "Este plano não existe mais.",

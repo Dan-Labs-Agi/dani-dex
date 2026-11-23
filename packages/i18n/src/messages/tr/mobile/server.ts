@@ -548,7 +548,8 @@ export const messages = {
     "Bir ajanın tarayıcısını kontrol ettiğinizde, ajan kullandığınız sayfalardan ve düğmelerden sitelerin nasıl çalıştığını öğrenir. Yazdığınız metin saklanmaz.",
   "mobile.server.settings.browsingMemoryLoadFailed": "Gezinme ayarı yüklenemedi.",
   "mobile.server.settings.learningSaveFailed": "Bu ayar kaydedilemedi. Tekrar deneyin.",
-  "mobile.server.settings.learningUnsupported": "Bu ayarı burada değiştirmek için bu sunucudaki Dani Dex'u güncelleyin.",
+  "mobile.server.settings.learningUnsupported":
+    "Bu ayarı burada değiştirmek için bu sunucudaki Dani Dex'u güncelleyin.",
   "mobile.server.settings.responseStyleDescription":
     "Doğal: ajanlar çalışırken kısa güncellemeler gönderir ve sohbet bunları gösterir. Klasik: ajanlar bitirdiklerinde bir kez yanıt verir.",
   "mobile.server.settings.responseStyleNatural": "Doğal",

@@ -8,8 +8,8 @@ export function AIAgentWorkflow() {
         <Link to="/guides/$slug" params={{ slug: "what-are-ai-agents" }}>
           AI agent
         </Link>{" "}
-        workflow is the sequence that takes a request to a result you can use. For a first workflow in Dani Dex, pick one
-        task and define what you want to receive. A short, sourced release brief is a good example.
+        workflow is the sequence that takes a request to a result you can use. For a first workflow in Dani Dex, pick
+        one task and define what you want to receive. A short, sourced release brief is a good example.
       </p>
 
       <p>

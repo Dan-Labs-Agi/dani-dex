@@ -162,7 +162,8 @@ export const messages = {
   "mobile.workflow.step.sendTo": "Envoyer à",
   "mobile.workflow.step.channelHint":
     "Un propriétaire ou un administrateur choisit la messagerie dans Dani Dex sur l’ordinateur.",
-  "mobile.workflow.step.chatChannelHint": "Un propriétaire ou un admin choisit le canal dans Dani Dex sur l’ordinateur.",
+  "mobile.workflow.step.chatChannelHint":
+    "Un propriétaire ou un admin choisit le canal dans Dani Dex sur l’ordinateur.",
   "mobile.workflow.problem.noTitle": "Saisissez un nom.",
   "mobile.workflow.problem.noAgent": "Choisir un agent",
   "mobile.workflow.problem.agentGone": "L’agent n’est pas disponible. Choisir un agent",
@@ -384,7 +385,8 @@ export const messages = {
   "mobile.workflow.github.reason.notPlanned": "Comme non planifiée",
   "mobile.workflow.discord.hostOnly":
     "Seul l’ordinateur qui exécute Dani Dex a les serveurs Discord. Modifiez cette étape dans Dani Dex sur cet ordinateur.",
-  "mobile.workflow.discord.triggerComputerOnly": "Modifiez ce déclencheur dans Dani Dex sur l’ordinateur qui l’exécute.",
+  "mobile.workflow.discord.triggerComputerOnly":
+    "Modifiez ce déclencheur dans Dani Dex sur l’ordinateur qui l’exécute.",
   "mobile.workflow.discord.outputSummary": "Discord · {action}",
   "mobile.workflow.discord.server": "Serveur",
   "mobile.workflow.discord.event": "Événement",

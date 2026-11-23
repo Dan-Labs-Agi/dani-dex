@@ -4,7 +4,8 @@ import type { messages as source } from "../../en/error/auth";
 export const messages = {
   "error.auth.serviceUnavailable":
     "Dani Dex no pudo acceder al servicio de cuentas. Comprueba que la API esté en funcionamiento e inténtalo de nuevo.",
-  "error.auth.sessionTimeout": "Dani Dex no respondió a tiempo. Comprueba tu conexión a internet y vuelve a intentarlo.",
+  "error.auth.sessionTimeout":
+    "Dani Dex no respondió a tiempo. Comprueba tu conexión a internet y vuelve a intentarlo.",
   "error.auth.networkBlocked":
     "Un cortafuegos o proxy de esta red impidió que Dani Dex accediera a {host}. Pide al administrador de la red que permita {host} e inténtalo de nuevo.",
   "error.auth.signInFirst": "Primero inicia sesión en Dani Dex.",

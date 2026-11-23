@@ -12,7 +12,8 @@ export const messages = {
   "mobile.settings.language.restartBody":
     "השפה הזו נקראת בכיוון ההפוך. המסכים משנים כיוון כש-Dani Dex מתחיל שוב. אם המסכים עדיין נראים לא תקינים אחרי ההפעלה מחדש, יש לסגור את Dani Dex במחליף האפליקציות ולפתוח אותו שוב.",
   "mobile.settings.language.restartNow": "הפעלה מחדש עכשיו",
-  "mobile.settings.language.restartFailed": "Dani Dex לא הצליח להתחיל מחדש. המסכים ישנו כיוון בפעם הבאה שייפתח Dani Dex.",
+  "mobile.settings.language.restartFailed":
+    "Dani Dex לא הצליח להתחיל מחדש. המסכים ישנו כיוון בפעם הבאה שייפתח Dani Dex.",
   "mobile.settings.dictation.language": "שפת הכתבה",
   "mobile.settings.about.development": "פיתוח",
   "mobile.settings.about.openFailed": "לא ניתן לפתוח את הקישור. אפשר לנסות שוב.",

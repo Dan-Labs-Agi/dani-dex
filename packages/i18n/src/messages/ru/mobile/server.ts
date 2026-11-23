@@ -602,7 +602,8 @@ export const messages = {
     "Когда вы управляете браузером агента, агент узнаёт, как работают сайты, по страницам и кнопкам, которые вы используете. Введённый текст не сохраняется.",
   "mobile.server.settings.browsingMemoryLoadFailed": "Не удалось загрузить настройку браузинга.",
   "mobile.server.settings.learningSaveFailed": "Не удалось сохранить этот параметр. Повторите попытку.",
-  "mobile.server.settings.learningUnsupported": "Обновите Dani Dex на этом сервере, чтобы изменить здесь этот параметр.",
+  "mobile.server.settings.learningUnsupported":
+    "Обновите Dani Dex на этом сервере, чтобы изменить здесь этот параметр.",
   "mobile.server.settings.responseStyleDescription":
     "Естественный: агенты присылают короткие обновления во время работы, и чат их показывает. Классический: агенты отвечают один раз, когда закончат.",
   "mobile.server.settings.responseStyleNatural": "Естественный",
@@ -1021,7 +1022,8 @@ export const messages = {
     "Добавьте Оркестратора Telegram, иначе Telegram не получит ответа.",
   "mobile.server.connectors.telegram.addAgent": "Добавить Оркестратора Telegram",
   "mobile.server.connectors.telegram.disconnectTitle": "Отключить {chat}?",
-  "mobile.server.connectors.telegram.disconnectBody": "Бот Dani Dex покинет {chat}, и Dani Dex перестанет там отвечать.",
+  "mobile.server.connectors.telegram.disconnectBody":
+    "Бот Dani Dex покинет {chat}, и Dani Dex перестанет там отвечать.",
   "mobile.server.connectors.telegram.disconnectKept": "Диалоги и Оркестратор Telegram останутся в Dani Dex.",
   "mobile.server.connectors.telegram.disconnectDeleted":
     "Это последний чат, поэтому Оркестратор Telegram и его диалоги будут удалены из Dani Dex.",

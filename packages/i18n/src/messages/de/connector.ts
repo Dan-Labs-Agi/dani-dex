@@ -147,7 +147,8 @@ export const messages = {
   "connector.slack.disconnectEffect":
     "Personen in {workspace} können deine Agenten nicht mehr über @Dani Dex erreichen.",
   "connector.slack.removeEffectKept": "Die Unterhaltungen und der Slack Orchestrator bleiben in Dani Dex erhalten.",
-  "connector.slack.removeEffectDeleted": "Der Slack Orchestrator und seine Unterhaltungen werden aus Dani Dex gelöscht.",
+  "connector.slack.removeEffectDeleted":
+    "Der Slack Orchestrator und seine Unterhaltungen werden aus Dani Dex gelöscht.",
   "connector.slack.keep": "Verbunden lassen",
   "connector.slack.close": "Schließen",
   "connector.slack.addWorkspace": "Arbeitsbereich hinzufügen",
@@ -239,7 +240,8 @@ export const messages = {
     other: "{count} Discord-Server · Discord Orchestrator antwortet",
   },
   "connector.discord.accessTitle": "Wer Dani Dex nutzen kann",
-  "connector.discord.accessDescription": "Dani Dex antwortet nur diesen Personen. Erwähnungen von anderen ignoriert es.",
+  "connector.discord.accessDescription":
+    "Dani Dex antwortet nur diesen Personen. Erwähnungen von anderen ignoriert es.",
   "connector.discord.accessEveryone": "Alle auf dem Server",
   "connector.discord.accessEveryoneDescription":
     "Jeder, der in einem Kanal schreiben kann, den Dani Dex sieht, kann es erwähnen.",
@@ -283,7 +285,8 @@ export const messages = {
     "Dani Dex kann auf diesem Computer keine Telegram-Nachrichten empfangen. Melde dich an, gib diesem Computer in den Servereinstellungen einen Namen und lass Dani Dex geöffnet.",
   "connector.telegram.helpRelayUnavailableHost":
     "Dani Dex auf {host} kann keine Telegram-Nachrichten empfangen. Melde dich auf {host} an, gib dem Server in den Servereinstellungen einen Namen und lass Dani Dex geöffnet.",
-  "connector.telegram.helpError": "Dani Dex kann diesen Chat nicht erreichen. Verbinde ihn erneut oder trenne den Chat.",
+  "connector.telegram.helpError":
+    "Dani Dex kann diesen Chat nicht erreichen. Verbinde ihn erneut oder trenne den Chat.",
   "connector.telegram.helpNotLinked":
     "Dieser Chat ist nicht mit diesem Server verknüpft. Wähle „Neu verbinden“, um ihn zu verknüpfen.",
   "connector.telegram.retryAt": "Telegram hat Dani Dex gebeten zu warten. Neuer Versuch um {time}.",

@@ -195,7 +195,8 @@ export const messages = {
     "Dani Dex이 {workspace}에서 더 이상 답하지 않고, 이 컴퓨터에서 Discord 연결을 삭제해요.",
   "connector.discord.disconnectDescriptionHost":
     "Dani Dex이 {workspace}에서 더 이상 답하지 않고, {host}에서 Discord 연결을 삭제해요.",
-  "connector.discord.disconnectEffect": "{workspace}의 사람들이 더 이상 @Dani Dex으로 내 에이전트에게 연락할 수 없어요.",
+  "connector.discord.disconnectEffect":
+    "{workspace}의 사람들이 더 이상 @Dani Dex으로 내 에이전트에게 연락할 수 없어요.",
   "connector.discord.removeEffectKept": "대화와 Discord 오케스트레이터는 Dani Dex에 그대로 남아요.",
   "connector.discord.removeEffectDeleted": "Discord 오케스트레이터와 대화가 Dani Dex에서 삭제돼요.",
   "connector.discord.keep": "연결 유지",
@@ -314,7 +315,8 @@ export const messages = {
   "connector.whatsapp.helpLoggedOutHost": "WhatsApp이 연결된 기기에서 이 서버를 삭제했어요. 번호를 다시 연결해 주세요.",
   "connector.whatsapp.helpError":
     "Dani Dex이 이 번호로 WhatsApp에 접근할 수 없어요. 다시 연결하거나 번호 연결을 해제해 주세요.",
-  "connector.whatsapp.helpKeysUnreadable": "Dani Dex이 이 번호에 저장된 키를 읽을 수 없어요. 번호를 다시 연결해 주세요.",
+  "connector.whatsapp.helpKeysUnreadable":
+    "Dani Dex이 이 번호에 저장된 키를 읽을 수 없어요. 번호를 다시 연결해 주세요.",
   "connector.whatsapp.retryAt": "WhatsApp이 Dani Dex에 기다리라고 요청했어요. {time}에 다시 시도해요.",
   "connector.whatsapp.pause": "일시 정지",
   "connector.whatsapp.resume": "재개",

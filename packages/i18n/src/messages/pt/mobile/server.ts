@@ -935,7 +935,8 @@ export const messages = {
   "mobile.server.connectors.telegram.disconnectTitle": "Desconectar {chat}?",
   "mobile.server.connectors.telegram.disconnectBody":
     "O bot do Dani Dex sai de {chat} e o Dani Dex para de responder lá.",
-  "mobile.server.connectors.telegram.disconnectKept": "As conversas e o Orquestrador do Telegram continuam no Dani Dex.",
+  "mobile.server.connectors.telegram.disconnectKept":
+    "As conversas e o Orquestrador do Telegram continuam no Dani Dex.",
   "mobile.server.connectors.telegram.disconnectDeleted":
     "Este é o último chat, então o Orquestrador do Telegram e as conversas dele são excluídos do Dani Dex.",
   "mobile.server.connectors.whatsapp.title": "WhatsApp",

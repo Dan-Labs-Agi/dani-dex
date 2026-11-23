@@ -174,7 +174,8 @@ export const messages = {
   "browser.signIn.reopen": "Apri la finestra di accesso",
   "browser.signIn.sending": "Invio a {server}…",
   "browser.signIn.sent": "Accesso a {site} su {server} eseguito",
-  "browser.signIn.notFound": "Dani Dex non ha trovato un accesso per {site}. Accedi nella finestra, poi seleziona Fine.",
+  "browser.signIn.notFound":
+    "Dani Dex non ha trovato un accesso per {site}. Accedi nella finestra, poi seleziona Fine.",
   "browser.signIn.stillSignedOut":
     "{server} mostra ancora una pagina di accesso di {site}. Completa l’accesso nella finestra.",
   "browser.signIn.failed": "Dani Dex non è riuscito a inviare l’accesso.",

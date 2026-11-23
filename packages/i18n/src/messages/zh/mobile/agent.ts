@@ -139,7 +139,8 @@ export const messages = {
   "mobile.agent.info.skillsUnsupported": "这台主机不支持技能。请更新主机上的 Dani Dex。",
   "mobile.agent.info.noSkills": "还没有技能。",
   "mobile.agent.info.skillsManaged": "该助手的技能在主机上管理。",
-  "mobile.agent.info.skillsAddOnComputer": "使用 + 让该助手创建一个技能。市场技能可在电脑端的 Dani Dex 或网页版中添加。",
+  "mobile.agent.info.skillsAddOnComputer":
+    "使用 + 让该助手创建一个技能。市场技能可在电脑端的 Dani Dex 或网页版中添加。",
   "mobile.agent.info.filesUnsupported": "这台主机不支持文件管理。请更新主机上的 Dani Dex。",
   "mobile.agent.info.memoryGone": "该记忆已不可用。",
   "mobile.agent.info.routineGone": "该自动化任务已不可用。",

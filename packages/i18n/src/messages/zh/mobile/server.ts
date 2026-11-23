@@ -798,7 +798,8 @@ export const messages = {
   "mobile.server.connectors.discord.disconnectKept": "对话和 Discord 调度助手会保留在 Dani Dex 中。",
   "mobile.server.connectors.discord.disconnectDeleted": "Discord 调度助手及其对话将从 Dani Dex 中删除。",
   "mobile.server.connectors.discord.agentPromptTitle": "添加 Discord 调度助手？",
-  "mobile.server.connectors.discord.agentPromptBody": "这个新助手会回答人们在 {workspace} 中发给 @Dani Dex 的所有消息。",
+  "mobile.server.connectors.discord.agentPromptBody":
+    "这个新助手会回答人们在 {workspace} 中发给 @Dani Dex 的所有消息。",
   "mobile.server.connectors.discord.installFailed": "Discord 未完成授权，请重试。",
   "mobile.server.connectors.telegram.title": "Telegram",
   "mobile.server.connectors.telegram.description":

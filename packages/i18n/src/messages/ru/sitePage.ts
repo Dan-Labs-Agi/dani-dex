@@ -30,7 +30,8 @@ export const messages = {
   "sitePage.connect.openApp": "Открыть Dani Dex",
   "sitePage.connect.tryAgainApp": "Повторить в Dani Dex",
   "sitePage.connect.tryAgainBrowser": "Повторить в браузере",
-  "sitePage.connect.doneInWebClient": "Ваша вкладка Dani Dex завершает подключение к {name}. Эту вкладку можно закрыть.",
+  "sitePage.connect.doneInWebClient":
+    "Ваша вкладка Dani Dex завершает подключение к {name}. Эту вкладку можно закрыть.",
   "sitePage.connect.doneInApp": "Dani Dex завершает подключение к {name} на вашем компьютере.",
   "sitePage.connect.failure.cancelled": "Подключение к {name} отменено. Ничего не изменилось.",
   "sitePage.connect.failure.expired": "Срок входа в {name} истёк. Начните подключение снова.",
@@ -342,7 +343,8 @@ export const messages = {
     "Один сервер на компанию, по одному на сотрудника или и то и другое.",
   "sitePage.landing.teams.integrations.label": "Интеграции на заказ",
   "sitePage.landing.teams.integrations.title": "Ваши инструменты",
-  "sitePage.landing.teams.integrations.description": "Мы подключаем Dani Dex к вашим системам, API и рабочим процессам.",
+  "sitePage.landing.teams.integrations.description":
+    "Мы подключаем Dani Dex к вашим системам, API и рабочим процессам.",
   "sitePage.landing.teams.support.label": "Внедрение и поддержка",
   "sitePage.landing.teams.support.title": "Запускаем вместе с вами",
   "sitePage.landing.teams.support.description": "Настройка, тестирование, обучение команды и постоянная поддержка.",

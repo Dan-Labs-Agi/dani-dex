@@ -20,8 +20,8 @@ export function RunTheTeamServerYourself() {
       </p>
       <p>
         The account service is separate from the team server. With self-hosting, the host and your work run on hardware
-        you control. With an Dani Dex hosted server, Dani Dex provides the Linux machine and your team's work stays there
-        instead of on your own computer. The account service still handles memberships and invitations. See our{" "}
+        you control. With an Dani Dex hosted server, Dani Dex provides the Linux machine and your team's work stays
+        there instead of on your own computer. The account service still handles memberships and invitations. See our{" "}
         <Link to="/guides/$slug" params={{ slug: "openbot-hosted-servers" }}>
           guide to Dani Dex hosted servers
         </Link>{" "}

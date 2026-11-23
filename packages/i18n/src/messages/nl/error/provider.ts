@@ -495,7 +495,8 @@ export const messages = {
   "error.provider.customAgentArgsInvalid": "Een argument mag geen regeleinde bevatten. Gebruik maximaal 32 argumenten.",
   "error.provider.customAgentWindowsScript":
     "Een .cmd- of .bat-opdracht accepteert alleen letters, cijfers en - _ . , : = @ + / \\ in de argumenten.",
-  "error.provider.customAgentNotFound": "Dani Dex kan {command} niet vinden. Voer het volledige pad van de opdracht in.",
+  "error.provider.customAgentNotFound":
+    "Dani Dex kan {command} niet vinden. Voer het volledige pad van de opdracht in.",
   "error.provider.customAgentCheckTimedOut": "De agent reageerde niet binnen 20 seconden.",
   "error.provider.customAgentCheckStopped": "De agent is gestopt voordat hij antwoordde.",
   "error.provider.customAgentProtocolVersion": "De agent gebruikt ACP-versie {version}. Dani Dex gebruikt versie 1.",

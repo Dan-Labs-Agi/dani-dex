@@ -9,9 +9,9 @@ export function AIAgentWorkflows() {
       </p>
 
       <p>
-        In Dani Dex, you can set up a small team of agents to help with those jobs. One checks the facts, another writes,
-        and a third reviews the result. You can keep using that team for new tasks and ask it to reuse the research you
-        have already approved.
+        In Dani Dex, you can set up a small team of agents to help with those jobs. One checks the facts, another
+        writes, and a third reviews the result. You can keep using that team for new tasks and ask it to reuse the
+        research you have already approved.
       </p>
 
       <p>
@@ -71,8 +71,8 @@ export function AIAgentWorkflows() {
       <h3>Keep the project files together</h3>
 
       <p>
-        Ask the Coordinator to create a project folder in Dani Dex's shared folder on that computer or server. Use it for
-        your task description, research, draft and review notes.
+        Ask the Coordinator to create a project folder in Dani Dex's shared folder on that computer or server. Use it
+        for your task description, research, draft and review notes.
       </p>
 
       <p>
@@ -228,8 +228,8 @@ export function AIAgentWorkflows() {
       </p>
 
       <p>
-        Try the full process with your own files and accounts before scheduling it. The computer or server running
-        Dani Dex needs to be available when the work runs.
+        Try the full process with your own files and accounts before scheduling it. The computer or server running Dani
+        Dex needs to be available when the work runs.
       </p>
 
       <p>

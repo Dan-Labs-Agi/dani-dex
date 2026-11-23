@@ -137,7 +137,8 @@ export const messages = {
   "server.install.agentPrompt":
     'התקן את Dani Dex בשרת ה-Linux הזה וחבר אותו לחשבון Dani Dex שלי.\nהרץ את הפקודה הזו כ-root. היא לא שואלת שאלות ולוקחת כמה דקות:\n\n{command}\n\nהיא מסתיימת בשורה "Dani Dex is connected to your account." ובקוד יציאה 0.\nהפקודה עובדת פעם אחת, במשך 15 דקות. אל תשמור אותה בשום מקום.',
   "server.install.setUpWithAgent": "הגדרה עם סוכן",
-  "server.install.sshAgentPrompt": "התחבר ב-SSH לשרת ה-Linux שלי והתקן עליו את Dani Dex כשרת.\n\nכתובת SSH (user@host):",
+  "server.install.sshAgentPrompt":
+    "התחבר ב-SSH לשרת ה-Linux שלי והתקן עליו את Dani Dex כשרת.\n\nכתובת SSH (user@host):",
   "server.add.limit.title": "בחשבון הזה יש את המספר המרבי של שרתים",
   "server.add.limit.description": {
     one: "בחשבון יכול להיות שרת בתשלום אחד. כדי להוסיף שרת, יש למחוק קודם את הקיים.",

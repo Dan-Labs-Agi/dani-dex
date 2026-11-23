@@ -85,7 +85,8 @@ export const messages = {
   "connector.slack.disconnectWorkspace": "断开连接",
   "connector.slack.disconnectAllTitle": "断开 Slack",
   "connector.slack.disconnectAllSummary": "所有工作区都将断开，其他人无法再通过 @Dani Dex 联系你的助手。",
-  "connector.slack.disconnectAllSummaryOrchestrator": "所有工作区都将断开，Slack 调度助手及其对话将从 Dani Dex 中删除。",
+  "connector.slack.disconnectAllSummaryOrchestrator":
+    "所有工作区都将断开，Slack 调度助手及其对话将从 Dani Dex 中删除。",
   "connector.slack.missingScopes": "Dani Dex 在 Slack 中缺少这些权限：{scopes}。请断开该工作区后重新连接。",
   "connector.slack.retryAt": "Slack 要求 Dani Dex 等待，将于 {time} 重试。",
   "connector.slack.reconnect": "重新连接",
@@ -153,7 +154,8 @@ export const messages = {
   "connector.discord.disconnectAllSummary": "所有服务器都将断开，其他人无法再通过 @Dani Dex 联系你的助手。",
   "connector.discord.disconnectAllSummaryOrchestrator":
     "所有服务器都将断开，Discord 调度助手及其对话将从 Dani Dex 中删除。",
-  "connector.discord.missingScopes": "Dani Dex 在 Discord 中缺少这些权限：{scopes}。请断开该 Discord 服务器后重新连接。",
+  "connector.discord.missingScopes":
+    "Dani Dex 在 Discord 中缺少这些权限：{scopes}。请断开该 Discord 服务器后重新连接。",
   "connector.discord.retryAt": "Discord 要求 Dani Dex 等待，将于 {time} 重试。",
   "connector.discord.reconnect": "重新连接",
   "connector.discord.pause": "暂停",
@@ -187,7 +189,8 @@ export const messages = {
   "connector.discord.done": "完成",
   "connector.discord.disconnectTitle": "断开 {workspace}？",
   "connector.discord.disconnectDescription": "Dani Dex 将停止在 {workspace} 中回答，并从这台电脑移除 Discord 连接。",
-  "connector.discord.disconnectDescriptionHost": "Dani Dex 将停止在 {workspace} 中回答，并从 {host} 移除 Discord 连接。",
+  "connector.discord.disconnectDescriptionHost":
+    "Dani Dex 将停止在 {workspace} 中回答，并从 {host} 移除 Discord 连接。",
   "connector.discord.disconnectEffect": "{workspace} 中的人将无法再通过 @Dani Dex 联系你的助手。",
   "connector.discord.removeEffectKept": "对话和 Discord 调度助手会保留在 Dani Dex 中。",
   "connector.discord.removeEffectDeleted": "Discord 调度助手及其对话将从 Dani Dex 中删除。",

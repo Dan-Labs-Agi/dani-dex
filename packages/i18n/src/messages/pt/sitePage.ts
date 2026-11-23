@@ -179,7 +179,8 @@ export const messages = {
   "sitePage.marketplace.agents.description":
     "Agentes que outras pessoas criaram no Dani Dex. Adicione um ao Dani Dex com as habilidades e rotinas dele.",
   "sitePage.marketplace.skills.title": "Habilidades — Loja do Dani Dex",
-  "sitePage.marketplace.skills.description": "Habilidades que um agente do Dani Dex pode usar. Adicione uma ao Dani Dex.",
+  "sitePage.marketplace.skills.description":
+    "Habilidades que um agente do Dani Dex pode usar. Adicione uma ao Dani Dex.",
   "sitePage.marketplace.apps.title": "Apps — Loja do Dani Dex",
   "sitePage.marketplace.apps.description":
     "Apps e ferramentas que um agente do Dani Dex pode usar. Abra um app no Dani Dex e decida lá ao que ele se conecta.",

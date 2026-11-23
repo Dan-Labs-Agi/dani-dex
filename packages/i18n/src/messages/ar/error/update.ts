@@ -15,7 +15,8 @@ export const messages = {
   "error.update.checkStalled": "توقف التحقق من التحديثات عن الاستجابة. حاول مرة أخرى.",
   "error.update.checkOffline": "تعذّر الوصول إلى خدمة التحديث. تحقق من اتصالك بالإنترنت، ثم حاول مرة أخرى.",
   "error.update.checkUnavailable": "لم تستجب خدمة التحديث. سيحاول Dani Dex مرة أخرى تلقائيًا خلال بضع دقائق.",
-  "error.update.checkNoRelease": "لم يُعثر على تحديث منشور لهذه المنصة. سيحاول Dani Dex مرة أخرى تلقائيًا خلال بضع دقائق.",
+  "error.update.checkNoRelease":
+    "لم يُعثر على تحديث منشور لهذه المنصة. سيحاول Dani Dex مرة أخرى تلقائيًا خلال بضع دقائق.",
   "error.update.managedByNix": "يثبّت Nix التحديثات لهذه النسخة من Dani Dex. حدّثها باستخدام Nix.",
   "error.update.managedByHost": "يثبّت المضيف التحديثات على جهاز Mac هذا. يبقى التحديث جاهزًا حتى تُجرى صيانة المضيف.",
   "error.update.siblingSession":

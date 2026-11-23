@@ -85,7 +85,8 @@ export const messages = {
   "mobile.workflow.trigger.slack": "Slack",
   "mobile.workflow.trigger.slackHint": "Executa quando alguém menciona o Dani Dex em um canal do Slack.",
   "mobile.workflow.trigger.telegram": "Telegram",
-  "mobile.workflow.trigger.telegramHint": "Executa quando alguém menciona o Dani Dex em um grupo do Telegram vinculado.",
+  "mobile.workflow.trigger.telegramHint":
+    "Executa quando alguém menciona o Dani Dex em um grupo do Telegram vinculado.",
   "mobile.workflow.trigger.startsWhen": "Inicia",
   "mobile.workflow.trigger.timezone": "Fuso horário: {zone}",
   "mobile.workflow.trigger.serverZone": "O agendamento usa o fuso horário do servidor.",
@@ -159,7 +160,8 @@ export const messages = {
   "mobile.workflow.step.questionHint": "A execução espera até você aprovar ou recusar. Você recebe uma notificação.",
   "mobile.workflow.step.text": "Texto",
   "mobile.workflow.step.sendTo": "Enviar para",
-  "mobile.workflow.step.channelHint": "Um proprietário ou admin escolhe o local de mensagens no Dani Dex do computador.",
+  "mobile.workflow.step.channelHint":
+    "Um proprietário ou admin escolhe o local de mensagens no Dani Dex do computador.",
   "mobile.workflow.step.chatChannelHint": "Um proprietário ou administrador escolhe o canal no Dani Dex no computador.",
   "mobile.workflow.problem.noTitle": "Escreva um nome.",
   "mobile.workflow.problem.noAgent": "Escolha um agente",

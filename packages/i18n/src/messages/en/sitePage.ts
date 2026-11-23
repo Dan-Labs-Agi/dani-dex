@@ -236,7 +236,8 @@ export const messages = defineMessages("sitePage", {
     "Made by another Dani Dex user. Dani Dex reviewed it before it went live. It can act on your behalf once added.",
   "sitePage.marketplace.trust.agentPending":
     "Shared by its creator before Dani Dex reviewed it. It can act on your behalf once added.",
-  "sitePage.marketplace.trust.skillReviewed": "Made by another Dani Dex user. Dani Dex reviewed it before it went live.",
+  "sitePage.marketplace.trust.skillReviewed":
+    "Made by another Dani Dex user. Dani Dex reviewed it before it went live.",
   "sitePage.marketplace.source.verified": "Verified by Dani Dex",
   "sitePage.marketplace.source.reviewed": "Reviewed by Dani Dex",
   "sitePage.marketplace.source.pending": "Not reviewed yet",

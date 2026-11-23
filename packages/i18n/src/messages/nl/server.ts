@@ -311,7 +311,8 @@ export const messages = {
   "server.settings.desktopTitle": "Extern bureaublad",
   "server.settings.desktopDescription": "Stel het bureaublad van deze server in of maak er verbinding mee.",
   "server.settings.storageTitle": "Opslag",
-  "server.settings.storageDescription": "Bekijk wat Dani Dex op de schijf van deze server bewaart, en maak ruimte vrij.",
+  "server.settings.storageDescription":
+    "Bekijk wat Dani Dex op de schijf van deze server bewaart, en maak ruimte vrij.",
   "server.settings.hostedSitesTitle": "Sites",
   "server.settings.hostedSitesDescription":
     "De statische sites die agents op deze server op openbot.site hebben gepubliceerd.",

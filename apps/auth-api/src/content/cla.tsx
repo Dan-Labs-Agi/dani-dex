@@ -73,9 +73,9 @@ export function Cla() {
         Contributor to Dani Dex for inclusion in, or use in connection with, the Dani Dex project.
       </p>
       <p>
-        <strong>"Submitted"</strong> means communicated to Dani Dex or its authorised representatives through source code
-        repositories, pull requests, issue tracking systems, electronic communications, or other contribution channels
-        designated or accepted by Dani Dex for the purpose of improving the project.
+        <strong>"Submitted"</strong> means communicated to Dani Dex or its authorised representatives through source
+        code repositories, pull requests, issue tracking systems, electronic communications, or other contribution
+        channels designated or accepted by Dani Dex for the purpose of improving the project.
       </p>
       <p>
         <strong>"Work"</strong> means the Dani Dex software project and associated materials maintained or managed by

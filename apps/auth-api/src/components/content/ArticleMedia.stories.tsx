@@ -126,8 +126,8 @@ export const InTheArticle: Story = {
             <h2>Install it, then connect a provider</h2>
             <p>
               Take the installer from GitHub Releases. Then give it a provider. In onboarding, in Settings or in the
-              model picker, select a provider and press Download: Dani Dex installs and pins its own managed copy of that
-              command-line tool.
+              model picker, select a provider and press Download: Dani Dex installs and pins its own managed copy of
+              that command-line tool.
             </p>
             <ArticleImage
               src={pickAModel}

@@ -19,9 +19,9 @@ import {
   material,
   mesh,
   poseRobotModel,
+  type RobotRig,
   roundBox,
   surfaceDepth,
-  type RobotRig,
 } from "./robot-model";
 
 export const DANI_VARIANTS = [
@@ -176,10 +176,14 @@ export function createDaniVariant(variantId: DaniVariantId = "dani"): THREE.Grou
   leftEye.scale.z = rightEye.scale.z = 0.48;
   leftEye.rotation.z = rightEye.rotation.z = 0.075;
   const leftSmile = mesh(head, "eye-cheer-left", new THREE.TorusGeometry(0.1, 0.033, 9, 22, Math.PI), ink, [
-    -0.31, 0.025, eyeDepth + 0.015,
+    -0.31,
+    0.025,
+    eyeDepth + 0.015,
   ]);
   const rightSmile = mesh(head, "eye-cheer-right", new THREE.TorusGeometry(0.1, 0.033, 9, 22, Math.PI), ink, [
-    0.31, 0.025, eyeDepth + 0.015,
+    0.31,
+    0.025,
+    eyeDepth + 0.015,
   ]);
 
   const leftArm = group(body, "arm-left", [-0.84, 1.0, 0.06]);

@@ -18,7 +18,8 @@ export const messages = {
   "mobile.appLock.lockAfter.minutes": { one: "Dopo {count} minuto", other: "Dopo {count} minuti" },
   "mobile.appLock.lockAfter.hours": { one: "Dopo {count} ora", other: "Dopo {count} ore" },
   "mobile.appLock.lockWithPhone": "Quando il telefono si blocca",
-  "mobile.appLock.lockAfter.footer": "Il tempo parte quando lasci Dani Dex. Dani Dex si blocca sempre quando si riavvia.",
+  "mobile.appLock.lockAfter.footer":
+    "Il tempo parte quando lasci Dani Dex. Dani Dex si blocca sempre quando si riavvia.",
   "mobile.appLock.device.turnOnPrompt": "Attiva {method} per Dani Dex",
   "mobile.appLock.device.failed": "{method} non ha confermato. Riprova.",
   "mobile.appLock.device.unavailable": "Imposta prima un codice sul telefono.",

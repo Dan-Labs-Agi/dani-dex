@@ -169,7 +169,9 @@ export class TelegramBotApi {
           allowed_updates: ALLOWED_UPDATES,
         });
         if (!answer.ok)
-          console.error(`Dani Dex Remote API could not set the webhook of Telegram bot ${botId} (${answer.errorCode}).`);
+          console.error(
+            `Dani Dex Remote API could not set the webhook of Telegram bot ${botId} (${answer.errorCode}).`,
+          );
       }
     }),
   );

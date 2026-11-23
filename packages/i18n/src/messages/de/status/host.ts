@@ -10,5 +10,6 @@ export const messages = {
   "status.host.signalLost": "Andere Geräte erreichen diesen Dani Dex gerade nicht. Er verbindet sich erneut.",
   "status.host.stopping": "Dieser Dani Dex wird auf privat gesetzt…",
   "status.host.private": "Dieser Dani Dex ist privat.",
-  "status.host.removed": "Dieser Dani Dex wurde aus deinem Konto entfernt. Veröffentliche ihn erneut, um ihn zu teilen.",
+  "status.host.removed":
+    "Dieser Dani Dex wurde aus deinem Konto entfernt. Veröffentliche ihn erneut, um ihn zu teilen.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -536,7 +536,8 @@ export const messages = {
     "{reason}. « Espace de travail seul » bloque cette action. Essayez « Accès complet ».",
   "error.provider.customAgentTooMany": "Vous pouvez enregistrer au plus {count} agents personnalisés.",
   "error.provider.customAgentEnvValueMissing": "Saisissez une valeur pour {name}.",
-  "error.provider.off": "{provider} est désactivé dans Dani Dex. Activez-le d’abord dans les réglages des fournisseurs.",
+  "error.provider.off":
+    "{provider} est désactivé dans Dani Dex. Activez-le d’abord dans les réglages des fournisseurs.",
   "error.provider.inUse": "Un agent utilise {provider}. Changez son modèle avant de désactiver ce fournisseur.",
   "error.provider.useBusy": "Attendez la fin de la vérification du fournisseur ou de la connexion, puis réessayez.",
   "error.provider.useSettingsReadOnly":

@@ -354,7 +354,8 @@ export const messages = {
     "Anahtar, senkronizasyonun ihtiyaç duyduğu her şeyi okuyamıyor. {source} içinde ona okuma erişimi verin.",
   "crm.source.errorRateLimited": "{source} çok fazla istek aldı. Sonraki senkronizasyon yeniden dener.",
   "crm.source.errorNetwork": "Dani Dex {source} ile bağlantı kuramıyor. Sonraki senkronizasyon yeniden dener.",
-  "crm.source.errorFailed": "{source} Dani Dex'un okuyamadığı bir yanıt gönderdi. Sonraki senkronizasyon yeniden dener.",
+  "crm.source.errorFailed":
+    "{source} Dani Dex'un okuyamadığı bir yanıt gönderdi. Sonraki senkronizasyon yeniden dener.",
   "crm.source.skipped": "İçe aktarılmadı",
   "crm.source.skippedCurrency": "Başka para birimi: {rows}",
   "crm.source.skippedInterval": "Başka faturalama aralığı: {rows}",

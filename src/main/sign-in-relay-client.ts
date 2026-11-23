@@ -237,7 +237,10 @@ export class SignInRelayClient {
           : { status: 400, message: "error.mcp.redirectNoSignIn" };
       },
     }).catch((error: unknown) => {
-      logger.warn("Dani Dex could not listen for a relayed sign-in, so only a pasted address works:", toLogValue(error));
+      logger.warn(
+        "Dani Dex could not listen for a relayed sign-in, so only a pasted address works:",
+        toLogValue(error),
+      );
       return null;
     });
     const shared: SharedListener = { id, users: 0, server };

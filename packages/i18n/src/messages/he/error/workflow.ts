@@ -80,7 +80,8 @@ export const messages = {
   "error.workflow.githubChoiceMissing": "יש לבחור את התוויות או את האדם לפלט הזה.",
   "error.workflow.githubChoseNothing": "המודל לא בחר תווית או אדם מהמאגר הזה.",
   "error.workflow.githubNotConnected": "יש לחבר את GitHub במחשב שמפעיל את תהליך העבודה הזה.",
-  "error.workflow.githubNoAccess": "ל-Dani Dex GitHub App אין גישה למאגר או לפריט הזה. יש לפתוח את GitHub ולתת לו גישה.",
+  "error.workflow.githubNoAccess":
+    "ל-Dani Dex GitHub App אין גישה למאגר או לפריט הזה. יש לפתוח את GitHub ולתת לו גישה.",
   "error.workflow.githubNoWrite": "Dani Dex GitHub App לא יכול לשנות את המאגר הזה. יש לפתוח את GitHub ולתת לו גישה.",
   "error.workflow.githubLocked": "השיחה הזו נעולה ב-GitHub.",
   "error.workflow.githubRefused": "GitHub דחה את השינוי: {detail}",

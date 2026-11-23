@@ -467,7 +467,8 @@ export const messages = {
   "mobile.server.settings.timezoneSaveFailed": "No se pudo guardar la zona horaria. Inténtalo de nuevo.",
   "mobile.server.settings.timezoneUnavailable":
     "Conéctate a este servidor como propietario o administrador para cambiar su zona horaria.",
-  "mobile.server.settings.timezoneUnsupported": "Actualiza Dani Dex en este servidor para cambiar aquí su zona horaria.",
+  "mobile.server.settings.timezoneUnsupported":
+    "Actualiza Dani Dex en este servidor para cambiar aquí su zona horaria.",
   "mobile.server.settings.signalHomeAutomatic": "Automático",
   "mobile.server.settings.signalHomeNearest": "El servidor de Signal más cercano",
   "mobile.server.settings.signalHomeInUse": "En uso: {name}",
@@ -1569,7 +1570,8 @@ export const messages = {
   "mobile.server.import.count.memory": { one: "{count} recuerdo", other: "{count} recuerdos" },
   "mobile.server.import.count.file": { one: "{count} archivo", other: "{count} archivos" },
   "mobile.server.import.sourceTitle": "¿Dónde están tus agentes ahora?",
-  "mobile.server.import.sourceLede": "Dani Dex los copia a este servidor. Verás cada elemento antes de que cambie nada.",
+  "mobile.server.import.sourceLede":
+    "Dani Dex los copia a este servidor. Verás cada elemento antes de que cambie nada.",
   "mobile.server.import.hermesNote": "Exporta un archivo .zip desde Hermes.",
   "mobile.server.import.grokNote": "En la nube. Un agente de exportación allí crea un archivo .zip.",
   "mobile.server.import.transfer": "Otro servidor de Dani Dex",

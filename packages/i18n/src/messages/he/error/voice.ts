@@ -9,7 +9,8 @@ export const messages = {
   "error.voice.runtimeUnavailable": "תמלול קול מקומי אינו זמין בפלטפורמה הזו.",
   "error.voice.modelUnavailable": "מודל הקול אינו זמין.",
   "error.voice.transcriptionTimedOut": "תמלול הקול חרג מהזמן המותר.",
-  "error.voice.prepareRequired": "תמלול קול מקומי אינו זמין. יש להריץ `bun run voice:prepare` ולהפעיל מחדש את Dani Dex.",
+  "error.voice.prepareRequired":
+    "תמלול קול מקומי אינו זמין. יש להריץ `bun run voice:prepare` ולהפעיל מחדש את Dani Dex.",
   "error.voice.transcriptionFailed": "Dani Dex לא הצליח לתמלל את ההקלטה הזו.",
   "error.voice.videoModelMissing": "לא הוגדר מודל זיהוי דיבור להקלטות בהגדרות ← קול.",
   "error.voice.videoModelMissingServer":

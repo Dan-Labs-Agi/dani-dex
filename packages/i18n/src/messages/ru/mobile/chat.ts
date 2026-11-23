@@ -314,7 +314,8 @@ export const messages = {
   "mobile.chat.sideQuestion.deleteTitle": "Удалить этот побочный вопрос?",
   "mobile.chat.sideQuestion.deleteBody": "Его вопросы и ответы есть только на этом телефоне. Восстановить их нельзя.",
   "mobile.chat.sideQuestion.notFound": "Этого агента больше нет на сервере.",
-  "mobile.chat.sideQuestion.unsupported": "Этот хост не может отвечать на побочные вопросы. Обновите Dani Dex на хосте.",
+  "mobile.chat.sideQuestion.unsupported":
+    "Этот хост не может отвечать на побочные вопросы. Обновите Dani Dex на хосте.",
   "mobile.chat.pins.title": "Закреплённые сообщения",
   "mobile.chat.pins.emptyTitle": "Нет закреплённых сообщений",
   "mobile.chat.pins.emptyBody": "Нажмите и удерживайте сообщение, затем нажмите «Закрепить», чтобы оно было здесь.",
@@ -716,7 +717,8 @@ export const messages = {
   "mobile.chat.threads.delete.title": "Удалить эту ветку?",
   "mobile.chat.threads.delete.body": "Dani Dex навсегда удалит ветку, её сообщения и файлы. Основной чат не изменится.",
   "mobile.chat.threads.filesUnsupported": "Этот хост не принимает файлы в ветке. Обновите Dani Dex на хосте.",
-  "mobile.chat.threads.unsupported": "Этот хост не может переименовывать или удалять ветки. Обновите Dani Dex на хосте.",
+  "mobile.chat.threads.unsupported":
+    "Этот хост не может переименовывать или удалять ветки. Обновите Dani Dex на хосте.",
   "mobile.chat.threads.error.rename": "Не удалось переименовать ветку.",
   "mobile.chat.threads.error.delete": "Не удалось удалить ветку.",
   "mobile.chat.channelWork.working": "Работает в канале {channel}",

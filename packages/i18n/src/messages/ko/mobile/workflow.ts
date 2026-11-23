@@ -276,7 +276,8 @@ export const messages = {
   "mobile.workflow.version.restoreBody":
     "모든 멤버의 워크플로가 이 버전으로 바뀌어요. 서버는 현재 워크플로를 버전으로 저장해요.",
   "mobile.workflow.version.restoreFailed": "버전을 복원할 수 없어요",
-  "mobile.workflow.github.unsupported": "휴대폰의 워크플로에서 GitHub를 사용하려면 이 서버의 Dani Dex을 업데이트하세요.",
+  "mobile.workflow.github.unsupported":
+    "휴대폰의 워크플로에서 GitHub를 사용하려면 이 서버의 Dani Dex을 업데이트하세요.",
   "mobile.workflow.github.summary": "{repository} · {event}",
   "mobile.workflow.github.adminOnly": "GitHub 단계는 서버의 소유자나 관리자가 변경해요.",
   "mobile.workflow.github.catalogFailed": "서버의 GitHub 저장소를 불러올 수 없어요.",

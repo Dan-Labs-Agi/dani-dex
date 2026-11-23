@@ -698,7 +698,8 @@ export const messages = {
   "server.update.disabledDescription":
     "{name}의 사용자가 서버 멤버의 업데이트를 꺼 두었어요. Dani Dex을 업데이트하거나, 그 컴퓨터에서 설정 > 업데이트를 열고 ‘서버 멤버의 업데이트 허용’을 켜 달라고 요청하세요.",
   "server.update.managedTitle": "Host Manager가 업데이트를 제어해요",
-  "server.update.managedDescription": "Dani Dex Host Manager가 {name}을(를) 업데이트해요. 호스트 관리자에게 문의하세요.",
+  "server.update.managedDescription":
+    "Dani Dex Host Manager가 {name}을(를) 업데이트해요. 호스트 관리자에게 문의하세요.",
   "server.update.unsupportedTitle": "{name}은(는) 스스로 업데이트할 수 없어요",
   "server.update.unsupportedDescription": "이 Dani Dex 빌드에는 업데이터가 없어요. {name}에 새 버전을 설치하세요.",
   "server.update.restarting": "다시 시작하는 중…",

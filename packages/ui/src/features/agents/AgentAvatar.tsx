@@ -1,13 +1,14 @@
 import type { ExpressionId } from "@norbert_bodziony/bloub";
 import type { PlushTransition } from "@norbert_bodziony/bloub/plush";
-import { DaniAvatar } from "@openbot/brand/dani-avatar";
 import { type AvatarMood, avatarMoodIsBusy } from "@openbot/brand/bloub-avatar-motion";
+import { DaniAvatar } from "@openbot/brand/dani-avatar";
 import type { AgentStepActivity, AvatarColor, AvatarHue } from "@openbot/contracts/ipc";
 import { prefersReducedMotion } from "@openbot/ui/utils";
 import { createEffect, createMemo, createSignal, Show } from "solid-js";
 import { useAmbientMotion } from "../../ambient-motion";
 import type { AvatarMotion, SupportedAvatarSilhouetteId } from "../../bloub-avatar";
 import type { AgentProfile } from "../../data";
+
 const PHOTO_BREATHE = "0.03";
 interface AgentAvatarProps {
   agent?: Pick<AgentProfile, "avatarSeed" | "avatarHue" | "avatarColor" | "avatarUrl"> | undefined;
@@ -110,6 +111,23 @@ function GeneratedAvatar(props: {
   class: string;
   style?: Record<string, string> | undefined;
 }) {
-  const motion = () => props.mood === "working" || props.mood === "connecting" ? "working" as const : props.mood === "waiting" ? "waiting" as const : props.mood === "responded" ? "celebrate" as const : "idle" as const;
-  return <DaniAvatar seed={props.seed} hue={props.hue} color={props.color} motion={motion()} animated={props.motion === "always" && !prefersReducedMotion()} class={props.class} style={props.style} />;
+  const motion = () =>
+    props.mood === "working" || props.mood === "connecting"
+      ? ("working" as const)
+      : props.mood === "waiting"
+        ? ("waiting" as const)
+        : props.mood === "responded"
+          ? ("celebrate" as const)
+          : ("idle" as const);
+  return (
+    <DaniAvatar
+      seed={props.seed}
+      hue={props.hue}
+      color={props.color}
+      motion={motion()}
+      animated={props.motion === "always" && !prefersReducedMotion()}
+      class={props.class}
+      style={props.style}
+    />
+  );
 }

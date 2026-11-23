@@ -29,8 +29,8 @@ export function IntroducingOpenBot() {
       <h2>From Single-Player to Multiplayer</h2>
       <p>
         Many AI tools are built around one person working with one assistant at a time. You open a chat, ask a question,
-        and work with the answer on your own. Dani Dex is built around a different idea: people and AI agents can work in
-        the same workspace.
+        and work with the answer on your own. Dani Dex is built around a different idea: people and AI agents can work
+        in the same workspace.
       </p>
       <p>
         Coworkers can see the same conversations and files, talk to the agents, and coordinate their work in one place.
@@ -52,7 +52,8 @@ export function IntroducingOpenBot() {
 
       <h2>What Can You Do With Dani Dex?</h2>
       <p>
-        Dani Dex is not built around one specific workflow. You can create agents for different kinds of work, including:
+        Dani Dex is not built around one specific workflow. You can create agents for different kinds of work,
+        including:
       </p>
       <ul>
         <li>Research and monitoring</li>

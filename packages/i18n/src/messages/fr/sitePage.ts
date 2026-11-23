@@ -150,7 +150,8 @@ export const messages = {
   "sitePage.contact.title": "Contacter l’équipe Dani Dex",
   "sitePage.contact.description":
     "Écrivez à l’équipe Dani Dex pour une installation sur mesure, un partenariat ou une demande presse. Chaque message est lu par une vraie personne.",
-  "sitePage.contact.imageAlt": "Petite équipe. Toujours sur le coup. Des agents Dani Dex autour d’une planète en papier",
+  "sitePage.contact.imageAlt":
+    "Petite équipe. Toujours sur le coup. Des agents Dani Dex autour d’une planète en papier",
   "sitePage.contact.heading": "Parlez à l’équipe",
   "sitePage.contact.intro":
     "Dites-nous ce dont vous avez besoin. Chaque message est lu par un membre de l’équipe Dani Dex.",
@@ -213,7 +214,8 @@ export const messages = {
   "sitePage.marketplace.emptyApps": "Aucune app ne correspond.",
   "sitePage.marketplace.breadcrumb": "Fil d’Ariane",
   "sitePage.marketplace.addToDani Dex": "Ajouter à Dani Dex",
-  "sitePage.marketplace.addFromApp": "{name} s’ajoute depuis Dani Dex. Installez l’app, puis ouvrez de nouveau ce lien.",
+  "sitePage.marketplace.addFromApp":
+    "{name} s’ajoute depuis Dani Dex. Installez l’app, puis ouvrez de nouveau ce lien.",
   "sitePage.marketplace.downloadFor": "Télécharger pour {platform}",
   "sitePage.marketplace.copyLink": "Copier le lien",
   "sitePage.marketplace.copied": "Copié",

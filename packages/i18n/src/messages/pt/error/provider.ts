@@ -484,7 +484,8 @@ export const messages = {
     "O serviço do modelo recusou a solicitação. Escolha outro modelo ou verifique seu acesso a este modelo no serviço.",
   "error.provider.modelServiceRefusedReason":
     "O serviço do modelo recusou a solicitação: {reason}. Escolha outro modelo ou verifique seu acesso a este modelo no serviço.",
-  "error.provider.messageTooLarge": "O Dani Dex interrompeu {provider} porque enviou uma mensagem maior que {limit} MB.",
+  "error.provider.messageTooLarge":
+    "O Dani Dex interrompeu {provider} porque enviou uma mensagem maior que {limit} MB.",
   "error.provider.customAgentIdInvalid":
     "Um ID de agente deve conter letras minúsculas, dígitos ou `-`, e não pode ser o ID de um provedor integrado.",
   "error.provider.customAgentEnvInvalid":

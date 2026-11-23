@@ -27,7 +27,8 @@ export const messages = {
   "status.agent.screenCaptureScreen": "メイン画面をキャプチャし、その画像をエージェントのモデルに送信します。",
   "status.agent.screenCaptureChannel":
     "画像はチャンネル {channel} に表示され、このサーバーでチャンネルを読むメンバー全員が見ることができます。",
-  "status.agent.screenCapturePermissionNext": "その後、macOS が Dani Dex に画面収録を許可するよう求めることがあります。",
+  "status.agent.screenCapturePermissionNext":
+    "その後、macOS が Dani Dex に画面収録を許可するよう求めることがあります。",
   "status.agent.screenCaptureDisplay":
     "ディスプレイ {name} をキャプチャし、その画像をエージェントのモデルに送信します。",
   "status.agent.screenCaptureWindow": "ウィンドウ {name} をキャプチャし、その画像をエージェントのモデルに送信します。",
@@ -51,7 +52,8 @@ export const messages = {
   "status.agent.serverInstallCard": "サーバー {name} のインストールコマンド",
   "status.agent.browserProfileNamed":
     "{agents} をブラウザープロファイル {profile} に移動します。そのログイン情報と Cookie を使えるようになります。開いているタブは閉じます。",
-  "status.agent.commitCoAuthorOff": "すべてのエージェントのコミットに Dani Dex を共同作成者として追加するのをやめます。",
+  "status.agent.commitCoAuthorOff":
+    "すべてのエージェントのコミットに Dani Dex を共同作成者として追加するのをやめます。",
   "status.agent.commitCoAuthorOn": "すべてのエージェントのコミットに Dani Dex を共同作成者として再び追加します。",
   "status.agent.browserProfileNew":
     "新しいブラウザープロファイル {profile} を作成し、{agents} を移動します。ログイン情報はありません。開いているタブは閉じます。",

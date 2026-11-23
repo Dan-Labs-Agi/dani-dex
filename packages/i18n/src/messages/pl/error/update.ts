@@ -28,7 +28,8 @@ export const messages = {
     "Inna sesja Dani Dex nadal działa z tej aplikacji. Najpierw zatrzymaj Dani Dex na każdym innym koncie użytkownika macOS, a potem ponownie zainstaluj aktualizację.",
   "error.update.siblingSessionSameAccount":
     "Inny proces Dani Dex nadal działa na tym koncie użytkownika. Zamknij go, a potem ponownie zainstaluj aktualizację.",
-  "error.update.siblingCheckFailed": "Nie udało się sprawdzić innych sesji Dani Dex. Spróbuj ponownie przed instalacją.",
+  "error.update.siblingCheckFailed":
+    "Nie udało się sprawdzić innych sesji Dani Dex. Spróbuj ponownie przed instalacją.",
   "error.update.readOnlyLocation":
     "Dani Dex nie może instalować aktualizacji z tej lokalizacji. Zamknij Dani Dex. W Finderze przeciągnij Dani Dex do folderu Aplikacje (jeśli już tam jest, przeciągnij go na zewnątrz i z powrotem). Następnie otwórz Dani Dex i zainstaluj aktualizację ponownie.",
   "error.update.appImageMissing":

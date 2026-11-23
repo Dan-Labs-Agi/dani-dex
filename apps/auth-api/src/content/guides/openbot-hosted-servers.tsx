@@ -7,29 +7,29 @@ export function OpenBotHostedServers() {
     <>
       <p>
         Running Dani Dex for a team on your own computer or VPS gives you control, but you’re also responsible for
-        maintaining that machine. An Dani Dex hosted server gives your team a Linux machine to work on, without requiring
-        you to set up a VPS yourself. This guide covers the available plans, how to get started, and when self-hosting
-        might make more sense.
+        maintaining that machine. An Dani Dex hosted server gives your team a Linux machine to work on, without
+        requiring you to set up a VPS yourself. This guide covers the available plans, how to get started, and when
+        self-hosting might make more sense.
       </p>
 
       <h2>What Is an Dani Dex Hosted Server?</h2>
       <p>
-        An Dani Dex hosted server is a Linux machine where your team’s Dani Dex runs. Dani Dex sets it up for you, so you
-        don’t need to prepare your own computer or VPS. Your agents’ workspaces, conversations, and files stay on the
-        server, and you can connect to your team from another device.
+        An Dani Dex hosted server is a Linux machine where your team’s Dani Dex runs. Dani Dex sets it up for you, so
+        you don’t need to prepare your own computer or VPS. Your agents’ workspaces, conversations, and files stay on
+        the server, and you can connect to your team from another device.
       </p>
       <p>
-        A new hosted server can start on a virtual server that Dani Dex rents from Leaseweb. The privacy notice names two
-        locations: Amsterdam, and near Washington, D.C. for a purchase in US dollars or Brazilian reais, with Amsterdam
-        as the fallback. When no Leaseweb server is free, the server starts in a boat sandbox, as before.
+        A new hosted server can start on a virtual server that Dani Dex rents from Leaseweb. The privacy notice names
+        two locations: Amsterdam, and near Washington, D.C. for a purchase in US dollars or Brazilian reais, with
+        Amsterdam as the fallback. When no Leaseweb server is free, the server starts in a boat sandbox, as before.
       </p>
       <p>
         The server provides a place for Dani Dex to run; it doesn’t include AI model access. You connect a provider
         separately, and your agents use the models available through that provider.
       </p>
       <p>
-        Prefer a Mac as your server? That’s an option too. We can run Dani Dex on a dedicated Mac mini. Get in touch, and
-        we can work out the details together.
+        Prefer a Mac as your server? That’s an option too. We can run Dani Dex on a dedicated Mac mini. Get in touch,
+        and we can work out the details together.
       </p>
 
       <h2>Dani Dex Hosted Server Plans</h2>

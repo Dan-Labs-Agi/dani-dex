@@ -148,7 +148,8 @@ export const messages = {
     "Dani Dex перестанет отвечать в {workspace} и удалит свой токен Slack с этого компьютера.",
   "connector.slack.disconnectDescriptionHost":
     "Dani Dex перестанет отвечать в {workspace} и удалит свой токен Slack с {host}.",
-  "connector.slack.disconnectEffect": "Люди из {workspace} больше не смогут обращаться к вашим агентам через @Dani Dex.",
+  "connector.slack.disconnectEffect":
+    "Люди из {workspace} больше не смогут обращаться к вашим агентам через @Dani Dex.",
   "connector.slack.removeEffectKept": "Диалоги и Оркестратор Slack останутся в Dani Dex.",
   "connector.slack.removeEffectDeleted": "Оркестратор Slack и его диалоги будут удалены из Dani Dex.",
   "connector.slack.keep": "Оставить подключённым",

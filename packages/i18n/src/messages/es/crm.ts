@@ -353,7 +353,8 @@ export const messages = {
     "La clave no puede leer todo lo que necesita la sincronización. Dale acceso de lectura en {source}.",
   "crm.source.errorRateLimited":
     "{source} recibió demasiadas solicitudes. La próxima sincronización lo intentará de nuevo.",
-  "crm.source.errorNetwork": "Dani Dex no puede conectarse a {source}. La próxima sincronización lo intentará de nuevo.",
+  "crm.source.errorNetwork":
+    "Dani Dex no puede conectarse a {source}. La próxima sincronización lo intentará de nuevo.",
   "crm.source.errorFailed":
     "{source} envió una respuesta que Dani Dex no puede leer. La próxima sincronización lo intentará de nuevo.",
   "crm.source.skipped": "No importado",

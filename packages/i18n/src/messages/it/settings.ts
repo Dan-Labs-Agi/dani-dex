@@ -342,7 +342,8 @@ export const messages = {
   "settings.tab.billing.title": "Fatturazione",
   "settings.tab.billing.description": "Licenza, piani dei server, metodo di pagamento e fatture.",
   "settings.tab.hostedServers.title": "Server ospitati",
-  "settings.tab.hostedServers.description": "Crea server Dani Dex che funzionano anche quando questo computer è spento.",
+  "settings.tab.hostedServers.description":
+    "Crea server Dani Dex che funzionano anche quando questo computer è spento.",
   "settings.tab.appearance.description": "Scegli tema, colori, lingua e caratteri.",
   "settings.tab.appBehavior.description": "Scegli come Dani Dex si avvia e funziona su questo computer.",
   "settings.appearance.colorsTitle": "Colori",

@@ -63,7 +63,8 @@ export const messages = {
   "error.skill.pathSymlink": "Ścieżki umiejętności nie mogą zawierać dowiązań symbolicznych.",
   "error.skill.folderNotRead": "{provider} nie czyta folderu {folder}. Skopiuj ten folder do {target}.",
   "error.skill.githubLinkInvalid": "Wklej link do repozytorium lub folderu w GitHub.",
-  "error.skill.githubNotFound": "Dani Dex nie może otworzyć {repository}. Repozytorium jest prywatne albo nie istnieje.",
+  "error.skill.githubNotFound":
+    "Dani Dex nie może otworzyć {repository}. Repozytorium jest prywatne albo nie istnieje.",
   "error.skill.githubNoSkills": "W {folder} nie ma pliku SKILL.md.",
   "error.skill.githubUnavailable": "Dani Dex nie może teraz odczytać GitHub. Spróbuj ponownie później.",
   "error.skill.githubRateLimited":

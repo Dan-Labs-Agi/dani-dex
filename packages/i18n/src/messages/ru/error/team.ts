@@ -188,7 +188,8 @@ export const messages = {
   "error.team.ownerRequired": "Это может сделать только владелец сервера.",
   "error.team.requestTooLarge": "Тело запроса слишком большое.",
   "error.team.signInRelayUnsupported": "Этот сервер не может передавать входы. Обновите Dani Dex на хосте.",
-  "error.team.connectorsUnsupported": "Подключениями этого сервера нельзя управлять отсюда. Обновите Dani Dex на хосте.",
+  "error.team.connectorsUnsupported":
+    "Подключениями этого сервера нельзя управлять отсюда. Обновите Dani Dex на хосте.",
   "error.team.discordAccessUnsupported": "Этот сервер не может задать роли Discord. Обновите на нём Dani Dex.",
   "error.team.connectorPageRefused": "Сервер прислал страницу, которую Dani Dex не открывает.",
   "error.team.signInRelayUnknown": "Этот вход завершён или не существует.",

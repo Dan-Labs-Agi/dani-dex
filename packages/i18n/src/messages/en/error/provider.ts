@@ -7,7 +7,8 @@ export const messages = defineMessages("error.provider", {
     "Dani Dex could not register Computer Use in the Codex configuration. Check that your Codex config.toml is valid and writable, then restart Dani Dex. You can turn off Computer Use in the teammate settings to continue without it.",
   "error.provider.codexUnresponsive": "Codex stopped answering, so Dani Dex ended its process.",
   "error.provider.acpUnresponsive": "{provider} did not answer in time, so Dani Dex ended its process.",
-  "error.provider.acpSignInLost": "{provider} lost its sign-in, so Dani Dex ended its process. Send your message again.",
+  "error.provider.acpSignInLost":
+    "{provider} lost its sign-in, so Dani Dex ended its process. Send your message again.",
   "error.provider.acpRefusedUntilRestart":
     "{provider} refused a message, so Dani Dex ended its process. Send your message again.",
   "error.provider.acpServerLost": "{provider} lost its connection. Send your message again.",

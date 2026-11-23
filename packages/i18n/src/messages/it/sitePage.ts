@@ -149,7 +149,8 @@ export const messages = {
     "Scrivi al team di Dani Dex per una configurazione su misura, una partnership o la stampa. Ogni messaggio viene letto da una persona.",
   "sitePage.contact.imageAlt": "Piccolo team. Sempre sul pezzo. Agenti Dani Dex attorno a un pianeta di carta",
   "sitePage.contact.heading": "Parla con il team",
-  "sitePage.contact.intro": "Dicci di cosa hai bisogno. Ogni messaggio viene letto da una persona del team di Dani Dex.",
+  "sitePage.contact.intro":
+    "Dicci di cosa hai bisogno. Ogni messaggio viene letto da una persona del team di Dani Dex.",
   "sitePage.contact.channel.discord": "Community e aiuto",
   "sitePage.contact.channel.github": "Bug e codice sorgente",
   "sitePage.contact.channel.x": "Novità",

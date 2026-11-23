@@ -18,7 +18,8 @@ import {
   MessageReferenceType,
 } from "discord-api-types/v10";
 
-export const DISCORD_DIRECT_MESSAGE_REPLY = "Dani Dex answers in Discord servers. Mention @Dani Dex in a server channel.";
+export const DISCORD_DIRECT_MESSAGE_REPLY =
+  "Dani Dex answers in Discord servers. Mention @Dani Dex in a server channel.";
 
 const INTERACTION_TOKEN_TTL_MILLISECONDS = 15 * 60_000;
 const MAXIMUM_INTERACTIONS = 10_000;

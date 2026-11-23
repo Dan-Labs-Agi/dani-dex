@@ -490,7 +490,8 @@ export const messages = {
   "server.settings.restartTitle": "Reiniciar",
   "server.settings.restarting": "Reiniciando…",
   "server.settings.restartedTitle": "{name} se está reiniciando",
-  "server.settings.restartHiddenDescription": "Dani Dex se vuelve a conectar automáticamente cuando el servidor vuelve.",
+  "server.settings.restartHiddenDescription":
+    "Dani Dex se vuelve a conectar automáticamente cuando el servidor vuelve.",
   "server.settings.restartHide": "Ocultar",
   "server.settings.restartProgressTitle": "Reiniciando {name}",
   "server.settings.restartProgressDescription": "{time} · suele tardar un minuto. Puedes ocultar esta ventana.",

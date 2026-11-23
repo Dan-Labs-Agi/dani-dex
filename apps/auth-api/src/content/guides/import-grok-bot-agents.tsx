@@ -136,9 +136,9 @@ export function ImportGrokBotAgents() {
       </p>
 
       <p>
-        Workspace files included in the export are placed in an <code>imported/</code> folder inside that agent's
-        Dani Dex workspace. If the original instructions were long, the export may keep a short version in the
-        instructions and put the full text in <code>imported/INSTRUCTIONS.md</code>.
+        Workspace files included in the export are placed in an <code>imported/</code> folder inside that agent's Dani
+        Dex workspace. If the original instructions were long, the export may keep a short version in the instructions
+        and put the full text in <code>imported/INSTRUCTIONS.md</code>.
       </p>
 
       <p>
@@ -180,13 +180,13 @@ export function ImportGrokBotAgents() {
       <h2>If the import does not work</h2>
 
       <p>
-        If you cannot find the Grok Bot source, check that Dani Dex is up to date and that you opened the settings of the
-        intended server.
+        If you cannot find the Grok Bot source, check that Dani Dex is up to date and that you opened the settings of
+        the intended server.
       </p>
 
       <p>
-        If the ZIP is rejected, ask the export agent to rebuild it using the Dani Dex export skill. It needs the Dani Dex
-        import format; a general backup of the Grok Bot workspace is not the same file.
+        If the ZIP is rejected, ask the export agent to rebuild it using the Dani Dex export skill. It needs the Dani
+        Dex import format; a general backup of the Grok Bot workspace is not the same file.
       </p>
 
       <p>

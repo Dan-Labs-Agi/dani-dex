@@ -646,7 +646,8 @@ export const messages = {
   "server.update.status.upToDate": "{name} 上的 Dani Dex 已是最新版本。",
   "server.update.status.checkFailed": "{name} 无法检查更新，请重试。",
   "server.update.status.downloadFailed": "{name} 无法下载更新，请重试。",
-  "server.update.status.installFailed": "{name} 无法安装更新。请确认那台电脑上没有其他用户正在运行 Dani Dex，然后重试。",
+  "server.update.status.installFailed":
+    "{name} 无法安装更新。请确认那台电脑上没有其他用户正在运行 Dani Dex，然后重试。",
   "server.update.releaseCheckFailed": "{name} 无法读取发布信息。请检查主机网络连接后重试。",
   "server.update.releaseUnavailable": "当前版本不支持发布检查。请联系主机管理员检查兼容版本。",
   "server.update.externalTitle": "安装由主机控制",

@@ -618,7 +618,8 @@ export const messages = {
   "marketplace.skills.origin.github": "Из GitHub · {repository}",
   "marketplace.skills.github.search": "Поиск или ссылка на GitHub",
   "marketplace.skills.github.reading": "Поиск навыков в репозитории",
-  "marketplace.skills.github.trust": "Dani Dex не проверял навыки из GitHub. Прочитайте навык, прежде чем добавить его.",
+  "marketplace.skills.github.trust":
+    "Dani Dex не проверял навыки из GitHub. Прочитайте навык, прежде чем добавить его.",
   "marketplace.skills.github.source": "GitHub · {repository}, коммит {commit}",
   "marketplace.skills.github.open": "GitHub",
   "marketplace.skills.github.openName": "Открыть {repository} на GitHub",

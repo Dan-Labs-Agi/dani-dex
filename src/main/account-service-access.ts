@@ -1,9 +1,9 @@
-import { daniServiceConfig } from "./dani-service-config";
 import { join } from "node:path";
 import { sourceText } from "@openbot/i18n/source";
 import { app, net } from "electron";
 import { CentralAuthManager, readCentralAuthApiUrl, readMobileConnectApiUrl } from "./central-auth-manager";
 import type { CompanySignInBrowser } from "./company-sign-in-browser";
+import { daniServiceConfig } from "./dani-service-config";
 import {
   createSecretStorage,
   SECRET_STORAGE_KEY_FILE,
@@ -44,10 +44,7 @@ async function accountServiceFetch(input: string | URL | Request, init?: Request
 }
 
 export function centralAuthApiUrl(): string {
-  return readCentralAuthApiUrl(
-    daniServiceConfig(process.env.DANI_AUTH_API_URL).accountApi,
-    "http://127.0.0.1:3100",
-  );
+  return readCentralAuthApiUrl(daniServiceConfig(process.env.DANI_AUTH_API_URL).accountApi, "http://127.0.0.1:3100");
 }
 
 export function createCentralAuthManager(options: {

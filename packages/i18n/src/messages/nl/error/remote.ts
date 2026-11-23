@@ -77,7 +77,8 @@ export const messages = {
   "error.remote.localServerRemove": "De lokale server kan niet worden verwijderd.",
   "error.remote.desktopSetupHostUpdate":
     "Werk Dani Dex bij op de host om de instelling van extern bureaublad te controleren.",
-  "error.remote.desktopTestHostUpdate": "Werk Dani Dex bij op de host om de instelling van extern bureaublad te testen.",
+  "error.remote.desktopTestHostUpdate":
+    "Werk Dani Dex bij op de host om de instelling van extern bureaublad te testen.",
   "error.remote.viewerProxyUnavailable": "De lokale proxy voor de externe viewer is niet beschikbaar.",
   "error.remote.viewerTransportInvalid": "Het transport van de externe viewer is ongeldig.",
   "error.remote.viewerProxyNoPort": "De lokale proxy voor de externe viewer heeft geen poort gekregen.",

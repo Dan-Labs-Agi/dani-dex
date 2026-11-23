@@ -15,8 +15,8 @@ export function ImportHermesAgents() {
       </p>
 
       <p>
-        Dani Dex shows you what it found before you import. You choose the profiles to bring over, check which items will
-        move and allow any optional items you want to include. Your original Hermes profiles stay where they are.
+        Dani Dex shows you what it found before you import. You choose the profiles to bring over, check which items
+        will move and allow any optional items you want to include. Your original Hermes profiles stay where they are.
       </p>
 
       <h2>Before you start</h2>
@@ -336,8 +336,8 @@ export function ImportHermesAgents() {
       </p>
 
       <p>
-        Credential files and login sessions are not transferred. Reconnect providers and services in Dani Dex. Also check
-        any sensitive information you may have written into your own instructions or memories.
+        Credential files and login sessions are not transferred. Reconnect providers and services in Dani Dex. Also
+        check any sensitive information you may have written into your own instructions or memories.
       </p>
 
       <p>

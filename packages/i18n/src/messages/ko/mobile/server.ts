@@ -455,7 +455,8 @@ export const messages = {
   "mobile.server.settings.signalHomeLoading": "Signal 서버를 측정하는 중…",
   "mobile.server.settings.signalHomeSaveFailed": "Signal 서버를 변경하지 못했어요. 다시 시도해 주세요.",
   "mobile.server.settings.signalHomeUnavailable": "Signal 서버를 변경하려면 소유자나 관리자로 이 서버에 연결하세요.",
-  "mobile.server.settings.signalHomeUnsupported": "여기서 Signal 서버를 변경하려면 이 서버의 Dani Dex을 업데이트하세요.",
+  "mobile.server.settings.signalHomeUnsupported":
+    "여기서 Signal 서버를 변경하려면 이 서버의 Dani Dex을 업데이트하세요.",
   "mobile.server.settings.signalHomeDescription":
     "멤버는 이 Signal 서버를 통해 이 서버에 연결해요. 지연 시간이 짧은 Signal 서버일수록 연결이 빨라요.",
   "mobile.server.settings.signalHomeFallback":

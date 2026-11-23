@@ -54,9 +54,9 @@ export function AIAgentsVsAgenticAI() {
       </p>
 
       <p>
-        In Dani Dex, the agent's workspace and conversation stay on the computer running Dani Dex. A connected AI provider
-        may still receive the prompts needed to carry out the task, and the browser and other tools may use the network.
-        Those details matter more than whether a product calls itself “agentic.”
+        In Dani Dex, the agent's workspace and conversation stay on the computer running Dani Dex. A connected AI
+        provider may still receive the prompts needed to carry out the task, and the browser and other tools may use the
+        network. Those details matter more than whether a product calls itself “agentic.”
       </p>
 
       <h2>Do you need several agents?</h2>

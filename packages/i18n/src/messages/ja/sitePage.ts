@@ -43,7 +43,8 @@ export const messages = {
   "sitePage.connect.failure.tabClosed":
     "{name} との接続を始めた Dani Dex のタブが応答しませんでした。ブラウザーで Dani Dex を開き、{name} をもう一度接続してください。",
   "sitePage.connect.failure.failed": "{name} が接続を完了しませんでした。もう一度お試しください。",
-  "sitePage.connect.restartHint": "Dani Dex で {marketplace}、{apps}、{name} の順に開き、{connect} を選択してください。",
+  "sitePage.connect.restartHint":
+    "Dani Dex で {marketplace}、{apps}、{name} の順に開き、{connect} を選択してください。",
   "sitePage.connect.notOpened":
     "Dani Dex を起動してから、もう一度お試しください。このコンピューターに Dani Dex がない場合は、ダウンロードしてアプリから {name} を接続してください。",
   "sitePage.openApp.title": "何も開きませんでしたか?",

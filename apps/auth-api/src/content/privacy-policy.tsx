@@ -16,15 +16,15 @@ export function PrivacyPolicy() {
         "we," "us," or "our"), processes personal data in connection with the Services.
       </p>
       <p>
-        Dani Dex is operated from Poland and is available to users worldwide. It provides a platform that allows users to
-        create and manage AI agents, assign them tasks, and collaborate with them on a wide range of activities,
+        Dani Dex is operated from Poland and is available to users worldwide. It provides a platform that allows users
+        to create and manage AI agents, assign them tasks, and collaborate with them on a wide range of activities,
         including research, content creation, software development, project management, and workflow automation. Users
         can organise agents into teams, enabling them to communicate, share information, and work together on complex
         tasks.
       </p>
       <p>
-        This Privacy Policy applies to the Dani Dex website at <a href="https://openbot.run">https://openbot.run</a>, its
-        applications, and related services (collectively, the "Services").
+        This Privacy Policy applies to the Dani Dex website at <a href="https://openbot.run">https://openbot.run</a>,
+        its applications, and related services (collectively, the "Services").
       </p>
       <p>
         By accessing or using the Services, you acknowledge that you have read and understood this Privacy Policy. If
@@ -126,8 +126,8 @@ export function PrivacyPolicy() {
       </p>
       <p>
         Analytics events contain operational metadata, including feature usage, event types, provider and model
-        identifiers, timing information, performance metrics, and application versions. When a user signs in, their
-        Dani Dex account ID and email address are processed for analytics purposes, allowing certain activities to be
+        identifiers, timing information, performance metrics, and application versions. When a user signs in, their Dani
+        Dex account ID and email address are processed for analytics purposes, allowing certain activities to be
         associated with their account. Additional information about their device, browser, operating system, network,
         and approximate geographic location may also be derived.
       </p>
@@ -165,8 +165,8 @@ export function PrivacyPolicy() {
           transaction references, and information required to administer paid Services.
         </li>
         <li>
-          <strong>Support and communication information</strong> – information voluntarily provided when contacting
-          Dani Dex, requesting assistance, reporting a problem, or communicating with us.
+          <strong>Support and communication information</strong> – information voluntarily provided when contacting Dani
+          Dex, requesting assistance, reporting a problem, or communicating with us.
         </li>
         <li>
           <strong>Marketplace and publicly shared information</strong> – agent templates, descriptions, instructions,
@@ -175,8 +175,8 @@ export function PrivacyPolicy() {
         </li>
       </ul>
       <p>
-        Payment transactions are handled through Stripe. Dani Dex does not collect or store complete payment card numbers
-        entered through Stripe's payment pages.
+        Payment transactions are handled through Stripe. Dani Dex does not collect or store complete payment card
+        numbers entered through Stripe's payment pages.
       </p>
       <p>
         Where users choose to publish content through the Marketplace or share public agent templates, certain
@@ -200,8 +200,8 @@ export function PrivacyPolicy() {
         <li>any other content processed by AI agents or related functionalities.</li>
       </ul>
       <p>
-        Customer Data is stored on the computer or server running Dani Dex and is not stored in Dani Dex's central account
-        database.
+        Customer Data is stored on the computer or server running Dani Dex and is not stored in Dani Dex's central
+        account database.
       </p>
       <p>
         Where users operate their own computers or servers, they retain control over the storage environment. Where they
@@ -219,8 +219,8 @@ export function PrivacyPolicy() {
 
       <h3>Information Obtained from Third Parties</h3>
       <p>
-        Dani Dex may process personal data obtained from third-party services when users enable integrations or authorise
-        AI agents to access external applications and platforms.
+        Dani Dex may process personal data obtained from third-party services when users enable integrations or
+        authorise AI agents to access external applications and platforms.
       </p>
       <p>
         Depending on the connected service and the functionality used, such information may include account identifiers,
@@ -490,8 +490,8 @@ export function PrivacyPolicy() {
       <p>
         Payment card and billing details are provided directly to Stripe through its payment pages. Dani Dex receives
         only the information necessary to administer subscriptions and related transactions, including subscription
-        plans, billing periods, payment statuses, amounts, and transaction references. Dani Dex does not collect or store
-        complete payment card numbers.
+        plans, billing periods, payment statuses, amounts, and transaction references. Dani Dex does not collect or
+        store complete payment card numbers.
       </p>
 
       <h2>AI Providers and Optional Integrations</h2>
@@ -525,8 +525,8 @@ export function PrivacyPolicy() {
       <h3>Google User Data We Access</h3>
       <p>
         Dani Dex accesses Google User Data only after the user connects a Google account and grants the permissions
-        displayed on Google's consent screen. Depending on the permissions granted and the functionalities used, Dani Dex
-        may access the following information:
+        displayed on Google's consent screen. Depending on the permissions granted and the functionalities used, Dani
+        Dex may access the following information:
       </p>
       <ul>
         <li>
@@ -579,8 +579,8 @@ export function PrivacyPolicy() {
       </p>
       <p>
         Dani Dex's central account service only relays the exchange of authorisation codes and access tokens between the
-        user's Dani Dex environment and Google. It does not store access tokens, refresh tokens, or any other Google User
-        Data, and Google User Data is not stored in Dani Dex's central account database.
+        user's Dani Dex environment and Google. It does not store access tokens, refresh tokens, or any other Google
+        User Data, and Google User Data is not stored in Dani Dex's central account database.
       </p>
       <p>
         Google User Data is not included in product analytics events or diagnostic reports. Access tokens are protected
@@ -646,13 +646,13 @@ export function PrivacyPolicy() {
 
       <h3>Retention and Deletion of Google User Data</h3>
       <p>
-        Google User Data is retained in the user's Dani Dex environment for as long as necessary to provide the requested
-        functionalities or until it is deleted by the user.
+        Google User Data is retained in the user's Dani Dex environment for as long as necessary to provide the
+        requested functionalities or until it is deleted by the user.
       </p>
       <p>
         Users may disconnect a Google account in the application settings at any time. Disconnecting a Google account
-        deletes the associated access tokens and stops further access to Google User Data. Users may also revoke
-        Dani Dex's access through their Google Account settings at{" "}
+        deletes the associated access tokens and stops further access to Google User Data. Users may also revoke Dani
+        Dex's access through their Google Account settings at{" "}
         <a href="https://myaccount.google.com/permissions">https://myaccount.google.com/permissions</a>.
       </p>
       <p>
@@ -662,8 +662,8 @@ export function PrivacyPolicy() {
         Account Deletion and Data Removal section.
       </p>
       <p>
-        Users may contact Dani Dex at <PrivacyEmail /> to request information about the processing of Google User Data or
-        its deletion.
+        Users may contact Dani Dex at <PrivacyEmail /> to request information about the processing of Google User Data
+        or its deletion.
       </p>
 
       <h2>Data Storage and Local Processing</h2>
@@ -676,9 +676,9 @@ export function PrivacyPolicy() {
 
       <h2>Product Analytics and Anonymisation</h2>
       <p>
-        Dani Dex uses a self-hosted analytics service to monitor the performance, functionality, and use of the Services.
-        The information collected includes feature usage, application activity, technical performance, error categories,
-        and other operational statistics necessary to maintain and improve the Services.
+        Dani Dex uses a self-hosted analytics service to monitor the performance, functionality, and use of the
+        Services. The information collected includes feature usage, application activity, technical performance, error
+        categories, and other operational statistics necessary to maintain and improve the Services.
       </p>
       <p>
         Product analytics data is anonymised and separated from individual user accounts, except for information
@@ -752,8 +752,8 @@ export function PrivacyPolicy() {
         information in other jurisdictions.
       </p>
       <p>
-        Where Dani Dex transfers personal data outside the EEA, we ensure that such transfers comply with applicable data
-        protection laws, including Chapter V of the GDPR.
+        Where Dani Dex transfers personal data outside the EEA, we ensure that such transfers comply with applicable
+        data protection laws, including Chapter V of the GDPR.
       </p>
       <p>
         Where required, we implement appropriate safeguards, including adequacy decisions issued by the European
@@ -852,8 +852,8 @@ export function PrivacyPolicy() {
         providers, is subject to their applicable retention and deletion policies.
       </p>
       <p>
-        Users may contact Dani Dex using the contact details provided in this Privacy Policy to request information about
-        the deletion of their personal data or exercise their applicable privacy rights.
+        Users may contact Dani Dex using the contact details provided in this Privacy Policy to request information
+        about the deletion of their personal data or exercise their applicable privacy rights.
       </p>
 
       <h2>Your Privacy Rights</h2>

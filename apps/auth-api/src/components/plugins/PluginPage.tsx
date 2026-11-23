@@ -81,8 +81,8 @@ function PluginConnectStep(props: { step: SitePluginConnectStep; appCount: numbe
       <Show when={props.step.kind === "link"}>
         <h3 class="provider-step-title">{prefix()}Sign in</h3>
         <p class="provider-step-text">
-          Press Connect and finish the sign-in in your browser. Dani Dex keeps the token on the computer that runs
-          Dani Dex. You can disconnect at any time.
+          Press Connect and finish the sign-in in your browser. Dani Dex keeps the token on the computer that runs Dani
+          Dex. You can disconnect at any time.
         </p>
       </Show>
       <Show when={props.step.kind === "key" ? props.step : undefined}>
@@ -227,7 +227,9 @@ export function PluginPage(props: PluginPageProps) {
                 <li class="provider-step">
                   <h3 class="provider-step-title">Give an agent a task</h3>
                   <p class="provider-step-text">
-                    {connectSteps().length === 0 ? `Dani Dex asks for no sign-in or key for ${props.plugin.name}. ` : ""}
+                    {connectSteps().length === 0
+                      ? `Dani Dex asks for no sign-in or key for ${props.plugin.name}. `
+                      : ""}
                     Ask an agent for work that needs {props.plugin.name}
                     {props.plugin.prompts.length > 0 ? ", such as one of the example prompts below" : ""}. The agent
                     uses the plugin's tools to do it.

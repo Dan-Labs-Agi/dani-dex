@@ -11,8 +11,8 @@ export function Terms() {
       <h2>Acceptance of the Terms &amp; Conditions</h2>
       <p>
         These Terms &amp; Conditions ("Terms") govern the use of Dani Dex and form a legally binding agreement between
-        you and Dani Dex. By accessing or using the Services, you agree to these Terms. If you are acting on behalf of an
-        organization, you represent that you have the authority to accept these Terms on its behalf.
+        you and Dani Dex. By accessing or using the Services, you agree to these Terms. If you are acting on behalf of
+        an organization, you represent that you have the authority to accept these Terms on its behalf.
       </p>
 
       <h2>Accounts and Eligibility</h2>
@@ -168,8 +168,8 @@ export function Terms() {
         withdrawal when the Credits are delivered to the balance.
       </p>
       <p>
-        When a payment for Credits is refunded or a dispute is lost, Dani Dex takes the Credits of that payment back from
-        the balance that received them, up to the Credits that remain on it.
+        When a payment for Credits is refunded or a dispute is lost, Dani Dex takes the Credits of that payment back
+        from the balance that received them, up to the Credits that remain on it.
       </p>
 
       <h2>Conclusion and Duration of the Agreement</h2>

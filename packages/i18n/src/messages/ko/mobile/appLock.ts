@@ -17,7 +17,8 @@ export const messages = {
   "mobile.appLock.lockAfter.minutes": { other: "{count}분 후" },
   "mobile.appLock.lockAfter.hours": { other: "{count}시간 후" },
   "mobile.appLock.lockWithPhone": "휴대폰이 잠길 때",
-  "mobile.appLock.lockAfter.footer": "Dani Dex을 벗어난 시점부터 시간이 계산돼요. Dani Dex을 다시 시작하면 항상 잠겨요.",
+  "mobile.appLock.lockAfter.footer":
+    "Dani Dex을 벗어난 시점부터 시간이 계산돼요. Dani Dex을 다시 시작하면 항상 잠겨요.",
   "mobile.appLock.device.turnOnPrompt": "Dani Dex에 {method} 켜기",
   "mobile.appLock.device.failed": "{method} 확인에 실패했어요. 다시 시도해 주세요.",
   "mobile.appLock.device.unavailable": "먼저 휴대폰에 암호를 설정해 주세요.",

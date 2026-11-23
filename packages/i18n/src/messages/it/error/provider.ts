@@ -7,7 +7,8 @@ export const messages = {
   "error.provider.computerUseConfig":
     "Dani Dex non è riuscito a registrare il Controllo del computer nella configurazione di Codex. Controlla che il config.toml di Codex sia valido e scrivibile, poi riavvia Dani Dex. Puoi disattivare il Controllo del computer nelle impostazioni dell'agente per continuare senza.",
   "error.provider.codexUnresponsive": "Codex ha smesso di rispondere, quindi Dani Dex ha terminato il suo processo.",
-  "error.provider.acpUnresponsive": "{provider} non ha risposto in tempo, quindi Dani Dex ha terminato il suo processo.",
+  "error.provider.acpUnresponsive":
+    "{provider} non ha risposto in tempo, quindi Dani Dex ha terminato il suo processo.",
   "error.provider.acpSignInLost":
     "{provider} ha perso l’accesso, quindi Dani Dex ha terminato il suo processo. Invia di nuovo il messaggio.",
   "error.provider.acpRefusedUntilRestart":

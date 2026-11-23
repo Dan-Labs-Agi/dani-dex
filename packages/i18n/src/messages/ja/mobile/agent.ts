@@ -163,7 +163,8 @@ export const messages = {
   "mobile.agent.skill.uninstallFailed": "{name} をアンインストールできませんでした。",
   "mobile.agent.skill.enableFailed": "{name} を有効にできませんでした。",
   "mobile.agent.skill.disableFailed": "{name} を無効にできませんでした。",
-  "mobile.agent.skill.manageUnsupported": "このホストではスキルを変更できません。ホストの Dani Dex を更新してください。",
+  "mobile.agent.skill.manageUnsupported":
+    "このホストではスキルを変更できません。ホストの Dani Dex を更新してください。",
   "mobile.agent.discard.title": "変更を破棄しますか？",
   "mobile.agent.discard.body": "変更は保存されていません。",
   "mobile.agent.discard.keepEditing": "編集を続ける",

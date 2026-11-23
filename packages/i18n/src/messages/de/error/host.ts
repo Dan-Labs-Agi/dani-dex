@@ -18,7 +18,8 @@ export const messages = {
   "error.host.ownerIdentityUnavailable": "Die Identität des Host-Eigentümers ist nicht verfügbar.",
   "error.host.reserveAddressFailed": "Die öffentliche Adresse konnte nicht reserviert werden.",
   "error.host.publishFailed": "Dieser Dani Dex konnte nicht veröffentlicht werden.",
-  "error.host.mobileConnectPublishFailed": "Dieser Dani Dex konnte nicht für die Mobilverbindung veröffentlicht werden.",
+  "error.host.mobileConnectPublishFailed":
+    "Dieser Dani Dex konnte nicht für die Mobilverbindung veröffentlicht werden.",
   "error.host.mobileConnectHostChanged": "Der Host der Mobilverbindung wurde geändert. Versuche es erneut.",
   "error.host.mobileConnectHostMismatch":
     "Dein Konto hat einen anderen Schlüssel für diesen Server. Versuche es erneut.",

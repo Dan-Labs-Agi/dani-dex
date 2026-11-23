@@ -133,7 +133,8 @@ export const messages = {
   "mcp.signIn.relayOpen": "打开登录页面",
   "mcp.signIn.relayCopy": "复制链接",
   "mcp.signIn.relayPasteHint": "如果浏览器没有跳回 Dani Dex，请复制它显示的地址并粘贴到这里。",
-  "mcp.signIn.relayPasteRequired": "Dani Dex 无法自行从浏览器获取登录结果。完成后，请复制浏览器显示的地址并粘贴到这里。",
+  "mcp.signIn.relayPasteRequired":
+    "Dani Dex 无法自行从浏览器获取登录结果。完成后，请复制浏览器显示的地址并粘贴到这里。",
   "mcp.signIn.relayAddress": "浏览器地址",
   "mcp.signIn.relaySend": "发送",
   "mcp.panel.callbackUrlRelayed":

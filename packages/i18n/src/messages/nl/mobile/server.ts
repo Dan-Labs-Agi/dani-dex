@@ -879,7 +879,8 @@ export const messages = {
     "Dani Dex kan deze chat niet bereiken. Verbind opnieuw of ontkoppel de chat.",
   "mobile.server.connectors.telegram.helpNotLinked":
     "Deze chat is niet gekoppeld aan {host}. Tik op Opnieuw verbinden om hem te koppelen.",
-  "mobile.server.connectors.telegram.retryAt": "Telegram vroeg Dani Dex te wachten. Het probeert het opnieuw om {time}.",
+  "mobile.server.connectors.telegram.retryAt":
+    "Telegram vroeg Dani Dex te wachten. Het probeert het opnieuw om {time}.",
   "mobile.server.connectors.telegram.linkTitle": "Chat koppelen",
   "mobile.server.connectors.telegram.linkAnother": "Nog een chat koppelen",
   "mobile.server.connectors.telegram.linkFooter":
@@ -921,7 +922,8 @@ export const messages = {
     "Dani Dex kan WhatsApp op dit nummer niet bereiken. Verbind opnieuw of koppel het nummer los.",
   "mobile.server.connectors.whatsapp.helpKeysUnreadable":
     "Dani Dex kan de opgeslagen sleutels van dit nummer niet lezen. Koppel het nummer opnieuw.",
-  "mobile.server.connectors.whatsapp.retryAt": "WhatsApp vroeg Dani Dex te wachten. Het probeert het opnieuw om {time}.",
+  "mobile.server.connectors.whatsapp.retryAt":
+    "WhatsApp vroeg Dani Dex te wachten. Het probeert het opnieuw om {time}.",
   "mobile.server.connectors.whatsapp.linkAgain": "Opnieuw koppelen",
   "mobile.server.connectors.whatsapp.ownNumber": "Persoonlijk nummer",
   "mobile.server.connectors.whatsapp.ownNumberDescription":
@@ -981,7 +983,8 @@ export const messages = {
   "mobile.server.connectors.whatsapp.disconnectBody":
     "Dani Dex logt uit bij WhatsApp op {number}. Als Dani Dex uit stond, verwijder het apparaat dan ook in WhatsApp > Gekoppelde apparaten.",
   "mobile.server.connectors.whatsapp.disconnectEffect": "Mensen kunnen je agents niet meer bereiken via {number}.",
-  "mobile.server.connectors.whatsapp.removeEffectKept": "De gesprekken en de WhatsApp Orchestrator blijven in Dani Dex.",
+  "mobile.server.connectors.whatsapp.removeEffectKept":
+    "De gesprekken en de WhatsApp Orchestrator blijven in Dani Dex.",
   "mobile.server.connectors.whatsapp.removeEffectDeleted":
     "Dit is het laatste nummer, dus de WhatsApp Orchestrator en zijn gesprekken worden uit Dani Dex verwijderd.",
   "mobile.server.connectors.whatsapp.keep": "Gekoppeld houden",

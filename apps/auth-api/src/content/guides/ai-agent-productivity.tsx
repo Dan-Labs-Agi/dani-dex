@@ -9,9 +9,9 @@ export function AIAgentProductivity() {
       </p>
 
       <p>
-        The next week, those same explanations can become part of the work again. A persistent Dani Dex agent gives you a
-        place to keep the instructions and project files for the next update. Whether that improves productivity depends
-        on how well it uses them and how much checking the result still needs.
+        The next week, those same explanations can become part of the work again. A persistent Dani Dex agent gives you
+        a place to keep the instructions and project files for the next update. Whether that improves productivity
+        depends on how well it uses them and how much checking the result still needs.
       </p>
 
       <h2>A weekly client update</h2>
@@ -104,8 +104,8 @@ export function AIAgentProductivity() {
       </p>
 
       <p>
-        Give that agent the files and context it needs. Agents on the same Dani Dex computer or server can use the shared
-        folder or send files with a message. A handoff does not automatically include the first agent's private
+        Give that agent the files and context it needs. Agents on the same Dani Dex computer or server can use the
+        shared folder or send files with a message. A handoff does not automatically include the first agent's private
         conversation or memories.
       </p>
 

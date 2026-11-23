@@ -324,7 +324,8 @@ export const messages = {
   "connector.telegram.done": "Terminé",
   "connector.telegram.disconnectTitle": "Déconnecter {chat} ?",
   "connector.telegram.leaveDescription": "Le bot Dani Dex quitte {chat}, et Dani Dex cesse d’y répondre.",
-  "connector.telegram.disconnectEffect": "Les membres de {chat} ne peuvent plus joindre vos agents via le bot Dani Dex.",
+  "connector.telegram.disconnectEffect":
+    "Les membres de {chat} ne peuvent plus joindre vos agents via le bot Dani Dex.",
   "connector.telegram.removeEffectKept": "Les conversations et le Telegram Orchestrator restent dans Dani Dex.",
   "connector.telegram.removeEffectDeleted":
     "C’est la dernière discussion : le Telegram Orchestrator et ses conversations sont supprimés d’Dani Dex.",

@@ -257,7 +257,8 @@ export const messages = {
   "mobile.chat.sideQuestion.deleteBody":
     "As perguntas e respostas estão só neste telefone. Não será possível recuperá-las.",
   "mobile.chat.sideQuestion.notFound": "Este agente não está mais no servidor.",
-  "mobile.chat.sideQuestion.unsupported": "Este host não pode responder perguntas à parte. Atualize o Dani Dex no host.",
+  "mobile.chat.sideQuestion.unsupported":
+    "Este host não pode responder perguntas à parte. Atualize o Dani Dex no host.",
   "mobile.chat.pins.title": "Mensagens fixadas",
   "mobile.chat.pins.emptyTitle": "Nenhuma mensagem fixada",
   "mobile.chat.pins.emptyBody": "Toque e segure uma mensagem e toque em Fixar para mantê-la aqui.",

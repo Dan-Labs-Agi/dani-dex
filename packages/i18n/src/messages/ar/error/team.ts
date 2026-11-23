@@ -107,7 +107,8 @@ export const messages = {
   "error.team.threadMessageSearchUnsupported": "البحث في المحادثات الجانبية غير مدعوم في هذا الاتصال.",
   "error.team.sideQuestionUnsupported": "الأسئلة الجانبية غير مدعومة في هذا الاتصال.",
   "error.team.liveVoiceUnsupported": "لا يدعم هذا الخادم صوت Codex المباشر. حدّث Dani Dex على الحاسوب الذي يشغّله.",
-  "error.team.routineFlowsUnsupported": "لا يدعم هذا الخادم تدفقات المهام الدورية. حدّث Dani Dex على الحاسوب الذي يشغّله.",
+  "error.team.routineFlowsUnsupported":
+    "لا يدعم هذا الخادم تدفقات المهام الدورية. حدّث Dani Dex على الحاسوب الذي يشغّله.",
   "error.team.routineCanvasTooLarge":
     "لوحة هذه المهمة الدورية كبيرة جدًا لإرسالها إلى هذا الجهاز. اختصر تعليمات المهمة الدورية على الحاسوب الذي يشغّل الخادم.",
   "error.team.conversationPageTooLarge":

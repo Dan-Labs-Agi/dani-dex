@@ -126,7 +126,8 @@ export const messages = {
   "server.local.limitReached":
     "На этом компьютере может быть не больше {limit} серверов. Удалите один, чтобы создать новый.",
   "server.local.deleteConfirmTitle": "Удалить {name}?",
-  "server.local.deleteConfirmDescription": "Dani Dex остановит сервер и переместит его агентов, чаты и файлы в корзину.",
+  "server.local.deleteConfirmDescription":
+    "Dani Dex остановит сервер и переместит его агентов, чаты и файлы в корзину.",
   "server.local.deleting": "Удаление сервера…",
   "server.local.deletedTitle": "{name} удалён",
   "server.install.title": "Новый сервер на другом компьютере",

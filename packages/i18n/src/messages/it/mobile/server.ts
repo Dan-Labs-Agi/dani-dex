@@ -855,7 +855,8 @@ export const messages = {
     "Menziona @Dani Dex in un canale. Rispondi a Dani Dex per continuare.",
   "mobile.server.connectors.discord.missingScopes":
     "Dani Dex non ha questi permessi in Discord: {scopes}. Disconnetti il server Discord, poi connettilo di nuovo.",
-  "mobile.server.connectors.discord.retryAt": "Discord ha chiesto a Dani Dex di aspettare. Nuovo tentativo alle {time}.",
+  "mobile.server.connectors.discord.retryAt":
+    "Discord ha chiesto a Dani Dex di aspettare. Nuovo tentativo alle {time}.",
   "mobile.server.connectors.discord.helpInvalidToken":
     "Discord non accetta più Dani Dex in questo server Discord. Potrebbe essere stato rimosso. Connetti di nuovo il server Discord.",
   "mobile.server.connectors.discord.helpSecretStorage":
@@ -921,7 +922,8 @@ export const messages = {
   "mobile.server.connectors.telegram.disconnectTitle": "Disconnettere {chat}?",
   "mobile.server.connectors.telegram.disconnectBody":
     "Il bot Dani Dex esce da {chat} e Dani Dex smette di rispondere lì.",
-  "mobile.server.connectors.telegram.disconnectKept": "Le conversazioni e il Telegram Orchestrator restano in Dani Dex.",
+  "mobile.server.connectors.telegram.disconnectKept":
+    "Le conversazioni e il Telegram Orchestrator restano in Dani Dex.",
   "mobile.server.connectors.telegram.disconnectDeleted":
     "È l’ultima chat, quindi il Telegram Orchestrator e le sue conversazioni vengono eliminati da Dani Dex.",
   "mobile.server.connectors.whatsapp.title": "WhatsApp",

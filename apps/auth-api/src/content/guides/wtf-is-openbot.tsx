@@ -4,9 +4,9 @@ export function WtfIsOpenBot() {
   return (
     <>
       <p>
-        At first glance, Dani Dex might look like another app for chatting with AI. But it is not a model or a chatbot on
-        its own. It is a workspace that brings the models and agents you already use into one place, together with their
-        files, conversations, and context.
+        At first glance, Dani Dex might look like another app for chatting with AI. But it is not a model or a chatbot
+        on its own. It is a workspace that brings the models and agents you already use into one place, together with
+        their files, conversations, and context.
       </p>
       <p>To understand how it works, it helps to separate those pieces first.</p>
 
@@ -67,9 +67,9 @@ export function WtfIsOpenBot() {
 
       <h2>Where the Work Happens</h2>
       <p>
-        Dani Dex runs on your computer, so an agent’s workspace is a local folder rather than a chat that disappears when
-        you close a browser tab. Its conversations, queues, attachments, and other app data stay with the desktop app
-        and the machine that hosts it.
+        Dani Dex runs on your computer, so an agent’s workspace is a local folder rather than a chat that disappears
+        when you close a browser tab. Its conversations, queues, attachments, and other app data stay with the desktop
+        app and the machine that hosts it.
       </p>
       <p>
         That does not mean every part of the process stays local. When an agent uses Codex, Claude, Grok, or another
@@ -81,17 +81,17 @@ export function WtfIsOpenBot() {
         has to work offline.
       </p>
       <p>
-        You can also keep Dani Dex running on one computer, such as a Mac mini, and connect to it from other devices. The
-        host remains the place where the agents and their workspaces live, while the other devices give you a way to
+        You can also keep Dani Dex running on one computer, such as a Mac mini, and connect to it from other devices.
+        The host remains the place where the agents and their workspaces live, while the other devices give you a way to
         follow the work.
       </p>
 
       <h2>A Task From Start to Finish</h2>
       <p>Imagine asking a research agent to prepare a short report.</p>
       <p>
-        You give it the task in its conversation, and Dani Dex runs it with the agent’s instructions, workspace, context,
-        and selected provider. The agent can inspect local files, use the embedded browser, save notes, and return the
-        result in the same thread.
+        You give it the task in its conversation, and Dani Dex runs it with the agent’s instructions, workspace,
+        context, and selected provider. The agent can inspect local files, use the embedded browser, save notes, and
+        return the result in the same thread.
       </p>
       <p>
         When the first part is done, you can pass the work to another agent. A writing agent can use the research files,
@@ -101,7 +101,9 @@ export function WtfIsOpenBot() {
         Each agent can keep its own role and conversation, while the project stays in one place. You can follow the work
         as it happens, send another instruction, pause a task, or redirect it when the plan changes.
       </p>
-      <p>The models still do the actual work. Dani Dex keeps the tasks, files, conversations, and handoffs connected.</p>
+      <p>
+        The models still do the actual work. Dani Dex keeps the tasks, files, conversations, and handoffs connected.
+      </p>
 
       <h2>Why Use More Than One Agent?</h2>
       <p>
@@ -130,8 +132,8 @@ export function WtfIsOpenBot() {
       </p>
       <p>An individual might keep an agent running recurring tasks instead of rebuilding the same setup every time.</p>
       <p>
-        If you only need a quick answer, a regular chatbot may be faster. Dani Dex becomes useful when the work starts to
-        look more like a project than a conversation.
+        If you only need a quick answer, a regular chatbot may be faster. Dani Dex becomes useful when the work starts
+        to look more like a project than a conversation.
       </p>
       <p>
         It is also worth remembering that agents work with full access. They can access files, run commands, use the

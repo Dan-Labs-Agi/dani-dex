@@ -98,7 +98,9 @@ export class DiscordGateway extends Context.Service<DiscordGateway, { readonly a
           unlinking.add(guildId);
           run(
             links.removed(guildId).pipe(
-              Effect.catch(() => Effect.sync(() => console.error("Dani Dex Discord could not unlink a removed guild."))),
+              Effect.catch(() =>
+                Effect.sync(() => console.error("Dani Dex Discord could not unlink a removed guild.")),
+              ),
               Effect.ensuring(Effect.sync(() => unlinking.delete(guildId))),
             ),
           );

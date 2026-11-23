@@ -183,7 +183,8 @@ export const messages = {
   "error.remote.hostBusy": "المضيف مشغول باتصال آخر. أعد المحاولة بعد لحظة.",
   "error.remote.signalPermissionDenied": "لا يملك حسابك وصولًا إلى هذا المضيف. اطلب الوصول من المالك.",
   "error.remote.signalRateLimited": "محاولات اتصال كثيرة جدًا. سيعيد Dani Dex المحاولة بعد {seconds} ثانية.",
-  "error.remote.signalProtocolError": "لا يتفق Signal وهذا التطبيق على بروتوكول الاتصال. حدّث Dani Dex، ثم أعد المحاولة.",
+  "error.remote.signalProtocolError":
+    "لا يتفق Signal وهذا التطبيق على بروتوكول الاتصال. حدّث Dani Dex، ثم أعد المحاولة.",
   "error.remote.signalRefused": "رفض Signal الاتصال.",
   "error.remote.signalClosed": "أُغلق الاتصال بـ Signal قبل أن يرد المضيف.",
   "error.remote.relayUnavailable": "لم يرسل Signal أي خوادم ترحيل لهذا الاتصال. أعد المحاولة لاحقًا.",

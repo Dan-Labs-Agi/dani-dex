@@ -92,7 +92,8 @@ export const messages = {
   "billing.license.buy": "Comprar licencia",
   "billing.license.offer.title": "Licencia comercial",
   "billing.license.offer.description": "Starter para 1 usuario, o Team para {count} usuarios o más.",
-  "billing.license.buy.description": "¿Cuántas personas usan Dani Dex en el trabajo? Los agentes de IA no son usuarios.",
+  "billing.license.buy.description":
+    "¿Cuántas personas usan Dani Dex en el trabajo? Los agentes de IA no son usuarios.",
   "billing.license.buy.confirm": "Continuar al pago",
   "billing.license.trial.until": "Gratis hasta el {date}",
   "billing.license.trial.confirm": "Empezar prueba gratis",

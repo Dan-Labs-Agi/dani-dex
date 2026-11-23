@@ -146,7 +146,8 @@ export const messages = {
   "mcp.panel.removeApp": "إزالة التطبيق",
   "mcp.panel.appSaved": "تم حفظ التطبيق. سجّل الدخول لاستخدامه.",
   "mcp.panel.appRemoved": "تمت إزالة التطبيق.",
-  "mcp.signIn.relayDescription": "سجّل الدخول على {page} في متصفحك. عند الانتهاء، يرسل Dani Dex تسجيل الدخول إلى {host}.",
+  "mcp.signIn.relayDescription":
+    "سجّل الدخول على {page} في متصفحك. عند الانتهاء، يرسل Dani Dex تسجيل الدخول إلى {host}.",
   "mcp.signIn.relayOpenDescription":
     "سجّل الدخول على {page} في متصفحك. عند الانتهاء، الصق هنا العنوان الذي يعرضه المتصفح. ثم يرسل Dani Dex تسجيل الدخول إلى {host}.",
   "mcp.signIn.relayDeviceDescription": "سجّل الدخول على {page} في متصفحك وأكمل هناك. يرى {host} تسجيل الدخول بنفسه.",

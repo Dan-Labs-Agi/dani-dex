@@ -622,8 +622,10 @@ export const messages = {
   "mobile.chat.threads.delete.title": "Eliminare questo thread?",
   "mobile.chat.threads.delete.body":
     "Dani Dex elimina per sempre il thread, i suoi messaggi e i suoi file. La chat principale non cambia.",
-  "mobile.chat.threads.filesUnsupported": "Questo host non può ricevere file in un thread. Aggiorna Dani Dex sull’host.",
-  "mobile.chat.threads.unsupported": "Questo host non può rinominare o eliminare i thread. Aggiorna Dani Dex sull’host.",
+  "mobile.chat.threads.filesUnsupported":
+    "Questo host non può ricevere file in un thread. Aggiorna Dani Dex sull’host.",
+  "mobile.chat.threads.unsupported":
+    "Questo host non può rinominare o eliminare i thread. Aggiorna Dani Dex sull’host.",
   "mobile.chat.threads.error.rename": "Impossibile rinominare il thread.",
   "mobile.chat.threads.error.delete": "Impossibile eliminare il thread.",
   "mobile.chat.channelWork.working": "Lavora in {channel}",

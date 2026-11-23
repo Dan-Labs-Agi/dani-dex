@@ -139,7 +139,8 @@ export const messages = {
   "mobile.workflow.step.computerOnly": "Zmień ten krok w Dani Dex na komputerze.",
   "mobile.workflow.step.imageDefault": "Opisz obraz do utworzenia.",
   "mobile.workflow.step.videoDefault": "Opisz wideo do utworzenia.",
-  "mobile.workflow.media.unsupported": "Zaktualizuj Dani Dex na tym serwerze, aby tworzyć obrazy i wideo w przepływach.",
+  "mobile.workflow.media.unsupported":
+    "Zaktualizuj Dani Dex na tym serwerze, aby tworzyć obrazy i wideo w przepływach.",
   "mobile.workflow.media.settings": "Ustawienia",
   "mobile.workflow.media.automatic": "Automatycznie",
   "mobile.workflow.media.modelLabel": "{name} · {source}",

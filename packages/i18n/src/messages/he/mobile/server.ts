@@ -627,7 +627,8 @@ export const messages = {
   "mobile.server.settings.memoryLimitDescription": "כמה זיכרונות כל סוכן בשרת הזה יכול לשמור.",
   "mobile.server.settings.memoryLimitLoadFailed": "לא ניתן לטעון את מגבלת הזיכרונות של השרת הזה.",
   "mobile.server.settings.memoryLimitSaveFailed": "לא ניתן לשמור את מגבלת הזיכרונות. אפשר לנסות שוב.",
-  "mobile.server.settings.memoryLimitUnsupported": "יש לעדכן את Dani Dex בשרת הזה כדי לשנות כאן את מגבלת הזיכרונות שלו.",
+  "mobile.server.settings.memoryLimitUnsupported":
+    "יש לעדכן את Dani Dex בשרת הזה כדי לשנות כאן את מגבלת הזיכרונות שלו.",
   "mobile.server.settings.memoryReview": "סקירת זיכרון",
   "mobile.server.settings.memoryReviewDescription":
     "באיזו תדירות סוכנים בשרת הזה שומרים ברקע עובדות מתמשכות מהצ'אטים שלהם.",
@@ -1118,7 +1119,8 @@ export const messages = {
     other: "אפשר לחבר לכל היותר {count} שרתי Discord.",
   },
   "mobile.server.connectors.discord.workspaceTitle": "שרת Discord",
-  "mobile.server.connectors.discord.workspaceDescription": "יש להזכיר את @Dani Dex בערוץ. כדי להמשיך, משיבים ל-Dani Dex.",
+  "mobile.server.connectors.discord.workspaceDescription":
+    "יש להזכיר את @Dani Dex בערוץ. כדי להמשיך, משיבים ל-Dani Dex.",
   "mobile.server.connectors.discord.missingScopes":
     "ל-Dani Dex אין את ההרשאות האלה ב-Discord: {scopes}. יש לנתק את שרת Discord ולחבר אותו שוב.",
   "mobile.server.connectors.discord.retryAt": "Discord ביקש מ-Dani Dex להמתין. הוא ינסה שוב בשעה {time}.",
@@ -1414,7 +1416,8 @@ export const messages = {
   "mobile.server.providers.poolHint":
     "הסוכנים משתמשים בחשבון אחד עד שהוא מתקרב למגבלת שימוש, ואז בחשבון שהמגבלה שלו מתאפסת ראשונה.",
   "mobile.server.providers.accountsPooledHint": "הסוכנים חולקים את החשבונות האלה. חשבון חדש מתחבר בדף שלו בטלפון הזה.",
-  "mobile.server.providers.accountsPooledOnComputer": "הסוכנים חולקים את החשבונות האלה. חשבון מוסיפים ב-Dani Dex במחשב.",
+  "mobile.server.providers.accountsPooledOnComputer":
+    "הסוכנים חולקים את החשבונות האלה. חשבון מוסיפים ב-Dani Dex במחשב.",
   "mobile.server.providers.inUse": "בשימוש",
   "mobile.server.providers.notInPool": "מחוץ למאגר",
   "mobile.server.providers.leaveOutOfPool": "הוצאה מהמאגר",

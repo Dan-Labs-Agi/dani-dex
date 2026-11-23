@@ -9,8 +9,9 @@ export function AgenticAIDefinition() {
         to ask next yourself.
       </p>
       <p>
-        The easiest way to see the difference is to compare a one-off chat with an AI agent in Dani Dex. Dani Dex lets you
-        create a named agent, give it instructions, and assign work that may involve a browser, files, or another agent.
+        The easiest way to see the difference is to compare a one-off chat with an AI agent in Dani Dex. Dani Dex lets
+        you create a named agent, give it instructions, and assign work that may involve a browser, files, or another
+        agent.
       </p>
 
       <h2>The Same Request, Two Ways of Working</h2>
@@ -34,8 +35,8 @@ export function AgenticAIDefinition() {
       <h2>What Makes the Dani Dex Agent Useful?</h2>
       <p>
         <strong>It keeps a place for ongoing work.</strong> Each Dani Dex agent has its own instructions, conversation,
-        and workspace. If you return to a task later, the conversation and files remain on the computer running Dani Dex.
-        You do not have to recreate the same agent every time.
+        and workspace. If you return to a task later, the conversation and files remain on the computer running Dani
+        Dex. You do not have to recreate the same agent every time.
       </p>
       <p>
         <strong>It can leave you a real deliverable.</strong> An answer in chat can be helpful, but a saved brief or
@@ -79,8 +80,8 @@ export function AgenticAIDefinition() {
       </p>
       <p>
         Dani Dex agents can read and change files and use the network, so give them tasks you trust and review important
-        results. The AI provider you connect may receive the prompts sent to it, even though Dani Dex keeps the workspace
-        and files on the computer running the app.
+        results. The AI provider you connect may receive the prompts sent to it, even though Dani Dex keeps the
+        workspace and files on the computer running the app.
       </p>
 
       <h2>Frequently Asked Questions</h2>

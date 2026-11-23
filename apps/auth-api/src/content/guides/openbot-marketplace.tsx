@@ -11,15 +11,16 @@ export function OpenBotMarketplace() {
     <>
       <p>
         A useful agent takes more than a name. It needs instructions for the work it does, and it may have skills or
-        routines too. The Dani Dex Marketplace lets you add an agent someone else has shared, find plugins and skills for
-        your own agents, or submit an agent you have built.
+        routines too. The Dani Dex Marketplace lets you add an agent someone else has shared, find plugins and skills
+        for your own agents, or submit an agent you have built.
       </p>
 
       <h2>Browse the Marketplace</h2>
       <p>
-        In the desktop app, click the puzzle-piece icon at the top of Dani Dex’s sidebar. The Marketplace has three tabs:{" "}
-        <strong>Agents</strong>, <strong>Plugins</strong>, and <strong>Skills</strong>. You can browse the listings by
-        category or search for a creator or item by name. Open a listing to see what it does before adding it.
+        In the desktop app, click the puzzle-piece icon at the top of Dani Dex’s sidebar. The Marketplace has three
+        tabs: <strong>Agents</strong>, <strong>Plugins</strong>, and <strong>Skills</strong>. You can browse the
+        listings by category or search for a creator or item by name. Open a listing to see what it does before adding
+        it.
       </p>
       <ArticleImage
         src={marketplace}
@@ -55,8 +56,8 @@ export function OpenBotMarketplace() {
       <p>
         A plugin connects an agent to an app or service. Open a plugin listing to see what it can do and the example
         tasks it supports. Choose an agent, then select <strong>Install plugin</strong>. If the plugin includes skills,
-        those are added to the agent you chose. The app connection itself is saved on the computer running Dani Dex. Some
-        plugins also need you to sign in or provide a credential before they can work.
+        those are added to the agent you chose. The app connection itself is saved on the computer running Dani Dex.
+        Some plugins also need you to sign in or provide a credential before they can work.
       </p>
       <ArticleImage
         src={githubPlugin}

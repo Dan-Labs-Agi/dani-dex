@@ -1,5 +1,5 @@
-import { DANI_PICTURES } from "@openbot/brand/dani-pictures";
 import { daniVariantForAvatar } from "@openbot/brand/dani-identity";
+import { DANI_PICTURES } from "@openbot/brand/dani-pictures";
 import type { AvatarColor, AvatarHue } from "@openbot/contracts/ipc";
 export type AvatarMotion = "hover" | "always" | "idle";
 export {
@@ -29,13 +29,19 @@ export {
   type ShapeSafeStateId,
 } from "@openbot/brand/bloub-avatar-motion";
 
-export function createStaticAvatarSvg(seed: string, hue: AvatarHue | null, color: AvatarColor | null = null): SVGSVGElement {
+export function createStaticAvatarSvg(
+  seed: string,
+  hue: AvatarHue | null,
+  color: AvatarColor | null = null,
+): SVGSVGElement {
   const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
   svg.setAttribute("viewBox", "0 0 384 384");
   svg.setAttribute("aria-hidden", "true");
   svg.setAttribute("focusable", "false");
   const image = document.createElementNS("http://www.w3.org/2000/svg", "image");
   image.setAttribute("href", DANI_PICTURES[daniVariantForAvatar(seed, color, hue)]);
-  image.setAttribute("width", "384"); image.setAttribute("height", "384");
-  svg.appendChild(image); return svg;
+  image.setAttribute("width", "384");
+  image.setAttribute("height", "384");
+  svg.appendChild(image);
+  return svg;
 }

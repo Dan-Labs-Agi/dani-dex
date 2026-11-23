@@ -414,7 +414,8 @@ export const messages = {
   "connector.whatsapp.helpLoggedOutHost": "أزال WhatsApp هذا الخادم من الأجهزة المرتبطة. اربط الرقم مرة أخرى.",
   "connector.whatsapp.helpError":
     "لا يستطيع Dani Dex الوصول إلى WhatsApp على هذا الرقم. أعد الربط، أو اقطع اتصال الرقم.",
-  "connector.whatsapp.helpKeysUnreadable": "لا يستطيع Dani Dex قراءة المفاتيح المحفوظة لهذا الرقم. اربط الرقم مرة أخرى.",
+  "connector.whatsapp.helpKeysUnreadable":
+    "لا يستطيع Dani Dex قراءة المفاتيح المحفوظة لهذا الرقم. اربط الرقم مرة أخرى.",
   "connector.whatsapp.retryAt": "طلب WhatsApp من Dani Dex الانتظار. سيحاول مرة أخرى في {time}.",
   "connector.whatsapp.pause": "إيقاف مؤقت",
   "connector.whatsapp.resume": "استئناف",
@@ -539,7 +540,8 @@ export const messages = {
   "connector.onePassword.stepCliChecking": "جارٍ البحث عن 1Password CLI على هذا الحاسوب",
   "connector.onePassword.stepCliInstalling": "جارٍ تنزيل 1Password CLI من 1Password",
   "connector.onePassword.stepCliReady": "الإصدار {version} مثبَّت.",
-  "connector.onePassword.stepCliMissing": "ينزّله Dani Dex من 1Password إلى مجلده الخاص. لا يحتاج إلى كلمة مرور المسؤول.",
+  "connector.onePassword.stepCliMissing":
+    "ينزّله Dani Dex من 1Password إلى مجلده الخاص. لا يحتاج إلى كلمة مرور المسؤول.",
   "connector.onePassword.stepCliManual":
     "لا يستطيع Dani Dex تثبيته على هذا الحاسوب. ثبّته من 1Password، ثم عُد إلى هذه الصفحة.",
   "connector.onePassword.installCli": "تثبيت",

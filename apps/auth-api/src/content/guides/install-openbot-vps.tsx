@@ -5,8 +5,8 @@ export function InstallOpenBotVPS() {
   return (
     <>
       <p>
-        Installing Dani Dex on a VPS gives your agents a computer that can stay running when you close your laptop. Their
-        files, conversations and tools live on the server, and you connect from the Dani Dex app or your browser.
+        Installing Dani Dex on a VPS gives your agents a computer that can stay running when you close your laptop.
+        Their files, conversations and tools live on the server, and you connect from the Dani Dex app or your browser.
       </p>
 
       <p>
@@ -174,8 +174,8 @@ export function InstallOpenBotVPS() {
       <h2>3. Open the server in Dani Dex</h2>
 
       <p>
-        Open the Dani Dex desktop app or <Link to="/app">Dani Dex in your browser</Link> and sign in to the same account.
-        Find <strong>Dani Dex VPS</strong> in the server list and select it.
+        Open the Dani Dex desktop app or <Link to="/app">Dani Dex in your browser</Link> and sign in to the same
+        account. Find <strong>Dani Dex VPS</strong> in the server list and select it.
       </p>
 
       <p>
@@ -225,8 +225,8 @@ export function InstallOpenBotVPS() {
       <h3>Use Hermes Agent on the server</h3>
 
       <p>
-        Open the server's provider settings and select Download on the Hermes row. Dani Dex installs Hermes Agent for its
-        service user, then the row shows Connect.
+        Open the server's provider settings and select Download on the Hermes row. Dani Dex installs Hermes Agent for
+        its service user, then the row shows Connect.
       </p>
 
       <p>

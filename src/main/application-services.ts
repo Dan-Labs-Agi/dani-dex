@@ -108,6 +108,7 @@ import { slackDriver } from "../backend/messaging/slack/slack-driver";
 import { telegramDriver } from "../backend/messaging/telegram/telegram-driver";
 import { whatsAppDriver } from "../backend/messaging/whatsapp/whatsapp-driver";
 import { WhatsAppRuntime } from "../backend/messaging/whatsapp/whatsapp-runtime";
+import { withModelSource } from "../backend/model-source";
 import { OpenBotDatabase } from "../backend/openbot-database";
 import { PASSWORD_MANAGER_BRANDS } from "../backend/password-vault";
 import { passwordVaultRouter } from "../backend/password-vault-router";
@@ -241,6 +242,11 @@ import { type CustomAgentChanges, createCustomAgentChanges } from "./custom-agen
 import { CUSTOM_AGENTS_FILE, CustomAgentStore } from "./custom-agent-store";
 import { type CustomProviderChanges, createCustomProviderChanges } from "./custom-provider-changes";
 import { CustomProviderStore } from "./custom-provider-store";
+import { bundledDaniFreeExecutable, DaniFreeSupervisor } from "./dani-free";
+import { DaniFreeConnection } from "./dani-free-connection";
+import { appendDaniFreeDiagnostic } from "./dani-free-diagnostic";
+import { DANI_FREE_PREFERENCE_FILE, readDaniFreePreference } from "./dani-free-preference-store";
+import { bundledDaniFreeEngineSeed, verifiedDaniFreeEngineSeed } from "./dani-free-seed";
 import { MCP_OAUTH_REDIRECT_URL } from "./deep-link-router";
 import { desktopShowsAgentEvent } from "./desktop-notifications";
 import { DetachedBrowserWindow } from "./detached-browser-window";
@@ -599,6 +605,7 @@ const TEARDOWN_ORDER = {
   browserView: 45,
   providerDetection: 48,
   providerRuntimes: 50,
+  daniFree: 52,
   localServers: 57,
   remoteServers: 60,
   voice: 70,
@@ -2192,7 +2199,7 @@ export async function createApplicationServices({
       claudeUserSetup: () => claudeUserSetup.get().enabled,
       claudeCompactWindow: () => claudeCompactWindow.get().tokens,
       providerEnvironment: (provider) => providerEnvironmentSetting.resolve(provider),
-      customProviders: () => modelReasoning.configs(),
+      customProviders: withModelSource(() => modelReasoning.configs()),
       customAgents: () => customAgents.configs(),
       mcpServers: () => service.enabledMcpServers(),
       mcpToolRuntimes: () => providerRuntimes.mcpToolRuntimes(),
@@ -4102,6 +4109,69 @@ export async function createApplicationServices({
       yield* routineResultRuntime.recover();
     }),
   );
+  // Dani's free models: the bundled proxy starts beside the app and stops with it. It never holds up
+  // the launch - the home screen stays unavailable until the proxy reports ready, and then moves to it
+  // through the same endpoint change a saved custom provider makes.
+  const daniFreeExecutable = app.isPackaged
+    ? bundledDaniFreeExecutable(process.resourcesPath)
+    : process.env.DANI_DEX_DANI_FREE_PATH?.trim() || null;
+  if (!daniFreeExecutable && app.isPackaged) {
+    await appendDaniFreeDiagnostic(join(app.getPath("userData"), "dani-free"), {
+      stage: "package",
+      outcome: "failed",
+      detail: "The packaged Dani Free proxy is missing.",
+    }).catch(() => undefined);
+  }
+  let daniFreeConnection: DaniFreeConnection | null = null;
+  if (daniFreeExecutable) {
+    // The Settings switch is stored beside the other preferences; DANI_FREE_PRIVATE_MODE=1 forces it on.
+    const daniFreePreference = await readDaniFreePreference(join(app.getPath("userData"), DANI_FREE_PREFERENCE_FILE));
+    const seed = app.isPackaged ? bundledDaniFreeEngineSeed(process.resourcesPath) : null;
+    let engineSeed: { executable: string; sha256: string } | undefined;
+    if (seed) {
+      try {
+        engineSeed = await verifiedDaniFreeEngineSeed(seed);
+      } catch (error) {
+        logger.warn("Dani Free engine seed could not be verified.", { error: String(error) });
+        await appendDaniFreeDiagnostic(join(app.getPath("userData"), "dani-free"), {
+          stage: "seed",
+          outcome: "failed",
+          detail: String(error),
+        }).catch(() => undefined);
+      }
+    }
+    if (app.isPackaged && !engineSeed) {
+      logger.warn("Dani Free cannot start without its verified bundled engine seed.");
+      if (!seed)
+        await appendDaniFreeDiagnostic(join(app.getPath("userData"), "dani-free"), {
+          stage: "seed",
+          outcome: "failed",
+          detail: "The bundled engine seed is missing.",
+        }).catch(() => undefined);
+    } else {
+      const daniFree = new DaniFreeSupervisor({
+        executable: daniFreeExecutable,
+        engineSeed,
+        home: join(app.getPath("userData"), "dani-free"),
+        privateMode: daniFreePreference.privateMode || process.env.DANI_FREE_PRIVATE_MODE === "1",
+      });
+      const connection = new DaniFreeConnection(
+        daniFree,
+        {
+          saveCustomProvider: (id, persist) =>
+            Effect.runPromise(service.saveCustomProvider(id, "opencode", () => Effect.promise(persist))),
+          reloadOpenCodeConfig: () => Effect.runPromise(service.reloadCustomProviderConfig("opencode")),
+          ensureProvider: (provider) => Effect.runPromise(service.ensureProvider(provider)),
+          listModels: () => service.listModels(),
+        },
+        { start: () => Effect.runPromise(agentInitialization.start()) },
+        join(app.getPath("userData"), "dani-free"),
+      );
+      teardown.push(TEARDOWN_ORDER.daniFree, "the Dani-Free proxy", () => connection.stop());
+      daniFreeConnection = connection;
+    }
+  }
+  daniFreeConnection?.start();
   const describeRestartReadiness = (): RestartReadiness =>
     checkRestartReadiness({
       agentWork: [

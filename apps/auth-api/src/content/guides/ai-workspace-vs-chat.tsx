@@ -85,8 +85,8 @@ export function AIWorkspaceVsChat() {
       </p>
 
       <p>
-        Dani Dex keeps the conversation too. Saved files give you another way to identify the current result; they do not
-        replace the discussion that led to it.
+        Dani Dex keeps the conversation too. Saved files give you another way to identify the current result; they do
+        not replace the discussion that led to it.
       </p>
 
       <p>
@@ -116,8 +116,9 @@ export function AIWorkspaceVsChat() {
       <h2>Passing the report to another Dani Dex agent</h2>
 
       <p>
-        Agents on the same Dani Dex computer or server can use its shared folder for files they need to work on together.
-        They can also send messages with files attached. A channel gives the team a place to discuss the shared task.
+        Agents on the same Dani Dex computer or server can use its shared folder for files they need to work on
+        together. They can also send messages with files attached. A channel gives the team a place to discuss the
+        shared task.
       </p>
 
       <p>

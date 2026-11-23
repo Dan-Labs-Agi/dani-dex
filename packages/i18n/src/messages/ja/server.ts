@@ -635,7 +635,8 @@ export const messages = {
   "server.update.requestedBy": "{member} がこのアップデートを依頼しました。",
   "server.update.automatic": "{name} はアップデートを自動的にインストールします。",
   "server.update.autoDownloadTitle": "アップデートを自動的にダウンロードする",
-  "server.update.autoDownloadDescription": "{name} は Dani Dex の新しいバージョンが公開されるたびにダウンロードします。",
+  "server.update.autoDownloadDescription":
+    "{name} は Dani Dex の新しいバージョンが公開されるたびにダウンロードします。",
   "server.update.autoInstallTitle": "アップデートを自動的にインストールする",
   "server.update.autoInstallDescription":
     "{name} は、エージェントがアイドル状態になると、ダウンロードしたアップデートを適用して再起動します。メンバーの接続は短時間切れ、自動的に再接続されます。",

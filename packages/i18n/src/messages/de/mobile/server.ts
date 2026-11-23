@@ -735,7 +735,8 @@ export const messages = {
   "mobile.server.connectors.github.repositoriesTitle": "Repositories",
   "mobile.server.connectors.github.repositoriesLoading": "Repositories werden von GitHub gelesen",
   "mobile.server.connectors.github.repositoriesFailed": "Dani Dex konnte die Repositories von GitHub nicht lesen.",
-  "mobile.server.connectors.github.noRepositories": "Die Dani Dex GitHub App ist noch in keinem Repository installiert.",
+  "mobile.server.connectors.github.noRepositories":
+    "Die Dani Dex GitHub App ist noch in keinem Repository installiert.",
   "mobile.server.connectors.github.moreRepositories": {
     one: "Und {count} weiteres Repository",
     other: "Und {count} weitere Repositories",
@@ -1086,7 +1087,8 @@ export const messages = {
   "mobile.server.providers.runtimesFailed": "Die Downloads dieses Servers konnten nicht geladen werden.",
   "mobile.server.providers.unavailable":
     "Verbinde dich als Eigentümer oder Administrator, um die Anbieter dieses Servers zu verwalten.",
-  "mobile.server.providers.unsupported": "Aktualisiere Dani Dex auf diesem Server, um seine Anbieter hier zu verwalten.",
+  "mobile.server.providers.unsupported":
+    "Aktualisiere Dani Dex auf diesem Server, um seine Anbieter hier zu verwalten.",
   "mobile.server.providers.signInUnsupported": "Dieser Server kann diesen Anbieter nicht über das Telefon anmelden.",
   "mobile.server.providers.actionFailed": "Dani Dex konnte diese Aktion nicht abschließen. Versuche es erneut.",
   "mobile.server.providers.openFailed": "Die Anmeldeseite konnte nicht geöffnet werden.",

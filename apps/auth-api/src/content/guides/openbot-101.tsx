@@ -21,8 +21,8 @@ export function OpenBot101() {
 
       <h2>What Dani Dex is</h2>
       <p>
-        Dani Dex is a workspace for AI agents that run on your computer or a server you connect to. You can use providers
-        such as{" "}
+        Dani Dex is a workspace for AI agents that run on your computer or a server you connect to. You can use
+        providers such as{" "}
         <a href={OPENBOT_LINKS.codex} target="_blank" rel={EXTERNAL_LINK_REL}>
           ChatGPT through Codex
         </a>
@@ -229,7 +229,9 @@ export function OpenBot101() {
         </a>{" "}
         holds every build.
       </p>
-      <p>If a step does not match what you see, tell me which Dani Dex version you are using and where you got stuck.</p>
+      <p>
+        If a step does not match what you see, tell me which Dani Dex version you are using and where you got stuck.
+      </p>
     </>
   );
 }

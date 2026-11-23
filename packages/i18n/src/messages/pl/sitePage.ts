@@ -177,7 +177,8 @@ export const messages = {
   "sitePage.marketplace.agents.description":
     "Agenci, których inni zrobili w Dani Dex. Dodaj jednego do Dani Dex razem z jego umiejętnościami i rutynami.",
   "sitePage.marketplace.skills.title": "Umiejętności — Dani Dex Marketplace",
-  "sitePage.marketplace.skills.description": "Umiejętności, których może używać agent Dani Dex. Dodaj jedną do Dani Dex.",
+  "sitePage.marketplace.skills.description":
+    "Umiejętności, których może używać agent Dani Dex. Dodaj jedną do Dani Dex.",
   "sitePage.marketplace.apps.title": "Aplikacje — Dani Dex Marketplace",
   "sitePage.marketplace.apps.description":
     "Aplikacje i narzędzia, których może używać agent Dani Dex. Otwórz aplikację w Dani Dex i tam zdecyduj, z czym się łączy.",

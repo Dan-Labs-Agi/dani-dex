@@ -111,8 +111,8 @@ export function WhatAreAIAgents() {
         handles the model requests.
       </p>
       <p>
-        Dani Dex is local-first, but that does not necessarily mean the model runs on your computer. The workspace can be
-        local while a connected provider handles the requests. For a closer look, see{" "}
+        Dani Dex is local-first, but that does not necessarily mean the model runs on your computer. The workspace can
+        be local while a connected provider handles the requests. For a closer look, see{" "}
         <Link to="/guides/$slug" params={{ slug: "openbot-101" }}>
           How to Use Dani Dex
         </Link>

@@ -20,8 +20,8 @@ export function Dpa() {
       </p>
       <p>
         Where the Controller uses Dani Dex exclusively on its own devices or independently managed infrastructure, and
-        Dani Dex does not Process Personal Data on the Controller's behalf, this DPA does not apply to such independently
-        managed Processing.
+        Dani Dex does not Process Personal Data on the Controller's behalf, this DPA does not apply to such
+        independently managed Processing.
       </p>
       <p>This DPA becomes effective upon acceptance of the Dani Dex Terms &amp; Conditions by the Controller.</p>
 
@@ -32,8 +32,8 @@ export function Dpa() {
       </p>
       <ul>
         <li>
-          <strong>"Agreement"</strong> means the Dani Dex Terms &amp; Conditions or any other agreement concluded between
-          the Parties governing the provision and use of the Services to which this DPA relates.
+          <strong>"Agreement"</strong> means the Dani Dex Terms &amp; Conditions or any other agreement concluded
+          between the Parties governing the provision and use of the Services to which this DPA relates.
         </li>
         <li>
           <strong>"Controller"</strong> means the Customer entering into this DPA with the Processor, who determines the
@@ -41,8 +41,8 @@ export function Dpa() {
           under this DPA.
         </li>
         <li>
-          <strong>"Processor"</strong> means Synthetify Labs sp. z o.o., operating under the name Dani Dex, insofar as it
-          Processes Personal Data on behalf of the Controller pursuant to this DPA.
+          <strong>"Processor"</strong> means Synthetify Labs sp. z o.o., operating under the name Dani Dex, insofar as
+          it Processes Personal Data on behalf of the Controller pursuant to this DPA.
         </li>
         <li>
           <strong>"Personal Data"</strong> means any information relating to an identified or identifiable natural
@@ -251,8 +251,8 @@ export function Dpa() {
           </ul>
         </li>
         <li>
-          Dani Dex shall not Process Personal Data entrusted by the Controller for purposes unrelated to the provision of
-          the Services or outside the scope of the Controller's documented instructions, except where required by
+          Dani Dex shall not Process Personal Data entrusted by the Controller for purposes unrelated to the provision
+          of the Services or outside the scope of the Controller's documented instructions, except where required by
           applicable law.
         </li>
         <li>
@@ -385,8 +385,8 @@ export function Dpa() {
         </li>
         <li>
           Personal Data stored on the Controller's own devices or independently managed infrastructure remains under the
-          Controller's control and is not automatically deleted upon termination of the Agreement or deletion of an
-          Dani Dex account.
+          Controller's control and is not automatically deleted upon termination of the Agreement or deletion of an Dani
+          Dex account.
         </li>
         <li>
           The Processor shall make available to the Controller all information necessary to demonstrate compliance with

@@ -190,7 +190,8 @@ export const messages = {
   "connector.discord.stepWorkspace": "Discord サーバー",
   "connector.discord.stepAgent": "エージェント",
   "connector.discord.connectTitle": "Discord サーバーを接続",
-  "connector.discord.connectDescription": "Dani Dex は Discord サーバーに Dani Dex という名前のボットを 1 つ追加します。",
+  "connector.discord.connectDescription":
+    "Dani Dex は Discord サーバーに Dani Dex という名前のボットを 1 つ追加します。",
   "connector.discord.connectStepBrowser": "ブラウザーで Discord が開きます",
   "connector.discord.connectStepAllow": "サーバーを選び、「認証」を押します",
   "connector.discord.connectStepReturn": "Discord での操作が終わると、このダイアログが続行します",
@@ -228,7 +229,8 @@ export const messages = {
     other: "Discord サーバー {count} 件 · Discord Orchestrator が回答します",
   },
   "connector.discord.accessTitle": "Dani Dex を使える人",
-  "connector.discord.accessDescription": "Dani Dex はこれらの人にだけ回答します。ほかの人からのメンションは無視します。",
+  "connector.discord.accessDescription":
+    "Dani Dex はこれらの人にだけ回答します。ほかの人からのメンションは無視します。",
   "connector.discord.accessEveryone": "サーバーの全員",
   "connector.discord.accessEveryoneDescription":
     "Dani Dex が見えるチャンネルに投稿できる人なら、誰でもメンションできます。",

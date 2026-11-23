@@ -724,6 +724,7 @@ export const messages = {
   "workflow.canvas.none.handoff": "Każdy krok przekazuje wynik następnemu.",
   "workflow.canvas.none.open": "Otwórz {name}",
   "workflow.page.failed": "Dani Dex nie mógł tego zrobić. Spróbuj ponownie.",
-  "workflow.page.needsNewerApp": "Ten przepływ ma kroki z nowszej wersji Dani Dex. Zaktualizuj Dani Dex, aby go zmienić.",
+  "workflow.page.needsNewerApp":
+    "Ten przepływ ma kroki z nowszej wersji Dani Dex. Zaktualizuj Dani Dex, aby go zmienić.",
   "workflow.page.manageOnly": "Aby zmienić ten przepływ, potrzebujesz dostępu do zarządzania każdym z jego agentów.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -100,7 +100,9 @@ function readAppliedVersions(db: DatabaseSync): number[] {
 
 export class NewerDatabaseError extends Error {
   constructor(databaseVersion: number, supportedVersion: number) {
-    super(`Dani Dex database version ${databaseVersion} is newer than this application supports (${supportedVersion}).`);
+    super(
+      `Dani Dex database version ${databaseVersion} is newer than this application supports (${supportedVersion}).`,
+    );
   }
 }
 

@@ -34,7 +34,8 @@ export const messages = {
   "marketplace.agents.yours": "Seus agentes",
   "marketplace.agents.all": "Todos os agentes",
   "marketplace.agents.missing": "Este agente não está na loja.",
-  "marketplace.agents.trust.reviewed": "Criado por outro usuário do Dani Dex. O Dani Dex o revisou antes da publicação.",
+  "marketplace.agents.trust.reviewed":
+    "Criado por outro usuário do Dani Dex. O Dani Dex o revisou antes da publicação.",
   "marketplace.agents.trust.reviewedBeforeAdd":
     "Criado por outro usuário do Dani Dex. O Dani Dex o revisou antes da publicação. Depois de adicionado, ele pode agir em seu nome.",
   "marketplace.agents.trust.pending": "Compartilhado pelo criador antes da revisão do Dani Dex.",

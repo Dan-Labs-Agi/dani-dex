@@ -17,7 +17,8 @@ export const messages = {
   "sitePage.join.noAppMobile": "ليس لديك التطبيق؟ {browser}.",
   "sitePage.join.browserLink": "انضم في هذا المتصفح",
   "sitePage.join.downloadLink": "نزّل Dani Dex",
-  "sitePage.join.notOpened": "إذا كان Dani Dex على هذا الحاسوب، فشغّله، ثم اضغط {open} مرة أخرى. وإن لم يكن، فنزّله أولًا.",
+  "sitePage.join.notOpened":
+    "إذا كان Dani Dex على هذا الحاسوب، فشغّله، ثم اضغط {open} مرة أخرى. وإن لم يكن، فنزّله أولًا.",
   "sitePage.join.mobile": "إذا كان Dani Dex مثبّتًا، فاضغط {open}. يمكنك أيضًا لصق هذا الرابط في «إضافة خادم» في التطبيق.",
   "sitePage.join.email": "إذا وصلت الدعوة بالبريد الإلكتروني، فسجّل الدخول إلى Dani Dex بعنوان البريد هذا.",
   "sitePage.connect.title": "العودة إلى Dani Dex",
@@ -199,7 +200,8 @@ export const messages = {
   "sitePage.marketplace.emptyApps": "لا يوجد تطبيق مطابق.",
   "sitePage.marketplace.breadcrumb": "مسار التنقل",
   "sitePage.marketplace.addToDani Dex": "إضافة إلى Dani Dex",
-  "sitePage.marketplace.addFromApp": "تتم إضافة {name} من داخل Dani Dex. احصل على التطبيق، ثم افتح هذا الرابط مرة أخرى.",
+  "sitePage.marketplace.addFromApp":
+    "تتم إضافة {name} من داخل Dani Dex. احصل على التطبيق، ثم افتح هذا الرابط مرة أخرى.",
   "sitePage.marketplace.downloadFor": "تنزيل لـ {platform}",
   "sitePage.marketplace.copyLink": "نسخ الرابط",
   "sitePage.marketplace.copied": "تم النسخ",

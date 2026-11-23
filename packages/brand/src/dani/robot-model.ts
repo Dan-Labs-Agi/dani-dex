@@ -84,7 +84,8 @@ const colorPresets: Record<string, string> = {
 export function resolveRobotColor(role: RobotRole = "default", color?: string): string {
   const value = color?.trim().toLowerCase();
   if (value && /^#[\da-f]{6}$/.test(value)) return value.toUpperCase();
-  if (value && /^#[\da-f]{3}$/.test(value)) return `#${Array.from(value.slice(1), (c) => c + c).join("")}`.toUpperCase();
+  if (value && /^#[\da-f]{3}$/.test(value))
+    return `#${Array.from(value.slice(1), (c) => c + c).join("")}`.toUpperCase();
   if (value && Object.hasOwn(colorPresets, value)) return colorPresets[value] ?? "#9561ED";
   return ROBOT_ROLES.find((item) => item.id === role)?.color ?? ROBOT_ROLES[0].color;
 }
@@ -187,7 +188,11 @@ export function makeBody(parent: THREE.Group, name: string, upper: THREE.Materia
         b = a + segments + 1;
       indices.push(a, a + 1, b, b, a + 1, b + 1);
     }
-    geometry.addGroup(start, indices.length - start, ((latitudes[row] ?? 0) + (latitudes[row + 1] ?? 0)) / 2 < seam ? 1 : 0);
+    geometry.addGroup(
+      start,
+      indices.length - start,
+      ((latitudes[row] ?? 0) + (latitudes[row + 1] ?? 0)) / 2 < seam ? 1 : 0,
+    );
   }
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
   geometry.setIndex(indices);

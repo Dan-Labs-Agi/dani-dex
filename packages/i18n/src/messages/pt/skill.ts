@@ -75,5 +75,6 @@ export const messages = {
   "skill.marketplace.undone": "A alteração em {name} foi desfeita.",
   "skill.marketplace.confirmAgents": "Agentes: {agents}.",
   "skill.marketplace.limitReason": "Um agente pode ter até {limit} habilidades.",
-  "skill.marketplace.cannotRemove": "O Dani Dex não pode remover uma habilidade integrada nem uma que ele não instalou.",
+  "skill.marketplace.cannotRemove":
+    "O Dani Dex não pode remover uma habilidade integrada nem uma que ele não instalou.",
 } as const satisfies PartialTranslation<typeof source>;

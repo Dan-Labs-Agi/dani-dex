@@ -584,7 +584,8 @@ export const messages = {
   "mobile.settings.agents.processes.stopTitle": "هل تريد إيقاف هذا البرنامج؟",
   "mobile.settings.agents.processes.stopLabel": "إيقاف العملية {pid}",
   "mobile.settings.quickActions.title": "قائمة أيقونة التطبيق",
-  "mobile.settings.quickActions.footer": "المس أيقونة Dani Dex مطولًا لرؤية هذه الإجراءات. يمكنك تشغيل {count} كحد أقصى.",
+  "mobile.settings.quickActions.footer":
+    "المس أيقونة Dani Dex مطولًا لرؤية هذه الإجراءات. يمكنك تشغيل {count} كحد أقصى.",
   "mobile.settings.quickActions.latestChat": "آخر محادثة",
   "mobile.settings.quickActions.secondChat": "المحادثة قبل الأخيرة",
   "mobile.settings.shortcuts.title": "الاختصارات",

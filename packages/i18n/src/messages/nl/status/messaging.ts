@@ -33,7 +33,8 @@ export const messages = {
   "status.messaging.discordOrchestratorTitle": "Antwoordt in Discord en vraagt het team",
   "status.messaging.integrationsSection": "Integraties",
   "status.messaging.signInReceived": "Dani Dex heeft de Slack-installatie ontvangen. Je kunt dit tabblad sluiten.",
-  "status.messaging.signInUnknown": "Dani Dex heeft deze Slack-installatie niet gestart. Start hem opnieuw in Dani Dex.",
+  "status.messaging.signInUnknown":
+    "Dani Dex heeft deze Slack-installatie niet gestart. Start hem opnieuw in Dani Dex.",
   "status.messaging.telegramNoAgent":
     "Er kan hier nog geen agent antwoorden. Open in Dani Dex Marktplaats > Apps > Telegram en klik op Agent toevoegen.",
   "status.messaging.telegramLinked":

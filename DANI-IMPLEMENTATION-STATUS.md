@@ -17,3 +17,7 @@ Dani identity source: 2c502a45b1e9e1dfb8e029dae97c96519b074afe.
 The inherited platform license remains PolyForm Noncommercial. Commercial rights are not established here. Dani source character code retains its own source license.
 
 WIP validation note: the first preview commit skips the unchanged local pre-commit hook because dependency-aware Biome scanning exceeds the local memory budget. The enabled validation workflow runs full lint, typechecks, translations, desktop/API tests and four-platform compilation without publishing. No check is claimed passed from that skip. Inherited encrypted service environment values are removed; service setup is required.
+
+First CI snapshot e6f6264: Linux, Windows, macOS ARM and Intel compilation passed. Full typechecks, translation catalogs and 79 API tests passed. Desktop tests: 2,220 passed, 41 failed in migration-guard expectations after display-text changes. Those expectations are corrected locally and all 61 migration-guard cases pass. Lint reported 186 errors: formatting, import order and one unsafe identity assertion. Formatting and imports were normalized; the assertion now uses a checked variant lookup. A new CI run is required.
+
+Dani Free support is now wired locally through the current custom-provider lifecycle with dynamic endpoint mapping. Local supervisor, staging, preferences, connection and model-source tests pass; bundled binaries, first-run real backend validation and the Settings preference interface remain incomplete. This does not establish a working free-model installation.

@@ -1054,7 +1054,9 @@ export class MessagingService {
       yield* live.adapter
         .post(
           { platformChannelId: chatId, replyThreadId: null },
-          { text: sourceText("status.messaging.telegramLinked", { bot: botUsername ? `@${botUsername}` : "Dani Dex" }) },
+          {
+            text: sourceText("status.messaging.telegramLinked", { bot: botUsername ? `@${botUsername}` : "Dani Dex" }),
+          },
         )
         .pipe(Effect.catch((failure) => Effect.sync(() => this.#warn(failure.cause))));
   }, Effect.uninterruptible);
