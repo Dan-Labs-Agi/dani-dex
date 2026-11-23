@@ -1,59 +1,67 @@
-import { randomUUID } from "node:crypto";
-import { readFile, rename, rm, writeFile } from "node:fs/promises";
-import { DEFAULT_DYNAMIC_ISLAND_PREFERENCE, type DynamicIslandPreference } from "@dani-dex/contracts/ipc";
-import { isBoolean, isDynamicRecord } from "@dani-dex/contracts/runtime-values";
+import {
+  DEFAULT_DYNAMIC_ISLAND_PREFERENCE,
+  DYNAMIC_ISLAND_SIZE_LIMITS,
+  type DynamicIslandPreference,
+  isDynamicIslandServerVisibility,
+  isDynamicIslandSizePercent,
+} from "@openbot/contracts/ipc";
+import { isBoolean, isDynamicRecord } from "@openbot/contracts/runtime-values";
+import { Effect } from "effect";
+import { isMissingFileError } from "../backend/file-errors";
+import { type PreferenceFileFailure, readPreferenceFile, writePreferenceFile } from "./preference-file";
 
-export async function readDynamicIslandPreference(path: string): Promise<DynamicIslandPreference> {
-  try {
-    const parsed = JSON.parse(await readFile(path, "utf8"));
-    if (!isDynamicRecord(parsed) || !isBoolean(parsed.enabled)) {
-      return { ...DEFAULT_DYNAMIC_ISLAND_PREFERENCE };
-    }
-    if (parsed.version === 1) return { ...DEFAULT_DYNAMIC_ISLAND_PREFERENCE, enabled: parsed.enabled };
-    if (parsed.version === 2 && isBoolean(parsed.hapticsEnabled)) {
+export const readDynamicIslandPreference = Effect.fn("readDynamicIslandPreference")(
+  (path: string, defaults: DynamicIslandPreference = DEFAULT_DYNAMIC_ISLAND_PREFERENCE) =>
+    readPreferenceFile(path, (parsed): DynamicIslandPreference => {
+      if (!isDynamicRecord(parsed) || !isBoolean(parsed.enabled)) {
+        return { ...defaults };
+      }
+      if (parsed.version === 1) return { ...defaults, enabled: parsed.enabled };
+      if (parsed.version === 2 && isBoolean(parsed.hapticsEnabled)) {
+        return {
+          ...defaults,
+          enabled: parsed.enabled,
+          hapticsEnabled: parsed.hapticsEnabled,
+        };
+      }
+      if (
+        parsed.version !== 3 ||
+        !isBoolean(parsed.hapticsEnabled) ||
+        !isBoolean(parsed.idleVisible) ||
+        !isBoolean(parsed.additionalDisplaysEnabled)
+      ) {
+        return { ...defaults };
+      }
       return {
-        ...DEFAULT_DYNAMIC_ISLAND_PREFERENCE,
         enabled: parsed.enabled,
         hapticsEnabled: parsed.hapticsEnabled,
+        idleVisible: parsed.idleVisible,
+        additionalDisplaysEnabled: parsed.additionalDisplaysEnabled,
+        widthPercent: isDynamicIslandSizePercent(parsed.widthPercent, DYNAMIC_ISLAND_SIZE_LIMITS.widthPercent)
+          ? parsed.widthPercent
+          : defaults.widthPercent,
+        heightPercent: isDynamicIslandSizePercent(parsed.heightPercent, DYNAMIC_ISLAND_SIZE_LIMITS.heightPercent)
+          ? parsed.heightPercent
+          : defaults.heightPercent,
+        ...(isDynamicIslandServerVisibility(parsed.serverVisibility) && isBoolean(parsed.newServersVisible)
+          ? { serverVisibility: { ...parsed.serverVisibility }, newServersVisible: parsed.newServersVisible }
+          : { serverVisibility: {}, newServersVisible: defaults.newServersVisible }),
       };
-    }
-    if (
-      parsed.version !== 3 ||
-      !isBoolean(parsed.hapticsEnabled) ||
-      !isBoolean(parsed.idleVisible) ||
-      !isBoolean(parsed.additionalDisplaysEnabled)
-    ) {
-      return { ...DEFAULT_DYNAMIC_ISLAND_PREFERENCE };
-    }
-    return {
-      enabled: parsed.enabled,
-      hapticsEnabled: parsed.hapticsEnabled,
-      idleVisible: parsed.idleVisible,
-      additionalDisplaysEnabled: parsed.additionalDisplaysEnabled,
-    };
-  } catch (error) {
-    if (isMissing(error) || error instanceof SyntaxError) return { ...DEFAULT_DYNAMIC_ISLAND_PREFERENCE };
-    throw error;
-  }
-}
+    }).pipe(
+      Effect.catch((failure) => {
+        const error = failure.cause;
+        if (isMissingFileError(error) || error instanceof SyntaxError) return Effect.succeed({ ...defaults });
+        return Effect.fail(failure);
+      }),
+    ),
+);
 
-export async function writeDynamicIslandPreference(
+export function writeDynamicIslandPreference(
   path: string,
   preference: DynamicIslandPreference,
-): Promise<DynamicIslandPreference> {
-  const temporaryPath = `${path}.${randomUUID()}.tmp`;
-  try {
-    await writeFile(temporaryPath, `${JSON.stringify({ version: 3, ...preference })}\n`, {
-      encoding: "utf8",
-      mode: 0o600,
-    });
-    await rename(temporaryPath, path);
+): Effect.Effect<DynamicIslandPreference, PreferenceFileFailure> {
+  return Effect.gen(function* () {
+    yield* writePreferenceFile(path, { version: 3, ...preference });
     return { ...preference };
-  } finally {
-    await rm(temporaryPath, { force: true }).catch(() => undefined);
-  }
-}
-
-function isMissing(error: unknown): error is NodeJS.ErrnoException {
-  return error instanceof Error && "code" in error && error.code === "ENOENT";
+  });
 }

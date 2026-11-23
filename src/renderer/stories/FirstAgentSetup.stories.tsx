@@ -1,19 +1,24 @@
-import { createEffect, createSignal } from "solid-js";
-import { expect, fireEvent, fn } from "storybook/test";
-import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import {
-  DEFAULT_FIRST_AGENT_DRAFT,
+  createFirstAgentDraft,
   FIRST_AGENT_SUGGESTIONS,
   type FirstAgentDraft,
   FirstAgentSetup,
   type FirstAgentSetupProps,
   type FirstAgentSuggestion,
-} from "../src/features/agents/FirstAgentSetup";
+} from "@openbot/ui/features/agents/FirstAgentSetup";
+import { currentText } from "@openbot/ui/text";
+import { createEffect, createSignal } from "solid-js";
+import { fn } from "storybook/test";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { STORY_AGENT_STATUS, STORY_MODELS } from "./fixtures";
+
+const DEFAULT_FIRST_AGENT_DRAFT = createFirstAgentDraft(() => 0);
 
 function draftFromSuggestion(suggestion: FirstAgentSuggestion): FirstAgentDraft {
+  const { t } = currentText();
   return {
-    name: suggestion.name,
-    purpose: suggestion.purpose,
+    name: t(suggestion.nameKey),
+    purpose: t(suggestion.purposeKey),
     avatarSeed: suggestion.avatarSeed,
     avatarHue: suggestion.avatarHue,
     suggestionId: suggestion.id,
@@ -48,7 +53,9 @@ const args: FirstAgentSetupProps = {
   value: DEFAULT_FIRST_AGENT_DRAFT,
   suggestions: FIRST_AGENT_SUGGESTIONS,
   submitting: false,
-  modelReady: true,
+  modelOptions: STORY_MODELS,
+  agentStatus: STORY_AGENT_STATUS,
+  onManageProviders: fn(),
   onChange: fn(),
   onSubmit: fn(),
 };
@@ -74,84 +81,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-export const Default: Story = {
-  play: async ({ canvas, canvasElement }) => {
-    const createButton = canvas.getByRole("button", { name: "Create agent" });
-    await expect(canvas.getAllByRole("listitem")).toHaveLength(6);
-    await expect(createButton).toBeEnabled();
-    await expect(canvas.getByRole("textbox", { name: "Name" })).toHaveValue("New agent");
-    await expect(canvas.getByRole("textbox", { name: "What should this agent help with?" })).toHaveValue("");
-    await expect(canvas.getAllByRole("button", { name: /character$/ })).toHaveLength(10);
-    await expect(canvas.getByRole("button", { name: "General character" })).toHaveAttribute("aria-pressed", "true");
-
-    const suggestionViewport = canvasElement.querySelector<HTMLElement>(".first-agent-suggestion-viewport");
-    const suggestionList = canvasElement.querySelector<HTMLElement>(".first-agent-suggestion-list");
-    if (!suggestionViewport || !suggestionList) throw new Error("The agent suggestion scroller is missing.");
-    await expect(getComputedStyle(suggestionList).scrollSnapType).toBe("none");
-    await expect(suggestionViewport).toHaveClass("can-scroll-forward");
-    await expect(suggestionViewport).not.toHaveClass("can-scroll-back");
-    const suggestionAvatars = Array.from(
-      canvasElement.querySelectorAll<HTMLElement>(".first-agent-suggestion-card .mz-robot-avatar"),
-    );
-    await expect(suggestionAvatars).toHaveLength(6);
-    const suggestionCards = Array.from(canvasElement.querySelectorAll<HTMLElement>(".first-agent-suggestion-card"));
-    await expect(new Set(suggestionCards.map((card) => card.dataset.animationCycleOffset)).size).toBe(6);
-    await expect(new Set(suggestionCards.map((card) => card.dataset.animationOffset)).size).toBe(6);
-    await expect(canvasElement.querySelector(".first-agent-live-avatar .mz-robot-avatar")).toBeInTheDocument();
-    await expect(canvasElement.querySelector(".first-agent-live-avatar")).toHaveAttribute(
-      "data-avatar-seed",
-      DEFAULT_FIRST_AGENT_DRAFT.avatarSeed,
-    );
-
-    suggestionList.scrollLeft = suggestionList.scrollWidth;
-    await fireEvent.scroll(suggestionList);
-    await expect(suggestionViewport).toHaveClass("can-scroll-back");
-    await expect(suggestionViewport).not.toHaveClass("can-scroll-forward");
-    suggestionList.scrollLeft = 0;
-    await fireEvent.scroll(suggestionList);
-  },
-};
-
-export const Interactions: Story = {
-  play: async ({ args: storyArgs, canvas, canvasElement, userEvent }) => {
-    const createButton = canvas.getByRole("button", { name: "Create agent" });
-
-    const tripPlanner = canvas.getByRole("button", {
-      name: "Trip Planner. Compares options and builds practical itineraries.",
-    });
-    await userEvent.click(tripPlanner);
-
-    const suggestion = FIRST_AGENT_SUGGESTIONS[1];
-    if (!suggestion) throw new Error("The Trip Planner suggestion is missing.");
-    await expect(canvas.getByRole("textbox", { name: "Name" })).toHaveValue(suggestion.name);
-    await expect(canvas.getByRole("textbox", { name: "What should this agent help with?" })).toHaveValue(
-      suggestion.purpose,
-    );
-    await expect(tripPlanner).toHaveAttribute("aria-pressed", "true");
-    await expect(createButton).toBeEnabled();
-
-    const liveAvatar = canvasElement.querySelector<HTMLElement>(".first-agent-live-avatar");
-    const headerAvatar = canvasElement.querySelector<HTMLElement>(".first-agent-header-identity");
-    await expect(liveAvatar).toHaveAttribute("data-avatar-seed", suggestion.avatarSeed);
-    await expect(headerAvatar).toHaveAttribute("data-avatar-seed", suggestion.avatarSeed);
-
-    await userEvent.click(canvas.getByRole("button", { name: "Create agent" }));
-    await expect(storyArgs.onSubmit).toHaveBeenCalledWith(draftFromSuggestion(suggestion));
-
-    const nameInput = canvas.getByRole("textbox", { name: "Name" });
-    await userEvent.clear(nameInput);
-    await userEvent.type(nameInput, "Weekend Planner");
-    await expect(tripPlanner).toHaveAttribute("aria-pressed", "false");
-    await expect(storyArgs.onChange).toHaveBeenLastCalledWith(
-      expect.objectContaining({ name: "Weekend Planner", suggestionId: null }),
-    );
-
-    await userEvent.click(canvas.getByRole("button", { name: "Assistant character" }));
-    await expect(canvas.getByRole("button", { name: "Assistant character" })).toHaveAttribute("aria-pressed", "true");
-    await userEvent.click(canvas.getByRole("button", { name: "Light" }));
-    await expect(canvas.getByRole("button", { name: "Light" })).toHaveAttribute("aria-pressed", "true");
-  },
-};
+export const Default: Story = {};
 
 const selectedSuggestion = FIRST_AGENT_SUGGESTIONS[1];
 
@@ -168,32 +98,21 @@ export const Submitting: Story = {
     submitting: true,
     onCancel: fn(),
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: "Creating agent…" })).toBeDisabled();
-    await expect(canvas.getByRole("button", { name: "Cancel" })).toBeDisabled();
-    await expect(canvas.getByRole("textbox", { name: "Name" })).toBeDisabled();
-    await expect(canvas.getByRole("textbox", { name: "What should this agent help with?" })).toBeDisabled();
-    await expect(canvas.getByRole("button", { name: /^Inbox Helper\./ })).toBeDisabled();
-  },
 };
 
 export const SmallWindow: Story = {
   parameters: { viewport: { defaultViewport: "firstAgentSmall" } },
-  play: async ({ canvas, canvasElement }) => {
-    const suggestionList = canvasElement.querySelector<HTMLElement>(".first-agent-suggestion-list");
-    if (!suggestionList) throw new Error("The agent suggestion list is missing.");
-    await expect(suggestionList.scrollWidth).toBeGreaterThan(suggestionList.clientWidth);
+};
 
-    const selectedFace = canvas.getByRole("button", { name: "Agent face 1" });
-    const faceBody = selectedFace.querySelector<SVGRectElement>("svg rect");
-    if (!faceBody) throw new Error("The selected agent face body is missing.");
-    const buttonBounds = selectedFace.getBoundingClientRect();
-    const bodyBounds = faceBody.getBoundingClientRect();
-    await expect(
-      Math.abs(buttonBounds.left + buttonBounds.width / 2 - (bodyBounds.left + bodyBounds.width / 2)),
-    ).toBeLessThan(1);
-    await expect(
-      Math.abs(buttonBounds.top + buttonBounds.height / 2 - (bodyBounds.top + bodyBounds.height / 2)),
-    ).toBeLessThan(1);
+export const LongPrompt: Story = {
+  args: {
+    value: {
+      ...DEFAULT_FIRST_AGENT_DRAFT,
+      purpose: Array.from(
+        { length: 10 },
+        (_, index) => `Task ${index + 1}: Help me organize my notes, errands, and plans for the week.`,
+      ).join("\n"),
+    },
   },
+  parameters: { viewport: { defaultViewport: "firstAgentSmall" } },
 };

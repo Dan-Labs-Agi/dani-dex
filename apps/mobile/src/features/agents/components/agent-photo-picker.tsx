@@ -1,12 +1,13 @@
-import { isAvatarMimeType, isValidAvatarImage } from "@dani-dex/contracts/avatar-images";
-import { AVATAR_IMAGE_LIMITS } from "@dani-dex/contracts/input-limits";
-import type { RemoteFileUpload } from "@dani-dex/team-client/remote-peer";
-import { userErrorMessage } from "@dani-dex/user-errors";
-import { File } from "expo-file-system";
-import * as ImagePicker from "expo-image-picker";
+import type { RemoteFileUpload } from "@openbot/team-client/remote-peer";
+import type { Href } from "expo-router";
 import { Button, Typography } from "heroui-native";
+import { useThemeColor } from "heroui-native/hooks";
+import ImagePlus from "lucide-react-native/icons/image-plus";
+import Trash2 from "lucide-react-native/icons/trash";
 import { useRef, useState } from "react";
-import { View } from "react-native";
+import { haptics } from "@/shared/lib/haptics";
+import { pickAvatarPhoto } from "@/shared/lib/pick-avatar-photo";
+import { useText } from "@/shared/lib/text";
 
 export interface AgentPhotoDraft extends RemoteFileUpload {
   uri: string;
@@ -14,15 +15,19 @@ export interface AgentPhotoDraft extends RemoteFileUpload {
 
 export function AgentPhotoPicker({
   hasPhoto,
+  cropRoute,
   disabled,
   onChange,
   onBusyChange,
 }: {
   hasPhoto: boolean;
+  cropRoute: Href;
   disabled: boolean;
   onChange: (photo: AgentPhotoDraft | null) => void;
   onBusyChange: (busy: boolean) => void;
 }) {
+  const { t, errorMessage } = useText();
+  const foreground = useThemeColor("foreground");
   const pending = useRef(false);
   const [error, setError] = useState<string | null>(null);
   async function choose() {
@@ -31,50 +36,49 @@ export function AgentPhotoPicker({
     onBusyChange(true);
     setError(null);
     try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ["images"],
-        allowsEditing: true,
-        aspect: [1, 1],
-        quality: 0.3,
-      });
-      if (result.canceled) return;
-      const asset = result.assets[0];
-      const file = new File(asset.uri);
-      const mimeType = isAvatarMimeType(file.type) ? file.type : (asset.mimeType ?? "");
-      if (!isAvatarMimeType(mimeType)) throw new Error("Choose a JPEG, PNG, or WebP photo.");
-      if (file.size > AVATAR_IMAGE_LIMITS.storedBytes) throw new Error("Choose a photo smaller than 512 KB.");
-      if (!isValidAvatarImage(mimeType, await file.bytes()))
-        throw new Error("Choose a valid JPEG, PNG, or WebP photo.");
-      onChange({ uri: asset.uri, name: file.name, mimeType, base64: await file.base64() });
+      const photo = await pickAvatarPhoto(cropRoute);
+      if (photo) onChange({ uri: photo.uri, name: photo.name, mimeType: photo.mimeType, base64: photo.base64 });
     } catch (cause) {
-      setError(userErrorMessage(cause, "Could not open this photo. Try again."));
+      setError(errorMessage(cause, t("mobile.agent.photo.openFailed")));
     } finally {
       pending.current = false;
       onBusyChange(false);
     }
   }
   return (
-    <View className="gap-2">
-      <Button variant="ghost" isDisabled={disabled} onPress={() => void choose()}>
-        <Button.Label>{hasPhoto ? "Change photo" : "Add photo"}</Button.Label>
+    <>
+      <Button
+        isIconOnly
+        variant="ghost"
+        accessibilityLabel={t(hasPhoto ? "mobile.agent.photo.change" : "mobile.agent.photo.add")}
+        isDisabled={disabled}
+        onPress={() => {
+          void haptics.impact("soft");
+          void choose();
+        }}
+      >
+        <ImagePlus color={foreground} size={20} />
       </Button>
       {hasPhoto ? (
         <Button
+          isIconOnly
           variant="ghost"
+          accessibilityLabel={t("mobile.agent.photo.remove")}
           isDisabled={disabled}
           onPress={() => {
+            void haptics.selection();
             setError(null);
             onChange(null);
           }}
         >
-          <Button.Label>Remove photo</Button.Label>
+          <Trash2 color={foreground} size={20} />
         </Button>
       ) : null}
       {error ? (
-        <Typography.Paragraph accessibilityRole="alert" className="text-danger-text">
+        <Typography.Paragraph accessibilityRole="alert" align="center" className="w-full text-danger-text">
           {error}
         </Typography.Paragraph>
       ) : null}
-    </View>
+    </>
   );
 }

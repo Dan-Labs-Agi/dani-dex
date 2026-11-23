@@ -1,26 +1,20 @@
 import { randomUUID } from "node:crypto";
 import type { DatabaseSync } from "node:sqlite";
-import { INPUT_LIMITS } from "@dani-dex/contracts/input-limits";
-import type { AgentMemoryOrigin, MemoryEntry } from "@dani-dex/contracts/ipc";
-import { type DynamicRecord, isDynamicRecord, isString } from "@dani-dex/contracts/runtime-values";
-import { redactContextText } from "@dani-dex/logging";
-import type { DaniDexDatabase } from "./dani-dex-database";
+import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
+import { type AgentMemoryOrigin, MEMORY_SITE_MAX_LENGTH, type MemoryEntry } from "@openbot/contracts/ipc";
+import { type DynamicRecord, isString } from "@openbot/contracts/runtime-values";
+import { sourceText } from "@openbot/i18n/source";
+import { databaseRow, databaseRows, requiredStringColumn } from "./database/database-rows";
+import type { OpenBotDatabase } from "./openbot-database";
 
-/**
- * One owner column and one table name are the whole difference between an agent's memories and a
- * channel's, so the SQL below is written once. Nothing here knows what an owner is: the subclasses
- * in `agent-memory-store.ts` and `channel-memory-store.ts` name it and re-attach the owner id to
- * every row they return.
- *
- * The aggregate type is deliberately per-owner. `database/agent-roster.ts` purges the events of a
- * deleted agent by `aggregate_type`, and a channel must not be swept up by that query.
- */
 export interface MemoryTables {
   table: string;
-  ownerColumn: "agent_id" | "channel_id";
-  aggregateType: "agent-memory" | "channel-memory";
-  limit: number;
-  limitMessage: string;
+  ownerColumn: "agent_id" | "channel_id" | "connection_id";
+  ownerKey: "agentId" | "channelId" | "connectionId";
+  aggregateType: "agent-memory" | "channel-memory" | "messaging-memory";
+  limit: () => number;
+  limitMessage: (limit: number) => string;
+  siteColumn?: boolean;
 }
 
 export interface SaveAutomaticMemory {
@@ -28,22 +22,28 @@ export interface SaveAutomaticMemory {
   text: string;
   sourceTurnId: string;
   expectedUpdatedAt?: string | null;
-  /**
-   * A deterministic command id makes the write exactly-once. A channel tool passes the id of its
-   * own call, so a retried call reads the receipt instead of saving again. An agent turn stages its
-   * memories and commits once, so it has nothing to replay and leaves this unset.
-   */
   commandId?: string;
+  site?: string;
+}
+
+export interface SaveMemoryInput {
+  memoryId?: string | undefined;
+  text: string;
+  origin: AgentMemoryOrigin;
+  sourceTurnId: string | null;
+  commandId?: string | undefined;
+  uncapped?: boolean;
+  site?: string | null | undefined;
 }
 
 export class MemoryStore {
   readonly #columns: string;
 
   constructor(
-    readonly database: DaniDexDatabase,
+    readonly database: OpenBotDatabase,
     protected readonly tables: MemoryTables,
   ) {
-    this.#columns = `memory_id, text, origin, source_turn_id, created_at, updated_at`;
+    this.#columns = `memory_id, text, origin, source_turn_id, created_at, updated_at${tables.siteColumn ? ", site" : ""}`;
   }
 
   list(ownerId: string): MemoryEntry[] {
@@ -72,13 +72,32 @@ export class MemoryStore {
     return row ? memoryFromRow(row) : null;
   }
 
+  count(ownerId: string): number {
+    const row = databaseRow(
+      this.database.connection
+        .prepare(`SELECT COUNT(*) AS count FROM ${this.tables.table} WHERE ${this.tables.ownerColumn} = ?`)
+        .get(ownerId),
+    );
+    return Number(row?.count ?? 0);
+  }
+
+  limit(): number {
+    return this.tables.limit();
+  }
+
   createManual(ownerId: string, text: string): MemoryEntry {
     return this.save(ownerId, { text, origin: "manual", sourceTurnId: null });
   }
 
   duplicate(sourceOwnerId: string, targetOwnerId: string): MemoryEntry[] {
     return this.list(sourceOwnerId).map((memory) =>
-      this.save(targetOwnerId, { text: memory.text, origin: memory.origin, sourceTurnId: null }),
+      this.save(targetOwnerId, {
+        text: memory.text,
+        origin: memory.origin,
+        sourceTurnId: null,
+        uncapped: true,
+        site: memory.site ?? null,
+      }),
     );
   }
 
@@ -86,23 +105,18 @@ export class MemoryStore {
     return this.save(ownerId, { memoryId, text, origin: "manual", sourceTurnId: null });
   }
 
-  /**
-   * `expectedUpdatedAt` is the concurrency check: a memory edited meanwhile is left alone.
-   *
-   * Protected, not public, so each subclass can keep the public `saveAutomatic` its own callers
-   * already use - the agent one takes `agentId` inside its input object.
-   */
   protected saveAutomaticEntry(ownerId: string, input: SaveAutomaticMemory): MemoryEntry | null {
     if (input.memoryId && input.expectedUpdatedAt !== undefined) {
       const current = this.get(ownerId, input.memoryId);
       if (!current || current.updatedAt !== input.expectedUpdatedAt) return null;
     }
     return this.save(ownerId, {
-      memoryId: input.memoryId,
+      ...(input.memoryId === undefined ? {} : { memoryId: input.memoryId }),
       text: input.text,
       origin: "automatic",
       sourceTurnId: input.sourceTurnId,
-      commandId: input.commandId,
+      ...(input.commandId === undefined ? {} : { commandId: input.commandId }),
+      ...(input.site === undefined ? {} : { site: input.site }),
     });
   }
 
@@ -118,7 +132,7 @@ export class MemoryStore {
           aggregateType,
           aggregateId: memoryId,
           eventType: `${aggregateType}.deleted`,
-          payload: { [ownerColumn === "agent_id" ? "agentId" : "channelId"]: ownerId, memoryId },
+          payload: { [this.tables.ownerKey]: ownerId, memoryId },
         },
       ],
       (db, sequences) => {
@@ -133,8 +147,7 @@ export class MemoryStore {
   clear(ownerId: string): number {
     const memories = this.list(ownerId);
     if (memories.length === 0) return 0;
-    const { aggregateType, table, ownerColumn } = this.tables;
-    const ownerKey = ownerColumn === "agent_id" ? "agentId" : "channelId";
+    const { aggregateType, table, ownerColumn, ownerKey } = this.tables;
     return this.database.dispatch(
       `${aggregateType}:clear:${randomUUID()}`,
       memories.map((memory) => ({
@@ -152,35 +165,34 @@ export class MemoryStore {
     );
   }
 
-  /**
-   * Validate, fold a duplicate, cap the owner, then keep `updatedAt` strictly increasing so the
-   * `ORDER BY updated_at DESC` above is stable when two saves land in the same millisecond.
-   */
-  protected save(
-    ownerId: string,
-    input: {
-      memoryId?: string;
-      text: string;
-      origin: AgentMemoryOrigin;
-      sourceTurnId: string | null;
-      commandId?: string;
-    },
-  ): MemoryEntry {
+  protected save(ownerId: string, input: SaveMemoryInput): MemoryEntry {
     const text = validateMemoryText(input.text);
     const normalizedText = normalizeMemoryText(text);
     const duplicate = this.#findByNormalizedText(ownerId, normalizedText);
     if (duplicate && duplicate.id !== input.memoryId) {
       if (input.memoryId) this.delete(ownerId, input.memoryId);
+      if (this.tables.siteColumn && input.site !== undefined && (input.site ?? undefined) !== duplicate.site)
+        return this.save(ownerId, {
+          memoryId: duplicate.id,
+          text: duplicate.text,
+          origin: duplicate.origin,
+          sourceTurnId: duplicate.sourceTurnId,
+          site: input.site,
+        });
       return duplicate;
     }
 
     const previous = input.memoryId ? this.get(ownerId, input.memoryId) : null;
-    if (input.memoryId && !previous) throw new Error("This memory no longer exists.");
-    if (!previous && this.list(ownerId).length >= this.tables.limit) throw new Error(this.tables.limitMessage);
+    if (input.memoryId && !previous) throw new Error(sourceText("error.backend.memoryGone"));
+    if (!previous && !input.uncapped) {
+      const limit = this.tables.limit();
+      if (this.count(ownerId) >= limit) throw new Error(this.tables.limitMessage(limit));
+    }
 
     const now = new Date().toISOString();
     const updatedAt =
       previous && now <= previous.updatedAt ? new Date(Date.parse(previous.updatedAt) + 1).toISOString() : now;
+    const site = this.tables.siteColumn ? (input.site === undefined ? previous?.site : input.site) : undefined;
     const memory: MemoryEntry = {
       id: previous?.id ?? randomUUID(),
       text,
@@ -188,8 +200,9 @@ export class MemoryStore {
       sourceTurnId: input.sourceTurnId,
       createdAt: previous?.createdAt ?? now,
       updatedAt,
+      ...(site ? { site } : {}),
     };
-    const { aggregateType, table, ownerColumn } = this.tables;
+    const { aggregateType, table, ownerColumn, siteColumn } = this.tables;
     const eventType = `${aggregateType}.${previous ? "updated" : "created"}`;
     this.database.dispatch(
       input.commandId ?? `${aggregateType}:${eventType}:${randomUUID()}`,
@@ -198,22 +211,22 @@ export class MemoryStore {
           aggregateType,
           aggregateId: memory.id,
           eventType,
-          payload: { memory: { ...memory, [ownerColumn === "agent_id" ? "agentId" : "channelId"]: ownerId } },
+          payload: { memory: { ...memory, [this.tables.ownerKey]: ownerId } },
         },
       ],
       (db, sequences) => {
         db.prepare(
           `INSERT INTO ${table} (
              memory_id, ${ownerColumn}, text, normalized_text, origin, source_turn_id,
-             created_at, updated_at, last_event_sequence
-           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+             created_at, updated_at, last_event_sequence${siteColumn ? ", site" : ""}
+           ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?${siteColumn ? ", ?" : ""})
            ON CONFLICT(memory_id) DO UPDATE SET
              text = excluded.text,
              normalized_text = excluded.normalized_text,
              origin = excluded.origin,
              source_turn_id = excluded.source_turn_id,
              updated_at = excluded.updated_at,
-             last_event_sequence = excluded.last_event_sequence`,
+             last_event_sequence = excluded.last_event_sequence${siteColumn ? ", site = excluded.site" : ""}`,
         ).run(
           memory.id,
           ownerId,
@@ -224,6 +237,7 @@ export class MemoryStore {
           memory.createdAt,
           memory.updatedAt,
           sequences[0] ?? 0,
+          ...(siteColumn ? [memory.site ?? null] : []),
         );
         return memory;
       },
@@ -245,10 +259,6 @@ export class MemoryStore {
   }
 }
 
-/**
- * A hard delete also erases the memory's own history. Memory text is what the user asked to be
- * forgotten, so leaving it in `orchestration_events` would keep it readable after a clear.
- */
 function forgetEventsBefore(db: DatabaseSync, aggregateType: string, memoryId: string, deletionSequence: number): void {
   db.prepare(
     `DELETE FROM orchestration_command_receipts WHERE command_id IN (
@@ -264,35 +274,44 @@ function forgetEventsBefore(db: DatabaseSync, aggregateType: string, memoryId: s
 }
 
 function validateMemoryText(value: string): string {
-  const trimmed = value.trim();
-  const text = /^Imported from (?:ChatGPT|Claude) \(historical\):/u.test(trimmed)
-    ? redactContextText(trimmed)
-    : trimmed;
-  if (!text) throw new Error("Memory text is required.");
-  if (text.length > INPUT_LIMITS.agentMemoryText) throw new Error("Memory text is too long.");
+  const text = value.trim();
+  if (!text) throw new Error(sourceText("error.backend.memoryTextRequired"));
+  if (text.length > INPUT_LIMITS.agentMemoryText) throw new Error(sourceText("error.backend.memoryTextTooLong"));
   return text;
 }
 
-function normalizeMemoryText(value: string): string {
-  return value;
+export function normalizeMemorySite(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.length > 2048) return null;
+  let host: string;
+  try {
+    host = new URL(/^[a-z][a-z0-9+.-]*:\/\//iu.test(trimmed) ? trimmed : `https://${trimmed}`).hostname;
+  } catch {
+    return null;
+  }
+  const site = host
+    .toLowerCase()
+    .replace(/\.$/u, "")
+    .replace(/^www\./u, "");
+  return site && site.length <= MEMORY_SITE_MAX_LENGTH ? site : null;
 }
 
-function databaseRow(value: unknown): DynamicRecord | null {
-  return isDynamicRecord(value) ? value : null;
+export function memorySitesForHost(hostname: string): string[] {
+  const site = normalizeMemorySite(hostname);
+  if (!site) return [];
+  const labels = site.split(".");
+  if (labels.length < 2 || /^[\d.]+$/u.test(site) || site.includes(":")) return [site];
+  return labels.slice(0, -1).map((_, index) => labels.slice(index).join("."));
 }
 
-function databaseRows(value: unknown): DynamicRecord[] {
-  if (!Array.isArray(value)) throw new Error("Invalid memory query result.");
-  return value.map((row) => {
-    const record = databaseRow(row);
-    if (!record) throw new Error("Invalid memory query row.");
-    return record;
-  });
+export function memoryPromptLine(text: string, block: string): string {
+  return text
+    .replace(/\s+/g, " ")
+    .replace(new RegExp(`<\\s*/\\s*${block}`, "gi"), `< /${block}`)
+    .trim();
 }
 
-function requiredStringColumn(row: DynamicRecord, key: string): string {
-  const value = row[key];
-  if (!isString(value)) throw new Error(`Invalid memory column ${key}.`);
+export function normalizeMemoryText(value: string): string {
   return value;
 }
 
@@ -301,6 +320,8 @@ function memoryFromRow(row: DynamicRecord): MemoryEntry {
   if (origin !== "automatic" && origin !== "manual") throw new Error("Invalid memory origin.");
   const sourceTurnId = row.source_turn_id;
   if (sourceTurnId !== null && !isString(sourceTurnId)) throw new Error("Invalid memory source turn.");
+  const site = row.site;
+  if (site !== undefined && site !== null && !isString(site)) throw new Error("Invalid memory site.");
   return {
     id: requiredStringColumn(row, "memory_id"),
     text: requiredStringColumn(row, "text"),
@@ -308,5 +329,6 @@ function memoryFromRow(row: DynamicRecord): MemoryEntry {
     sourceTurnId,
     createdAt: requiredStringColumn(row, "created_at"),
     updatedAt: requiredStringColumn(row, "updated_at"),
+    ...(site ? { site } : {}),
   };
 }

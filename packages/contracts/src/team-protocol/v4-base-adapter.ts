@@ -3,6 +3,7 @@ import { type AgentEvent, isAgentEvent } from "../ipc-agent-events";
 import { isTeamRealtimeEvent, type TeamRealtimeEvent } from "../ipc-team-host";
 import { isBoolean, isDynamicRecord, isNumber, isString } from "../runtime-values";
 import { restoreBrowserSecretMetadata } from "./browser-secret-v1";
+import { eventConversationKey, withConversationPlans } from "./conversation-plan-v4";
 import {
   toCurrentAgentKeys,
   toCurrentAgentKeysObjectForPath,
@@ -25,7 +26,6 @@ export type TeamProtocolV4BaseCurrentEventDecodeResult =
 
 export function decodeTeamProtocolV4BaseCurrentEvent(value: unknown): TeamProtocolV4BaseCurrentEventDecodeResult {
   if (isDynamicRecord(value) && value.type === "turn-progress") {
-    // `turn-progress` bypasses the frozen codec, so it needs the vocabulary swap applied by hand.
     const wireValue: TeamProtocolV4BaseJsonValue = JSON.parse(JSON.stringify(value));
     const current = toCurrentAgentKeys(wireValue);
     return isAgentEvent(current) ? { kind: "known", event: current } : { kind: "invalid", type: value.type };
@@ -35,7 +35,7 @@ export function decodeTeamProtocolV4BaseCurrentEvent(value: unknown): TeamProtoc
   const decodedValue: TeamProtocolV4BaseJsonValue = JSON.parse(JSON.stringify(decoded.event));
   let current: unknown;
   try {
-    current = restoreBrowserSecretMetadata(toCurrentAgentKeys(decodedValue), value);
+    current = withEventConversationPlans(restoreBrowserSecretMetadata(toCurrentAgentKeys(decodedValue), value), value);
   } catch {
     return { kind: "invalid", type: decoded.event.type };
   }
@@ -48,7 +48,6 @@ export function encodeTeamProtocolV4BaseCurrentEvent(
   event: AgentEvent | TeamRealtimeEvent,
   options: { preserveSemanticTags?: boolean; preserveBrowserSecrets?: boolean } = {},
 ): string | null {
-  // `turn-progress` bypasses the frozen codec, so it needs the vocabulary swap applied by hand.
   if (event.type === "turn-progress") return JSON.stringify(toWireAgentKeys(JSON.parse(JSON.stringify(event))));
   const currentValue: TeamProtocolV4BaseJsonValue = JSON.parse(JSON.stringify(event));
   const wireValue = toWireAgentKeys(currentValue);
@@ -56,16 +55,28 @@ export function encodeTeamProtocolV4BaseCurrentEvent(
   const decoded = decodeTeamProtocolV4BaseEvent(downconvertedValue);
   if (decoded.kind !== "known") return null;
   const encoded = encodeTeamProtocolV4BaseEvent(decoded.event);
-  if (!encoded || !options.preserveBrowserSecrets) return encoded;
-  const output = JSON.parse(encoded);
-  return JSON.stringify(restoreBrowserSecretMetadata(output, wireValue));
+  if (!encoded || (!options.preserveBrowserSecrets && !eventConversationKey(event.type))) return encoded;
+  const output = withEventConversationPlans(JSON.parse(encoded), wireValue);
+  return JSON.stringify(options.preserveBrowserSecrets ? restoreBrowserSecretMetadata(output, wireValue) : output);
+}
+
+function withEventConversationPlans(
+  projected: TeamProtocolV4BaseJsonValue,
+  source: unknown,
+): TeamProtocolV4BaseJsonValue {
+  if (projected === null || Array.isArray(projected) || typeof projected !== "object") return projected;
+  if (!isDynamicRecord(source)) return projected;
+  const key = eventConversationKey(projected.type);
+  const conversation = key ? projected[key] : undefined;
+  if (!key || conversation === undefined) return projected;
+  return { ...projected, [key]: withConversationPlans(conversation, source[key]) };
 }
 
 export function encodeTeamProtocolV4BaseCurrentHttpRequest(
   method: string,
   path: string,
   value: unknown,
-  options: { preserveSemanticTags?: boolean } = {},
+  options: { preserveSemanticTags?: boolean | undefined } = {},
 ): string {
   const currentValue: TeamProtocolV4BaseJsonValue = JSON.parse(JSON.stringify(value));
   const wireValue = toWireAgentKeysForRequestPath(path, currentValue);
@@ -92,7 +103,6 @@ export function encodeTeamProtocolV4BaseCurrentHttpResponse(
   options: { preserveSemanticTags?: boolean } = {},
 ): string {
   const currentValue: TeamProtocolV4BaseJsonValue = JSON.parse(JSON.stringify(value));
-  // The installed-skills route bypasses the frozen codec, so it needs the vocabulary swap by hand.
   const wireValue = toWireAgentKeysForRequestPath(path, currentValue);
   if (status < 400 && isInstalledSkillsRoute(method, path)) return JSON.stringify(wireValue);
   const downconvertedValue = options.preserveSemanticTags ? wireValue : downconvertCurrentTags(wireValue);
@@ -127,7 +137,7 @@ export function decodeTeamProtocolV4BaseCurrentHttpResponse(
 }
 
 function isInstalledSkillsRoute(method: string, path: string): boolean {
-  return method === "GET" && /^\/v1\/agents\/[^/]+\/skills$/u.test(new URL(path, "http://danidex.invalid").pathname);
+  return method === "GET" && /^\/v1\/agents\/[^/]+\/skills$/u.test(new URL(path, "http://openbot.invalid").pathname);
 }
 
 function toWireAgentKeysForRequestPath(path: string, value: TeamProtocolV4BaseJsonValue): TeamProtocolV4BaseJsonValue {

@@ -4,25 +4,22 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   isSkillCategory,
+  MAC_AUTOMATION_TARGETS,
+  type MacAutomationTarget,
   type McpServerConfig,
   mcpConfigErrors,
   normalizeMcpConfig,
   type SkillCategory,
-} from "@dani-dex/contracts/ipc";
-import { isDynamicRecord, isString } from "@dani-dex/contracts/runtime-values";
-import { createDaniDexLogger, toLogValue } from "@dani-dex/logging";
+} from "@openbot/contracts/ipc";
+import { type DynamicRecord, isDynamicRecord, isOneOf, isString } from "@openbot/contracts/runtime-values";
+import { createOpenBotLogger, toLogValue } from "@openbot/logging";
 
-const logger = createDaniDexLogger("build-plugin-catalog");
+const logger = createOpenBotLogger("build-plugin-catalog");
 
 const scriptRoot = dirname(fileURLToPath(import.meta.url));
 const projectRoot = resolve(scriptRoot, "..");
 
 const slugPattern = /^[a-z0-9][a-z0-9-]{0,62}$/u;
-/**
- * The sign-in bridge runs a third-party program on the user's machine. `@latest` would make every
- * launch a fresh, unreviewed download that no release can be audited against, so the catalog names
- * one version and moves it only in a reviewed commit.
- */
 const secretPattern =
   /(ghp_[A-Za-z0-9]{8,}|github_pat_[A-Za-z0-9_]{8,}|sk-(?:live|test|proj)-[A-Za-z0-9]{8,}|xox[bpas]-[A-Za-z0-9-]{8,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY|phx_[A-Za-z0-9]{8,}|re_[A-Za-z0-9]{8,})/u;
 
@@ -30,6 +27,7 @@ export interface PluginCatalogPaths {
   sourceRoot: string;
   rendererPath: string;
   workerPath: string;
+  mobilePath: string;
   snapshotDir: string;
 }
 
@@ -38,6 +36,7 @@ export function defaultPluginCatalogPaths(root: string = projectRoot): PluginCat
     sourceRoot: join(root, "marketplace", "plugin-catalog"),
     rendererPath: join(root, "src", "renderer", "src", "features", "settings", "marketplace-plugin-catalog.ts"),
     workerPath: join(root, "apps", "auth-api", "src", "lib", "plugin-catalog.generated.ts"),
+    mobilePath: join(root, "apps", "mobile", "src", "features", "marketplace", "model", "plugin-catalog.generated.ts"),
     snapshotDir: join(root, "resources", "plugin-catalog"),
   };
 }
@@ -58,11 +57,13 @@ export interface PluginPrompt {
 export interface PluginAuthField {
   id: string;
   label: string;
+  url?: boolean;
   header?: string;
   env?: string;
   prefix?: string;
   placeholder?: string;
   hint?: string;
+  optional?: boolean;
 }
 
 export interface PluginLinkFlow {
@@ -80,12 +81,23 @@ export interface PluginKeyFlow {
   docsLabel?: string;
 }
 
-export type PluginAuthFlow = PluginLinkFlow | PluginKeyFlow;
+export interface PluginLocalFlow {
+  id: string;
+  kind: "local";
+  label: string;
+  steps: string[];
+  note?: string;
+  docsUrl?: string | null;
+  docsLabel?: string;
+}
+
+export type PluginAuthFlow = PluginLinkFlow | PluginKeyFlow | PluginLocalFlow;
 
 export interface PluginHttpServer {
   name: string;
   transport: "http";
   url: string;
+  earlierUrls?: string[];
   auth?: PluginAuthFlow[];
 }
 
@@ -94,6 +106,7 @@ export interface PluginStdioServer {
   transport: "stdio";
   command: string;
   args: string[];
+  env?: Record<string, string>;
   auth?: PluginAuthFlow[];
 }
 
@@ -105,6 +118,7 @@ export interface PluginApp {
   description: string;
   iconUrl: string | null;
   server: PluginServer;
+  macAutomation?: MacAutomationTarget[];
 }
 
 export interface PluginDetail {
@@ -125,13 +139,6 @@ export interface PluginDetail {
   updatedAt: string;
 }
 
-/**
- * Reads the catalog source, validates every listing, and writes the three
- * generated outputs: the renderer literal the Plugins tab reads, the Worker
- * module the JSON routes will serve, and the offline snapshot shipped with
- * the app. With `check`, it fails when a checked-in file differs from a
- * fresh build, so a hand edit cannot ship.
- */
 export async function buildPluginCatalog(options?: {
   check?: boolean;
   paths?: PluginCatalogPaths;
@@ -140,13 +147,16 @@ export async function buildPluginCatalog(options?: {
   const { spec, plugins } = await loadPluginCatalog(paths.sourceRoot);
   const renderer = renderRendererModule(plugins);
   const worker = renderWorkerModule(spec, plugins);
+  const mobile = renderMobileModule(plugins);
   const snapshot = renderSnapshot(spec, plugins);
   if (options?.check) {
-    await checkGenerated(paths, renderer, worker, snapshot);
+    await checkGenerated(paths, renderer, worker, mobile, snapshot);
     return { plugins: plugins.length, catalogVersion: spec.catalogVersion };
   }
   await writeFile(paths.rendererPath, renderer);
   await writeFile(paths.workerPath, worker);
+  await mkdir(dirname(paths.mobilePath), { recursive: true });
+  await writeFile(paths.mobilePath, mobile);
   await writeSnapshot(paths.snapshotDir, snapshot);
   return { plugins: plugins.length, catalogVersion: spec.catalogVersion };
 }
@@ -203,11 +213,6 @@ function parseCatalogSpec(value: unknown): PluginCatalogSpec {
   };
 }
 
-/**
- * Validates one listing and answers the detail the generated outputs carry.
- * A secret value is never catalog data: the source must name where a
- * credential goes and must never hold one.
- */
 export function validatePlugin(slug: string, value: unknown, featured: boolean, updatedAt: string): PluginDetail {
   if (!isDynamicRecord(value)) throw new Error(`Plugin ${slug} is invalid.`);
   if (value.slug !== slug) throw new Error(`Plugin ${slug} names itself ${String(value.slug)}.`);
@@ -275,10 +280,26 @@ function parseApp(slug: string, value: unknown): PluginApp {
   const server = parseServer(slug, value.server);
   const base = baseServerConfig(server);
   const errors = mcpConfigErrors(normalizeMcpConfig(base));
-  const firstError = errors.name ?? errors.command ?? errors.url;
+  const firstError = errors.name ?? errors.command ?? errors.url ?? errors.headers;
   if (firstError) throw new Error(`Plugin ${slug} server is invalid: ${firstError}`);
   checkCredentialFlows(slug, server, base);
-  return { id: text("id"), name: text("name"), description: text("description"), iconUrl, server };
+  const app: PluginApp = { id: text("id"), name: text("name"), description: text("description"), iconUrl, server };
+  const macAutomation = parseMacAutomation(slug, value.macAutomation, server);
+  return macAutomation ? { ...app, macAutomation } : app;
+}
+
+function parseMacAutomation(slug: string, value: unknown, server: PluginServer): MacAutomationTarget[] | undefined {
+  if (value === undefined) return undefined;
+  if (
+    !Array.isArray(value) ||
+    value.length === 0 ||
+    !value.every((target) => isOneOf(MAC_AUTOMATION_TARGETS, target)) ||
+    new Set(value).size !== value.length
+  ) {
+    throw new Error(`Plugin ${slug} macAutomation must list known Apple apps, each once.`);
+  }
+  if (server.transport !== "stdio") throw new Error(`Plugin ${slug} macAutomation needs a stdio server.`);
+  return value;
 }
 
 function parseServer(slug: string, value: unknown): PluginServer {
@@ -286,23 +307,69 @@ function parseServer(slug: string, value: unknown): PluginServer {
   if (!isString(value.name) || value.name.trim().length === 0) throw new Error(`Plugin ${slug} server needs a name.`);
   const auth = parseAuth(slug, value.auth, value.transport);
   if (value.transport === "http") {
-    if (!isString(value.url) || !value.url.startsWith("https://")) {
-      throw new Error(`Plugin ${slug} server needs an https url.`);
+    if (value.env !== undefined) throw new Error(`Plugin ${slug} env needs a stdio server.`);
+    const local = auth?.some((flow) => flow.kind === "local") ?? false;
+    if (local && auth?.length !== 1) throw new Error(`Plugin ${slug} local server takes no other auth flow.`);
+    const url = value.url;
+    if (!isString(url) || !(local ? isLoopbackHttpUrl(url) : url.startsWith("https://"))) {
+      throw new Error(`Plugin ${slug} server needs ${local ? "a loopback http" : "an https"} url.`);
     }
-    return auth
-      ? { name: value.name, transport: "http", url: value.url, auth }
-      : { name: value.name, transport: "http", url: value.url };
+    const earlierUrls = value.earlierUrls;
+    if (
+      earlierUrls !== undefined &&
+      (!Array.isArray(earlierUrls) || earlierUrls.length === 0 || !earlierUrls.every(isHttpsUrl))
+    ) {
+      throw new Error(`Plugin ${slug} earlierUrls must be a list of https urls.`);
+    }
+    return {
+      name: value.name,
+      transport: "http",
+      url,
+      ...(earlierUrls ? { earlierUrls } : {}),
+      ...(auth ? { auth } : {}),
+    };
   }
   if (value.transport === "stdio") {
     if (!isString(value.command) || value.command.trim().length === 0 || !Array.isArray(value.args)) {
       throw new Error(`Plugin ${slug} server needs a command and args.`);
     }
-    const args = value.args.every(isString) ? [...value.args] : [];
-    return auth
-      ? { name: value.name, transport: "stdio", command: value.command, args, auth }
-      : { name: value.name, transport: "stdio", command: value.command, args };
+    if (!value.args.every(isString)) {
+      throw new Error(`Plugin ${slug} server args must all be strings: ${JSON.stringify(value.args)}.`);
+    }
+    const args = [...value.args];
+    const env = parseServerEnv(slug, value.env, auth);
+    return {
+      name: value.name,
+      transport: "stdio",
+      command: value.command,
+      args,
+      ...(env ? { env } : {}),
+      ...(auth ? { auth } : {}),
+    };
   }
   throw new Error(`Plugin ${slug} server needs a known transport.`);
+}
+
+function parseServerEnv(
+  slug: string,
+  value: unknown,
+  auth: PluginAuthFlow[] | undefined,
+): Record<string, string> | undefined {
+  if (value === undefined) return undefined;
+  if (!isDynamicRecord(value) || Object.keys(value).length === 0) {
+    throw new Error(`Plugin ${slug} env must name one or more settings.`);
+  }
+  const typed = new Set(
+    (auth ?? []).flatMap((flow) => (flow.kind === "key" ? flow.fields.map((field) => field.env) : [])),
+  );
+  const env: Record<string, string> = {};
+  for (const [key, setting] of Object.entries(value)) {
+    if (!/^[A-Za-z_][A-Za-z0-9_]*$/u.test(key)) throw new Error(`Plugin ${slug} env has an invalid name.`);
+    if (typed.has(key)) throw new Error(`Plugin ${slug} env sets ${key}, which the user types.`);
+    if (!isString(setting) || !setting.trim()) throw new Error(`Plugin ${slug} env ${key} needs a value.`);
+    env[key] = setting;
+  }
+  return env;
 }
 
 function parseAuth(slug: string, value: unknown, transport: unknown): PluginAuthFlow[] | undefined {
@@ -316,15 +383,16 @@ function parseFlow(slug: string, value: unknown, transport: unknown): PluginAuth
     throw new Error(`Plugin ${slug} has an invalid auth flow.`);
   }
   if (value.kind === "link") {
-    // Dani-Dex holds the OAuth client itself and adds the header at hand-off, which it can only do
-    // for an http server. A stdio listing asking for a sign-in would be asking for a bridge program.
     if (transport !== "http") throw new Error(`Plugin ${slug} sign-in needs an http server.`);
     return { id: value.id, kind: "link", label: value.label };
   }
+  if (value.kind === "local") return parseLocalFlow(slug, value, { id: value.id, label: value.label }, transport);
   if (value.kind !== "key" || !Array.isArray(value.fields) || value.fields.length === 0 || value.fields.length > 2) {
     throw new Error(`Plugin ${slug} has an invalid auth flow.`);
   }
   const fields = value.fields.map((field) => parseField(slug, field, transport));
+  if (fields.filter((field) => field.url).length > 1) throw new Error(`Plugin ${slug} asks for more than one link.`);
+  if (fields.every((field) => field.optional)) throw new Error(`Plugin ${slug} auth needs a required field.`);
   const docsUrl = value.docsUrl;
   if (docsUrl !== undefined && docsUrl !== null && !isHttpsUrl(docsUrl)) {
     throw new Error(`Plugin ${slug} auth needs an https docsUrl.`);
@@ -341,12 +409,51 @@ function parseFlow(slug: string, value: unknown, transport: unknown): PluginAuth
   };
 }
 
+function parseLocalFlow(
+  slug: string,
+  value: DynamicRecord,
+  base: { id: string; label: string },
+  transport: unknown,
+): PluginLocalFlow {
+  if (transport !== "http") throw new Error(`Plugin ${slug} local server needs an http server.`);
+  const steps = value.steps;
+  if (
+    !Array.isArray(steps) ||
+    steps.length === 0 ||
+    steps.length > 8 ||
+    !steps.every((step) => isString(step) && step.trim().length > 0)
+  ) {
+    throw new Error(`Plugin ${slug} local server needs one to eight steps.`);
+  }
+  const note = value.note;
+  if (note !== undefined && (!isString(note) || note.trim().length === 0)) {
+    throw new Error(`Plugin ${slug} has an invalid auth flow.`);
+  }
+  const docsUrl = value.docsUrl;
+  if (docsUrl !== undefined && docsUrl !== null && !isHttpsUrl(docsUrl)) {
+    throw new Error(`Plugin ${slug} auth needs an https docsUrl.`);
+  }
+  const docsLabel = value.docsLabel;
+  if (docsLabel !== undefined && !isString(docsLabel)) throw new Error(`Plugin ${slug} has an invalid auth flow.`);
+  return {
+    ...base,
+    kind: "local",
+    steps: [...steps],
+    ...(isString(note) ? { note } : {}),
+    ...(docsUrl ? { docsUrl } : {}),
+    ...(isString(docsLabel) ? { docsLabel } : {}),
+  };
+}
+
 function parseField(slug: string, value: unknown, transport: unknown): PluginAuthField {
   if (!isDynamicRecord(value) || !isString(value.id) || !isString(value.label) || !value.id || !value.label) {
     throw new Error(`Plugin ${slug} has an invalid auth field.`);
   }
   const field: PluginAuthField = { id: value.id, label: value.label };
-  if (transport === "stdio") {
+  if (value.url === true) {
+    if (transport !== "http") throw new Error(`Plugin ${slug} link field needs an http server.`);
+    field.url = true;
+  } else if (transport === "stdio") {
     if (!isString(value.env) || !value.env) throw new Error(`Plugin ${slug} stdio field needs an env name.`);
     field.env = value.env;
   } else {
@@ -359,6 +466,10 @@ function parseField(slug: string, value: unknown, transport: unknown): PluginAut
       if (!isString(candidate)) throw new Error(`Plugin ${slug} has an invalid auth field.`);
       field[optional] = candidate;
     }
+  }
+  if (value.optional !== undefined) {
+    if (typeof value.optional !== "boolean") throw new Error(`Plugin ${slug} has an invalid auth field.`);
+    if (value.optional) field.optional = true;
   }
   return field;
 }
@@ -386,7 +497,7 @@ function baseServerConfig(server: PluginServer): McpServerConfig {
     enabled: true,
     command: server.command,
     args: [...server.args],
-    env: [],
+    env: Object.entries(server.env ?? {}).map(([key, value]) => ({ key, value })),
     envPassthrough: [],
     workingDirectory: "",
     url: "",
@@ -394,10 +505,6 @@ function baseServerConfig(server: PluginServer): McpServerConfig {
   };
 }
 
-/**
- * Every key flow must still validate with a typed value in place, so the
- * listing cannot declare a credential the settings form then refuses.
- */
 function checkCredentialFlows(slug: string, server: PluginServer, base: McpServerConfig): void {
   for (const flow of server.auth ?? []) {
     if (flow.kind !== "key") continue;
@@ -406,10 +513,12 @@ function checkCredentialFlows(slug: string, server: PluginServer, base: McpServe
         ? { ...base, env: flow.fields.map((field) => ({ key: field.env ?? "", value: `sample${field.prefix ?? ""}` })) }
         : {
             ...base,
-            headers: flow.fields.map((field) => ({ key: field.header ?? "", value: `sample${field.prefix ?? ""}` })),
+            headers: flow.fields
+              .filter((field) => !field.url)
+              .map((field) => ({ key: field.header ?? "", value: `sample${field.prefix ?? ""}` })),
           };
     const errors = mcpConfigErrors(normalizeMcpConfig(applied));
-    const firstError = errors.name ?? errors.command ?? errors.url;
+    const firstError = errors.name ?? errors.command ?? errors.url ?? errors.headers;
     if (firstError) throw new Error(`Plugin ${slug} credential is invalid: ${firstError}`);
   }
 }
@@ -423,22 +532,23 @@ function isHttpsUrl(value: unknown): value is string {
   }
 }
 
+function isLoopbackHttpUrl(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" && ["127.0.0.1", "localhost", "[::1]"].includes(url.hostname);
+  } catch {
+    return false;
+  }
+}
+
 function sha256(value: string): string {
   return createHash("sha256").update(value, "utf8").digest("hex");
 }
 
-/**
- * Renders a value the way the formatter prints a literal: short collections
- * stay on one line, longer ones break (with trailing commas in TypeScript),
- * and string values that exceed the line width start on the next line.
- * The catalog schema only holds plain JSON values, so this printer only
- * handles those.
- */
 function tsLiteral(value: unknown): string {
   return printLiteral(value, "", "ts");
 }
 
-/** The snapshot files are JSON, so keys stay quoted and commas stay absent. */
 function jsonLiteral(value: unknown): string {
   return `${printLiteral(value, "", "json")}\n`;
 }
@@ -452,7 +562,8 @@ function printLiteral(value: unknown, indent: string, mode: LiteralMode, prefixW
   if (Array.isArray(value)) {
     if (value.length === 0) return "[]";
     const child = `${indent}  `;
-    return `[\n${value.map((item) => `${child}${printLiteral(item, child, mode)}`).join(",\n")}${closer}${indent}]`;
+    const commaWidth = (index: number) => (mode === "ts" || index < value.length - 1 ? 1 : 0);
+    return `[\n${value.map((item, index) => `${child}${printLiteral(item, child, mode, commaWidth(index))}`).join(",\n")}${closer}${indent}]`;
   }
   if (isDynamicRecord(value)) {
     const entries = Object.entries(value);
@@ -468,7 +579,7 @@ function printLiteralField(key: string, value: unknown, indent: string, mode: Li
   const flat = inlineLiteral(value, mode);
   const head = `${indent}${name}: ${flat}`;
   if (head.length + 1 <= 120) return head;
-  if (typeof value === "string" && mode === "ts") return `${indent}${name}:\n${indent}  ${flat}`;
+  if (typeof value === "string" && mode === "ts" && name.length >= 5) return `${indent}${name}:\n${indent}  ${flat}`;
   if (typeof value === "string") return head;
   return `${indent}${name}: ${printLiteral(value, indent, mode, name.length + 2)}`;
 }
@@ -483,7 +594,15 @@ function inlineLiteral(value: unknown, mode: LiteralMode): string {
     const inner = Object.entries(value).map(([key, item]) => pair(key, item));
     return `{ ${inner.join(", ")} }`;
   }
+  if (typeof value === "string" && mode === "ts") return tsString(value);
   return JSON.stringify(value) ?? "null";
+}
+
+function tsString(value: string): string {
+  const double = JSON.stringify(value);
+  if (value.split('"').length <= value.split("'").length) return double;
+  const inner = double.slice(1, -1).replace(/\\(.)/gu, (pair, char: string) => (char === '"' ? '"' : pair));
+  return `'${inner.replaceAll("'", "\\'")}'`;
 }
 
 function tsKey(key: string): string {
@@ -491,7 +610,8 @@ function tsKey(key: string): string {
 }
 
 function constName(slug: string): string {
-  return slug.toUpperCase().replace(/[^A-Z0-9]+/gu, "_");
+  const name = slug.toUpperCase().replace(/[^A-Z0-9]+/gu, "_");
+  return /^[0-9]/u.test(name) ? `PLUGIN_${name}` : name;
 }
 
 function renderRendererModule(plugins: PluginDetail[]): string {
@@ -504,7 +624,7 @@ function renderRendererModule(plugins: PluginDetail[]): string {
       installs: 0,
       featured: plugin.featured,
       updatedAt: plugin.updatedAt,
-      shareUrl: `dani-dex://plugins/${plugin.slug}`,
+      shareUrl: `https://openbot.run/plugins/${plugin.slug}`,
     })};`;
   });
   const list = plugins.map((plugin) => constName(plugin.slug)).join(",\n  ");
@@ -516,13 +636,13 @@ function renderRendererModule(plugins: PluginDetail[]): string {
  * bun run marketplace:build:plugins -- --check to verify.
  */
 
-import type { McpServerConfig } from "@dani-dex/contracts/ipc";
-import type { MarketplacePluginApp, MarketplacePluginDetail } from "./marketplace-plugins";
+import type { McpServerConfig } from "@openbot/contracts/ipc";
+import type { MarketplacePluginApp, MarketplacePluginDetail } from "@openbot/ui/features/settings/marketplace-plugins";
 
 /**
  * The configuration an app installs as. The catalog states the name and how the server is reached -
- * an address, or a command and its words; the rest of the record and \`enabled\` are made here rather
- * than stored as catalog data that could disagree with \`normalizeMcpConfig\`.
+ * an address, or a command, its words and its fixed settings; the rest of the record and \`enabled\`
+ * are made here rather than stored as catalog data that could disagree with \`normalizeMcpConfig\`.
  *
  * A credential is never among them. What a server asks for is declared in \`server.auth\`, and the
  * value is typed by the user in the connect dialog, which hands back the configuration that
@@ -539,7 +659,10 @@ export function createPluginAppConfig(app: MarketplacePluginApp): McpServerConfi
     enabled: true,
     command: app.server.transport === "stdio" ? app.server.command : "",
     args: app.server.transport === "stdio" ? [...app.server.args] : [],
-    env: [],
+    env:
+      app.server.transport === "stdio"
+        ? Object.entries(app.server.env ?? {}).map(([key, value]) => ({ key, value }))
+        : [],
     envPassthrough: [],
     workingDirectory: "",
     url: app.server.transport === "http" ? app.server.url : "",
@@ -552,6 +675,101 @@ ${blocks.join("\n\n")}
 export const MARKETPLACE_PLUGINS: MarketplacePluginDetail[] = [
   ${list},
 ];
+`;
+}
+
+function renderMobileModule(plugins: PluginDetail[]): string {
+  const listings = plugins.map((plugin) => {
+    const { iconUrl: _iconUrl, updatedAt: _updatedAt, apps, ...detail } = plugin;
+    return {
+      ...detail,
+      apps: apps.map(({ iconUrl: _appIconUrl, macAutomation, ...app }) =>
+        macAutomation?.length ? { ...app, needsMac: true } : app,
+      ),
+    };
+  });
+  return `/**
+ * The plugins the mobile Marketplace offers.
+ *
+ * Generated from marketplace/plugin-catalog/ by scripts/build-plugin-catalog.ts.
+ * Do not edit by hand: run bun run marketplace:build:plugins, or
+ * bun run marketplace:build:plugins -- --check to verify.
+ */
+
+import type { SkillCategory } from "@openbot/contracts/ipc";
+
+/** One credential the user types. It goes into a \`header\` (http) or an \`env\` value (stdio). */
+export interface MobilePluginAuthField {
+  id: string;
+  label: string;
+  /** The value replaces the listing's address. It must stay on the listing's host or a subdomain. */
+  url?: boolean;
+  header?: string;
+  env?: string;
+  /** Written in front of the typed value, such as \`"Bearer "\`. */
+  prefix?: string;
+  placeholder?: string;
+  hint?: string;
+  optional?: boolean;
+}
+
+export type MobilePluginAuthFlow =
+  | { id: string; kind: "link"; label: string }
+  | {
+      id: string;
+      kind: "key";
+      label: string;
+      fields: MobilePluginAuthField[];
+      docsUrl?: string | null;
+      docsLabel?: string;
+    }
+  | {
+      id: string;
+      kind: "local";
+      label: string;
+      steps: string[];
+      note?: string;
+      docsUrl?: string | null;
+      docsLabel?: string;
+    };
+
+type MobilePluginServer =
+  | { name: string; transport: "http"; url: string; earlierUrls?: string[]; auth?: MobilePluginAuthFlow[] }
+  | {
+      name: string;
+      transport: "stdio";
+      command: string;
+      args: string[];
+      env?: Record<string, string>;
+      auth?: MobilePluginAuthFlow[];
+    };
+
+export interface MobilePluginApp {
+  id: string;
+  name: string;
+  description: string;
+  server: MobilePluginServer;
+  /** The app drives Apple apps, so it runs only on a host that is a Mac. */
+  needsMac?: true;
+}
+
+export interface MobilePlugin {
+  slug: string;
+  name: string;
+  tagline: string;
+  description: string;
+  category: SkillCategory;
+  creatorName: string;
+  version: string;
+  prompts: Array<{ id: string; text: string }>;
+  apps: MobilePluginApp[];
+  websiteUrl: string | null;
+  privacyPolicyUrl: string | null;
+  termsUrl: string | null;
+  featured: boolean;
+}
+
+export const MOBILE_PLUGINS: readonly MobilePlugin[] = ${tsLiteral(listings)};
 `;
 }
 
@@ -600,11 +818,19 @@ export interface PluginCatalogApp {
   description: string;
   iconUrl: string | null;
   server: PluginCatalogServer;
+  macAutomation?: string[];
 }
 
 export type PluginCatalogServer =
-  | { name: string; transport: "http"; url: string; auth?: unknown }
-  | { name: string; transport: "stdio"; command: string; args: string[]; auth?: unknown };
+  | { name: string; transport: "http"; url: string; earlierUrls?: string[]; auth?: unknown }
+  | {
+      name: string;
+      transport: "stdio";
+      command: string;
+      args: string[];
+      env?: Record<string, string>;
+      auth?: unknown;
+    };
 
 export interface PluginCatalogDetail {
   slug: string;
@@ -664,15 +890,18 @@ async function checkGenerated(
   paths: PluginCatalogPaths,
   renderer: string,
   worker: string,
+  mobile: string,
   snapshot: Array<{ path: string; content: string }>,
 ): Promise<void> {
   const expected = new Map<string, string>();
   expected.set(resolve(paths.rendererPath), renderer);
   expected.set(resolve(paths.workerPath), worker);
+  expected.set(resolve(paths.mobilePath), mobile);
   for (const file of snapshot) expected.set(resolve(join(paths.snapshotDir, file.path)), file.content);
   const actual = new Map<string, string>();
   actual.set(resolve(paths.rendererPath), await readFile(paths.rendererPath, "utf8"));
   actual.set(resolve(paths.workerPath), await readFile(paths.workerPath, "utf8"));
+  actual.set(resolve(paths.mobilePath), await readFile(paths.mobilePath, "utf8").catch(() => ""));
   for (const file of snapshot) {
     actual.set(resolve(join(paths.snapshotDir, file.path)), await readFile(join(paths.snapshotDir, file.path), "utf8"));
   }

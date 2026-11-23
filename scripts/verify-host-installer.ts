@@ -34,7 +34,15 @@ export function verifyHostBom(text: string): void {
   const seen = new Set<string>();
   for (const line of text.trim().split("\n")) {
     const [path, modeText, uid, gid] = line.split("\t");
-    if (!expected.has(path) || seen.has(path) || uid !== "0" || gid !== "0" || !/^[0-7]+$/.test(modeText))
+    if (
+      path === undefined ||
+      modeText === undefined ||
+      !expected.has(path) ||
+      seen.has(path) ||
+      uid !== "0" ||
+      gid !== "0" ||
+      !/^[0-7]+$/.test(modeText)
+    )
       throw new Error("Unexpected payload path, type or ownership.");
     const mode = Number.parseInt(modeText, 8);
     const isFile = HOST_FILES.some((file) => `.${file}` === path);
@@ -82,11 +90,11 @@ export async function verifyHostPayload(expanded: string, version: string): Prom
       throw new Error("Installer script does not match release source.");
   }
   for (const [source, destination] of [
-    ["dani-dex-host", "/usr/local/bin/dani-dex-host"],
-    ["dani-dex-relaunch.sh", `${HOST_MANAGER_DIRECTORY}/dani-dex-relaunch.sh`],
-    ["dev.danlab.danidex.host-manager.plist", "/Library/LaunchDaemons/dev.danlab.danidex.host-manager.plist"],
-    ["dev.danlab.danidex.desktop.relaunch.plist", "/Library/LaunchAgents/dev.danlab.danidex.desktop.relaunch.plist"],
-  ]) {
+    ["openbot-host", "/usr/local/bin/openbot-host"],
+    ["openbot-relaunch.sh", `${HOST_MANAGER_DIRECTORY}/openbot-relaunch.sh`],
+    ["app.openbot.host-manager.plist", "/Library/LaunchDaemons/app.openbot.host-manager.plist"],
+    ["app.openbot.desktop.relaunch.plist", "/Library/LaunchAgents/app.openbot.desktop.relaunch.plist"],
+  ] as const) {
     if (
       (await readFile(join(root, destination), "utf8")) !==
       (await readFile(`build/macos/host-updates/${source}`, "utf8"))
@@ -96,15 +104,8 @@ export async function verifyHostPayload(expanded: string, version: string): Prom
   }
 }
 
-// `pkgutil` describes a Developer ID Installer package as issued "for distribution". A Mac
-// Installer Distribution certificate reports "signed by a certificate trusted by" instead: that is
-// the App Store type, it cannot install this package outside the Mac App Store, and it was issued
-// by mistake once already. So the whole status line is the check, not the word "signed".
 const HOST_SIGNATURE_STATUS = "signed by a developer certificate issued by Apple for distribution";
 
-// Takes the text so the accepted and rejected wordings are provable without a signing identity:
-// the release path is the only place this runs, and a status no real package produces would fail
-// there for the first time with the package already built.
 export function verifyHostSignature(signature: string): void {
   if (
     !new RegExp(`^\\s*1[.:] Developer ID Installer:.*\\(${HOST_TEAM_ID}\\)\\s*$`, "m").test(signature) ||
@@ -121,7 +122,7 @@ export async function verifyHostInstaller(pkg: string, version: string, requireN
     await command("/usr/sbin/spctl", ["--assess", "--type", "install", "--verbose=2", pkg]);
     await command("/usr/bin/xcrun", ["stapler", "validate", pkg]);
   }
-  const temp = await mkdtemp(join(tmpdir(), "dani-dex-host-package-"));
+  const temp = await mkdtemp(join(tmpdir(), "openbot-host-package-"));
   const expanded = join(temp, "expanded");
   try {
     await command("/usr/sbin/pkgutil", ["--expand-full", resolve(pkg), expanded]);

@@ -1,146 +1,198 @@
+import { foreignProvider, isKnownAgentProvider } from "@openbot/contracts/agent-providers";
+import {
+  type AgentModelId,
+  type AgentProviderRef,
+  type AgentReasoningEffort,
+  agentNextProviderAccountId,
+  DEFAULT_PROVIDER_ACCOUNT_ID,
+  providerDisplayName,
+  workspaceAccessEnforced,
+} from "@openbot/contracts/ipc";
+import { reasoningLabel } from "@openbot/ui/components/ProviderModelPicker";
+import { findModelOption, providerAccountName } from "@openbot/ui/components/provider-accounts";
+import { ConversationHeader as SharedConversationHeader } from "@openbot/ui/features/conversation/ConversationHeader";
+import { ThreadHeader } from "@openbot/ui/features/conversation/threads/ThreadHeader";
+import { DRAFT_THREAD_ID, MAIN_THREAD_ID } from "@openbot/ui/features/conversation/threads/thread-types";
+import { Show } from "solid-js";
+import { actionToast } from "../../action-toast";
 import { useConversationViewScope } from "./conversation-scope";
 
 const loadAgentSettingsPanel = () => import("./AgentSettingsPanel");
 
-import { createMemo, Show } from "solid-js";
-import { ProviderModelPicker } from "../../components/ProviderModelPicker";
-import { Button, toast } from "../../components/ui";
-import { errorMessage } from "../../error-message";
-import { useI18n } from "../../i18n-context";
-import { AgentAvatar } from "../agents/AgentAvatar";
-import { ComputerIcon, RemoteDesktopIcon } from "./ConversationIcons";
+interface BadgeRuntime {
+  provider: AgentProviderRef;
+  model: AgentModelId;
+  reasoningEffort: AgentReasoningEffort;
+  providerAccountId?: string | undefined;
+}
 
-/** @internal Stable HMR boundary for conversation header. */
+import { useText } from "@openbot/ui/text";
+
 export function ConversationHeader() {
-  const i18n = useI18n();
+  const { t } = useText();
   const {
     actingBrowserControl,
     agentActivity,
     browserControlAgent,
-    hideBrowserPanel,
+    channel,
+    fastMode,
+    ultrafast,
+    fastModeChange,
     props,
-    screenOpen,
+    runningTurnRuntime,
     selectAndConfirmModel,
     selectAndConfirmReasoning,
     setActiveRightPanel,
     settingsModel,
     settingsProvider,
     settingsReasoning,
-    showBrowserPanel,
+    sidePanelOpen,
+    sideThreadOpen,
+    messagePins,
+    replyJump,
+    toggleSidePanel,
+    moveThreadToPanel,
+    startNewThread,
   } = useConversationViewScope();
-  const changeAutoApprove = createMemo(() => {
-    const save = props.onSetAgentAutoApprove;
-    const name = props.agent?.name ?? "This agent";
-    if (!save) return undefined;
-    return (next: boolean) => {
-      void save(next).catch((error) => {
-        toast.error(
-          next
-            ? errorMessage(error, `Could not save the standing approval for ${name}. Try again.`)
-            : i18n.t("settings.autoApprove.revokeFailed", { name }),
-        );
-      });
+  const runningThreads = () => props.threads?.running ?? 0;
+  const openMainChat = () => {
+    const header = props.threads?.header;
+    return header && sideThreadOpen() ? () => header.onOpen(MAIN_THREAD_ID) : undefined;
+  };
+  const titleSelected = () => (props.threads ? !sideThreadOpen() : undefined);
+  const viewTaskId = () => (sideThreadOpen() ? (props.threads?.open?.id ?? DRAFT_THREAD_ID) : undefined);
+  let pinOpens = 0;
+  async function openPin(key: string): Promise<void> {
+    const pin = messagePins.pin(key);
+    if (!pin) return;
+    const open = ++pinOpens;
+    const opened =
+      pin.taskId === null && !sideThreadOpen()
+        ? await replyJump.jumpTo(pin.messageId)
+        : ((await props.threads?.onOpenMessage(pin.taskId, pin.messageId)) ?? false);
+    if (opened || open !== pinOpens) return;
+    actionToast.error(t("chat.pins.missing"));
+    messagePins.load();
+  }
+  const pinnedMessages = () => {
+    if (!messagePins.available()) return undefined;
+    return {
+      pins: messagePins.items(viewTaskId()),
+      agents: props.agents,
+      onOpenChange: (open: boolean) => {
+        if (open) messagePins.load();
+      },
+      onJump: (key: string) => void openPin(key),
+      onUnpin: (key: string) => {
+        const pin = messagePins.pin(key);
+        if (pin) messagePins.set(pin.taskId ?? undefined, pin.messageId, false);
+      },
     };
-  });
+  };
+  const working = () => agentActivity() === "Working";
+  const providerName = (provider: AgentProviderRef) =>
+    isKnownAgentProvider(provider) ? providerDisplayName(provider) : String(provider);
+  const accountId = (runtime: BadgeRuntime) => runtime.providerAccountId ?? DEFAULT_PROVIDER_ACCOUNT_ID;
+  const accountName = (runtime: BadgeRuntime) =>
+    providerAccountName(
+      t,
+      props.agentStatus?.providers?.find((status) => status.id === runtime.provider)?.accounts ?? [],
+      accountId(runtime),
+    );
+  const runtimeLabel = (runtime: BadgeRuntime, other: BadgeRuntime) => {
+    const parts = [
+      findModelOption(props.modelOptions, props.agentStatus?.providers, runtime.provider, runtime.model)?.name ??
+        runtime.model,
+    ];
+    if (runtime.provider !== other.provider) parts.unshift(providerName(runtime.provider));
+    else if (accountId(runtime) !== accountId(other)) parts.unshift(accountName(runtime));
+    if (runtime.reasoningEffort !== other.reasoningEffort) parts.push(reasoningLabel(runtime.reasoningEffort, t));
+    return parts.join(" · ");
+  };
+  const pendingModel = () => {
+    const agent = props.agent;
+    if (!agent || !(working() || runningThreads() > 0)) return undefined;
+    const running: BadgeRuntime = (working() ? runningTurnRuntime() : null) ?? agent;
+    const next: BadgeRuntime = agent.pendingRuntime ?? {
+      provider: settingsProvider(),
+      model: settingsModel(),
+      reasoningEffort: settingsReasoning(),
+      providerAccountId: agent.providerAccountId,
+    };
+    if (
+      running.provider === next.provider &&
+      running.model === next.model &&
+      running.reasoningEffort === next.reasoningEffort &&
+      accountId(running) === accountId(next)
+    )
+      return undefined;
+    return { running: runtimeLabel(running, next), next: runtimeLabel(next, running) };
+  };
   return (
-    <header class="window-drag conversation-header">
-      <div class="conversation-heading-group">
-        <Show when={props.agent}>
-          {(agent) => (
-            <Button
-              variant="ghost"
-              size="sm"
-              type="button"
-              class="conversation-title no-drag"
-              aria-label="View agent settings"
-              onPointerEnter={() => void loadAgentSettingsPanel()}
-              onFocus={() => void loadAgentSettingsPanel()}
-              onClick={() => setActiveRightPanel("settings")}
-            >
-              <AgentAvatar agent={agent()} />
-              <h1>{agent().name}</h1>
-            </Button>
-          )}
-        </Show>
-      </div>
-      <div class="conversation-header-actions no-drag">
-        <Show when={props.agent}>
-          <ProviderModelPicker
-            provider={settingsProvider()}
-            value={settingsModel()}
-            reasoningEffort={settingsReasoning()}
-            modelOptions={props.modelOptions}
-            agentStatus={props.agentStatus}
-            runtimeStatuses={props.providerRuntimeStatuses}
-            customProviders={props.customProviders}
-            onDownloadProvider={props.onDownloadProvider}
-            onCancelProviderDownload={props.onCancelProviderDownload}
-            onConnectProvider={props.onConnectProvider}
-            modelChangesDisabled={agentActivity() === "Working"}
-            disabledReason={
-              agentActivity() === "Working"
-                ? "Wait for the current work to finish before changing models."
-                : "Models are available after an agent CLI connects."
+    <SharedConversationHeader
+      agent={props.agent}
+      title={channel ? <channel.HeaderTitle onOpenSettings={() => setActiveRightPanel("settings")} /> : undefined}
+      onSettingsIntent={() => void loadAgentSettingsPanel()}
+      onOpenSettings={() => setActiveRightPanel("settings")}
+      onOpenChat={openMainChat()}
+      titleSelected={titleSelected()}
+      pendingModel={pendingModel()}
+      modelPicker={{
+        provider: settingsProvider(),
+        foreignProvider: props.agent ? foreignProvider(props.agent.provider) : undefined,
+        value: settingsModel(),
+        reasoningEffort: settingsReasoning(),
+        modelOptions: props.modelOptions,
+        agentStatus: props.agentStatus,
+        runtimeStatuses: props.providerRuntimeStatuses,
+        customProviders: props.customProviders,
+        customAgents: props.customAgents,
+        onDownloadProvider: props.onDownloadProvider,
+        onCancelProviderDownload: props.onCancelProviderDownload,
+        onConnectProvider: props.onConnectProvider,
+        canConnectProvider: props.canConnectProvider,
+        onManageProviders: props.onManageProviders,
+        disabledReason: t("conversation.header.modelsUnavailable"),
+        accountChoice: true,
+        providerAccountId: props.agent ? agentNextProviderAccountId(props.agent) : undefined,
+        workspaceOnly: props.agent ? workspaceAccessEnforced(props.agent) : false,
+        accountUsage: props.accountUsage,
+        onChange: (model, provider, accountId, effort) =>
+          void selectAndConfirmModel(model, provider, accountId, effort),
+        onReasoningEffortChange: (effort) => void selectAndConfirmReasoning(effort),
+        fastMode: fastMode(),
+        ultrafast: ultrafast(),
+        onFastModeChange: fastModeChange(),
+      }}
+      remoteControl={
+        props.remoteDesktopEnabled !== false && props.server?.kind === "remote"
+          ? {
+              enabled: Boolean(props.remoteDesktopSessionActive || props.server.state === "online"),
+              active: Boolean(props.remoteDesktopSessionActive),
+              visible: Boolean(props.remoteDesktopVisible),
+              onOpen: (trigger) => {
+                if (props.server) void props.onOpenRemoteDesktop(props.server.id, trigger);
+              },
             }
-            onChange={(model, provider) => void selectAndConfirmModel(model, provider)}
-            onReasoningEffortChange={(effort) => void selectAndConfirmReasoning(effort)}
-            autoApprove={props.agentAutoApproves}
-            agentName={props.agent?.name}
-            autoApproveLocked={props.agentAutoApproveLocked}
-            onAutoApproveChange={changeAutoApprove()}
-          />
+          : undefined
+      }
+      threads={
+        <Show when={props.threads}>
+          {(threads) => <ThreadHeader {...threads().header} onNew={startNewThread} onMoveToSide={moveThreadToPanel} />}
         </Show>
-        <Show when={props.remoteDesktopEnabled !== false && props.server?.kind === "remote" ? props.server : undefined}>
-          {(server) => {
-            const enabled = () => props.remoteDesktopSessionActive || server().state === "online";
-            const label = () => (props.remoteDesktopSessionActive ? "Resume remote control" : "Open remote control");
-            return (
-              <Button
-                variant="ghost"
-                type="button"
-                class="header-panel-toggle remote-desktop-button"
-                aria-label={label()}
-                aria-expanded={props.remoteDesktopVisible ? "true" : "false"}
-                disabled={!enabled()}
-                onClick={(event) => void props.onOpenRemoteDesktop(server().id, event.currentTarget)}
-              >
-                <RemoteDesktopIcon />
-                <Show when={props.remoteDesktopSessionActive}>
-                  <span class="remote-desktop-button-dot" aria-hidden="true" />
-                </Show>
-              </Button>
-            );
-          }}
-        </Show>
-        <Show when={props.browserEnabled !== false}>
-          <Button
-            variant="ghost"
-            type="button"
-            class={[
-              "header-panel-toggle computer-button",
-              { "computer-button-agent-active": Boolean(actingBrowserControl()) },
-            ]}
-            aria-label={
-              actingBrowserControl()
-                ? `${browserControlAgent()?.name ?? "Agent"} is controlling the browser`
-                : screenOpen()
-                  ? "Hide computer"
-                  : "Open computer"
+      }
+      pinnedMessages={pinnedMessages()}
+      sidePanel={
+        channel?.readOnly()
+          ? undefined
+          : {
+              open: sidePanelOpen(),
+              actingAgentName: actingBrowserControl()
+                ? (browserControlAgent()?.name ?? t("conversation.header.agentFallback"))
+                : undefined,
+              onToggle: toggleSidePanel,
             }
-            aria-expanded={screenOpen() ? "true" : "false"}
-            disabled={props.browserVisibilitySuspended}
-            onClick={() => {
-              if (screenOpen()) hideBrowserPanel();
-              else showBrowserPanel();
-            }}
-          >
-            <ComputerIcon />
-            <Show when={actingBrowserControl()}>
-              <span class="computer-control-dot" aria-hidden="true" />
-            </Show>
-          </Button>
-        </Show>
-      </div>
-    </header>
+      }
+    />
   );
 }

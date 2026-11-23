@@ -1,7 +1,7 @@
-import type { BrowserPreview, BrowserTab } from "@dani-dex/contracts/ipc";
-import { fn, userEvent, within } from "storybook/test";
+import type { BrowserPreview, BrowserTab } from "@openbot/contracts/ipc";
+import { BrowserTakeoverCard } from "@openbot/ui/features/conversation/ConversationPrompts";
+import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { BrowserTakeoverCard } from "../src/features/conversation/ConversationPrompts";
 import browserTakeoverPreviewUrl from "./assets/browser-takeover-preview.svg";
 
 const tab: BrowserTab = {
@@ -56,7 +56,7 @@ export const PreviewUnavailable: Story = {
 
 export const Narrow: Story = {
   render: (args) => (
-    <div style={{ width: "280px", "max-width": "100%" }}>
+    <div style={{ width: "340px", "max-width": "100%" }}>
       <BrowserTakeoverCard {...args} />
     </div>
   ),
@@ -66,7 +66,6 @@ export const Completed: Story = {
   args: { decision: "complete" },
 };
 
-/** A resolved card, and the channel view, have no browser panel to open: the preview is static. */
 export const NotOpenable: Story = {
   args: { onOpen: undefined },
 };
@@ -79,9 +78,27 @@ export const TabUnavailable: Story = {
   args: { tab: undefined, preview: null, previewStatus: "failed" },
 };
 
-export const Submitting: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "I’m done" }));
+export const SignInOnThisComputer: Story = {
+  args: {
+    tab: { ...tab, title: "Log in to X / X", url: "https://x.com/i/flow/login" },
+    onSignInLocally: fn(),
   },
+};
+
+const blockedTab: BrowserTab = { ...tab, title: "Log in to X / X", url: "https://x.com/i/flow/login" };
+
+export const SignInBlocked: Story = {
+  args: { tab: blockedTab, onSignInLocally: fn(), signInBlocked: { server: "Hello", signingIn: false } },
+};
+
+export const SignInBlockedWaiting: Story = {
+  args: { tab: blockedTab, onSignInLocally: fn(), signInBlocked: { server: "Hello", signingIn: true } },
+};
+
+export const SignInBlockedCompleted: Story = {
+  args: { tab: blockedTab, decision: "complete", signInBlocked: { server: "Hello", signingIn: false } },
+};
+
+export const SignInBlockedCancelled: Story = {
+  args: { tab: blockedTab, decision: "cancel", signInBlocked: { server: "Hello", signingIn: false } },
 };

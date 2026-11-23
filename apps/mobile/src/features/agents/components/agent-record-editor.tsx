@@ -1,39 +1,107 @@
-import { INPUT_LIMITS } from "@dani-dex/contracts/input-limits";
+import { Host } from "@expo/ui";
+import { eventFilterDraftsValid, eventFiltersFromDrafts } from "@openbot/contracts/event-filter-value";
+import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import {
+  type AgentMemorySelectionState,
   type CreateRoutineInput,
+  type EventRoutine,
+  type EventRoutineTriggerInput,
   isRoutineSchedule,
   type MemoryEntry,
   type RoutineFields,
+  type RoutineMissedPolicy,
   type RoutineSchedule,
+  type SaveEventRoutineInput,
   type UpdateRoutineInput,
-} from "@dani-dex/contracts/ipc";
-import { userErrorMessage } from "@dani-dex/user-errors";
-import { Host, Picker, Switch } from "@expo/ui";
+  type RoutineWebhookTrigger as WebhookTriggerFields,
+} from "@openbot/contracts/ipc";
+import type { EventRoutineOwner } from "@openbot/contracts/ipc-events";
+import type { MobileTextKey } from "@openbot/i18n/mobile";
+import {
+  type RoutineScheduleDraft,
+  routineDraftProblemCode,
+  routineScheduleFromDraft,
+  routineScheduleToDraft,
+  switchDraftKind,
+} from "@openbot/team-client/routine-schedule-draft";
 import { type QueryKey, useQueryClient } from "@tanstack/react-query";
-import { router, useNavigation } from "expo-router";
-import { usePreventRemove } from "expo-router/react-navigation";
+import { router } from "expo-router";
 import { Typography } from "heroui-native";
+import Check from "lucide-react-native/icons/check";
 import { useEffect, useRef, useState } from "react";
 import { Alert, View } from "react-native";
-import { useUniwind } from "uniwind";
-import { SettingsRow, SettingsSection } from "@/features/settings/components/settings-content";
-import { type MobileAgent, useMobileWorkspace } from "@/features/workspace/context/mobile-workspace-context";
+import { useCSSVariable, useUniwind } from "uniwind";
+import { SettingsNote, SettingsRow, SettingsSection } from "@/features/settings/components/settings-content";
+import {
+  type MobileAgent,
+  type MobileWorkspaceActions,
+  useMobileWorkspaceActions,
+  useMobileWorkspaceSelector,
+} from "@/features/workspace/context/mobile-workspace-context";
+import { queryKeys } from "@/features/workspace/model/query-keys";
+import { AppSwitch } from "@/shared/components/app-switch";
+import { SaveError } from "@/shared/components/save-error";
 import { SheetFormField } from "@/shared/components/sheet-form-field";
 import { SheetSaveAction } from "@/shared/components/sheet-save-action";
-import { RoutineTimePicker } from "./routine-schedule-time";
+import { haptics } from "@/shared/lib/haptics";
+import { useNativeLabelFont } from "@/shared/lib/native-label-font";
+import { useText } from "@/shared/lib/text";
+import { useDiscardGuard } from "@/shared/lib/use-discard-guard";
+import { type RoutineResultChoice, RoutineResultDestinationSection } from "./routine-result-destination";
+import { RoutineScheduleFields } from "./routine-schedule-fields";
+import { type RoutineTriggerChoice, RoutineTriggerPicker } from "./routine-trigger-picker";
+import { RoutineWebhookActivity } from "./routine-webhook-activity";
+import { type FilterDraft, filterDrafts, RoutineWebhookTrigger } from "./routine-webhook-trigger";
 
-function useRecordDraftGuard(dirty: boolean, pending: boolean) {
-  const navigation = useNavigation();
-  usePreventRemove(dirty || pending, ({ data }) => {
-    if (pending) return;
-    Alert.alert("Discard changes?", "Your changes have not been saved.", [
-      { text: "Keep editing", style: "cancel" },
-      { text: "Discard", style: "destructive", onPress: () => navigation.dispatch(data.action) },
-    ]);
-  });
+const TIME_ZONE_PLACEHOLDER = "Europe/London";
+
+const DEFAULT_SCHEDULE: RoutineSchedule = { kind: "daily", time: "09:00" };
+
+const MISSED_POLICY_TEXT = {
+  skip: "mobile.agent.record.missedPolicy.skip",
+  "run-once": "mobile.agent.record.missedPolicy.runOnce",
+} as const satisfies Record<RoutineMissedPolicy, MobileTextKey>;
+
+export type RoutineRecord = RoutineFields | EventRoutine;
+type WebhookRoutine = EventRoutine & { trigger: WebhookTriggerFields };
+
+export function isWebhookRoutine(routine: RoutineRecord | null | undefined): routine is WebhookRoutine {
+  return Boolean(routine && "owner" in routine && routine.trigger.kind === "webhook");
 }
 
-function useRecordAction(invalidate: QueryKey = ["agent-info"]) {
+export async function saveRoutineActive(
+  workspace: Pick<MobileWorkspaceActions, "saveEventRoutine" | "updateAgentRoutine">,
+  owner: EventRoutineOwner,
+  serverId: string,
+  routine: RoutineRecord,
+  active: boolean,
+): Promise<void> {
+  if (isWebhookRoutine(routine))
+    await workspace.saveEventRoutine(
+      {
+        id: routine.id,
+        owner,
+        name: routine.name,
+        instruction: routine.instruction,
+        active,
+        timezone: routine.timezone,
+        trigger: webhookTriggerInput(routine.trigger),
+        ...(routine.limitPolicy ? { limitPolicy: routine.limitPolicy } : {}),
+      },
+      serverId,
+    );
+  else await workspace.updateAgentRoutine({ agentId: owner.id, routineId: routine.id, active }, serverId);
+}
+
+function useRecordDraftGuard(dirty: boolean, pending: boolean) {
+  useDiscardGuard(dirty || pending, { busy: () => pending });
+}
+
+function useRecordAction(
+  invalidate: QueryKey = queryKeys.agentInfo(),
+  failure: MobileTextKey = "mobile.agent.record.saveFailed",
+) {
+  const { t, errorMessage } = useText();
   const client = useQueryClient();
   const lock = useRef(false);
   const [pending, setPending] = useState(false);
@@ -45,10 +113,12 @@ function useRecordAction(invalidate: QueryKey = ["agent-info"]) {
     setError(null);
     try {
       await action();
+      void haptics.notification("success");
       done?.();
       void client.invalidateQueries({ queryKey: invalidate });
     } catch (cause) {
-      setError(userErrorMessage(cause, "Could not save changes. Try again."));
+      void haptics.notification("error");
+      setError(errorMessage(cause, t(failure)));
     } finally {
       lock.current = false;
       setPending(false);
@@ -61,33 +131,41 @@ export function MemoryEditor({
   agent,
   memory,
   available,
+  selection,
+  selectionAvailable = true,
   port,
 }: {
   agent: Pick<MobileAgent, "id" | "serverId">;
   memory?: MemoryEntry;
   available: boolean;
+  selection?: AgentMemorySelectionState | null;
+  selectionAvailable?: boolean;
   port?: {
     save(text: string, id?: string): Promise<void>;
     delete(id: string): Promise<void>;
     queryKey: QueryKey;
   };
 }) {
-  const workspace = useMobileWorkspace();
+  const { t, format } = useText();
+  const workspace = useMobileWorkspaceActions();
   const action = useRecordAction(port?.queryKey);
+  const inclusion = useRecordAction();
+  const selected = selection?.selections.find((entry) => entry.memoryId === memory?.id);
+  const accent = String(useCSSVariable("--openbot-accent"));
   const [editedText, setEditedText] = useState<string | undefined>();
   const text = editedText ?? memory?.text ?? "";
   const [savedText, setSavedText] = useState<string | null>(null);
   const [finished, setFinished] = useState(false);
   const dirty = text.trim() !== (memory ? memory.text : (savedText ?? ""));
-  useRecordDraftGuard(dirty && !finished, action.pending);
+  useRecordDraftGuard(dirty && !finished, action.pending || inclusion.pending);
   useEffect(() => {
     if (finished) router.back();
   }, [finished]);
-  const disabled = !available || action.pending || (!memory && savedText !== null);
+  const disabled = !available || action.pending || inclusion.pending || (!memory && savedText !== null);
   return (
     <View className="gap-5">
       <SheetFormField
-        label="Memory"
+        label={t("mobile.agent.record.memory")}
         appearance="soft"
         multiline
         value={text}
@@ -113,16 +191,90 @@ export function MemoryEditor({
           )
         }
       />
+      {!port && selection ? (
+        <SettingsNote>
+          {t("mobile.agent.info.memory.inclusion.explanation")}{" "}
+          {t("mobile.agent.info.memory.inclusion.capacity", {
+            used: format.fileSize(selection.usedBytes),
+            total: format.fileSize(selection.budgetBytes),
+          })}
+        </SettingsNote>
+      ) : null}
+      {!port && selected ? (
+        <SettingsSection
+          title={t("mobile.agent.info.memory.inclusion.label")}
+          footer={t(
+            selected.userControlled
+              ? "mobile.agent.info.memory.inclusion.userControlled"
+              : "mobile.agent.info.memory.inclusion.agentControlled",
+          )}
+        >
+          {(["essential", "searchable", "automatic"] as const).map((choice) => (
+            <SettingsRow
+              key={choice}
+              supportingText={
+                choice === "automatic"
+                  ? t(
+                      selected.inclusion === "essential"
+                        ? "mobile.agent.info.memory.inclusion.essential"
+                        : "mobile.agent.info.memory.inclusion.searchable",
+                    )
+                  : undefined
+              }
+              disclosure={false}
+              checked={
+                choice === "automatic"
+                  ? !selected.userControlled
+                  : selected.userControlled && selected.inclusion === choice
+              }
+              trailing={
+                (
+                  choice === "automatic"
+                    ? !selected.userControlled
+                    : selected.userControlled && selected.inclusion === choice
+                ) ? (
+                  <Check size={18} color={accent} strokeWidth={2} />
+                ) : null
+              }
+              disabled={disabled || !selectionAvailable}
+              onPress={() =>
+                void inclusion.run(async () => {
+                  await workspace.setAgentMemoryInclusion(
+                    {
+                      agentId: agent.id,
+                      changes: [
+                        { memoryId: selected.memoryId, inclusion: choice, expectedRevision: selected.revision },
+                      ],
+                    },
+                    agent.serverId,
+                  );
+                })
+              }
+            >
+              <Typography.Paragraph>
+                {t(
+                  choice === "essential"
+                    ? "mobile.agent.info.memory.inclusion.essential"
+                    : choice === "searchable"
+                      ? "mobile.agent.info.memory.inclusion.searchable"
+                      : "mobile.agent.info.memory.inclusion.automatic",
+                )}
+              </Typography.Paragraph>
+            </SettingsRow>
+          ))}
+        </SettingsSection>
+      ) : null}
+      <SaveError error={inclusion.error} />
       {memory ? (
         <SettingsSection>
           <SettingsRow
             disclosure={false}
             disabled={disabled}
             onPress={() =>
-              Alert.alert("Delete memory?", "This memory will be removed.", [
-                { text: "Cancel", style: "cancel" },
+              Alert.alert(t("mobile.agent.record.deleteMemoryTitle"), t("mobile.agent.record.deleteMemoryBody"), [
+                { text: t("common.cancel"), style: "cancel" },
                 {
-                  text: "Delete",
+                  text: t("common.delete"),
                   style: "destructive",
                   onPress: () =>
                     void action.run(
@@ -136,17 +288,19 @@ export function MemoryEditor({
               ])
             }
           >
-            <Typography.Paragraph className="text-danger-text">Delete memory</Typography.Paragraph>
+            <Typography.Paragraph className="text-danger-text">
+              {t("mobile.agent.record.deleteMemory")}
+            </Typography.Paragraph>
           </SettingsRow>
         </SettingsSection>
       ) : null}
-      {action.error ? (
-        <Typography.Paragraph accessibilityRole="alert" className="text-danger-text">
-          {action.error}
-        </Typography.Paragraph>
-      ) : null}
+      <SaveError error={action.error} />
     </View>
   );
+}
+
+function webhookTriggerInput(trigger: WebhookTriggerFields): EventRoutineTriggerInput {
+  return { kind: "webhook", eventType: trigger.eventType, filters: trigger.filters };
 }
 
 export function RoutineEditor({
@@ -155,20 +309,34 @@ export function RoutineEditor({
   available,
   port,
 }: {
-  agent: Pick<MobileAgent, "id" | "serverId">;
-  routine?: RoutineFields;
+  agent: Pick<MobileAgent, "id" | "serverId"> & Partial<Pick<MobileAgent, "name">>;
+  routine?: RoutineRecord;
   available: boolean;
   port?: {
     create(input: Omit<CreateRoutineInput, "agentId">): Promise<void>;
     update(input: Omit<UpdateRoutineInput, "agentId">): Promise<void>;
     delete(id: string): Promise<void>;
+    test(id: string): Promise<void>;
     queryKey: QueryKey;
   };
 }) {
-  const workspace = useMobileWorkspace();
+  const { t } = useText();
+  const nativeLabelFont = useNativeLabelFont();
+  const workspace = useMobileWorkspaceActions();
   const action = useRecordAction(port?.queryKey);
   const toggle = useRecordAction(port?.queryKey);
+  const testRun = useRecordAction(port?.queryKey, "mobile.agent.record.testFailed");
+  const rotate = useRecordAction(port?.queryKey, "mobile.agent.webhook.rotateFailed");
+  const give = useRecordAction(port?.queryKey, "mobile.agent.webhook.giveFailed");
+  const [givenTo, setGivenTo] = useState<string | null>(null);
+  const [testStarted, setTestStarted] = useState(false);
   const [activeOverride, setActiveOverride] = useState<boolean | null>(null);
+  const [secret, setSecret] = useState<string | null>(null);
+  const [created, setCreated] = useState<WebhookRoutine | null>(null);
+  const keepOpen = useRef(false);
+  const eventOwner = { kind: port ? "channel" : "agent", id: agent.id } as const;
+  const agentName = agent.name;
+  const webhookRoutine = isWebhookRoutine(routine) ? routine : undefined;
   useEffect(() => {
     if (routine?.active === activeOverride) setActiveOverride(null);
   }, [routine?.active, activeOverride]);
@@ -177,8 +345,8 @@ export function RoutineEditor({
     setActiveOverride(active);
     void toggle.run(async () => {
       try {
-        if (port) await port.update({ routineId: routine.id, active });
-        else await workspace.updateAgentRoutine({ agentId: agent.id, routineId: routine.id, active }, agent.serverId);
+        if (port && !webhookRoutine) await port.update({ routineId: routine.id, active });
+        else await saveRoutineActive(workspace, eventOwner, agent.serverId, routine, active);
       } catch (cause) {
         setActiveOverride(null);
         throw cause;
@@ -186,39 +354,136 @@ export function RoutineEditor({
     });
   }
   const { theme } = useUniwind();
+  const accent = String(useCSSVariable("--openbot-accent"));
   const [finished, setFinished] = useState(false);
   const [savedDraft, setSavedDraft] = useState<string | null>(null);
-  const [edits, setEdits] = useState<{ name?: string; instruction?: string; schedule?: RoutineSchedule }>({});
+  const [edits, setEdits] = useState<{
+    name?: string;
+    instruction?: string;
+    schedule?: RoutineScheduleDraft;
+    trigger?: "schedule" | "webhook";
+    eventType?: string;
+    filters?: FilterDraft[];
+    missedPolicy?: RoutineMissedPolicy;
+  }>({});
   const name = edits.name ?? routine?.name ?? "";
   const instruction = edits.instruction ?? routine?.instruction ?? "";
-  const schedule = edits.schedule ?? routine?.trigger.schedule ?? { kind: "daily", time: "09:00" };
+  const savedSchedule = routine && "schedule" in routine.trigger ? routine.trigger.schedule : DEFAULT_SCHEDULE;
+  const savedTrigger = webhookRoutine ? "webhook" : "schedule";
+  const trigger = edits.trigger ?? savedTrigger;
+  const savedEventType = webhookRoutine?.trigger.eventType ?? "";
+  const savedFilters = webhookRoutine?.trigger.filters ?? [];
+  const eventType = edits.eventType ?? savedEventType;
+  const filters = edits.filters ?? filterDrafts(savedFilters);
+  const eventsSupported = useMobileWorkspaceSelector((current) => current.canManageEvents(agent.serverId));
+  const missedRuns = useMobileWorkspaceSelector((current) => current.canManageMissedRuns(agent.serverId));
+  const routineResults = useMobileWorkspaceSelector((current) => current.canManageRoutineResults(agent.serverId));
+  const agentSecretSupported = useMobileWorkspaceSelector((current) =>
+    current.canGiveWebhookSecretToAgent(agent.serverId),
+  );
+  const savedMissedPolicy = routine?.missedPolicy ?? "skip";
+  const missedPolicy = edits.missedPolicy ?? savedMissedPolicy;
+  const setMissedPolicy = (missedPolicy: RoutineMissedPolicy) => setEdits((current) => ({ ...current, missedPolicy }));
+  const [newDestination, setNewDestination] = useState<RoutineResultChoice | null>(null);
+  const scheduleDraft = edits.schedule ?? routineScheduleToDraft(savedSchedule);
+  const scheduleProblem = routineDraftProblemCode(scheduleDraft);
+  const schedule = edits.schedule && !scheduleProblem ? routineScheduleFromDraft(edits.schedule) : savedSchedule;
   const setName = (name: string) => setEdits((current) => ({ ...current, name }));
   const setInstruction = (instruction: string) => setEdits((current) => ({ ...current, instruction }));
-  const setSchedule = (schedule: RoutineSchedule) => setEdits((current) => ({ ...current, schedule }));
+  const setSchedule = (schedule: RoutineScheduleDraft) => setEdits((current) => ({ ...current, schedule }));
+  const selectTrigger = (choice: RoutineTriggerChoice) =>
+    setEdits((current) =>
+      choice === "webhook"
+        ? { ...current, trigger: "webhook" }
+        : choice === scheduleDraft.kind
+          ? { ...current, trigger: "schedule" }
+          : { ...current, trigger: "schedule", schedule: switchDraftKind(scheduleDraft, choice, new Date()) },
+    );
+  const setEventType = (eventType: string) => setEdits((current) => ({ ...current, eventType }));
+  const setFilters = (filters: FilterDraft[]) => setEdits((current) => ({ ...current, filters }));
   const [timezone, setTimezone] = useState(routine?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone);
   const initialTimezone = useRef(timezone);
-  const draft = JSON.stringify({ name, instruction, schedule, timezone });
+  const draft = JSON.stringify({
+    name,
+    instruction,
+    trigger,
+    schedule: edits.schedule ?? savedSchedule,
+    eventType,
+    filters: eventFiltersFromDrafts(filters),
+    timezone,
+    missedPolicy,
+    destination: newDestination,
+  });
   const nameChanged = name.trim() !== (routine?.name ?? "");
   const instructionChanged = instruction.trim() !== (routine?.instruction ?? "");
   const scheduleChanged =
-    JSON.stringify(schedule) !== JSON.stringify(routine?.trigger.schedule ?? { kind: "daily", time: "09:00" });
+    trigger === "schedule" &&
+    edits.schedule !== undefined &&
+    (scheduleProblem !== null || JSON.stringify(schedule) !== JSON.stringify(savedSchedule));
+  const webhookChanged =
+    trigger !== savedTrigger ||
+    (trigger === "webhook" &&
+      (eventType.trim() !== savedEventType ||
+        JSON.stringify(eventFiltersFromDrafts(filters)) !== JSON.stringify(savedFilters)));
+  const missedPolicyChanged = missedRuns && trigger === "schedule" && missedPolicy !== savedMissedPolicy;
   const dirty = routine
-    ? nameChanged || instructionChanged || scheduleChanged
+    ? nameChanged || instructionChanged || scheduleChanged || webhookChanged || missedPolicyChanged
     : draft !==
       (savedDraft ??
         JSON.stringify({
           name: "",
           instruction: "",
-          schedule: { kind: "daily", time: "09:00" },
+          trigger: "schedule",
+          schedule: DEFAULT_SCHEDULE,
+          eventType: "",
+          filters: [],
           timezone: initialTimezone.current,
+          missedPolicy: "skip",
+          destination: null,
         }));
   useRecordDraftGuard(dirty && !finished, action.pending);
   useEffect(() => {
     if (finished) router.back();
   }, [finished]);
   const disabled = !available || action.pending || (!routine && savedDraft !== null);
-  const validTime = isRoutineSchedule(schedule);
+  const validTrigger =
+    trigger === "webhook" ? eventFilterDraftsValid(filters) : scheduleProblem === null && isRoutineSchedule(schedule);
   async function save() {
+    if (webhookRoutine || trigger === "webhook" || missedRuns) {
+      const input: SaveEventRoutineInput = {
+        ...(routine ? { id: routine.id } : {}),
+        owner: eventOwner,
+        name: name.trim(),
+        instruction: instruction.trim(),
+        active: routine?.active ?? true,
+        timezone,
+        trigger:
+          trigger === "webhook"
+            ? { kind: "webhook", eventType: eventType.trim() || null, filters: eventFiltersFromDrafts(filters) }
+            : { kind: "schedule", schedule },
+        ...(routine?.limitPolicy ? { limitPolicy: routine.limitPolicy } : {}),
+        ...(missedRuns && trigger === "schedule" && (!routine || missedPolicyChanged) ? { missedPolicy } : {}),
+      };
+      const result = await workspace.saveEventRoutine(input, agent.serverId);
+      if (result.secret || result.routine.trigger.kind === "schedule") setSecret(result.secret);
+      if (!routine && isWebhookRoutine(result.routine)) {
+        keepOpen.current = true;
+        setCreated(result.routine);
+      }
+      if (!routine && !port && newDestination)
+        await workspace
+          .setRoutineResultDestination(
+            { agentId: agent.id, routineId: result.routine.id, destination: newDestination },
+            agent.serverId,
+          )
+          .catch(() =>
+            Alert.alert(
+              t("mobile.agent.record.resultDestination"),
+              t("mobile.agent.record.resultDestination.createFailed"),
+            ),
+          );
+      return;
+    }
     if (port) {
       if (routine)
         await port.update({
@@ -247,11 +512,22 @@ export function RoutineEditor({
         agent.serverId,
       );
   }
+  const shownWebhook = webhookRoutine ?? created ?? undefined;
+  const savedWebhook = trigger === "webhook" && shownWebhook ? shownWebhook : undefined;
+  const triggerPicker = (
+    <RoutineTriggerPicker
+      value={trigger === "webhook" ? "webhook" : scheduleDraft.kind}
+      webhook={Boolean(webhookRoutine || eventsSupported)}
+      disabled={disabled}
+      onSelect={selectTrigger}
+    />
+  );
   return (
     <View className="gap-5">
       <SheetFormField
         appearance="soft"
-        label="Routine name"
+        label={t("mobile.agent.record.routineName")}
+        placeholder={t("mobile.agent.record.routineNamePlaceholder")}
         value={name}
         editable={!disabled}
         maxLength={INPUT_LIMITS.routineName}
@@ -259,151 +535,137 @@ export function RoutineEditor({
       />
       <SheetFormField
         appearance="soft"
-        label="Routine instructions"
+        label={t("mobile.agent.record.routineInstructions")}
+        placeholder={t(
+          port
+            ? "mobile.agent.record.channelInstructionsPlaceholder"
+            : "mobile.agent.record.agentInstructionsPlaceholder",
+        )}
         multiline
         value={instruction}
         editable={!disabled}
         maxLength={INPUT_LIMITS.routineInstruction}
         onChangeText={setInstruction}
       />
-      <SettingsSection>
-        <SettingsRow
-          trailing={
-            <Host matchContents colorScheme={theme === "dark" ? "dark" : "light"}>
-              <Picker
-                selectedValue={schedule.kind}
-                enabled={!disabled}
-                onValueChange={(kind) => {
-                  if (kind === "daily" || kind === "weekdays") setSchedule({ kind, time: "09:00" });
-                  else if (kind === "weekly") setSchedule({ kind, weekday: 1, time: "09:00" });
-                  else if (kind === "monthly") setSchedule({ kind, day: 1, time: "09:00" });
-                  else if (kind === "hourly") setSchedule({ kind, minute: 0 });
-                  else if (kind === "custom") setSchedule({ kind, expression: "0 9 * * *" });
-                }}
+      {trigger === "schedule" ? (
+        <RoutineScheduleFields
+          draft={scheduleDraft}
+          disabled={disabled}
+          header={triggerPicker}
+          onChange={setSchedule}
+          footer={
+            routine ? (
+              <SettingsRow
+                trailing={
+                  <Typography type="body-sm" className="text-grouped-secondary">
+                    {routine.timezone}
+                  </Typography>
+                }
               >
-                <Picker.Item label="Every day" value="daily" />
-                <Picker.Item label="Weekdays" value="weekdays" />
-                <Picker.Item label="Every hour" value="hourly" />
-                <Picker.Item label="Every week" value="weekly" />
-                <Picker.Item label="Every month" value="monthly" />
-                <Picker.Item label="Custom schedule" value="custom" />
-                {schedule.kind === "advanced" || schedule.kind === "interval" ? (
-                  <Picker.Item label="Current schedule" value={schedule.kind} />
-                ) : null}
-              </Picker>
-            </Host>
+                <Typography.Paragraph>{t("mobile.agent.record.timeZone")}</Typography.Paragraph>
+              </SettingsRow>
+            ) : null
           }
-        >
-          <Typography.Paragraph>Schedule</Typography.Paragraph>
-        </SettingsRow>
-        {schedule.kind === "daily" ||
-        schedule.kind === "weekdays" ||
-        schedule.kind === "weekly" ||
-        schedule.kind === "monthly" ? (
-          <RoutineTimePicker
-            time={schedule.time}
-            disabled={disabled}
-            onChange={(time) => setSchedule({ ...schedule, time })}
-          />
-        ) : schedule.kind === "custom" ? (
-          <View className="p-4">
-            <SheetFormField
-              appearance="soft"
-              label="Cron expression"
-              value={schedule.expression}
-              maxLength={INPUT_LIMITS.routineCron}
-              editable={!disabled}
-              onChangeText={(expression) => setSchedule({ kind: "custom", expression })}
-            />
-          </View>
-        ) : schedule.kind === "hourly" ? null : (
-          <SettingsRow>
-            <Typography.Paragraph>
-              The current schedule is kept unless you select another schedule.
-            </Typography.Paragraph>
-          </SettingsRow>
-        )}
-        {schedule.kind === "weekly" ? (
-          <SettingsRow
-            trailing={
-              <Host matchContents colorScheme={theme === "dark" ? "dark" : "light"}>
-                <Picker
-                  selectedValue={schedule.weekday}
-                  enabled={!disabled}
-                  onValueChange={(weekday) => setSchedule({ ...schedule, weekday })}
-                >
-                  {["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map((day, index) => (
-                    <Picker.Item key={day} label={day} value={index} />
-                  ))}
-                </Picker>
-              </Host>
-            }
-          >
-            <Typography.Paragraph>Day</Typography.Paragraph>
-          </SettingsRow>
-        ) : null}
-        {schedule.kind === "monthly" ? (
-          <SettingsRow
-            trailing={
-              <Host matchContents colorScheme={theme === "dark" ? "dark" : "light"}>
-                <Picker
-                  selectedValue={schedule.day}
-                  enabled={!disabled}
-                  onValueChange={(day) => setSchedule({ ...schedule, day })}
-                >
-                  {Array.from({ length: 31 }, (_, index) => index + 1).map((day) => (
-                    <Picker.Item key={day} label={String(day)} value={day} />
-                  ))}
-                </Picker>
-              </Host>
-            }
-          >
-            <Typography.Paragraph>Day of month</Typography.Paragraph>
-          </SettingsRow>
-        ) : null}
-        {schedule.kind === "hourly" ? (
-          <SettingsRow
-            trailing={
-              <Host matchContents colorScheme={theme === "dark" ? "dark" : "light"}>
-                <Picker
-                  selectedValue={schedule.minute}
-                  enabled={!disabled}
-                  onValueChange={(minute) => setSchedule({ ...schedule, minute })}
-                >
-                  {Array.from({ length: 60 }, (_, minute) => minute).map((minute) => (
-                    <Picker.Item key={minute} label={String(minute).padStart(2, "0")} value={minute} />
-                  ))}
-                </Picker>
-              </Host>
-            }
-          >
-            <Typography.Paragraph>Minute</Typography.Paragraph>
-          </SettingsRow>
-        ) : null}
-        {routine ? (
-          <SettingsRow
-            trailing={
-              <Typography type="body-sm" className="text-grouped-secondary">
-                {routine.timezone}
-              </Typography>
-            }
-          >
-            <Typography.Paragraph>Time zone</Typography.Paragraph>
-          </SettingsRow>
-        ) : null}
-      </SettingsSection>
+        />
+      ) : (
+        <RoutineWebhookTrigger
+          header={triggerPicker}
+          url={savedWebhook ? savedWebhook.trigger.url : undefined}
+          secret={secret}
+          eventType={eventType}
+          filters={filters}
+          disabled={disabled}
+          rotatePending={rotate.pending}
+          onEventTypeChange={setEventType}
+          onFiltersChange={setFilters}
+          onSecretDismiss={() => setSecret(null)}
+          onRotate={
+            webhookRoutine && eventsSupported
+              ? () =>
+                  void rotate.run(async () => {
+                    const rotated = await workspace.rotateEventRoutineSecret(
+                      { id: webhookRoutine.id, owner: eventOwner },
+                      agent.serverId,
+                    );
+                    setGivenTo(null);
+                    setSecret(rotated.secret);
+                  })
+              : undefined
+          }
+          agentSecret={
+            webhookRoutine && eventsSupported && agentSecretSupported && eventOwner.kind === "agent" && agentName
+              ? {
+                  agentName,
+                  pending: give.pending,
+                  give: () =>
+                    void give.run(async () => {
+                      await workspace.giveEventRoutineSecretToAgent(
+                        { id: webhookRoutine.id, owner: eventOwner },
+                        agent.serverId,
+                      );
+                      setSecret(null);
+                      setGivenTo(agentName);
+                    }),
+                }
+              : undefined
+          }
+        />
+      )}
+      {trigger === "schedule" &&
+      routine &&
+      "schedule" in routine.trigger &&
+      routine.trigger.schedule.kind === "interval" &&
+      edits.schedule === undefined ? (
+        <Typography.Paragraph type="body-xs" className="-mt-3 px-4 text-grouped-secondary">
+          {t("mobile.agent.record.scheduleKept")}
+        </Typography.Paragraph>
+      ) : null}
+      {missedRuns && trigger === "schedule" ? (
+        <SettingsSection title={t("mobile.agent.record.missedPolicy")}>
+          {(["skip", "run-once"] as const).map((choice) => (
+            <SettingsRow
+              key={choice}
+              checked={missedPolicy === choice}
+              disclosure={false}
+              disabled={disabled}
+              trailing={missedPolicy === choice ? <Check size={18} color={accent} strokeWidth={2} /> : null}
+              onPress={() => {
+                if (choice === missedPolicy) return;
+                void haptics.selection();
+                setMissedPolicy(choice);
+              }}
+            >
+              <Typography.Paragraph>{t(MISSED_POLICY_TEXT[choice])}</Typography.Paragraph>
+            </SettingsRow>
+          ))}
+        </SettingsSection>
+      ) : null}
+      {routineResults && !port && !routine && (missedRuns || trigger === "webhook") ? (
+        <RoutineResultDestinationSection
+          agentId={agent.id}
+          serverId={agent.serverId}
+          disabled={disabled}
+          draft={{ value: newDestination, onChange: setNewDestination }}
+        />
+      ) : null}
       {!routine ? (
-        <SheetFormField label="Time zone" value={timezone} editable={!disabled} onChangeText={setTimezone} />
+        <SheetFormField
+          label={t("mobile.agent.record.timeZone")}
+          placeholder={TIME_ZONE_PLACEHOLDER}
+          value={timezone}
+          editable={!disabled}
+          onChangeText={setTimezone}
+        />
       ) : null}
       <SheetSaveAction
         dirty={dirty}
-        canSave={!disabled && Boolean(name.trim() && instruction.trim() && timezone.trim()) && validTime}
+        canSave={!disabled && Boolean(name.trim() && instruction.trim() && timezone.trim()) && validTrigger}
         pending={action.pending}
         onSave={() =>
           void action.run(save, () => {
             setSavedDraft(draft);
             if (routine) setEdits({});
-            else setFinished(true);
+            else if (!keepOpen.current) setFinished(true);
           })
         }
       />
@@ -412,51 +674,92 @@ export function RoutineEditor({
           <SettingsRow
             trailing={
               <Host matchContents colorScheme={theme === "dark" ? "dark" : "light"}>
-                <Switch
-                  label="Enabled"
+                <AppSwitch
+                  label={t("mobile.agent.record.enabled")}
                   value={activeOverride ?? routine.active}
                   disabled={disabled || toggle.pending}
+                  modifiers={nativeLabelFont}
                   onValueChange={toggleActive}
                 />
               </Host>
             }
           >
-            <Typography.Paragraph>Routine</Typography.Paragraph>
+            <Typography.Paragraph>{t("mobile.agent.record.routine")}</Typography.Paragraph>
+          </SettingsRow>
+          <SettingsRow
+            disclosure={false}
+            disabled={disabled || dirty || testRun.pending}
+            onPress={() => {
+              setTestStarted(false);
+              void testRun.run(
+                () =>
+                  webhookRoutine
+                    ? workspace.testEventRoutine({ id: webhookRoutine.id, owner: eventOwner }, agent.serverId)
+                    : port
+                      ? port.test(routine.id)
+                      : workspace.testAgentRoutine(agent.id, routine.id, agent.serverId),
+                () => setTestStarted(true),
+              );
+            }}
+          >
+            <Typography.Paragraph className="text-accent">
+              {t(testRun.pending ? "mobile.agent.record.testStarting" : "mobile.agent.record.testRun")}
+            </Typography.Paragraph>
           </SettingsRow>
           <SettingsRow
             disclosure={false}
             disabled={disabled}
             onPress={() =>
-              Alert.alert("Delete routine?", "This routine will be removed.", [
-                { text: "Cancel", style: "cancel" },
+              Alert.alert(t("mobile.agent.record.deleteRoutineTitle"), t("mobile.agent.record.deleteRoutineBody"), [
+                { text: t("common.cancel"), style: "cancel" },
                 {
-                  text: "Delete",
+                  text: t("common.delete"),
                   style: "destructive",
                   onPress: () =>
                     void action.run(
                       () =>
-                        port
-                          ? port.delete(routine.id)
-                          : workspace.deleteAgentRoutine(agent.id, routine.id, agent.serverId),
+                        webhookRoutine
+                          ? workspace.deleteEventRoutine({ id: webhookRoutine.id, owner: eventOwner }, agent.serverId)
+                          : port
+                            ? port.delete(routine.id)
+                            : workspace.deleteAgentRoutine(agent.id, routine.id, agent.serverId),
                       () => setFinished(true),
                     ),
                 },
               ])
             }
           >
-            <Typography.Paragraph className="text-danger-text">Delete routine</Typography.Paragraph>
+            <Typography.Paragraph className="text-danger-text">
+              {t("mobile.agent.record.deleteRoutine")}
+            </Typography.Paragraph>
           </SettingsRow>
         </SettingsSection>
       ) : null}
-      {toggle.error ? (
-        <Typography.Paragraph accessibilityRole="alert" className="text-danger-text">
-          {toggle.error}
+      {routineResults && !port && routine ? (
+        <RoutineResultDestinationSection
+          agentId={agent.id}
+          routineId={routine.id}
+          serverId={agent.serverId}
+          disabled={disabled}
+        />
+      ) : null}
+      {testStarted ? (
+        <Typography.Paragraph accessibilityLiveRegion="polite">
+          {t("mobile.agent.record.testStarted")}
         </Typography.Paragraph>
       ) : null}
-      {action.error ? (
-        <Typography.Paragraph accessibilityRole="alert" className="text-danger-text">
-          {action.error}
+      <SaveError error={testRun.error} />
+      <SaveError error={rotate.error} />
+      {givenTo && !give.error ? (
+        <Typography.Paragraph accessibilityLiveRegion="polite" className="text-success-text">
+          {t("mobile.agent.webhook.given", { name: givenTo })}
         </Typography.Paragraph>
+      ) : null}
+      <SaveError error={give.error} />
+      <SaveError error={toggle.error} />
+      <SaveError error={action.error} />
+      {eventsSupported && routine ? (
+        <RoutineWebhookActivity key={routine.id} serverId={agent.serverId} owner={eventOwner} routineId={routine.id} />
       ) : null}
     </View>
   );

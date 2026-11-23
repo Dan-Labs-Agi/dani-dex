@@ -1,6 +1,9 @@
+import type { AttachmentSummary } from "./ipc-attachments";
 import { isIdentifier } from "./ipc-bounded-values";
 import { type ConversationMessage, isConversationMessage, type MessageReaction } from "./ipc-conversation-messages";
 import { isDynamicRecord, isNumber } from "./runtime-values";
+
+export const CONVERSATION_SNAPSHOT_MESSAGE_LIMIT = 100;
 
 export interface ConversationSnapshot {
   agentId: string;
@@ -61,11 +64,13 @@ export type ConversationPageAnchor =
 export interface ConversationPageInfo {
   hasOlder: boolean;
   olderCursor: string | null;
+  olderCount?: number;
+  oldestAt?: string;
 }
 
 export interface ReadConversationPageInput {
   agentId: string;
-  anchor?: ConversationPageAnchor;
+  anchor?: ConversationPageAnchor | undefined;
   limit?: number;
 }
 
@@ -80,16 +85,32 @@ export interface ConversationPage {
   readState?: ConversationReadState;
 }
 
+export interface OpenMessageLinkInput {
+  agentId: string;
+  url: string;
+}
+
+export interface PasteMessageLinkInput {
+  url: string;
+  address: string;
+}
+
+export interface CancelMessageLinkInput {
+  url: string;
+}
+
 export interface SearchConversationMessagesInput {
   query: string;
   agentId?: string;
   cursor?: string;
   limit?: number;
+  includeSideThreads?: boolean;
 }
 
 export interface ConversationSearchResult {
   agentId: string;
   message: ConversationMessage;
+  taskId?: string;
 }
 
 export interface ConversationSearchPage {
@@ -98,9 +119,32 @@ export interface ConversationSearchPage {
   nextCursor: string | null;
 }
 
+export interface SearchConversationFilesInput {
+  query: string;
+  cursor?: string;
+  limit?: number;
+}
+
+export interface ConversationFileSearchResult {
+  agentId: string;
+  messageId: string;
+  createdAt: string;
+  attachment: AttachmentSummary;
+}
+
+export interface ConversationFileSearchPage {
+  results: ConversationFileSearchResult[];
+  nextCursor: string | null;
+}
+
 export interface MarkConversationReadInput {
   agentId: string;
   throughMessageId: string | null;
+}
+
+export interface MarkConversationUnreadInput {
+  agentId: string;
+  fromMessageId: string;
 }
 
 export interface SendMessageInput {
@@ -108,6 +152,35 @@ export interface SendMessageInput {
   text: string;
   attachmentDraftIds?: string[];
   replyToMessageId?: string | null;
+  clientMessageId?: string;
+  taskId?: string;
+  voiceRecordingDraftId?: string;
+}
+
+export interface DeleteConversationMessageInput {
+  agentId: string;
+  messageId: string;
+  taskId?: string;
+}
+
+export interface WithdrawFeedbackInput {
+  agentId: string;
+  messageId: string;
+}
+
+export const WITHDRAW_FEEDBACK_STATUSES = [
+  "withdrawn",
+  "signedOut",
+  "notYours",
+  "unavailable",
+  "limited",
+  "notFound",
+  "moved",
+] as const;
+export type WithdrawFeedbackStatus = (typeof WITHDRAW_FEEDBACK_STATUSES)[number];
+
+export interface WithdrawFeedbackResult {
+  status: WithdrawFeedbackStatus;
 }
 
 export interface SetMessageReactionInput {

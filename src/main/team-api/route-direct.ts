@@ -1,11 +1,4 @@
-// Direct messages between two people on the team.
-//
-// Every handler goes through the server's own DM facade rather than the chat store, because that
-// facade is where the recipient check and the realtime publish live. It throws a plain `Error`, not
-// an `HttpError`, so misuse of these routes answers 500 and is logged - deliberately, since a
-// member addressing someone who is not on the team is a client bug, not a bad field.
-
-import { INPUT_LIMITS } from "@dani-dex/contracts/input-limits";
+import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import type {
   DirectConversationPage,
   DirectConversationPageAnchor,
@@ -13,9 +6,9 @@ import type {
   DirectConversationSnapshot,
   DirectMessage,
   DirectThreadSummary,
-} from "@dani-dex/contracts/ipc";
-import { isNumber } from "@dani-dex/contracts/runtime-values";
-import { TEAM_API_ROUTES } from "@dani-dex/contracts/team-api-routes";
+} from "@openbot/contracts/ipc";
+import { isNumber } from "@openbot/contracts/runtime-values";
+import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
 import { HttpError } from "./http-error";
 import type { RouteOutcome, TeamApiRequestContext } from "./request-context";
 import { pageAnchor, pageLimit, pathIdentifier, readJson, stringField } from "./request-helpers";

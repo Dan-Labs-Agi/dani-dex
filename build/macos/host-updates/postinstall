@@ -1,10 +1,9 @@
 #!/bin/sh
 set -eu
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin LC_ALL=C
-ROOT='/Library/Application Support/Dani-Dex/HostManager'
-"$ROOT/dani-dex-host" --verify-installation
-# Payload files have explicit root:wheel modes. Never recurse through tenant status or homes.
+ROOT='/Library/Application Support/OpenBot/HostManager'
+"$ROOT/openbot-host" --verify-installation
 if [ -f "$ROOT/config.json" ] && [ ! -L "$ROOT/config.json" ]; then
-  launchctl bootstrap system /Library/LaunchDaemons/dev.danlab.danidex.host-manager.plist
+  launchctl bootstrap system /Library/LaunchDaemons/app.openbot.host-manager.plist
 fi
-echo 'Dani-Dex Host installed. Run sudo dani-dex-host setup, then sudo dani-dex-host verify.'
+echo 'OpenBot Host installed. Run sudo openbot-host setup, then sudo openbot-host verify.'

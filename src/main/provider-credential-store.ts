@@ -1,18 +1,24 @@
-// The optional API keys a provider CLI needs, encrypted at rest by the operating system.
-
-import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
-import { dirname } from "node:path";
-import type { AgentProviderId, ProviderApiKeyStatus } from "@dani-dex/contracts/ipc";
+import { readFile, rm } from "node:fs/promises";
+import type { AgentProviderId, ProviderApiKeyStatus } from "@openbot/contracts/ipc";
+import { sourceText } from "@openbot/i18n/source";
+import { registerSecretValue } from "@openbot/logging";
+import { Effect, Result, Schema, Semaphore } from "effect";
 import { z } from "zod";
+import { writeFileAtomically } from "../backend/atomic-json-file";
+import { causeHelpers } from "../backend/effect-boundary";
 
-/**
- * One envelope holding every provider's key, each encrypted on its own.
- *
- * `version` is checked rather than tolerated: an envelope Dani-Dex does not understand is reported
- * as unreadable instead of silently read as empty, because "no key" and "a key Dani-Dex cannot
- * decode" have to behave differently -- one starts the free tier, the other must not quietly drop a
- * saved account.
- */
+export class CredentialStoreFailure extends Schema.TaggedError<CredentialStoreFailure>()("CredentialStoreFailure", {
+  cause: Schema.Defect(),
+}) {}
+
+const { io: credentialIO, sync: credentialSync } = causeHelpers(CredentialStoreFailure);
+
+export type OpenBotSecretName = `openbot:${string}`;
+
+function accountKeyName(provider: AgentProviderId, accountId: string): string {
+  return `${provider}:${accountId}`;
+}
+
 const envelopeSchema = z.object({
   version: z.literal(1),
   credentials: z.record(z.string(), z.string()),
@@ -20,132 +26,176 @@ const envelopeSchema = z.object({
 
 const MAX_ENVELOPE_BYTES = 64 * 1024;
 
-/**
- * What a stored key belongs to: a provider CLI, or `openai-realtime`, the user's own OpenAI key that
- * voice calls run on. It is kept apart from any provider so saving it never restarts a CLI.
- */
-export type CredentialId = AgentProviderId | typeof REALTIME_CREDENTIAL_ID;
-export const REALTIME_CREDENTIAL_ID = "openai-realtime";
+export class CredentialFileTooLarge extends Error {
+  constructor() {
+    super(sourceText("error.provider.credentialFileTooLarge"));
+    this.name = "CredentialFileTooLarge";
+  }
+}
 
 export interface SecretCipher {
   encrypt: (value: string) => Buffer;
   decrypt: (value: Buffer) => string;
 }
 
-/**
- * Reads and writes the provider keys, holding the decrypted values only in memory.
- *
- * `electron` is never imported here: the cipher arrives as two callbacks, so the whole store runs
- * under a unit test with a fake one. `get` is synchronous because a spawn cannot await: the caller
- * has to `load()` once at startup, and after that a read is a map lookup.
- */
 export class ProviderCredentialStore {
   readonly #path: string;
   readonly #cipher: SecretCipher;
   #keys = new Map<string, string>();
   #loaded = false;
-  /** Why the file on disk could not be read. Until the user saves or removes a key, it is kept. */
   #loadError: Error | null = null;
+  #writes = Semaphore.makeUnsafe(1);
 
   constructor(path: string, cipher: SecretCipher) {
     this.#path = path;
     this.#cipher = cipher;
   }
 
-  /**
-   * Reads the envelope, and returns the error when the file is there but cannot be read.
-   *
-   * That error does not stop startup. Every other service still starts, the providers run with no
-   * key, and the file stays as it is: a keychain that refuses once must not cost the user the key,
-   * so only an explicit save or removal replaces it.
-   */
-  async load(): Promise<Error | null> {
-    this.#keys = new Map();
-    this.#loadError = null;
-    try {
-      this.#keys = await this.#read();
-    } catch (error) {
-      this.#loadError = error instanceof Error ? error : new Error("The provider credential file is unreadable.");
-    }
-    this.#loaded = true;
-    return this.#loadError;
+  load(): Effect.Effect<Error | null> {
+    return Effect.gen({ self: this }, function* () {
+      this.#keys = new Map();
+      this.#loadError = null;
+      const result = yield* Effect.result(this.#read());
+      if (Result.isSuccess(result)) this.#keys = result.success;
+      else {
+        const error = result.failure.cause;
+        this.#loadError =
+          error instanceof Error ? error : new Error(sourceText("error.provider.credentialFileUnreadable"));
+      }
+      this.#loaded = true;
+      return this.#loadError;
+    });
   }
 
-  /** The stored key, or `null`. Throws when `load` has not run, rather than reporting no key. */
-  get(provider: CredentialId): string | null {
+  get(provider: AgentProviderId): string | null {
     if (!this.#loaded) throw new Error("The provider credential store is not loaded.");
     return this.#keys.get(provider) ?? null;
   }
 
-  /** Whether a key is stored. This is the only fact that may cross the IPC boundary. */
-  status(provider: CredentialId): ProviderApiKeyStatus {
+  status(provider: AgentProviderId): ProviderApiKeyStatus {
     if (this.get(provider) !== null) return "saved";
     return this.#loadError ? "unreadable" : "missing";
   }
 
-  async set(provider: CredentialId, key: string): Promise<void> {
-    const next = this.#editableKeys();
-    next.set(provider, key);
-    await this.#commit(next);
+  accountKey(provider: AgentProviderId, accountId: string): string | null {
+    if (!this.#loaded) throw new Error("The provider credential store is not loaded.");
+    return this.#keys.get(accountKeyName(provider, accountId)) ?? null;
   }
 
-  async clear(provider: CredentialId): Promise<void> {
-    if (this.status(provider) === "missing") return;
-    const next = this.#editableKeys();
-    next.delete(provider);
-    await this.#commit(next);
+  setAccountKey(
+    provider: AgentProviderId,
+    accountId: string,
+    key: string | null,
+  ): Effect.Effect<void, CredentialStoreFailure> {
+    const name = accountKeyName(provider, accountId);
+    return this.#edit((keys) => {
+      if (key === null) return keys.delete(name);
+      if (this.#loadError) throw new Error(sourceText("error.provider.credentialFileUnreadable"));
+      registerSecretValue(key);
+      keys.set(name, key);
+      return true;
+    });
   }
 
-  /**
-   * A copy to change. An unreadable envelope starts from empty: nothing in it can be decrypted, so
-   * a save or a removal the user asked for replaces the whole file.
-   */
+  secret(name: OpenBotSecretName): string | null {
+    if (!this.#loaded) throw new Error("The provider credential store is not loaded.");
+    return this.#keys.get(name) ?? null;
+  }
+
+  setSecrets(
+    changes: readonly (readonly [OpenBotSecretName, string | null])[],
+  ): Effect.Effect<void, CredentialStoreFailure> {
+    return this.#edit((keys) => {
+      let changed = false;
+      for (const [name, value] of changes) {
+        if (value === null) {
+          changed = keys.delete(name) || changed;
+          continue;
+        }
+        if (this.#loadError) throw new Error(sourceText("error.provider.credentialFileUnreadable"));
+        registerSecretValue(value);
+        keys.set(name, value);
+        changed = true;
+      }
+      return changed;
+    });
+  }
+
+  set(provider: AgentProviderId, key: string): Effect.Effect<void, CredentialStoreFailure> {
+    return this.#edit((keys) => {
+      registerSecretValue(key);
+      keys.set(provider, key);
+      return true;
+    });
+  }
+
+  clear(provider: AgentProviderId): Effect.Effect<void, CredentialStoreFailure> {
+    return this.#edit((keys) => {
+      if (this.status(provider) === "missing") return false;
+      keys.delete(provider);
+      return true;
+    });
+  }
+
+  #edit(change: (keys: Map<string, string>) => boolean): Effect.Effect<void, CredentialStoreFailure> {
+    return this.#writes.withPermit(
+      Effect.gen({ self: this }, function* () {
+        const next = yield* credentialSync(() => this.#editableKeys());
+        if (yield* credentialSync(() => change(next))) yield* this.#commit(next);
+      }).pipe(Effect.uninterruptible),
+    );
+  }
+
   #editableKeys(): Map<string, string> {
     if (!this.#loaded) throw new Error("The provider credential store is not loaded.");
     return new Map(this.#loadError ? [] : this.#keys);
   }
 
-  /**
-   * Writes `next` and only then makes it the store's state. A failed write leaves memory and disk
-   * as they were, so a spawn never reads a key the file does not hold, and a retry runs again.
-   */
-  async #commit(next: Map<string, string>): Promise<void> {
-    if (next.size === 0) {
-      await rm(this.#path, { force: true });
-    } else {
-      await this.#write(next);
-    }
+  #commit = Effect.fn("ProviderCredentialStore.commit")(function* (
+    this: ProviderCredentialStore,
+    next: Map<string, string>,
+  ) {
+    if (next.size === 0) yield* credentialIO(() => rm(this.#path, { force: true }));
+    else yield* this.#write(next);
     this.#keys = next;
     this.#loadError = null;
-  }
+  });
 
-  async #read(): Promise<Map<string, string>> {
-    let source: string;
-    try {
-      source = await readFile(this.#path, "utf8");
-    } catch (error) {
-      if (error instanceof Error && "code" in error && error.code === "ENOENT") return new Map();
-      throw error;
-    }
-    if (source.length > MAX_ENVELOPE_BYTES) throw new Error("The provider credential file is too large.");
-    const envelope = envelopeSchema.parse(JSON.parse(source));
-    const keys = new Map<string, string>();
-    for (const [provider, encrypted] of Object.entries(envelope.credentials)) {
-      keys.set(provider, this.#cipher.decrypt(Buffer.from(encrypted, "base64")));
-    }
-    return keys;
-  }
+  #read = Effect.fn("ProviderCredentialStore.read")(function* (this: ProviderCredentialStore) {
+    const source = yield* credentialIO(() => readFile(this.#path, "utf8")).pipe(
+      Effect.catch(({ cause }) =>
+        cause instanceof Error && "code" in cause && cause.code === "ENOENT"
+          ? Effect.succeed(null)
+          : Effect.fail(new CredentialStoreFailure({ cause })),
+      ),
+    );
+    if (source === null) return new Map<string, string>();
+    return yield* credentialSync(() => {
+      if (source.length > MAX_ENVELOPE_BYTES) throw new Error(sourceText("error.provider.credentialFileTooLarge"));
+      const envelope = envelopeSchema.parse(JSON.parse(source));
+      const keys = new Map<string, string>();
+      for (const [provider, encrypted] of Object.entries(envelope.credentials)) {
+        const key = this.#cipher.decrypt(Buffer.from(encrypted, "base64"));
+        registerSecretValue(key);
+        keys.set(provider, key);
+      }
+      return keys;
+    });
+  });
 
-  async #write(keys: Map<string, string>): Promise<void> {
-    const credentials: Record<string, string> = {};
-    for (const [provider, key] of keys) {
-      credentials[provider] = this.#cipher.encrypt(key).toString("base64");
-    }
-    await mkdir(dirname(this.#path), { recursive: true, mode: 0o700 });
-    const temporaryPath = `${this.#path}.tmp`;
-    // Write then rename, so a crash in the middle leaves the previous envelope readable rather
-    // than a truncated one: a half-written key locks the user out of a paid account.
-    await writeFile(temporaryPath, `${JSON.stringify({ version: 1, credentials })}\n`, { mode: 0o600 });
-    await rename(temporaryPath, this.#path);
-  }
+  #write = Effect.fn("ProviderCredentialStore.write")(function* (
+    this: ProviderCredentialStore,
+    keys: Map<string, string>,
+  ) {
+    const content = yield* credentialSync(() => {
+      const credentials: Record<string, string> = {};
+      for (const [provider, key] of keys) credentials[provider] = this.#cipher.encrypt(key).toString("base64");
+      const text = `${JSON.stringify({ version: 1, credentials })}\n`;
+      if (text.length > MAX_ENVELOPE_BYTES) throw new CredentialFileTooLarge();
+      return text;
+    });
+    yield* writeFileAtomically(this.#path, content, { createDirectory: true }).pipe(
+      Effect.mapError(({ cause }) => new CredentialStoreFailure({ cause })),
+    );
+  });
 }

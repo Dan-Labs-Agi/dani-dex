@@ -1,3 +1,13 @@
+import { isKeyOnlyProvider } from "@openbot/contracts/agent-providers";
+import {
+  BILLING_CURRENCIES,
+  BILLING_INTERVALS,
+  BILLING_PLAN_IDS,
+  type BillingCurrency,
+  type BillingInterval,
+  type BillingPlanId,
+} from "@openbot/contracts/billing";
+import { HOSTED_SERVER_ENTRY_POINTS, type HostedServerEntryPoint } from "@openbot/contracts/hosted-servers";
 import {
   AGENT_PROVIDERS,
   AGENT_REASONING_EFFORTS,
@@ -7,35 +17,65 @@ import {
   type AppInfo,
   type CentralAuthUser,
   isAgentModel,
-} from "@dani-dex/contracts/ipc";
-import { DANI_DEX_ANALYTICS_API_URL } from "@dani-dex/contracts/online-services";
-import { isBoolean, isDynamicRecord, isFunction, isNumber, isString } from "@dani-dex/contracts/runtime-values";
-import { normalizeEmailAddress } from "@dani-dex/contracts/validation";
+  SPEECH_VOICES,
+  type SpeechVoice,
+  WORKFLOW_NODE_KINDS,
+  type WorkflowNodeKind,
+} from "@openbot/contracts/ipc";
+import { isBoolean, isDynamicRecord, isFunction, isNumber, isOneOf, isString } from "@openbot/contracts/runtime-values";
+import { normalizeEmailAddress } from "@openbot/contracts/validation";
+import { ANALYTICS_GENERATIONS } from "@openbot/telemetry";
 import { OpenPanelBase, type OpenPanelOptions } from "@openpanel/web";
+import {
+  ANALYTICS_SCHEMA_VERSION,
+  configureDesktopReports,
+  configureErrorReports,
+  webAnalyticsInstallId,
+} from "./error-reports";
+import { MARKETPLACE_PLUGINS } from "./features/settings/marketplace-plugin-catalog";
 
-/** Null while Dan Lab runs no analytics endpoint; the app then sends nothing. */
-export const OPENPANEL_API_URL: string | null = DANI_DEX_ANALYTICS_API_URL;
-export const OPENPANEL_CLIENT_ID = "6c989975-87ef-4f0c-857e-ab449a65b5c2";
+const OPENPANEL_API_URL = "https://analytics.dani.invalid/api";
+const OPENPANEL_CLIENT_ID = "dani-telemetry-unconfigured";
 const MAX_PENDING_EVENTS = 100;
-export const ANALYTICS_SCHEMA_VERSION = 5;
+const CURATED_LISTING_PATTERN = /^openbot-curated-(?:skill|agent)-([a-z0-9][a-z0-9-]{0,63})$/u;
+const PLUGIN_SLUGS = new Set(MARKETPLACE_PLUGINS.map((plugin) => plugin.slug));
 
-export type ServerKind = "local" | "remote" | "unknown";
-export type AnalyticsResult = "succeeded" | "failed";
+type ServerKind = "local" | "remote" | "unknown";
+type AnalyticsResult = "succeeded" | "failed";
+type AnalyticsOutcome = AnalyticsResult | "cancelled";
+type TranscriptionKind = "local" | "cloud" | "server";
 
-export interface AgentAnalyticsProperties {
+interface AgentAnalyticsProperties {
   provider: AgentProviderId;
   model: AgentModelId;
   reasoning_effort: AgentReasoningEffort;
   server_kind: ServerKind;
 }
 
-export interface DesktopAnalyticsEvents {
+const WORKFLOW_ACTIONS = [
+  "create",
+  "rename",
+  "delete",
+  "run",
+  "run_step",
+  "stop_step",
+  "stop_run",
+  "retry_step",
+  "approve",
+  "reject",
+  "restore_version",
+  "rotate_webhook_secret",
+] as const;
+export type WorkflowAnalyticsAction = (typeof WORKFLOW_ACTIONS)[number];
+
+interface DesktopAnalyticsEvents {
   desktop_app_opened: { setup_completed: boolean; signed_in: boolean };
   app_updated: { from_version: string; to_version: string };
-  account_sign_in_started: { result: "code_sent" | "browser_opened" | "failed"; failure_code?: string };
+  account_sign_in_started: { result: "code_sent" | "company_sign_in" | "failed"; failure_code?: string };
   account_sign_in_completed: { result: AnalyticsResult; failure_code?: string };
   account_sign_out: { result: AnalyticsResult; failure_code?: string };
-  onboarding_completed: { preferred_provider: AgentProviderId };
+  onboarding_completed: { preferred_provider: AgentProviderId; path?: OnboardingPath; skipped?: boolean };
+  onboarding_step: { step: OnboardingStep; action: "viewed" | "next" | "back" | "skipped"; path?: OnboardingPath };
   agent_action:
     | ({ action: "create" } & Partial<AgentAnalyticsProperties> & {
           result: AnalyticsResult;
@@ -48,13 +88,14 @@ export interface DesktopAnalyticsEvents {
         failure_code?: string;
       })
     | (Partial<AgentAnalyticsProperties> & {
-        action: "delete" | "duplicate";
+        action: "delete" | "duplicate" | "branch";
         result: AnalyticsResult;
         failure_code?: string;
       });
   message_send: Partial<AgentAnalyticsProperties> & {
     channel: "agent" | "direct";
     attachment_count: number;
+    attachment_kinds?: AttachmentKind[];
     is_reply: boolean;
     result: AnalyticsResult;
     delivery_count?: number;
@@ -67,7 +108,7 @@ export interface DesktopAnalyticsEvents {
     failure_code?: string;
   };
   queue_action: {
-    action: "cancel" | "steer" | "edit" | "reorder" | "interrupt";
+    action: "cancel" | "steer" | "send_now" | "edit" | "reorder" | "interrupt";
     result: AnalyticsResult;
     failure_code?: string;
   };
@@ -78,10 +119,19 @@ export interface DesktopAnalyticsEvents {
     result: AnalyticsResult;
     failure_code?: string;
   };
+  workflow_action: {
+    action: WorkflowAnalyticsAction;
+    node_kind?: WorkflowNodeKind;
+    duration_ms: number;
+    result: AnalyticsResult;
+    failure_code?: string;
+  };
   team_action: {
     action:
       | "server_selected"
       | "server_joined"
+      | "server_left"
+      | "server_removed"
       | "identity_saved"
       | "published"
       | "unpublished"
@@ -92,7 +142,9 @@ export interface DesktopAnalyticsEvents {
       | "mcp_server_saved"
       | "mcp_server_removed"
       | "mcp_server_toggled"
-      | "mcp_server_tested";
+      | "mcp_server_tested"
+      | "invite_link_copied"
+      | "invite_qr_shown";
     result: AnalyticsResult;
     server_kind?: ServerKind;
     role?: "admin" | "member";
@@ -124,10 +176,11 @@ export interface DesktopAnalyticsEvents {
     failure_code?: string;
   };
   marketplace_action: {
-    entity: "skill" | "agent";
+    entity: "skill" | "agent" | "plugin";
     action: "view" | "install" | "update" | "uninstall" | "publish" | "enable" | "disable";
     result: AnalyticsResult;
     failure_code?: string;
+    listing_slug?: string;
   };
   memory_action: {
     action: "create" | "update" | "delete" | "clear";
@@ -144,8 +197,13 @@ export interface DesktopAnalyticsEvents {
       | "download_completed"
       | "download_cancelled"
       | "cli_update_started"
-      | "cli_update_completed";
-    result: AnalyticsResult;
+      | "cli_update_completed"
+      | "sign_in_cancelled"
+      | "api_key_saved"
+      | "custom_provider_saved"
+      | "custom_provider_removed";
+    result: AnalyticsOutcome;
+    method?: "browser" | "code" | "api_key";
     failure_code?: string;
   };
   voice_transcription: {
@@ -154,13 +212,48 @@ export interface DesktopAnalyticsEvents {
     duration_ms: number;
     failure_code?: string;
   };
-  reaction_action: {
-    action: "add" | "remove";
+  voice_conversation_action: {
+    action: "start" | "end" | "interrupt" | "mute" | "unmute";
+    server_kind: ServerKind;
     result: AnalyticsResult;
+    trigger?: "button" | "voice";
+    transcription?: TranscriptionKind;
+    duration_ms?: number;
+    turn_count?: number;
     failure_code?: string;
   };
-  maintenance_action: {
-    action: "export_data" | "export_diagnostics";
+  voice_turn: {
+    server_kind: ServerKind;
+    transcription: TranscriptionKind;
+    result: AnalyticsResult;
+    audio_duration_seconds: number;
+    duration_ms?: number;
+    recording_kept?: boolean;
+    failure_code?: string;
+  };
+  speech_reply: {
+    trigger: "voice_conversation" | "progress_update" | "dictation" | "read_aloud";
+    result: AnalyticsResult;
+    completed?: boolean;
+    first_audio_ms?: number;
+    audio_duration_seconds?: number;
+    failure_code?: string;
+  };
+  speech_model_action: {
+    action: "download";
+    entry_point: "settings" | "voice_conversation";
+    result: AnalyticsResult;
+    duration_ms: number;
+    failure_code?: string;
+  };
+  speech_settings_action: {
+    action: "read_replies_on" | "read_replies_off" | "voice_changed";
+    result: AnalyticsResult;
+    voice?: SpeechVoice;
+    failure_code?: string;
+  };
+  reaction_action: {
+    action: "add" | "remove";
     result: AnalyticsResult;
     failure_code?: string;
   };
@@ -170,10 +263,95 @@ export interface DesktopAnalyticsEvents {
     result: AnalyticsResult;
     failure_code?: string;
   };
+  hosted_server_upsell: {
+    action: "shown" | "see_plans" | "dismissed";
+    entry_point: "routine_created" | "routines_list" | "server_offline";
+  };
+  hosted_server_plans_action: {
+    action:
+      | "viewed"
+      | "currency_changed"
+      | "interval_changed"
+      | "plan_selected"
+      | "create_failed"
+      | "payment_open_failed"
+      | "retried"
+      | "closed"
+      | "join_opened";
+    entry_point?: HostedServerEntryPoint;
+    plan?: BillingPlanId;
+    interval?: BillingInterval;
+    currency?: BillingCurrency;
+    failure_code?: string;
+  };
+  limit_reached: {
+    kind: "servers" | "members" | "license_users";
+    action: "shown" | "manage_clicked" | "confirmed" | "dismissed" | "contact_clicked";
+    role?: "admin" | "member";
+  };
+  license_action: {
+    action:
+      | "buy_opened"
+      | "checkout_opened"
+      | "users_change_requested"
+      | "plan_change_requested"
+      | "cancel_requested"
+      | "cancel_kept"
+      | "renewal_resumed"
+      | "over_limit_shown";
+    result?: AnalyticsOutcome;
+    direction?: "up" | "down";
+    failure_code?: string;
+  };
+  sales_contact_clicked: { entry_point: "add_server" | "license" | "members" };
+  billing_return_viewed: { outcome: "completed" | "cancelled"; kind?: "plan" | "license" | "portal" };
+  usage_limit_action: {
+    action: "shown" | "model_switched" | "waited";
+    from_provider?: AgentProviderId;
+    to_provider?: AgentProviderId;
+    to_model?: AgentModelId;
+  };
+  agent_template_action: {
+    action: "published" | "updated" | "unpublished" | "link_copied" | "installed";
+    result: AnalyticsResult;
+    entry_point?: "deep_link" | "in_app";
+    failure_code?: string;
+  };
+  mobile_connect_action: {
+    action: "code_shown" | "link_created" | "connected" | "cancelled" | "revoked" | "link_revoked";
+    result: AnalyticsResult;
+    failure_code?: string;
+  };
+  connector_action: {
+    connector: "slack" | "discord" | "telegram" | "whatsapp" | "github" | "onepassword" | "bitwarden" | "protonpass";
+    action: "connect_started" | "connected" | "disconnected" | "enabled" | "disabled";
+    result: AnalyticsResult;
+    failure_code?: string;
+  };
+  computer_use_action: { action: "permission_opened"; permission: "screen-recording" | "accessibility" };
+  help_link_opened: { destination: "discord" | "feedback" | "report-problem" | "guides" | "changelog" };
+  channel_action: {
+    action: "created" | "archived" | "member_added";
+    result: AnalyticsResult;
+    failure_code?: string;
+  };
+  server_transfer_action: {
+    action: "export" | "import" | "copy";
+    result: AnalyticsOutcome;
+    failure_code?: string;
+  };
+  usage_viewed: { scope: "agent" | "server"; range?: "7d" | "30d" | "90d" | "1y"; filtered?: boolean };
+  analytics_preference_changed: { enabled: false };
 }
 
-export type AnalyticsEventName = keyof DesktopAnalyticsEvents;
-export type OpenPanelClient = Pick<OpenPanelBase, "setGlobalProperties" | "track" | "identify" | "clear">;
+type OnboardingStep = "existing" | "choose" | "plan" | "computer" | "language";
+type OnboardingPath = "free" | "plan" | "existing";
+type AttachmentKind = "image" | "document" | "spreadsheet" | "zip" | "other";
+const ATTACHMENT_KINDS: readonly AttachmentKind[] = ["image", "document", "spreadsheet", "zip", "other"];
+
+type AnalyticsEventName = keyof DesktopAnalyticsEvents;
+export type DesktopAnalyticsProperties<Name extends AnalyticsEventName> = DesktopAnalyticsEvents[Name];
+type OpenPanelClient = Pick<OpenPanelBase, "setGlobalProperties" | "track" | "identify" | "clear">;
 
 type ClientFactory = (options: OpenPanelOptions) => OpenPanelClient;
 type AnalyticsIdentity = Pick<CentralAuthUser, "id" | "email">;
@@ -190,7 +368,8 @@ const EVENT_PROPERTY_ALLOWLIST = {
   account_sign_in_started: ["result", "failure_code"],
   account_sign_in_completed: ["result", "failure_code"],
   account_sign_out: ["result", "failure_code"],
-  onboarding_completed: ["preferred_provider"],
+  onboarding_completed: ["preferred_provider", "path", "skipped"],
+  onboarding_step: ["step", "action", "path"],
   agent_action: [
     "action",
     "provider",
@@ -208,6 +387,7 @@ const EVENT_PROPERTY_ALLOWLIST = {
     "server_kind",
     "channel",
     "attachment_count",
+    "attachment_kinds",
     "is_reply",
     "result",
     "delivery_count",
@@ -216,18 +396,56 @@ const EVENT_PROPERTY_ALLOWLIST = {
   agent_input_action: ["kind", "decision", "result", "failure_code"],
   queue_action: ["action", "result", "failure_code"],
   routine_action: ["action", "trigger_type", "duration_ms", "result", "failure_code"],
+  workflow_action: ["action", "node_kind", "duration_ms", "result", "failure_code"],
   team_action: ["action", "result", "server_kind", "role", "email_bound", "entry_point", "failure_code"],
   browser_action: ["action", "result", "failure_code"],
   search_action: ["scope", "result", "result_count", "failure_code"],
   remote_desktop_action: ["action", "result", "transport", "failure_code"],
   update_action: ["action", "result", "phase", "failure_code"],
-  marketplace_action: ["entity", "action", "result", "failure_code"],
+  marketplace_action: ["entity", "action", "result", "failure_code", "listing_slug"],
   memory_action: ["action", "result", "failure_code"],
-  provider_action: ["provider", "action", "result", "failure_code"],
+  provider_action: ["provider", "action", "result", "method", "failure_code"],
   voice_transcription: ["result", "audio_duration_seconds", "duration_ms", "failure_code"],
+  voice_conversation_action: [
+    "action",
+    "server_kind",
+    "result",
+    "trigger",
+    "transcription",
+    "duration_ms",
+    "turn_count",
+    "failure_code",
+  ],
+  voice_turn: [
+    "server_kind",
+    "transcription",
+    "result",
+    "audio_duration_seconds",
+    "duration_ms",
+    "recording_kept",
+    "failure_code",
+  ],
+  speech_reply: ["trigger", "result", "completed", "first_audio_ms", "audio_duration_seconds", "failure_code"],
+  speech_model_action: ["action", "entry_point", "result", "duration_ms", "failure_code"],
+  speech_settings_action: ["action", "result", "voice", "failure_code"],
   reaction_action: ["action", "result", "failure_code"],
-  maintenance_action: ["action", "result", "failure_code"],
   hosted_site_action: ["action", "entry_point", "result", "failure_code"],
+  hosted_server_upsell: ["action", "entry_point"],
+  hosted_server_plans_action: ["action", "entry_point", "plan", "interval", "currency", "failure_code"],
+  limit_reached: ["kind", "action", "role"],
+  license_action: ["action", "result", "direction", "failure_code"],
+  sales_contact_clicked: ["entry_point"],
+  billing_return_viewed: ["outcome", "kind"],
+  usage_limit_action: ["action", "from_provider", "to_provider", "to_model"],
+  agent_template_action: ["action", "result", "entry_point", "failure_code"],
+  mobile_connect_action: ["action", "result", "failure_code"],
+  connector_action: ["connector", "action", "result", "failure_code"],
+  computer_use_action: ["action", "permission"],
+  help_link_opened: ["destination"],
+  channel_action: ["action", "result", "failure_code"],
+  server_transfer_action: ["action", "result", "failure_code"],
+  usage_viewed: ["scope", "range", "filtered"],
+  analytics_preference_changed: ["enabled"],
 } as const satisfies Record<AnalyticsEventName, readonly string[]>;
 
 type AnalyticsPropertyName = (typeof EVENT_PROPERTY_ALLOWLIST)[AnalyticsEventName][number];
@@ -275,6 +493,8 @@ const SAFE_FAILURE_CODES = new Set([
   "join_failed",
   "load_failed",
   "member_remove_failed",
+  "microphone_failed",
+  "no_speech",
   "member_update_failed",
   "publish_failed",
   "rate_limited",
@@ -285,9 +505,11 @@ const SAFE_FAILURE_CODES = new Set([
   "response_failed",
   "search_failed",
   "send_failed",
+  "send_now_failed",
   "server_select_failed",
   "sign_in_code_expired",
   "sign_out_failed",
+  "speech_failed",
   "steer_failed",
   "too_many_code_attempts",
   "transcription_failed",
@@ -297,20 +519,52 @@ const SAFE_FAILURE_CODES = new Set([
   "unknown",
   "unpublish_failed",
   "update_failed",
+  "webhook_route_limit",
   "verification_failed",
   "hosted_site_failed",
   "cancelled",
   "interrupted",
+  "mcp_server_test_failed",
+  "mcp_server_save_failed",
+  "mcp_server_remove_failed",
+  "mcp_server_toggle_failed",
+  "member_limit_reached",
+  "license_users_full",
+  "payment_open_failed",
+  "checkout_failed",
+  "export_failed",
+  "import_failed",
+  "copy_failed",
+  "revoke_failed",
+  "runtime_download_failed",
+  "disk_space",
+  "download_http",
+  "download_integrity",
+  "download_size",
+  "archive_invalid",
+  "checksum_failed",
+  "version_mismatch",
+  "cpu_unsupported",
+  "windows_blocked",
+  "cli_update_failed",
+  "cli_activate_failed",
+  "cli_select_failed",
+  "cli_signing_in",
+  "provider_off",
+  "download_stopped",
 ]);
 
 const EVENT_ACTIONS: Partial<Record<AnalyticsEventName, readonly string[]>> = {
-  agent_action: ["create", "update", "delete", "duplicate"],
+  agent_action: ["create", "update", "delete", "duplicate", "branch"],
   agent_input_action: ["prompt", "approval"],
-  queue_action: ["cancel", "steer", "edit", "reorder", "interrupt"],
+  queue_action: ["cancel", "steer", "send_now", "edit", "reorder", "interrupt"],
   routine_action: ["create", "update", "delete", "test"],
+  workflow_action: WORKFLOW_ACTIONS,
   team_action: [
     "server_selected",
     "server_joined",
+    "server_left",
+    "server_removed",
     "identity_saved",
     "published",
     "unpublished",
@@ -322,6 +576,8 @@ const EVENT_ACTIONS: Partial<Record<AnalyticsEventName, readonly string[]>> = {
     "mcp_server_removed",
     "mcp_server_toggled",
     "mcp_server_tested",
+    "invite_link_copied",
+    "invite_qr_shown",
   ],
   browser_action: ["open", "activate", "reload", "close"],
   remote_desktop_action: ["connect", "disconnect", "select_display"],
@@ -337,10 +593,92 @@ const EVENT_ACTIONS: Partial<Record<AnalyticsEventName, readonly string[]>> = {
     "download_cancelled",
     "cli_update_started",
     "cli_update_completed",
+    "sign_in_cancelled",
+    "api_key_saved",
+    "custom_provider_saved",
+    "custom_provider_removed",
   ],
+  voice_conversation_action: ["start", "end", "interrupt", "mute", "unmute"],
+  speech_model_action: ["download"],
+  speech_settings_action: ["read_replies_on", "read_replies_off", "voice_changed"],
   reaction_action: ["add", "remove"],
-  maintenance_action: ["export_data", "export_diagnostics"],
   hosted_site_action: ["publish", "replace", "delete"],
+  hosted_server_upsell: ["shown", "see_plans", "dismissed"],
+  hosted_server_plans_action: [
+    "viewed",
+    "currency_changed",
+    "interval_changed",
+    "plan_selected",
+    "create_failed",
+    "payment_open_failed",
+    "retried",
+    "closed",
+    "join_opened",
+  ],
+  limit_reached: ["shown", "manage_clicked", "confirmed", "dismissed", "contact_clicked"],
+  license_action: [
+    "buy_opened",
+    "checkout_opened",
+    "users_change_requested",
+    "plan_change_requested",
+    "cancel_requested",
+    "cancel_kept",
+    "renewal_resumed",
+    "over_limit_shown",
+  ],
+  onboarding_step: ["viewed", "next", "back", "skipped"],
+  usage_limit_action: ["shown", "model_switched", "waited"],
+  agent_template_action: ["published", "updated", "unpublished", "link_copied", "installed"],
+  mobile_connect_action: ["code_shown", "link_created", "connected", "cancelled", "revoked", "link_revoked"],
+  connector_action: ["connect_started", "connected", "disconnected", "enabled", "disabled"],
+  computer_use_action: ["permission_opened"],
+  channel_action: ["created", "archived", "member_added"],
+  server_transfer_action: ["export", "import", "copy"],
+};
+
+const EVENT_ENUMS: Partial<Record<AnalyticsEventName, Readonly<Record<string, readonly string[]>>>> = {
+  account_sign_in_started: { result: ["code_sent", "company_sign_in", "failed"] },
+  agent_input_action: { kind: ["prompt", "approval"] },
+  search_action: { scope: ["global", "agent"] },
+  team_action: { entry_point: ["in_app", "invite_deep_link"] },
+  hosted_site_action: { entry_point: ["agent", "settings"] },
+  hosted_server_upsell: { entry_point: ["routine_created", "routines_list", "server_offline"] },
+  speech_model_action: { entry_point: ["settings", "voice_conversation"] },
+  voice_conversation_action: { trigger: ["button", "voice"] },
+  hosted_server_plans_action: { entry_point: HOSTED_SERVER_ENTRY_POINTS },
+  limit_reached: { kind: ["servers", "members", "license_users"] },
+  sales_contact_clicked: { entry_point: ["add_server", "license", "members"] },
+  billing_return_viewed: { kind: ["plan", "license", "portal"] },
+  agent_template_action: { entry_point: ["deep_link", "in_app"] },
+  usage_viewed: { scope: ["agent", "server"] },
+  workflow_action: { node_kind: WORKFLOW_NODE_KINDS },
+};
+
+const PROPERTY_ENUMS: Readonly<Record<string, readonly string[]>> = {
+  result: ["succeeded", "failed", "cancelled"],
+  channel: ["agent", "direct"],
+  decision: ["answered", "accept", "decline"],
+  entity: ["skill", "agent", "plugin"],
+  role: ["admin", "member"],
+  server_kind: ["local", "remote", "unknown"],
+  transport: ["unknown", "p2p", "relay"],
+  transcription: ["local", "cloud", "server"],
+  trigger: ["voice_conversation", "dictation", "read_aloud"],
+  voice: SPEECH_VOICES,
+  plan: BILLING_PLAN_IDS,
+  interval: BILLING_INTERVALS,
+  currency: BILLING_CURRENCIES,
+  direction: ["up", "down"],
+  outcome: ["completed", "cancelled"],
+  step: ["existing", "choose", "plan", "computer", "language"],
+  path: ["free", "plan", "existing"],
+  connector: ["slack", "discord", "telegram", "whatsapp", "github", "onepassword", "bitwarden", "protonpass"],
+  permission: ["screen-recording", "accessibility"],
+  method: ["browser", "code", "api_key"],
+  destination: ["discord", "feedback", "report-problem", "guides", "changelog"],
+  range: ["7d", "30d", "90d", "1y"],
+  from_provider: AGENT_PROVIDERS,
+  to_provider: AGENT_PROVIDERS,
 };
 
 const CHANGED_FIELDS = new Map<string, string>([
@@ -352,6 +690,8 @@ const CHANGED_FIELDS = new Map<string, string>([
   ["name", "name"],
   ["notifications", "notifications"],
   ["provider", "provider"],
+  ["providerAccountId", "provider_account"],
+  ["backupModels", "backup_models"],
   ["reasoningEffort", "reasoning_effort"],
   ["title", "title"],
 ]);
@@ -365,6 +705,8 @@ const ROUTINE_TRIGGER_TYPES = new Set([
   "interval",
   "advanced",
   "custom",
+  "once",
+  "webhook",
 ]);
 
 const UPDATE_PHASES = new Set([
@@ -379,22 +721,35 @@ const UPDATE_PHASES = new Set([
   "unsupported",
 ]);
 
-export function shouldEnableDesktopAnalytics(appInfo: AppInfo, productionBuild: boolean): boolean {
-  return productionBuild && appInfo.variant === "production";
+function shouldEnableDesktopAnalytics(appInfo: AppInfo, productionBuild: boolean): boolean {
+  return appInfo.analyticsCaptureUrl !== undefined || (productionBuild && appInfo.variant === "production");
 }
 
-export function sanitizeDesktopAnalyticsEvent(
+function sanitizeDesktopAnalyticsEvent(
   name: AnalyticsEventName,
   properties: DesktopAnalyticsEvents[AnalyticsEventName],
 ): SanitizedAnalyticsProperties {
   const allowed = EVENT_PROPERTY_ALLOWLIST[name];
+  const customAgent = "provider" in properties && properties.provider === "acp";
+  const customTarget = "to_provider" in properties && properties.to_provider === "acp";
   return Object.fromEntries(
     Object.entries(properties).flatMap(([key, value]) => {
       if (value === undefined || !allowed.some((item) => item === key)) return [];
-      const safeValue = sanitizeDesktopProperty(name, key, value);
+      const safeValue =
+        (customAgent && key === "model") || (customTarget && key === "to_model")
+          ? "custom"
+          : sanitizeDesktopProperty(name, key, value);
       return safeValue === undefined ? [] : [[key, safeValue]];
     }),
   );
+}
+
+function reportedModel(value: string): string {
+  if (value.startsWith("custom:")) return "custom";
+  const separator = value.indexOf("/");
+  if (separator < 0) return value;
+  const prefix = value.slice(0, separator);
+  return isOneOf(AGENT_PROVIDERS, prefix) && !isKeyOnlyProvider(prefix) ? value : "custom";
 }
 
 function sanitizeDesktopProperty(
@@ -404,19 +759,18 @@ function sanitizeDesktopProperty(
 ): AnalyticsPropertyValue | undefined {
   if (key === "failure_code") return isString(value) && SAFE_FAILURE_CODES.has(value) ? value : "unknown";
   if (key === "action") return safeEnum(value, EVENT_ACTIONS[name]);
-  if (key === "result") {
-    return safeEnum(
-      value,
-      name === "account_sign_in_started" ? ["code_sent", "browser_opened", "failed"] : ["succeeded", "failed"],
-    );
-  }
   if (key === "provider" || key === "preferred_provider") return safeEnum(value, AGENT_PROVIDERS);
   if (key === "reasoning_effort") return safeEnum(value, AGENT_REASONING_EFFORTS);
-  if (key === "model") return isAgentModel(value) ? value : undefined;
+  if (key === "model" || key === "to_model") return isAgentModel(value) ? reportedModel(value) : undefined;
+  if (key === "attachment_kinds") {
+    if (!Array.isArray(value)) return undefined;
+    return [...new Set(value.filter((item) => safeEnum(item, ATTACHMENT_KINDS) !== undefined))];
+  }
   if (key === "changed_fields") {
     if (!Array.isArray(value)) return undefined;
     return value.flatMap((item) => (isString(item) ? (CHANGED_FIELDS.get(item) ?? []) : [])).slice(0, 16);
   }
+  if (key === "listing_slug") return isString(value) ? listingSlug(value) : undefined;
   if (key === "trigger_type") return isString(value) && ROUTINE_TRIGGER_TYPES.has(value) ? value : undefined;
   if (key === "phase") return isString(value) && UPDATE_PHASES.has(value) ? value : undefined;
   if (key === "from_version" || key === "to_version") {
@@ -425,25 +779,31 @@ function sanitizeDesktopProperty(
   if (key === "attachment_count") return safeInteger(value, 0, 100);
   if (key === "delivery_count") return safeInteger(value, 0, 1_000);
   if (key === "result_count") return safeInteger(value, 0, 1_000_000);
+  if (key === "turn_count") return safeInteger(value, 0, 100_000);
+  if (key === "first_audio_ms") return safeNumber(value, 0, 10 * 60 * 1_000);
   if (key === "duration_ms") return safeNumber(value, 0, 7 * 24 * 60 * 60 * 1_000);
   if (key === "audio_duration_seconds") return safeNumber(value, 0, 24 * 60 * 60);
-  if (["setup_completed", "signed_in", "is_reply", "email_bound"].includes(key)) {
+  if (key === "enabled") return value === false ? value : undefined;
+  if (
+    [
+      "setup_completed",
+      "signed_in",
+      "is_reply",
+      "email_bound",
+      "recording_kept",
+      "completed",
+      "skipped",
+      "filtered",
+    ].includes(key)
+  ) {
     return isBoolean(value) ? value : undefined;
   }
-  if (key === "entry_point") {
-    return safeEnum(value, name === "hosted_site_action" ? ["agent", "settings"] : ["in_app", "invite_deep_link"]);
-  }
-  const enumValues: Record<string, readonly string[] | undefined> = {
-    channel: ["agent", "direct"],
-    decision: ["answered", "accept", "decline"],
-    entity: ["skill", "agent"],
-    kind: ["prompt", "approval"],
-    role: ["admin", "member"],
-    scope: ["global", "agent"],
-    server_kind: ["local", "remote", "unknown"],
-    transport: ["unknown", "p2p", "relay"],
-  };
-  return safeEnum(value, enumValues[key]);
+  return safeEnum(value, EVENT_ENUMS[name]?.[key] ?? PROPERTY_ENUMS[key]);
+}
+
+function listingSlug(value: string): string | undefined {
+  if (PLUGIN_SLUGS.has(value)) return value;
+  return CURATED_LISTING_PATTERN.exec(value)?.[1];
 }
 
 function safeEnum(value: unknown, allowed: readonly string[] | undefined): string | undefined {
@@ -458,13 +818,14 @@ function safeNumber(value: unknown, minimum: number, maximum: number): number | 
   return isNumber(value) && Number.isFinite(value) && value >= minimum && value <= maximum ? value : undefined;
 }
 
-export class DesktopAnalytics {
+class DesktopAnalytics {
   readonly #createClient: ClientFactory;
   readonly #productionBuild: boolean;
   #client: OpenPanelClient | null = null;
   #anonymousClient: OpenPanelClient | null = null;
   #disabled = false;
   #trackingEnabled = true;
+  #installId: string | null = null;
   #identity: AnalyticsIdentity | null = null;
   #pending: PendingEvent[] = [];
   readonly #clientQueue: AnalyticsOperationQueue = { active: false, operations: [] };
@@ -479,19 +840,21 @@ export class DesktopAnalytics {
   }
 
   configure(appInfo: AppInfo): boolean {
+    configureDesktopReports(appInfo, this.#trackingEnabled, this.#identity);
     if (this.#client) return true;
-    if (OPENPANEL_API_URL === null || !shouldEnableDesktopAnalytics(appInfo, this.#productionBuild)) {
+    if (!appInfo.analyticsCaptureUrl || !shouldEnableDesktopAnalytics(appInfo, this.#productionBuild)) {
       this.#disabled = true;
       this.#pending = [];
       return false;
     }
     try {
       const clientOptions = {
-        apiUrl: OPENPANEL_API_URL,
+        apiUrl: appInfo.analyticsCaptureUrl ?? OPENPANEL_API_URL,
         clientId: OPENPANEL_CLIENT_ID,
       };
       const client = this.#createClient(clientOptions);
       const anonymousClient = this.#createClient(clientOptions);
+      this.#installId = appInfo.analyticsInstallId ?? null;
       const globalProperties = {
         __referrer: "",
         surface: "desktop",
@@ -505,11 +868,46 @@ export class DesktopAnalytics {
       this.#client = client;
       this.#anonymousClient = anonymousClient;
       if (this.#trackingEnabled && this.#identity) this.#identifyClient(this.#identity);
-      if (this.#trackingEnabled) this.#flush();
+      this.#flush();
       return true;
     } catch {
       return false;
     }
+  }
+
+  configureWeb(options: { version: string; user: AnalyticsIdentity | null; enabled: boolean }): boolean {
+    if (!this.#client && (!this.#productionBuild || window.location.origin !== "https://openbot.run")) {
+      this.#disabled = true;
+      this.#pending = [];
+      return false;
+    }
+    this.setTrackingEnabled(options.enabled);
+    if (!this.#client) {
+      try {
+        const clientOptions = { apiUrl: OPENPANEL_API_URL, clientId: OPENPANEL_CLIENT_ID };
+        const client = this.#createClient(clientOptions);
+        const anonymousClient = this.#createClient(clientOptions);
+        this.#installId = webAnalyticsInstallId();
+        const globalProperties = {
+          __referrer: "",
+          surface: "web",
+          environment: "production",
+          event_schema_version: ANALYTICS_GENERATIONS.web,
+          app_version: options.version,
+          platform: "web",
+        };
+        client.setGlobalProperties(globalProperties);
+        anonymousClient.setGlobalProperties(globalProperties);
+        this.#client = client;
+        this.#anonymousClient = anonymousClient;
+        if (this.#trackingEnabled && this.#identity) this.#identifyClient(this.#identity);
+        this.#flush();
+      } catch {
+        return false;
+      }
+    }
+    this.setUser(options.user);
+    return true;
   }
 
   setUser(user: AnalyticsIdentity | null): void {
@@ -517,6 +915,7 @@ export class DesktopAnalytics {
     const normalized = user ? normalizeAnalyticsIdentity(user) : null;
     if (previous?.id === normalized?.id && previous?.email === normalized?.email) return;
     this.#identity = normalized;
+    configureErrorReports(this.#trackingEnabled, normalized?.id ?? null);
     if (!this.#client || !this.#trackingEnabled) return;
     if (previous && (!normalized || previous.id !== normalized.id || previous.email !== normalized.email)) {
       if (!normalized || previous.id !== normalized.id) {
@@ -534,13 +933,18 @@ export class DesktopAnalytics {
     this.setUser(null);
   }
 
-  setTrackingEnabled(enabled: boolean): void {
+  setTrackingEnabled(enabled: boolean, options: { recordOptOut?: boolean } = {}): void {
     if (this.#trackingEnabled === enabled) return;
     this.#trackingEnabled = enabled;
+    configureErrorReports(enabled, this.#identity?.id ?? null);
     if (!enabled) {
       this.#pending = [];
       this.#clientQueue.operations = [];
       this.#anonymousQueue.operations = [];
+      if (options.recordOptOut && !this.#disabled) {
+        const profileId = this.#identity?.id ?? null;
+        this.#send("analytics_preference_changed", { enabled: false }, profileId);
+      }
       this.#enqueue(this.#clientQueue, "clear", () => this.#client?.clear());
       this.#enqueue(this.#anonymousQueue, "clear", () => this.#anonymousClient?.clear());
       return;
@@ -572,9 +976,10 @@ export class DesktopAnalytics {
   #track<Name extends AnalyticsEventName>(
     name: Name,
     properties: DesktopAnalyticsEvents[Name],
-    profileId: string | null,
+    accountId: string | null,
   ): void {
-    if (this.#disabled || !this.#trackingEnabled) return;
+    if (this.#disabled) return;
+    const profileId = this.#trackingEnabled ? accountId : null;
     const sanitized = sanitizeDesktopAnalyticsEvent(name, properties);
     if (!this.#client) {
       this.#pending.push({ name, properties: sanitized, profileId, timestamp: new Date().toISOString() });
@@ -590,12 +995,14 @@ export class DesktopAnalytics {
     profileId: string | null,
     timestamp?: string,
   ): void {
+    const subject = profileId ?? (this.#trackingEnabled ? null : this.#installId);
+    if (!subject && !this.#trackingEnabled) return;
     const client = profileId ? this.#client : this.#anonymousClient;
     this.#enqueue(profileId ? this.#clientQueue : this.#anonymousQueue, "track", () =>
       client?.track(name, {
         ...properties,
         ...(timestamp ? { __timestamp: timestamp } : {}),
-        ...(profileId ? { profileId } : {}),
+        ...(subject ? { profileId: subject } : {}),
       }),
     );
   }
@@ -637,9 +1044,7 @@ export class DesktopAnalytics {
       try {
         const result = operation.run();
         if (isPromiseLike(result)) await result;
-      } catch {
-        // Analytics must never change application behavior or stop later events.
-      }
+      } catch {}
     }
     queue.active = false;
   }

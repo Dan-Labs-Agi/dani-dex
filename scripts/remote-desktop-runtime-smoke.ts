@@ -1,37 +1,45 @@
 import { randomBytes } from "node:crypto";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { createDaniDexLogger } from "@dani-dex/logging";
+import { createOpenBotLogger } from "@openbot/logging";
+import { Effect } from "effect";
+import { runCauseEffect } from "../src/backend/effect-boundary";
+import { resolveRemoteDesktopRuntime } from "../src/main/remote-desktop-runtime-artifact";
 import { SunshineMoonlightRuntime } from "../src/main/sunshine-moonlight-runtime";
 
-const logger = createDaniDexLogger("remote-desktop-runtime-smoke");
+const logger = createOpenBotLogger("remote-desktop-runtime-smoke");
 
-if (process.platform !== "darwin") {
-  throw new Error("The local runtime smoke test currently supports macOS only.");
+if (process.platform !== "darwin" && process.platform !== "linux") {
+  throw new Error("The local runtime smoke test supports macOS and Linux only.");
 }
 
-const stateDirectory = await mkdtemp(join(tmpdir(), "dani-dex-remote-runtime-smoke-"));
-const runtimeRoot = resolve("build/remote-desktop-runtime/darwin/arm64");
+const paths = await Effect.runPromise(
+  resolveRemoteDesktopRuntime({
+    isPackaged: false,
+    resourcesPath: process.cwd(),
+    sourceRoot: resolve("."),
+    platform: process.platform,
+    architecture: process.arch,
+  }),
+);
+if (!paths) throw new Error("Build or install the remote desktop runtime before the smoke test.");
+const stateDirectory = await mkdtemp(join(tmpdir(), "openbot-remote-runtime-smoke-"));
 const runtime = new SunshineMoonlightRuntime({
-  paths: {
-    sunshine: join(runtimeRoot, "Sunshine.app/Contents/MacOS/Sunshine"),
-    moonlightWebServer: join(runtimeRoot, "web-server"),
-    moonlightStreamer: join(runtimeRoot, "streamer"),
-  },
+  paths,
   stateDirectory,
-  platform: "darwin",
+  platform: process.platform,
   credentials: {
-    username: process.env.DANI_DEX_SMOKE_USERNAME ?? `dani-dex-${randomBytes(8).toString("hex")}`,
-    password: process.env.DANI_DEX_SMOKE_PASSWORD ?? randomBytes(24).toString("base64url"),
+    username: process.env.OPENBOT_SMOKE_USERNAME ?? `openbot-${randomBytes(8).toString("hex")}`,
+    password: process.env.OPENBOT_SMOKE_PASSWORD ?? randomBytes(24).toString("base64url"),
   },
-  getDisplays: () => [],
-  getIceServers: async () => [{ urls: "stun:127.0.0.1:3478" }],
+  getDisplays: () => [{ id: "1", label: "Primary display", width: 1920, height: 1080, primary: true }],
+  getIceServers: () => Effect.succeed([{ urls: "stun:127.0.0.1:3478" }]),
   onDiagnostic: (source, message) => process.stderr.write(`[${source}] ${message}`),
 });
 
 try {
-  const state = await runtime.start();
+  const state = await runCauseEffect(runtime.start());
   if (!state.baseUrl.startsWith("http://127.0.0.1:")) throw new Error("Moonlight Web did not bind to loopback.");
   if (state.hostIds.length !== 4 || !state.hostIds.every(Number.isInteger) || !Number.isInteger(state.desktopAppId)) {
     throw new Error("Moonlight Web did not pair with the Sunshine Desktop application.");
@@ -39,12 +47,18 @@ try {
   if (state.displays.length === 0 || !state.selectedDisplayId) {
     throw new Error("Sunshine did not return a native display identifier.");
   }
+  if (
+    process.platform === "darwin" &&
+    (await readFile(join(stateDirectory, "sunshine.log"), "utf8")).includes("Starting system tray")
+  ) {
+    throw new Error("Sunshine started its system tray on macOS.");
+  }
   const streamPage = await fetch(`${state.baseUrl}/stream.html`);
   if (!streamPage.ok) throw new Error(`Moonlight stream page failed with HTTP ${streamPage.status}.`);
   logger.info(
     `Remote desktop runtime is ready on loopback (hosts ${state.hostIds.join(", ")}, app ${state.desktopAppId}).`,
   );
 } finally {
-  await runtime.stop();
+  await runCauseEffect(runtime.stop());
   await rm(stateDirectory, { recursive: true, force: true });
 }

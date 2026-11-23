@@ -5,19 +5,19 @@ import type {
   DirectMessageRealtimeEvent,
   DirectThreadSummary,
   DirectTypingRealtimeEvent,
-} from "@dani-dex/contracts/ipc";
+} from "@openbot/contracts/ipc";
+import { currentText } from "@openbot/ui/text";
 import { createEffect, createMemo, createSignal, flush, onSettled } from "solid-js";
 import { desktopAnalytics } from "../../analytics";
-import { errorMessage } from "../../error-message";
 import { usePlatform } from "../../platform";
 import { createScopeGuard } from "../../scope-lifetime";
 import { createSimpleContext } from "../../simple-context";
 import { useServers } from "../servers/servers-context";
 import { usePresence } from "../team/team-context";
-import { useUsage } from "../usage/usage-context";
+import { useWindowPage } from "../window/window-page-context";
+import { conversationPort } from "./conversation-port";
 import { preserveKnownDirectUnread } from "./conversation-read-state";
 
-/** Keep live messages and completed reads that arrived after the recovery page was read. */
 function recoveredDirectConversation(
   page: DirectConversationPage,
   cached: DirectConversationSnapshot | undefined,
@@ -45,55 +45,20 @@ function recoveredDirectConversation(
       firstUnreadMessageId: readState.firstUnreadMessageId ?? unread[0]?.id ?? null,
     };
   }
-  return { ...page, messages, revision: Math.max(page.revision, cached.revision), readState };
+  return {
+    ...page,
+    messages,
+    revision: Math.max(page.revision, cached.revision),
+    ...(readState === undefined ? {} : { readState }),
+  };
 }
 
-/**
- * Person-to-person conversations on the active team server: the thread list, the
- * page of messages open for each member, and who is typing.
- *
- * **This domain owns `activeDirectMemberId`, and that is a deliberate departure
- * from the inventory in the plan**, which parked it in a `selection` context
- * alongside `activeAgentId`. `selection` exists to break one cycle: `selectAgent`
- * writes to agents, conversation and direct messages at once while conversation
- * has to read `activeAgent()` back. The direct-message half has no such cycle -
- * twelve of the thirteen readers of `activeDirectMemberId` are the functions in
- * this file, and the command that writes it (`selectDirectMember`) already has
- * to live above every domain it touches. Splitting the id away from the
- * conversations it indexes would buy nothing and cost an extra edge.
- *
- * Three consequences of that ownership, in the order they bite:
- *
- * - **`selectDirectMember` is still in the controller and calls
- *   `openDirectConversation` for its second half.** Its first half closes agent
- *   setup, prunes agent history and clears the settings request - three domains
- *   this one is nested under, so it can never move down here. What did move is
- *   everything from "stop typing at the person we are leaving" onward.
- * - **`markDirectMessagesRead` keys its in-flight operations by server**
- *   (`${serverId}\0${memberId}`) and re-checks `activeServerId()` after every
- *   await. Those checks are what stop a read for the previous server landing on
- *   the new one; they are the idiom the keyed server scope removes later, and
- *   until then removing one is a silent cross-server bug.
- * - **Nothing is torn down by hand.** The provider is mounted inside the keyed
- *   server scope, so a switch disposes it outright. `directConversationPages`,
- *   `directOlderLoading`, `directOlderErrors` and `directConversationLoading`
- *   used to survive a switch, which was a leak rather than a decision; they no
- *   longer do, and that is the one behaviour this move changes.
- *
- * The load counter is a plain nonce rather than a per-member map because only
- * one direct conversation is open at a time: any newer request, for any member,
- * invalidates the one in flight. A request left in flight by a server switch
- * needs no nonce at all - its owner is gone.
- */
 const DirectMessages = createSimpleContext({
   name: "Direct messages",
   init: () => {
     const { appFocused, peopleEnabled } = usePlatform();
-    const usage = useUsage();
-    // Every automatic read below asks whether the user can see the message it is about to mark
-    // read. Usage covers the workspace content, so a conversation under it is not visible
-    // however focused the window is.
-    const conversationVisible = () => appFocused() && !usage.state.serverId;
+    const windowPage = useWindowPage();
+    const conversationVisible = () => appFocused() && !windowPage.conversationCovered();
     const { activeServer, activeServerId, activeServerSupportsCapability } = useServers();
     const { currentTeamMember, directPeople } = usePresence();
     const scopeIsCurrent = createScopeGuard();
@@ -125,12 +90,10 @@ const DirectMessages = createSimpleContext({
         return;
       }
       try {
-        const threads = await window.danidex.servers.listDirectThreads();
+        const threads = await conversationPort().servers.listDirectThreads();
         if (!scopeIsCurrent() || request !== directThreadsRequest) return;
         setDirectThreads(threads);
-      } catch {
-        // A failed refresh does not mean the server has no conversations.
-      }
+      } catch {}
     }
 
     function pruneInactiveDirectHistory(memberId: string): void {
@@ -154,8 +117,8 @@ const DirectMessages = createSimpleContext({
       const previousMemberId = activeDirectMemberId();
       if (previousMemberId && previousMemberId !== memberId) {
         pruneInactiveDirectHistory(previousMemberId);
-        void window.danidex.servers
-          .setDirectTyping({ memberId: previousMemberId, typing: false })
+        void conversationPort()
+          .servers.setDirectTyping({ memberId: previousMemberId, typing: false })
           .catch(() => undefined);
       }
       setActiveDirectMemberId(memberId);
@@ -174,7 +137,7 @@ const DirectMessages = createSimpleContext({
       setDirectConversationError(null);
       const request = ++directConversationRequest;
       try {
-        const page = await window.danidex.servers.readDirectConversationPage({
+        const page = await conversationPort().servers.readDirectConversationPage({
           memberId,
           anchor: { type: "latest" },
           limit: 50,
@@ -193,7 +156,10 @@ const DirectMessages = createSimpleContext({
         }
       } catch (error) {
         if (!scopeIsCurrent() || request !== directConversationRequest) return;
-        if (!hasCached) setDirectConversationError(errorMessage(error, "The messages could not load."));
+        if (!hasCached) {
+          const text = currentText();
+          setDirectConversationError(text.errorMessage(error, text.t("conversation.direct.loadFailed")));
+        }
       } finally {
         if (scopeIsCurrent() && request === directConversationRequest) setDirectConversationLoading(false);
       }
@@ -208,7 +174,7 @@ const DirectMessages = createSimpleContext({
       setDirectOlderLoading((current) => ({ ...current, [memberId]: true }));
       setDirectOlderErrors((current) => ({ ...current, [memberId]: null }));
       try {
-        const page = await window.danidex.servers.readDirectConversationPage({
+        const page = await conversationPort().servers.readDirectConversationPage({
           memberId,
           anchor: { type: "before", cursor },
           limit: 50,
@@ -219,21 +185,23 @@ const DirectMessages = createSimpleContext({
           const existing = current[memberId];
           if (!existing) return current;
           const ids = new Set(page.messages.map((message) => message.id));
+          const readState = page.readState ?? existing.readState;
           return {
             ...current,
             [memberId]: {
               ...existing,
               messages: [...page.messages, ...existing.messages.filter((message) => !ids.has(message.id))],
               revision: Math.max(existing.revision, page.revision),
-              readState: page.readState ?? existing.readState,
+              ...(readState === undefined ? {} : { readState }),
             },
           };
         });
         setDirectConversationPages((current) => ({ ...current, [memberId]: page.pageInfo }));
       } catch (error) {
+        const text = currentText();
         setDirectOlderErrors((current) => ({
           ...current,
-          [memberId]: errorMessage(error, "Older messages could not load."),
+          [memberId]: text.errorMessage(error, text.t("conversation.direct.olderFailed")),
         }));
       } finally {
         setDirectOlderLoading((current) => ({ ...current, [memberId]: false }));
@@ -243,7 +211,7 @@ const DirectMessages = createSimpleContext({
     async function openDirectMessage(memberId: string, messageId: string): Promise<void> {
       const request = ++directConversationRequest;
       try {
-        const page = await window.danidex.servers.readDirectConversationPage({
+        const page = await conversationPort().servers.readDirectConversationPage({
           memberId,
           anchor: { type: "around", messageId },
           limit: 50,
@@ -253,9 +221,10 @@ const DirectMessages = createSimpleContext({
         setDirectConversationPages((current) => ({ ...current, [memberId]: page.pageInfo }));
       } catch (error) {
         if (request !== directConversationRequest || activeDirectMemberId() !== memberId) return;
+        const text = currentText();
         setDirectOlderErrors((current) => ({
           ...current,
-          [memberId]: errorMessage(error, "The unread message could not load."),
+          [memberId]: text.errorMessage(error, text.t("conversation.direct.unreadFailed")),
         }));
       }
     }
@@ -265,12 +234,12 @@ const DirectMessages = createSimpleContext({
       clientMessageId: string,
     ): Promise<{ message: DirectMessage; readError?: string }> {
       const memberId = activeDirectMemberId();
-      if (!memberId) throw new Error("Select a person first.");
+      if (!memberId) throw new Error(currentText().t("conversation.direct.noPerson"));
       const analytics = desktopAnalytics.scope();
       const serverKind = activeServer()?.kind ?? "unknown";
       let message: DirectMessage;
       try {
-        message = await window.danidex.servers.sendDirectMessage({
+        message = await conversationPort().servers.sendDirectMessage({
           memberId,
           text,
           clientMessageId,
@@ -299,7 +268,8 @@ const DirectMessages = createSimpleContext({
       try {
         await markDirectMessagesRead(memberId, message.sequence);
       } catch (error) {
-        readError = errorMessage(error, "Could not mark messages as read.");
+        const text = currentText();
+        readError = text.errorMessage(error, text.t("conversation.direct.markReadFailed"));
       }
       await refreshDirectThreads();
       return { message, ...(readError ? { readError } : {}) };
@@ -316,7 +286,7 @@ const DirectMessages = createSimpleContext({
         .catch(() => undefined)
         .then(async () => {
           if (!scopeIsCurrent()) return;
-          const readState = await window.danidex.servers.markDirectRead({
+          const readState = await conversationPort().servers.markDirectRead({
             memberId,
             throughSequence: boundary,
           });
@@ -364,7 +334,9 @@ const DirectMessages = createSimpleContext({
     function setDirectTyping(typing: boolean): void {
       const memberId = activeDirectMemberId();
       if (!memberId) return;
-      void window.danidex.servers.setDirectTyping({ memberId, typing }).catch(() => undefined);
+      void conversationPort()
+        .servers.setDirectTyping({ memberId, typing })
+        .catch(() => undefined);
     }
 
     function mergeDirectMessage(memberId: string, message: DirectMessage): void {
@@ -403,8 +375,6 @@ const DirectMessages = createSimpleContext({
           ...current,
           [memberId]: {
             ...snapshot,
-            // Inbound messages arrive in sequence order, so append and only
-            // sort when an out-of-order delivery actually happened.
             messages: (() => {
               const last = snapshot.messages[snapshot.messages.length - 1];
               if (!last || message.sequence >= last.sequence) return [...snapshot.messages, message];
@@ -447,24 +417,14 @@ const DirectMessages = createSimpleContext({
       });
     }
 
-    /**
-     * Leaves the open direct conversation without opening another. The commands
-     * that call it - creating an agent, selecting one - live above this domain
-     * because each also writes to agents and conversation.
-     */
     function clearDirectSelection(): void {
       setActiveDirectMemberId(null);
     }
 
-    /** Invalidates the conversation load in flight. Runs before a server switch commits. */
     function cancelDirectConversationRequests(): void {
       directConversationRequest += 1;
     }
 
-    /** The direct-message slice of the teardown `selectServer` runs. */
-    // A member can leave the team while their conversation is open. Dropping the
-    // selection is what closes the pane; the request bump stops the load that was
-    // already on its way from re-opening it.
     createEffect(
       () => ({
         memberId: activeDirectMemberId(),
@@ -489,10 +449,10 @@ const DirectMessages = createSimpleContext({
 
     onSettled(() => {
       if (!peopleEnabled) return undefined;
-      const unsubscribeMessage = window.danidex.servers.onDirectMessage((event) =>
+      const unsubscribeMessage = conversationPort().servers.onDirectMessage((event) =>
         flush(() => handleDirectMessageEvent(event)),
       );
-      const unsubscribeTyping = window.danidex.servers.onDirectTyping((event) =>
+      const unsubscribeTyping = conversationPort().servers.onDirectTyping((event) =>
         flush(() => handleDirectTypingEvent(event)),
       );
       return () => {

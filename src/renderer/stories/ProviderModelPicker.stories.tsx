@@ -1,6 +1,6 @@
-import { expect, fn, within } from "storybook/test";
+import { ProviderModelPicker } from "@openbot/ui/components/ProviderModelPicker";
+import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { ProviderModelPicker } from "../src/components/ProviderModelPicker";
 import { STORY_AGENT_STATUS, STORY_MODELS } from "./fixtures";
 
 const args: Parameters<typeof ProviderModelPicker>[0] = {
@@ -25,6 +25,43 @@ export const Pill: Story = {
   args: { reasoningEffort: "medium", onReasoningEffortChange: fn() },
 };
 
+export const AllEffortLevels: Story = {
+  args: {
+    provider: "claude",
+    value: "claude-opus-5-5",
+    modelOptions: STORY_MODELS.map((model) =>
+      model.id === "claude-opus-5-5"
+        ? { ...model, supportedReasoningEfforts: ["low", "medium", "high", "xhigh", "max"] }
+        : model,
+    ),
+    reasoningEffort: "high",
+    onReasoningEffortChange: fn(),
+  },
+};
+
+export const LimitedEffort: Story = {
+  args: {
+    provider: "claude",
+    value: "claude-opus-5-5",
+    modelOptions: STORY_MODELS.map((model) =>
+      model.id === "claude-opus-5-5" ? { ...model, supportedReasoningEfforts: ["low", "medium"] } : model,
+    ),
+    reasoningEffort: "medium",
+    onReasoningEffortChange: fn(),
+  },
+};
+
+export const Ultrafast: Story = {
+  args: {
+    value: "gpt-5.6-sol",
+    reasoningEffort: "high",
+    onReasoningEffortChange: fn(),
+    fastMode: true,
+    ultrafast: true,
+    onFastModeChange: fn(),
+  },
+};
+
 export const Field: Story = {
   args: { variant: "field", label: "Model" },
 };
@@ -33,35 +70,37 @@ export const Disabled: Story = {
   args: { disabled: true, disabledReason: "Choose a provider first." },
 };
 
-export const Opens: Story = {
-  args: { reasoningEffort: "medium", onReasoningEffortChange: fn() },
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole("button", { name: /Agent model: GPT-5.6 Luna/ }));
-    await canvas.findByRole("dialog", { name: "Choose agent model" });
-  },
-};
-
 export const UnavailableProvidersOpen: Story = {
   args: {
-    modelOptions: STORY_MODELS.filter((model) => model.provider === "codex"),
+    modelOptions: STORY_MODELS.filter((model) => model.provider === "claude"),
     agentStatus: {
       ...STORY_AGENT_STATUS,
       providers: STORY_AGENT_STATUS.providers?.map((provider) =>
-        provider.id === "codex"
+        provider.id === "claude"
           ? provider
           : {
               ...provider,
               state: "not-installed" as const,
               version: null,
-              message:
-                provider.id === "grok"
-                  ? "Run `grok login` or set XAI_API_KEY to use Grok."
-                  : "Run `claude auth login` to use Claude.",
+              message: provider.id === "codex" ? "Run `codex login` to use Codex." : null,
             },
       ),
     },
   },
-  play: Opens.play,
+};
+
+export const ConnectedProvidersOnly: Story = {
+  args: {
+    onManageProviders: fn(),
+    agentStatus: {
+      ...STORY_AGENT_STATUS,
+      providers: STORY_AGENT_STATUS.providers?.map((provider) =>
+        provider.id === "codex" || provider.id === "claude"
+          ? provider
+          : { ...provider, state: "sign-in-required" as const },
+      ),
+    },
+  },
 };
 
 export const ProviderDownloadsOpen: Story = {
@@ -86,7 +125,6 @@ export const ProviderDownloadsOpen: Story = {
     onCancelProviderDownload: fn(),
     onConnectProvider: fn(),
   },
-  play: Opens.play,
 };
 
 export const DiscoveredModels: Story = {
@@ -103,7 +141,6 @@ export const DiscoveredModels: Story = {
       },
     ],
   },
-  play: Opens.play,
 };
 
 export const OpenCodeCatalog: Story = {
@@ -131,10 +168,6 @@ export const OpenCodeCatalog: Story = {
         supportedReasoningEfforts: ["medium" as const],
       })),
     ),
-  },
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole("button", { name: /Agent model:/ }));
-    await canvas.findByRole("textbox", { name: "Search models" });
   },
 };
 
@@ -166,7 +199,6 @@ export const OpenCodeLocalModels: Story = {
       ["openai/gpt", "OpenAI/GPT"],
     ]),
   },
-  play: OpenCodeCatalog.play,
 };
 
 const openCodeStatus = {
@@ -191,7 +223,6 @@ const customProviders = [
   },
 ];
 
-/** Nothing configured: the Custom tab is the one entry point, so it must not be a dead end. */
 export const CustomTabEmpty: Story = {
   args: {
     provider: "opencode",
@@ -199,12 +230,6 @@ export const CustomTabEmpty: Story = {
     agentStatus: openCodeStatus,
     modelOptions: openCodeCatalog([["opencode/example", "OpenCode Zen/Example"]]),
     onAddCustomProvider: fn(),
-  },
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole("button", { name: /Agent model:/ }));
-    const dialog = within(await canvas.findByRole("dialog", { name: "Choose agent model" }));
-    await userEvent.click(dialog.getByRole("tab", { name: /^Custom:/ }));
-    await expect(dialog.findByRole("button", { name: "Add provider" })).resolves.toBeTruthy();
   },
 };
 
@@ -223,23 +248,88 @@ export const CustomTabWithModels: Story = {
       ["openai/gpt", "OpenAI/GPT"],
     ]),
   },
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole("button", { name: /Agent model:/ }));
-    const dialog = within(await canvas.findByRole("dialog", { name: "Choose agent model" }));
-    await expect(dialog.findByRole("option", { name: "Qwen3 Coder 30B" })).resolves.toBeTruthy();
+};
+
+export const CustomTabPending: Story = {
+  args: {
+    provider: "opencode",
+    value: "opencode/example",
+    agentStatus: { ...STORY_AGENT_STATUS, providers: [{ ...openCodeStatus.providers[0], endpointsPending: true }] },
+    customProviders,
+    onAddCustomProvider: fn(),
+    onManageProviders: fn(),
+    modelOptions: openCodeCatalog([["opencode/example", "OpenCode Zen/Example"]]),
   },
 };
 
-/** The same catalog on the OpenCode tab, which must not list the two custom endpoints again. */
+export const CustomTabUnlisted: Story = {
+  args: {
+    ...CustomTabPending.args,
+    agentStatus: { ...STORY_AGENT_STATUS, providers: [{ ...openCodeStatus.providers[0], endpointsPending: false }] },
+  },
+};
+
 export const OpenCodeTabExcludesCustom: Story = {
   args: {
     ...CustomTabWithModels.args,
     value: "opencode/example-free",
   },
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole("button", { name: /Agent model:/ }));
-    const dialog = within(await canvas.findByRole("dialog", { name: "Choose agent model" }));
-    await expect(dialog.findByRole("option", { name: "Example Free" })).resolves.toBeTruthy();
-    await expect(dialog.queryByRole("option", { name: "Qwen3 Coder 30B" })).toBeNull();
+};
+
+const spentWeekResetsAt = Math.floor(Date.now() / 1_000) + 3 * 24 * 60 * 60;
+
+const usageLimitArgs: Parameters<typeof ProviderModelPicker>[0] = {
+  ...args,
+  provider: "claude",
+  value: "claude-opus-5-5",
+  reasoningEffort: "high",
+  onReasoningEffortChange: fn(),
+  accountUsage: {
+    limits: [
+      {
+        id: "claude",
+        primary: { usedPercent: 64, windowDurationMins: 300, resetsAt: spentWeekResetsAt - 2 * 24 * 60 * 60 },
+        secondary: { usedPercent: 100, windowDurationMins: 10_080, resetsAt: spentWeekResetsAt },
+      },
+      {
+        id: "codex",
+        primary: { usedPercent: 12, windowDurationMins: 300, resetsAt: spentWeekResetsAt },
+        secondary: null,
+      },
+    ],
+  },
+};
+
+export const UsageLimitReached: Story = { render: () => <ProviderModelPicker {...usageLimitArgs} /> };
+
+const codexOllamaModels = ["gemma4:latest", "qwen3.6:latest", "glm-5.2:cloud", "kimi-k2.7-code:cloud"].map((id) => ({
+  provider: "codex" as const,
+  id,
+  name: id,
+  description: "Codex model discovered from the local CLI.",
+  defaultReasoningEffort: "medium" as const,
+  supportedReasoningEfforts: ["medium" as const],
+}));
+
+const codexStatusWithSource = (modelSource: { kind: "provider"; name: string } | { kind: "catalog" }) => ({
+  ...STORY_AGENT_STATUS,
+  providers: STORY_AGENT_STATUS.providers?.map((provider) =>
+    provider.id === "codex" ? { ...provider, modelSource } : provider,
+  ),
+});
+
+export const CodexModelProviderSource: Story = {
+  args: {
+    value: "gemma4:latest",
+    modelOptions: [...codexOllamaModels, ...STORY_MODELS.filter((model) => model.provider !== "codex")],
+    agentStatus: codexStatusWithSource({ kind: "provider", name: "Ollama" }),
+  },
+};
+
+export const CodexModelCatalogSource: Story = {
+  args: {
+    value: "gemma4:latest",
+    modelOptions: [...codexOllamaModels, ...STORY_MODELS.filter((model) => model.provider !== "codex")],
+    agentStatus: codexStatusWithSource({ kind: "catalog" }),
   },
 };

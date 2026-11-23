@@ -1,17 +1,17 @@
 ---
 name: release-upgrade-safety
-description: Audit a pending Dani-Dex release for upgrade and data-loss hazards before the version is bumped or tagged. Use when asked to cut a release, create or bump a version, prepare a tag, or check whether a change is safe to ship to installed users.
+description: Audit a pending OpenBot release for upgrade and data-loss hazards before the version is bumped or tagged. Use when asked to cut a release, create or bump a version, prepare a tag, or check whether a change is safe to ship to installed users.
 ---
 
 # Release upgrade safety
 
-Every hazard here is one an installed user pays for and you cannot take back. `danidex.db` is
+Every hazard here is one an installed user pays for and you cannot take back. `openbot.db` is
 migrated in place with no backup, two dozen files under `userData` are rewritten by whichever build
 opens them last, a released Team API adapter is spoken by peers you will never update, and the
 account Worker's D1 migrations are applied before the Worker that needs them. A build that ships
 past one of these does not fail on your machine; it fails on someone else's, once, permanently.
 
-Audit the diff since the last released tag against the seven gates below, then report a verdict.
+Audit the diff since the last released tag against the eight gates below, then report a verdict.
 This runs *before* `docs/RELEASING.md`, which stays authoritative for the publish itself.
 
 ## What this skill does and does not do
@@ -20,13 +20,41 @@ This runs *before* `docs/RELEASING.md`, which stays authoritative for the publis
   you are separately asked to.
 - It never runs `bun run check`, `check:desktop`, `test`, or `build-storybook` — each takes minutes,
   CI owns them, and the desktop suite flakes under load, so a red result would tell you nothing.
-  Run the narrowest test file named by a gate, then `bun run lint` and `bun run typecheck`.
-- **If gate C or D fired, add `bun run mobile:typecheck`.** `bun run typecheck` is `typecheck:*` and
-  the mobile script is named `mobile:typecheck`, so the aggregate misses it — and `apps/mobile`
-  depends on `@dani-dex/contracts`, which is exactly what those two gates change. A contract export
-  change passes the aggregate and still breaks the mobile app.
+  Run the narrowest test file named by a gate and lint the changed files. Do not run the repo-wide
+  `bun run lint` or `bun run typecheck`: the pre-commit hook and CI run them.
+- **If gate C or D fired, confirm the mobile typecheck passed.** `apps/mobile` depends on
+  `@openbot/contracts`, which is exactly what those two gates change. The pre-commit hook runs
+  `typecheck:mobile` when a commit stages a file that mobile can see, such as one in
+  `packages/contracts`, and the CI Surfaces job runs it on each pull request.
 - It never runs `bun run dev:seed` or `dev:reset` — both destroy the developer's own profile — and
   never `pkill -f`, which kills other sessions' work mid-write.
+
+## Subagents and models
+
+Give each gate, and each release task after the audit, to its own subagent. Do not give every
+subagent the session model. Select the smallest tier that can do the task, and set the model
+explicitly on each spawn: an omitted model uses the session model. In Claude Code, set `model` on
+the `Agent` call. In a harness that has no model choice, use a lower reasoning effort.
+
+| Tier | Claude Code | Tasks |
+| --- | --- | --- |
+| Strong | the session model | Step 1 residue, gates A, B, C and E, gate F when `electron-updater` moved, the Step 3 verdict |
+| Medium | `sonnet` | gates D and G, gate F otherwise, Step 2b, the Step 2c failure reading, the translation wording review, the Discord announcement draft |
+| Small | `haiku` | gate H, the Step 2c start and wait, the `whats-new/<locale>.json` translations, mechanical `git grep` and file inventories |
+
+- **Translations:** give each small-tier subagent a few locales, the English entry, and the
+  [i18n.md terms](../../../docs/i18n.md#terms). Then run `bun scripts/whats-new-translations.ts <version>`
+  once. It checks only the version, the date and the counts of notices and items, not the wording.
+  Then give all locales to one medium-tier subagent. It compares the terms, the tone, the screen
+  names and the headline endings with the i18n terms, and corrects them. Accept a translation only
+  after this review.
+- **Do not raise the tier because a gate is long.** Raise it when the task needs judgment: a hazard
+  that can lose user data, or a frozen wire format.
+- **Check the evidence of each report** before you accept it, as `AGENTS.md` says. A small-tier
+  "no hit" passes only when its command can still find a hit (see Step 2). When a report has no
+  evidence, run the task again one tier higher. Do not do it again yourself.
+- The session model writes the Step 3 table and each stop. A subagent verdict is evidence, not the
+  verdict.
 
 ## Step 1 — establish the range, then account for every file in it
 
@@ -69,11 +97,10 @@ audit delegates a check to can be dismissed by the bucket its file lives in.**
   `userData` does. Route it through gate B.
 - **The tests a gate relies on.** "Not in the shipped app" is true of every test and irrelevant for
   these, because a gate that delegates its check to a test inherits that test's weakening.
-  `dani-dex-database-schema-parity.test.ts` is the whole mechanical half of gate A's DDL rule;
-  `dani-dex-database.test.ts` carries the downgrade guard; `ipc-channel-coverage.test.ts` is gate D's
-  only static link between main and preload; `electron-updater-assumptions.test.ts` pins the updater
-  behaviour gate F rests on; the `v*.test.ts` files are gate C's. A change that makes one of those
-  assertions vacuous passes every later gate, and once it is tagged the weakening is behind the
+  `openbot-database-schema-parity.test.ts` is the whole mechanical half of gate A's DDL rule;
+  `openbot-database.test.ts` carries the downgrade guard; `ipc-channel-coverage.test.ts` is gate D's
+  only static link between main and preload. Gates C and F have no test; they use a manual check.
+  A change that makes one of those assertions vacuous passes every later gate, and once it is tagged the weakening is behind the
   range every future audit starts from. Route a modification or deletion of one through the gate
   that names it and read the hunks. Other `**/*.test.ts` files dismiss normally.
 - **`docs/RELEASING.md`**, for the same reason one level up. This audit does not restate the Team
@@ -88,9 +115,9 @@ audit delegates a check to can be dismissed by the bucket its file lives in.**
 The rest of `docs/**`, `tools/**` and `src/renderer/stories/**` are not in the shipped app at all,
 which is a reason that covers every file in them. "Nothing looked interesting" is not.
 
-## Step 2 — the seven gates
+## Step 2 — the eight gates
 
-Work through all seven. A gate no path triggered is reported as **not triggered** — never dropped
+Work through all eight. A gate no path triggered is reported as **not triggered** — never dropped
 silently, because "I did not look" and "I looked and it was clean" are different verdicts and only
 one of them is a release gate.
 
@@ -98,7 +125,7 @@ Load a gate's reference when its trigger fires, not before. The trigger sets are
 a gate can be selected without opening anything:
 
 - **A. SQLite schema** → [gate-a-sqlite.md](references/gate-a-sqlite.md)
-  `src/backend/dani-dex-database-schema.ts`, `src/backend/database/`.
+  `src/backend/openbot-database-schema.ts`, `src/backend/database/`.
 - **B. On-disk state outside SQLite** → [gate-b-on-disk-state.md](references/gate-b-on-disk-state.md)
   `src/main/index.ts`, `src/backend/workspace-paths.ts`, `src/main/sunshine-moonlight-runtime.ts`,
   `electron-builder.yml`, **any file that decodes a versioned payload**, and **any file that reads
@@ -111,8 +138,8 @@ a gate can be selected without opening anything:
   anything under `packages/contracts/src/team-protocol/`, plus `docs/RELEASING.md`, which this
   audit defers its compatibility matrix to.
 - **D. IPC channels** → [gate-d-ipc.md](references/gate-d-ipc.md)
-  `packages/contracts/src/ipc-channels.ts` **or any of its mirrors** — `src/main/index.ts`,
-  `src/main/ipc/`, `src/preload/index.ts`, `src/renderer/src/preview/mock-dani-dex.ts`. Deleting a
+  `packages/contracts/src/ipc-endpoints.ts` **or any of its mirrors** — `src/main/index.ts`,
+  `src/main/ipc/`, `src/preload/index.ts`, `src/renderer/src/preview/mock-openbot.ts`. Deleting a
   handler or an `invoke` breaks a live channel without touching the list at all.
 - **E. Account Worker** → [gate-e-account-worker.md](references/gate-e-account-worker.md)
   any change under `apps/auth-api/migrations/`, any non-UI file under `apps/auth-api/src/`, and the
@@ -125,6 +152,16 @@ a gate can be selected without opening anything:
   two, so omitting them makes the weakening read as "not triggered".
 - **G. Reverse states and the changelog** → [gate-g-reverse-states.md](references/gate-g-reverse-states.md)
   always triggered; no path exempts a release.
+- **H. Signal** — no reference file.
+  always triggered: an earlier release can have left Signal behind, so a range with no `remote/`
+  change does not prove that Signal is current. Signal is not deployed by CI or by the release
+  workflow. Read `commit` from `curl -fsS https://signal1.openbot.run/health/live` and
+  `curl -fsS https://signal2.openbot.run/health/live` (not `signal.openbot.run`, which reaches only the
+  entry machine); if a commit is missing, `unknown`, or not a commit in this repository, the verdict is
+  **needs a human**. Pass when `git diff --quiet <running commit> HEAD -- remote packages/contracts/src/signal-protocol`
+  succeeds for both commits. Otherwise the verdict is **deploy Signal from the new tag** before the tag is pushed
+  (`docs/RELEASING.md` preflight item 16); this is not a stop for the version bump. #1661 is the
+  failure this catches: v0.33.0 clients sent webhook routes to a Signal older than #1520.
 
 `references/surfaces.md` holds the exhaustive path inventory. Load it when a gate fires and you
 need the exact file, not before.
@@ -152,7 +189,7 @@ bun run pin:opencode-runtime
 Ask two questions and report the answers with the table:
 
 - **Has the pinned version a published security fix?** If so, moving the pin is part of this
-  release, not the next one. A user cannot update Bun themselves: Dani-Dex downloaded it, Dani-Dex
+  release, not the next one. A user cannot update Bun themselves: OpenBot downloaded it, OpenBot
   owns it.
 - **Did the range move a pin?** Then read the diff as a dependency change. A moved `assetSha256`
   with an unmoved `version` is a stop and needs a human: the registry does not rewrite a published
@@ -160,6 +197,39 @@ Ask two questions and report the answers with the table:
 
 Moving a pin needs the version assertion on a matching host, which `pin:bun-runtime` performs only
 for the target it runs on. [docs/RELEASING.md](../../../docs/RELEASING.md) holds the procedure.
+
+## Step 2c — the live provider check
+
+Not a gate of the audit: it reads no diff. It shows that the desktop app of the audited commit gets
+an answer from the real Codex, Claude and Gemini. No other check does this: the provider fakes and
+the `Provider CLI canary` use no provider account. Run it on the pull request of the release, before
+the merge and before the tag. Start it at the same time as the gates; it takes about 3 minutes.
+
+The `Provider live E2E` workflow runs only when somebody starts it. Start it on the branch that holds
+the audited commit, which must be pushed:
+
+```bash
+gh workflow run provider-live-e2e.yml --ref <branch> -f provider=all
+gh run list --workflow provider-live-e2e.yml --branch <branch> --event workflow_dispatch --limit 1 \
+  --json databaseId,headSha,status,conclusion,url
+gh run watch <databaseId> --exit-status
+```
+
+- Confirm that `headSha` of the run is the audited commit. A run of an older commit proves nothing.
+- Each run sends two short messages to each provider from the accounts of the Mac mini runner. Do
+  not start a second run while one is in progress.
+- On a failure, read the run summary and the `provider-live-e2e` artifact: `summary.md`, and the
+  `no-answer` picture of the failed provider, which shows the error in the chat.
+
+Report one row with the table, with the run URL:
+
+- **pass** — each provider answered.
+- **needs a human** — the provider or its account refused: no sign-in, an expired sign-in, a usage
+  limit, a provider outage. The release did not cause this. Name the provider and the message.
+- **stop** — a provider is available and signed in, and the app gets no answer or shows an error of
+  its own. Find the cause in the range before the version is cut.
+
+[docs/provider-live-e2e.md](../../../docs/provider-live-e2e.md) describes the test and the runner.
 
 ## Step 3 — report and hand off
 
@@ -169,15 +239,19 @@ Report a table:
 | --- | --- | --- |
 | A. SQLite schema | *path, or "not triggered"* | pass / stop / needs a human |
 
+Add the Step 2b answers and the Step 2c row with its run URL.
+
 Then state the stops explicitly. Any one of these means **the version is not cuttable yet**:
 
 - a frozen Team API codec, adapter or fixture that was deleted, renamed, or modified **in a way
   that can change what an encoded payload means** — the narrow exception gate C allows, a hunk that
   provably cannot alter the wire, is not a stop, and gate C is where that call gets made;
-- a DDL migration not mirrored into `LATEST_SCHEMA_SQL`;
+- a shipped migration that changed, or a new migration with no entry in
+  `openbot-database-schema-history.json`;
 - a renamed on-disk file, or a bumped stored `version`, with no read path for the old one;
 - a D1 contraction without the two-step release;
-- a changed `appId`, `ElectronTeamID`, or `publish` target.
+- a changed `appId`, `ElectronTeamID`, or `publish` target;
+- a Step 2c **stop**: a signed-in, available provider that gives no answer in the app.
 
 If every gate passes, say so and hand off: `docs/RELEASING.md` owns the publish — the preflight
 checklist, the compatibility matrix, signing, notarization, the canary update and the size gates.

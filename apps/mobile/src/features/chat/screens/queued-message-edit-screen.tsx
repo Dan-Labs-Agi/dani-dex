@@ -1,10 +1,12 @@
-import { INPUT_LIMITS } from "@dani-dex/contracts/input-limits";
-import type { AttachmentSummary } from "@dani-dex/contracts/ipc";
-import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
+import type { AttachmentSummary } from "@openbot/contracts/ipc";
+import { router, useLocalSearchParams } from "expo-router";
 import { usePreventRemove } from "expo-router/react-navigation";
 import { Button, Typography } from "heroui-native";
 import { useThemeColor } from "heroui-native/hooks";
-import { ImagePlus, Paperclip, X } from "lucide-react-native";
+import ImagePlus from "lucide-react-native/icons/image-plus";
+import Paperclip from "lucide-react-native/icons/paperclip";
+import X from "lucide-react-native/icons/x";
 import { type PropsWithChildren, useCallback, useEffect, useRef, useState } from "react";
 import { Alert, View } from "react-native";
 import {
@@ -16,34 +18,40 @@ import {
 import { SheetFormField } from "@/shared/components/sheet-form-field";
 import { SheetSaveAction } from "@/shared/components/sheet-save-action";
 import { haptics } from "@/shared/lib/haptics";
-import { AttachmentThumbnail, localAttachmentPreview, useAttachmentFile } from "../components/attachment-preview";
+import { useText } from "@/shared/lib/text";
+import {
+  AttachmentThumbnail,
+  localAttachmentPreview,
+  showsAsImage,
+  useAttachmentFile,
+} from "../components/attachment-preview";
 import { useChatAttachments } from "../components/use-chat-attachments";
 import type { ChatQueueController } from "../components/use-chat-queue";
 import { useQueuedChat } from "../context/queued-messages-context";
+import { useComposerDraft } from "../model/composer-drafts";
 
 export function QueuedMessageEditScreen() {
+  const { t } = useText();
   const { chat, deliveryId } = useLocalSearchParams<{ chat: string; deliveryId: string }>();
   const { queue } = useQueuedChat(chat);
-  const navigation = useNavigation();
   const held = queue?.edit?.delivery ?? null;
   const delivery = held?.id === deliveryId ? held : queue?.queued.find((item) => item.id === deliveryId);
   const edit = queue?.edit ?? null;
 
-  // The field is controlled from this screen. The controller lives on the chat screen
-  // behind the sheet, so its text only returns one commit later, which loses characters
-  // while typing. `changeText` still runs for the durable draft.
   const [typed, setTyped] = useState<{ editId: string; text: string } | null>(null);
   const text = edit && typed?.editId === edit.editId ? typed.text : (edit?.text ?? "");
   const added = queue?.attachments.length ?? 0;
   const dirty = edit
     ? text !== edit.delivery.text || edit.keepAttachmentIds.length !== edit.delivery.attachments.length || added > 0
     : false;
+  const [, setChatDraft] = useComposerDraft({
+    kind: "agent",
+    serverId: queue?.serverId ?? "",
+    id: queue?.agentId ?? "",
+  });
+  const keptText = edit && text !== edit.delivery.text && text.trim() ? text : null;
 
-  // The host hold is taken once per visit. `busy` only turns on once the controller
-  // starts the request, so track it here as well and keep the failure copy until then.
   const [holding, setHolding] = useState(false);
-  // Attachment reads run in the attachments section below. Save must wait for them,
-  // or it sends the file list from before the new selection.
   const [attachmentsPreparing, setAttachmentsPreparing] = useState(false);
   const requested = useRef(false);
   const hold = useCallback(() => {
@@ -57,8 +65,6 @@ export function QueuedMessageEditScreen() {
     hold();
   }, [queue, delivery, hold]);
 
-  // Leaving releases the hold, so the message cannot stay stuck on Editing. The
-  // navigation runs a render later, once the guard below reads `leaving`.
   const [leaving, setLeaving] = useState(false);
   const exit = useRef<(() => void) | null>(null);
   useEffect(() => {
@@ -75,8 +81,6 @@ export function QueuedMessageEditScreen() {
     if (work) void work.finally(finish);
     else finish();
   }, []);
-  // The editor closes only after the host lets the message go. A failed release keeps the
-  // message held, so the agent would wait for a phone that no longer shows the editor.
   const releaseThenExit = useCallback(
     (go: () => void, onFailure?: () => void) => {
       const work = queue?.cancelEdit();
@@ -91,26 +95,24 @@ export function QueuedMessageEditScreen() {
     },
     [queue, exitAfter],
   );
-  usePreventRemove(Boolean(edit) && !leaving, ({ data }) => {
-    const go = () => navigation.dispatch(data.action);
+  usePreventRemove(Boolean(edit) && !leaving, ({ repeat }) => {
+    const go = repeat;
     const release = () =>
       releaseThenExit(go, () => {
-        Alert.alert(
-          "Still holding the message",
-          "Dani-Dex could not release this message, so the agent keeps waiting for it. Try again after the phone reconnects.",
-          [
-            { text: "Keep editing", style: "cancel" },
-            { text: "Leave anyway", onPress: () => exitAfter(null, go) },
-          ],
-        );
+        void haptics.notification("error");
+        Alert.alert(t("mobile.chat.queue.stillHoldingTitle"), t("mobile.chat.queue.stillHoldingMessage"), [
+          { text: t("mobile.chat.queue.keepEditing"), style: "cancel" },
+          { text: t("mobile.chat.queue.leaveAnyway"), onPress: () => exitAfter(null, go) },
+        ]);
       });
     if (!dirty) {
       release();
       return;
     }
-    Alert.alert("Discard changes?", "The queued message keeps the text the agent already has.", [
-      { text: "Keep editing", style: "cancel" },
-      { text: "Discard", style: "destructive", onPress: release },
+    void haptics.notification("warning");
+    Alert.alert(t("mobile.chat.queue.discardTitle"), t("mobile.chat.queue.discardMessage"), [
+      { text: t("mobile.chat.queue.keepEditing"), style: "cancel" },
+      { text: t("mobile.chat.queue.discard"), style: "destructive", onPress: release },
     ]);
   });
 
@@ -118,7 +120,7 @@ export function QueuedMessageEditScreen() {
     return (
       <SettingsContent>
         <Typography.Paragraph align="center" className="text-text-secondary">
-          This message is no longer queued.
+          {t("mobile.chat.queue.noLongerQueued")}
         </Typography.Paragraph>
       </SettingsContent>
     );
@@ -128,15 +130,18 @@ export function QueuedMessageEditScreen() {
     return (
       <SettingsContent>
         <Typography.Paragraph align="center" className="text-text-secondary">
-          The agent already received this message, so it cannot be changed.
+          {t(keptText ? "mobile.chat.queue.alreadyReceivedKept" : "mobile.chat.queue.alreadyReceived")}
         </Typography.Paragraph>
         <SettingsSection>
           <SettingsRow
             disclosure={false}
             disabled={queue.busy}
-            onPress={() => exitAfter(queue.discardFinishedEdit(), () => router.back())}
+            onPress={() => {
+              if (keptText) setChatDraft((current) => (current.trim() ? `${current}\n\n${keptText}` : keptText));
+              exitAfter(queue.discardFinishedEdit(), () => router.back());
+            }}
           >
-            <Typography>Close</Typography>
+            <Typography>{t("common.close")}</Typography>
           </SettingsRow>
         </SettingsSection>
       </SettingsContent>
@@ -148,7 +153,7 @@ export function QueuedMessageEditScreen() {
     return (
       <SettingsContent>
         <Typography.Paragraph align="center" className="text-text-secondary">
-          {pending ? "Holding the message for you…" : "Dani-Dex could not hold this message for editing."}
+          {pending ? t("mobile.chat.queue.holding") : t("mobile.chat.queue.holdFailed")}
         </Typography.Paragraph>
         {queue.error ? (
           <Typography.Paragraph accessibilityRole="alert" align="center" className="text-danger-text">
@@ -158,7 +163,7 @@ export function QueuedMessageEditScreen() {
         {pending ? null : (
           <SettingsSection>
             <SettingsRow disclosure={false} onPress={hold}>
-              <Typography>Try again</Typography>
+              <Typography>{t("common.tryAgain")}</Typography>
             </SettingsRow>
           </SettingsSection>
         )}
@@ -171,12 +176,12 @@ export function QueuedMessageEditScreen() {
   return (
     <SettingsContent>
       <SheetFormField
-        label="Message"
+        label={t("mobile.chat.queue.messageLabel")}
         appearance="soft"
         multiline
         editable={!queue.busy && !edit.pendingSave}
         maxLength={INPUT_LIMITS.messageText}
-        placeholder="Message text"
+        placeholder={t("mobile.chat.queue.messagePlaceholder")}
         value={text}
         onChangeText={(value) => {
           setTyped({ editId: edit.editId, text: value });
@@ -191,10 +196,8 @@ export function QueuedMessageEditScreen() {
           (Boolean(text.trim()) || edit.keepAttachmentIds.length > 0 || added > 0)
         }
         pending={queue.busy}
-        label="Save queued message"
+        label={t("mobile.chat.queue.save")}
         onSave={() => {
-          // The controller holds the files this edit added, so a save after a restart still
-          // uploads the copies this phone kept for it.
           void queue.save(text, queue.attachments).then((saved) => {
             void haptics.notification(saved ? "success" : "error");
             if (saved) exitAfter(null, () => router.back());
@@ -206,16 +209,16 @@ export function QueuedMessageEditScreen() {
 
       <SettingsSection>
         <SettingsRow disclosure={false} disabled={queue.busy} onPress={() => releaseThenExit(() => router.back())}>
-          <Typography className="text-danger-text">Cancel edit</Typography>
+          <Typography className="text-danger-text">{t("mobile.chat.queue.cancelEdit")}</Typography>
         </SettingsRow>
       </SettingsSection>
 
       <SettingsNote>
         {queue.progress === null
           ? edit.pendingSave
-            ? "Save is not confirmed. Retry Save to check the result."
-            : "The agent waits for this message until you save it."
-          : `Uploading ${queue.progress} of ${added} files…`}
+            ? t("mobile.chat.queue.saveUnconfirmed")
+            : t("mobile.chat.queue.agentWaits")
+          : t("mobile.chat.queue.uploadingFiles", { progress: queue.progress, total: added })}
       </SettingsNote>
 
       {queue.error ? (
@@ -238,17 +241,21 @@ function AttachmentRemoveButton({
 }) {
   const muted = useThemeColor("muted");
   return (
-    <Button isIconOnly variant="ghost" isDisabled={disabled} accessibilityLabel={label} onPress={onPress}>
+    <Button
+      isIconOnly
+      variant="ghost"
+      isDisabled={disabled}
+      accessibilityLabel={label}
+      onPress={() => {
+        void haptics.selection();
+        onPress();
+      }}
+    >
       <X color={String(muted)} size={18} />
     </Button>
   );
 }
 
-/**
- * The files of this edit: the ones the queued message already has, and the ones this phone adds.
- * The controller keeps added files on the device, so the list survives navigation and a restart
- * until the edit is saved or cancelled.
- */
 function QueuedEditAttachments({
   queue,
   kept,
@@ -258,14 +265,15 @@ function QueuedEditAttachments({
   kept: AttachmentSummary[];
   onPreparingChange?: (preparing: boolean) => void;
 }) {
+  const { t } = useText();
   const muted = useThemeColor("muted");
-  const attachments = useChatAttachments(queue.attachments, queue.changeAttachments);
+  const attachments = useChatAttachments(queue.attachments, queue.changeAttachments, queue.attachmentSupport);
   const busy = queue.busy || attachments.preparing || Boolean(queue.edit?.pendingSave);
   useEffect(() => {
     onPreparingChange?.(attachments.preparing);
   }, [attachments.preparing, onPreparingChange]);
   return (
-    <SettingsSection title="Attachments">
+    <SettingsSection title={t("mobile.chat.queue.attachments")}>
       {kept.map((file) => (
         <KeptAttachmentRow
           key={file.id}
@@ -279,10 +287,10 @@ function QueuedEditAttachments({
         <SettingsRow
           key={file.id}
           leading={<AttachmentThumbnail name={file.name} uri={localAttachmentPreview(file)} />}
-          supportingText="Added on this phone"
+          supportingText={t("mobile.chat.queue.addedOnPhone")}
           trailing={
             <AttachmentRemoveButton
-              label={`Remove ${file.name}`}
+              label={t("mobile.chat.attachment.remove", { name: file.name })}
               disabled={busy}
               onPress={() => attachments.remove(file.id)}
             />
@@ -297,7 +305,7 @@ function QueuedEditAttachments({
         leading={<AddIcon>{<Paperclip color={String(muted)} size={22} />}</AddIcon>}
         onPress={() => void attachments.chooseFiles()}
       >
-        <Typography>Add files</Typography>
+        <Typography>{t("mobile.chat.queue.addFiles")}</Typography>
       </SettingsRow>
       <SettingsRow
         disclosure={false}
@@ -305,18 +313,16 @@ function QueuedEditAttachments({
         leading={<AddIcon>{<ImagePlus color={String(muted)} size={22} />}</AddIcon>}
         onPress={() => void attachments.choosePhotos()}
       >
-        <Typography>Add photos</Typography>
+        <Typography>{t("mobile.chat.queue.addPhotos")}</Typography>
       </SettingsRow>
     </SettingsSection>
   );
 }
 
-/** Keeps the add actions on the same left edge as the file thumbnails above them. */
 function AddIcon({ children }: PropsWithChildren) {
   return <View className="size-10 items-center justify-center">{children}</View>;
 }
 
-/** A file the queued message already has. Its thumbnail comes from the host, like in the chat. */
 function KeptAttachmentRow({
   attachment,
   serverId,
@@ -328,12 +334,19 @@ function KeptAttachmentRow({
   disabled: boolean;
   onRemove: () => void;
 }) {
-  const image = attachment.kind === "image";
+  const { t } = useText();
+  const image = showsAsImage(attachment);
   const file = useAttachmentFile(serverId, attachment, image);
   return (
     <SettingsRow
       leading={<AttachmentThumbnail name={attachment.name} uri={image ? file.uri : null} />}
-      trailing={<AttachmentRemoveButton label={`Remove ${attachment.name}`} disabled={disabled} onPress={onRemove} />}
+      trailing={
+        <AttachmentRemoveButton
+          label={t("mobile.chat.attachment.remove", { name: attachment.name })}
+          disabled={disabled}
+          onPress={onRemove}
+        />
+      }
     >
       <Typography numberOfLines={1}>{attachment.name}</Typography>
     </SettingsRow>

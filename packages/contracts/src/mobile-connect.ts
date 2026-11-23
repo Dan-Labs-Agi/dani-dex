@@ -1,4 +1,4 @@
-const MOBILE_CONNECT_PROTOCOL = "dani-dex:";
+const MOBILE_CONNECT_PROTOCOL = "openbot:";
 const MOBILE_CONNECT_HOST = "mobile-connect";
 
 export interface MobileConnectHostBinding {
@@ -35,6 +35,11 @@ export interface MobileConnectTicket {
   expiresAt: number;
 }
 
+export interface MobileConnectLink {
+  url: string;
+  createdAt: number;
+}
+
 export type MobileDevicePlatform = "ios" | "android" | "unknown";
 
 export interface MobileConnectedDevice {
@@ -43,6 +48,7 @@ export interface MobileConnectedDevice {
   platform: MobileDevicePlatform;
   connectedAt: number;
   lastActiveAt: number;
+  via: "code" | "link";
 }
 
 export interface AccountSession {
@@ -52,6 +58,7 @@ export interface AccountSession {
   current: boolean;
   connectedAt: number;
   lastActiveAt: number;
+  hostedServer?: boolean;
 }
 
 export interface MobileConnectPayload {

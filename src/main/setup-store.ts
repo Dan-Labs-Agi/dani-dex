@@ -1,5 +1,3 @@
-import { readFile, writeFile } from "node:fs/promises";
-import { type AgentHarnessSetting, isAgentHarnessSetting } from "@dani-dex/contracts/agent-harness-routing";
 import {
   type AgentModelId,
   type AgentProviderId,
@@ -7,28 +5,23 @@ import {
   isAgentModel,
   isAgentProvider,
   type SaveSetupInput,
-} from "@dani-dex/contracts/ipc";
-import { isDynamicRecord, isNumber, isString } from "@dani-dex/contracts/runtime-values";
+} from "@openbot/contracts/ipc";
+import { isDynamicRecord, isNumber, isString } from "@openbot/contracts/runtime-values";
+import { Effect } from "effect";
+import { isMissingFileError } from "../backend/file-errors";
+import { type PreferenceFileFailure, readPreferenceFile, writePreferenceFile } from "./preference-file";
 
 interface StoredSetup {
   version: 2;
   preferredProvider: AgentProviderId;
-  /**
-   * Added after version 2 shipped, and the version stays at 2 on purpose: a bump would make every
-   * completed setup unreadable and send those users through onboarding again. A file without the
-   * field means the provider's own default model, which is what those users already have.
-   */
   preferredModel?: AgentModelId;
-  /** Layer 1. Added without a version bump for the same reason as `preferredModel`. */
-  harness?: AgentHarnessSetting;
   completedAt: string;
 }
 
 const EMPTY_SETUP: AppSetupState = { completed: false, preferredProvider: null, preferredModel: null };
 
-export async function readSetupState(path: string): Promise<AppSetupState> {
-  try {
-    const parsed = JSON.parse(await readFile(path, "utf8"));
+export function readSetupState(path: string): Effect.Effect<AppSetupState, PreferenceFileFailure> {
+  return readPreferenceFile(path, (parsed): AppSetupState => {
     if (
       !isDynamicRecord(parsed) ||
       !isNumber(parsed.version) ||
@@ -41,44 +34,29 @@ export async function readSetupState(path: string): Promise<AppSetupState> {
     return {
       completed: true,
       preferredProvider: parsed.preferredProvider,
-      // A malformed model is dropped rather than failing the whole read: the provider is still a
-      // usable answer, and the model falls back to that provider's default.
       preferredModel: isAgentModel(parsed.preferredModel) ? parsed.preferredModel : null,
-      ...(isAgentHarnessSetting(parsed.harness) ? { harness: parsed.harness } : {}),
     };
-  } catch (error) {
-    if (isMissing(error) || error instanceof SyntaxError) return { ...EMPTY_SETUP };
-    throw error;
-  }
+  }).pipe(
+    Effect.catch((failure) => {
+      const error = failure.cause;
+      if (isMissingFileError(error) || error instanceof SyntaxError) return Effect.succeed({ ...EMPTY_SETUP });
+      return Effect.fail(failure);
+    }),
+  );
 }
 
-export async function writeSetupState(path: string, input: SaveSetupInput): Promise<AppSetupState> {
-  const stored: StoredSetup = {
-    version: 2,
-    preferredProvider: input.preferredProvider,
-    ...(input.preferredModel === null ? {} : { preferredModel: input.preferredModel }),
-    ...(input.harness ? { harness: input.harness } : {}),
-    completedAt: new Date().toISOString(),
-  };
-  await writeFile(path, `${JSON.stringify(stored)}\n`, { encoding: "utf8", mode: 0o600 });
-  return { completed: true, ...input };
-}
-
-/**
- * Automatic routing is the default for a new setup: general work on Hermes, technical work on OMP
- * once OMP is installed. Only the first completion picks it, and only when the bundled Hermes is
- * there to run: a setup finished before Hermes shipped keeps its provider's
- * own CLI, and so does any later save, where a missing harness is the user's own choice.
- */
-export function withDefaultHarness(
-  previous: AppSetupState,
+export function writeSetupState(
+  path: string,
   input: SaveSetupInput,
-  hermesAvailable: boolean,
-): SaveSetupInput {
-  if (previous.completed || input.harness || !hermesAvailable) return input;
-  return { ...input, harness: "automatic" };
-}
-
-function isMissing(error: unknown): error is NodeJS.ErrnoException {
-  return error instanceof Error && "code" in error && error.code === "ENOENT";
+): Effect.Effect<AppSetupState, PreferenceFileFailure> {
+  return Effect.gen(function* () {
+    const stored: StoredSetup = {
+      version: 2,
+      preferredProvider: input.preferredProvider,
+      ...(input.preferredModel === null ? {} : { preferredModel: input.preferredModel }),
+      completedAt: new Date().toISOString(),
+    };
+    yield* writePreferenceFile(path, stored);
+    return { completed: true, ...input };
+  });
 }

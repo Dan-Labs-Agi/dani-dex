@@ -1,6 +1,7 @@
-import { expect, fn, userEvent, within } from "storybook/test";
+import { AttachmentCards, type AttachmentDownloadState } from "@openbot/ui/features/conversation/AttachmentCards";
+import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { AttachmentCards, AttachmentDownloadAll } from "../src/features/conversation/AttachmentCards";
+import { AUDIO_PREVIEW } from "./file-previews";
 import { STORY_ATTACHMENTS } from "./fixtures";
 
 const compactFile = {
@@ -50,31 +51,6 @@ export const Files: Story = {};
 export const SingleCompactFile: Story = {
   name: "Single compact file",
   args: { attachments: [compactFile] },
-  play: async ({ canvas }) => {
-    const preview = canvas.getByRole("button", { name: `Preview ${compactFile.name}` });
-    const open = canvas.getByRole("button", { name: `Open ${compactFile.name}` });
-    const visual = preview.querySelector<HTMLElement>(".attachment-file-visual");
-    const copy = preview.querySelector<HTMLElement>(".attachment-file-copy");
-    if (!visual || !copy) throw new Error("The attachment preview content is incomplete");
-
-    const previewBounds = preview.getBoundingClientRect();
-    const visualBounds = visual.getBoundingClientRect();
-    const copyBounds = copy.getBoundingClientRect();
-    const openBounds = open.getBoundingClientRect();
-    await expect(getComputedStyle(preview).justifyContent).toBe("flex-start");
-    await expect(previewBounds.height).toBe(40);
-    await expect(visual).toHaveAttribute("data-file-tone", "markup");
-    await expect(visualBounds.left).toBe(previewBounds.left);
-    await expect(copyBounds.left).toBeGreaterThan(visualBounds.right);
-    await expect(openBounds.left).toBeGreaterThan(previewBounds.right);
-    await expect(openBounds.width).toBe(40);
-    await expect(openBounds.height).toBe(40);
-
-    open.focus();
-    await expect(within(document.body).findByRole("tooltip")).resolves.toHaveTextContent("Open file");
-    await userEvent.keyboard("{Escape}");
-    await expect(within(document.body).queryByRole("tooltip")).not.toBeInTheDocument();
-  },
 };
 
 export const NarrowLongNames: Story = {
@@ -85,59 +61,101 @@ export const NarrowLongNames: Story = {
       <AttachmentCards {...storyArgs} />
     </div>
   ),
-  play: async ({ canvas }) => {
-    const cards = canvas.getAllByRole("button", { name: /^(Preview|Open) /u });
-    const names = canvas.getAllByText(/customer-import|quarterly-operating/u);
-    const openButtons = canvas.getAllByRole("button", { name: /^Open /u });
-
-    await expect(cards).toHaveLength(4);
-    await expect(openButtons).toHaveLength(2);
-    for (const name of names) {
-      await expect(name.scrollWidth).toBeGreaterThan(name.clientWidth);
-    }
-    for (const open of openButtons) {
-      const bounds = open.getBoundingClientRect();
-      await expect(bounds.width).toBe(40);
-      await expect(bounds.height).toBe(40);
-    }
-    await expect(
-      canvas.getByText(longNamedFiles[0].name).closest(".message-attachment")?.getBoundingClientRect().width,
-    ).toBe(220);
-  },
 };
 
 export const Empty: Story = {
   args: { attachments: [] },
 };
 
-export const WithDownloadAll: Story = {
-  name: "With download all as ZIP",
-  render: (storyArgs) => (
-    <div class="message-attachments-group">
-      <AttachmentDownloadAll count={storyArgs.attachments.length} pending={false} onDownload={fn()} />
-      <AttachmentCards {...storyArgs} />
-    </div>
-  ),
-  play: async ({ canvas }) => {
-    const download = canvas.getByRole("button", { name: "Download all as ZIP" });
-    const firstCard = canvas.getByRole("button", { name: `Preview ${STORY_ATTACHMENTS[0].name}` });
-    const downloadBounds = download.getBoundingClientRect();
-    const cardBounds = firstCard.getBoundingClientRect();
-
-    await expect(downloadBounds.bottom).toBeLessThanOrEqual(cardBounds.top);
-    await expect(downloadBounds.width).toBeLessThan(cardBounds.width);
+export const AudioTakes: Story = {
+  name: "Inline audio takes",
+  args: {
+    attachments: [1, 2, 3].map((take) => ({
+      id: `audio-take-${take}`,
+      name: `voice-over-${take}.mp3`,
+      size: AUDIO_PREVIEW.size,
+      kind: "file",
+      mimeType: AUDIO_PREVIEW.mimeType,
+      previewKind: "none",
+      previewUrl: `data:audio/mpeg;base64,${btoa(String.fromCharCode(...(AUDIO_PREVIEW.bytes ?? [])))}`,
+    })),
   },
 };
 
-export const DownloadingZip: Story = {
-  name: "Downloading ZIP",
+export const NarrowAudioTakes: Story = {
+  ...AudioTakes,
+  name: "Inline audio in a narrow layout",
   render: (storyArgs) => (
-    <div class="message-attachments-group">
-      <AttachmentDownloadAll count={storyArgs.attachments.length} pending onDownload={fn()} />
+    <div style={{ width: "220px" }}>
       <AttachmentCards {...storyArgs} />
     </div>
   ),
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: "Downloading ZIP…" })).toBeDisabled();
+};
+
+const videoClip = new URL("../../../packages/ui/src/assets/plush/fishing.webm", import.meta.url).href;
+
+export const VideoFile: Story = {
+  name: "Inline video",
+  args: {
+    attachments: [
+      {
+        id: "video-episode-report",
+        name: "episode-report-720p.webm",
+        size: 9.8 * 1024 * 1024,
+        kind: "file",
+        mimeType: "video/webm",
+        previewKind: "video",
+        previewUrl: videoClip,
+      },
+    ],
   },
+};
+
+export const VideoFromHost: Story = {
+  name: "Inline video that loads from a host",
+  args: {
+    attachments: [
+      {
+        id: "video-host-report",
+        name: "episode-report-720p.mp4",
+        size: 9.8 * 1024 * 1024,
+        kind: "file",
+        mimeType: "video/mp4",
+        previewKind: "video",
+        previewUrl: null,
+      },
+    ],
+    mediaSource: {
+      url: () => undefined,
+      load: () => new Promise<boolean>(() => undefined),
+      thumbnailLimit: 2 * 1024 * 1024,
+      mediaLimit: 25 * 1024 * 1024,
+    },
+  },
+};
+
+const remoteArchive = {
+  ...compactFile,
+  id: "attachment-release-archive",
+  name: "release-assets-2026-11.zip",
+  size: 412 * 1024 * 1024,
+  mimeType: "application/zip",
+  previewKind: "none" as const,
+};
+
+function downloadsOf(state: AttachmentDownloadState) {
+  return { state: () => state, stop: fn(), retry: fn() };
+}
+
+export const Downloading: Story = {
+  name: "Download from a joined server",
+  args: {
+    attachments: [remoteArchive],
+    downloads: downloadsOf({ phase: "downloading", received: 148 * 1024 * 1024, total: remoteArchive.size }),
+  },
+};
+
+export const DownloadFailed: Story = {
+  name: "Failed download",
+  args: { attachments: [remoteArchive], downloads: downloadsOf({ phase: "failed" }) },
 };

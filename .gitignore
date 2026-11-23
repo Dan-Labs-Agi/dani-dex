@@ -16,12 +16,13 @@ coverage/
 .dev.vars.*
 !.env.example
 !apps/auth-api/.env.production
+!apps/auth-api/.env.dev
 !remote/.env.production
 *.key
 *.p12
 *.pem
+!apps/mobile/certs/certificate.pem
 .idea/
-# Keep shared VS Code settings while ignoring other editor state.
 **/.vscode/*
 !/.vscode/settings.json
 !/.vscode/extensions.json
@@ -36,25 +37,25 @@ Shared/
 index-*.css
 .openbot-browser-test/
 .openbot-build/
+/scripts/provider-live/.e2e/
+/apps/auth-api/src/vendor/laser-flow/
 .worktrees/
+.claude/worktrees/
+.claude/settings.local.json
 /build/cloudflared/
 /build/cua-driver/
 /build/codex/
 /build/claude/
 /build/grok/
-/build/hermes/
-/build/dani-free/
 /build/remote-desktop-runtime/
 /build/remote-desktop-release/
 Bots
-# Local dev-profile agent workspaces; root only, so tracked */agents/ paths stay visible.
 /Agents/
 !apps/mobile/src/features/bots/
 !apps/mobile/src/features/bots/**
 mise.local.toml
-# Local provider credential export. Never commit.
 keys
-#build
-.dani-dex-build/
-.dev-logs/
-.dev-temp/
+*firebase-adminsdk*.json
+/TASKS.md
+
+.openbot/

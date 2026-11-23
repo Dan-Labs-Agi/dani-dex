@@ -1,9 +1,10 @@
-declare module "@dani-dex/renderer-preview" {
+declare module "@openbot/renderer-preview" {
   import type { JSX } from "@solidjs/web";
 
-  export interface DaniDexPlaygroundProps {
+  export interface OpenBotPlaygroundProps {
     variant?: "default" | "landing";
+    theme?: "dark" | "light";
   }
 
-  export function DaniDexPlayground(props: DaniDexPlaygroundProps): JSX.Element;
+  export function OpenBotPlayground(props: OpenBotPlaygroundProps): JSX.Element;
 }

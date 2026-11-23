@@ -1,32 +1,46 @@
+import { readFile } from "node:fs/promises";
+import { isAvatarMimeType } from "@openbot/contracts/avatar-images";
+import { AVATAR_IMAGE_LIMITS, INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import {
   BROWSER_SECRET_RESPONSE_PATH,
+  type CreateAgentInput,
+  canAdministerServer,
+  type DuplicateAgentResult,
   parseAgentAnalyticsInput,
   parseBrowserSecretResponse,
   parseGenerateAgentProfile,
   parseHostAnalyticsInput,
   parseSaveAgentProfile,
-} from "@dani-dex/contracts/ipc";
-import { hiddenProviderAgentIds } from "./provider-visibility";
-// Agents: the collection, the sidebar that arranges them, and everything under one agent's id.
-//
-// The order in this file is the one thing about it that is not free. The static collection paths -
-// `/v1/agents/status`, `usage`, `models`, `conversation-reads` - are matched before the parametric
-// regex, which would otherwise read `status` as an agent id and answer 404 for a route that exists.
-// Keeping them in the same file as the regex is what makes that ordering reviewable; splitting them
-// apart is how it gets broken.
-//
-// `agentId` is decoded once, above the action switch, and handed to the four sub-modules as an
-// `AgentRouteTarget`. A sub-module that re-derived it below its own method check would turn today's
-// 400 on a malformed identifier into a 404 for some methods and not others.
-
-import { readFile } from "node:fs/promises";
-import { isAvatarMimeType } from "@dani-dex/contracts/avatar-images";
-import { AVATAR_IMAGE_LIMITS, INPUT_LIMITS } from "@dani-dex/contracts/input-limits";
-import type { DuplicateAgentResult } from "@dani-dex/contracts/ipc";
-import { TEAM_API_ROUTES } from "@dani-dex/contracts/team-api-routes";
+  WORKFLOWS_USAGE_ID,
+} from "@openbot/contracts/ipc";
+import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
+import { AGENT_WELCOME_CAPABILITY } from "@openbot/contracts/team-protocol/agent-welcome-v1";
+import {
+  BROWSER_SECRET_VAULT_CAPABILITY,
+  BROWSER_SECRET_VAULT_ROUTES,
+} from "@openbot/contracts/team-protocol/browser-secret-vault-v1";
+import {
+  PROVIDER_MODEL_SOURCE_CAPABILITY,
+  PROVIDER_MODEL_SOURCE_ROUTES,
+} from "@openbot/contracts/team-protocol/provider-model-source-v1";
+import { SKILL_PROBLEMS_CAPABILITY } from "@openbot/contracts/team-protocol/skill-problems-v1";
+import {
+  TEAM_USAGE_READ_FAILED_CAPABILITY,
+  usageWithoutReadFailed,
+} from "@openbot/contracts/team-protocol/usage-read-failed-v1";
+import { V5_AGENT_MODEL } from "@openbot/contracts/team-protocol/v5-adapter";
+import { V6_AGENT_MODEL } from "@openbot/contracts/team-protocol/v6-adapter";
+import { WORKFLOWS_CAPABILITY } from "@openbot/contracts/team-protocol/workflows-v1";
+import { sourceText } from "@openbot/i18n/source";
+import type { Effect } from "effect";
+import type { AgentDuplicationFailed } from "../../backend/agent/duplication-gate";
+import { ForbiddenAttentionAnswer, InactiveAttentionRequest } from "../../backend/agent/inactive-attention-request";
+import { runCauseEffect } from "../../backend/effect-boundary";
 import { parseSidebarLayoutAction } from "../ipc/agent-inputs";
-import type { TeamApiAgents, TeamApiOptions, TeamApiSidebarLayout } from "./dependencies";
+import type { ModelVisibility } from "../model-visibility";
+import type { TeamApiAgents, TeamApiLibraryFolders, TeamApiOptions, TeamApiSidebarLayout } from "./dependencies";
 import { HttpError } from "./http-error";
+import { hiddenProviderAgentIds, isPeerHiddenProvider } from "./provider-visibility";
 import type { RouteOutcome, TeamApiRequestContext } from "./request-context";
 import {
   agentCreate,
@@ -34,92 +48,134 @@ import {
   approvalDecision,
   browserTakeoverDecision,
   markerExclusionsForCapabilities,
+  memberSender,
   pageLimit,
   pathIdentifier,
   promptAnswers,
   promptRequestId,
   readBinary,
   readJson,
+  requireAgentLevel,
   stringField,
 } from "./request-helpers";
 import { routeAgentConversation } from "./route-agent-conversation";
 import { routeAgentMemories } from "./route-agent-memories";
 import { routeAgentQueue } from "./route-agent-queue";
 import { routeAgentRoutines } from "./route-agent-routines";
+import { searchPageWithinFrame } from "./route-thread-message-search";
 
 export interface AgentRouteDependencies {
-  // The whole service, unlike every other module here, because this one forwards it to four
-  // sub-modules that between them reach most of it. The narrowing that means something is theirs.
   agents: TeamApiAgents;
   skills?: TeamApiOptions["skills"];
   sidebarLayout: Pick<TeamApiSidebarLayout, "getSnapshot" | "mutate" | "removeAgent" | "withProfileAssignment">;
-  duplicateAgent: (agentId: string, operationId: string) => Promise<DuplicateAgentResult>;
+  libraryFolders?: Pick<TeamApiLibraryFolders, "removeAgent"> | undefined;
+  duplicateAgent: (agentId: string, operationId: string) => Effect.Effect<DuplicateAgentResult, AgentDuplicationFailed>;
+  visibleModels?: Pick<ModelVisibility, "picker">;
 }
 
 export async function routeAgents(
   context: TeamApiRequestContext,
-  { agents, skills, sidebarLayout, duplicateAgent }: AgentRouteDependencies,
+  { agents, skills, sidebarLayout, libraryFolders, duplicateAgent, visibleModels }: AgentRouteDependencies,
 ): Promise<RouteOutcome> {
   const { method, url, request, response, member, capabilities, json, empty } = context;
-  const hidden = context.protocol < 4 ? hiddenProviderAgentIds(agents.listAgents()) : new Set<string>();
+  const hidden = hiddenProviderAgentIds(agents.listAgents(), context.protocol);
   function requireCompatibleDefault(): void {
     if (context.protocol < 4 && agents.preferredProvider() === "opencode") {
-      throw new HttpError(400, "The host's default provider requires Team API v4.");
+      throw new HttpError(400, sourceText("error.team.defaultProviderRequiresV4"));
+    }
+  }
+  function requireVisibleProvider(input: Pick<CreateAgentInput, "provider" | "model"> = {}): void {
+    if (input.provider !== undefined) {
+      if (isPeerHiddenProvider(input.provider, context.protocol)) throw new HttpError(400, "provider is invalid.");
+      return;
+    }
+    const provider = agents.newAgentProvider(input);
+    if (provider && isPeerHiddenProvider(provider, context.protocol)) {
+      throw new HttpError(400, sourceText("error.team.newAgentProviderLocalOnly"));
     }
   }
   function requireVisible(id: string | undefined | null): void {
-    if (id && hidden.has(id)) throw new HttpError(404, "Agent not found.");
+    if (id && hidden.has(id)) throw new HttpError(404, sourceText("error.team.agentNotFound"));
+  }
+  function requireRequestAgent(agentId: string | undefined): void {
+    if (agentId === undefined) return;
+    if (context.agentLevel(agentId) === "none") throw new HttpError(404, sourceText("error.team.agentNotFound"));
+    requireAgentLevel(context, agentId, "chat");
   }
 
   if (method === "GET" && url.pathname === TEAM_API_ROUTES.analytics) {
     if (!capabilities.has("host-analytics"))
-      throw new HttpError(400, "Host analytics is not supported by this client.");
+      throw new HttpError(400, sourceText("error.team.hostAnalyticsUnsupported"));
     const input = parseHostAnalyticsInput({
       ...(url.searchParams.has("agentId") ? { agentId: url.searchParams.get("agentId") } : {}),
       startDate: url.searchParams.get("startDate"),
       endDate: url.searchParams.get("endDate"),
       timeZone: url.searchParams.get("timeZone"),
     });
-    if (input.agentId && !agents.listAgents().some((agent) => agent.id === input.agentId))
-      throw new HttpError(404, "Agent not found.");
-    return json(200, agents.getHostAnalytics(input));
+    const workflows = capabilities.has(WORKFLOWS_CAPABILITY);
+    if (
+      input.agentId &&
+      !(workflows && input.agentId === WORKFLOWS_USAGE_ID) &&
+      !agents.listAgents().some((agent) => agent.id === input.agentId)
+    )
+      throw new HttpError(404, sourceText("error.team.agentNotFound"));
+    const { skills: _localOnly, ...report } = agents.getHostAnalytics(input);
+    return json(
+      200,
+      workflows ? report : { ...report, agents: report.agents.filter((row) => row.agentId !== WORKFLOWS_USAGE_ID) },
+    );
   }
   if (
     method === "POST" &&
     (url.pathname === TEAM_API_ROUTES.agents.generateProfile || url.pathname === TEAM_API_ROUTES.agents.saveProfile)
   ) {
     if (!capabilities.has("agent-profile-generation"))
-      throw new HttpError(400, "Profile generation is not supported by this client.");
+      throw new HttpError(400, sourceText("error.team.profileGenerationUnsupported"));
     const body = await readJson(request);
     if (typeof body.agentId === "string") requireVisible(body.agentId);
-    else requireCompatibleDefault();
+    else {
+      requireCompatibleDefault();
+      requireVisibleProvider();
+    }
     if (url.pathname === TEAM_API_ROUTES.agents.generateProfile) {
       return json(
         200,
-        await agents.generateProfile(parseGenerateAgentProfile(body), sidebarLayout.getSnapshot().sections),
+        await runCauseEffect(
+          agents.generateProfile(parseGenerateAgentProfile(body), sidebarLayout.getSnapshot().sections),
+        ),
       );
     }
-    return json(200, await agents.saveProfile(parseSaveAgentProfile(body), sidebarLayout));
+    return json(
+      200,
+      await runCauseEffect(agents.saveProfile(parseSaveAgentProfile(body), sidebarLayout, memberSender(member))),
+    );
   }
   if (method === "GET" && url.pathname === TEAM_API_ROUTES.messages.search) {
     const query = url.searchParams.get("q") ?? "";
     if (!query.trim() || query.length > INPUT_LIMITS.messageText) {
-      throw new HttpError(400, "A valid search query is required.");
+      throw new HttpError(400, sourceText("error.team.searchQueryRequired"));
     }
+    const agentId = url.searchParams.get("botId") ?? undefined;
+    const cursor = url.searchParams.get("cursor") ?? undefined;
     return json(
       200,
-      agents.searchConversationMessages(
-        query,
-        // A query parameter is part of the released URL, and the versioned adapters translate JSON
-        // bodies only. `botId` is what every shipped client sends and what every shipped host reads.
-        url.searchParams.get("botId") ?? undefined,
-        url.searchParams.get("cursor") ?? undefined,
+      searchPageWithinFrame(
+        (limit) => agents.searchConversationMessages(query, agentId, cursor, limit),
         pageLimit(url),
       ),
     );
   }
   if (method === "GET" && url.pathname === TEAM_API_ROUTES.agents.status) {
     return json(200, agents.getStatus());
+  }
+  if (method === "POST" && url.pathname === PROVIDER_MODEL_SOURCE_ROUTES.list) {
+    if (!capabilities.has(PROVIDER_MODEL_SOURCE_CAPABILITY))
+      throw new HttpError(400, sourceText("error.team.providerModelSourceUnsupported"));
+    await readJson(request);
+    const sources = (agents.getStatus().providers ?? []).flatMap((row) =>
+      row.modelSource ? [{ provider: row.id, source: row.modelSource }] : [],
+    );
+    return json(200, { sources });
   }
   if (method === "GET" && url.pathname === TEAM_API_ROUTES.sidebarLayout.state) {
     return json(200, sidebarLayout.getSnapshot());
@@ -128,14 +184,25 @@ export async function routeAgents(
     const action = parseSidebarLayoutAction(await readJson(request));
     if ("agentId" in action) requireVisible(action.agentId);
     if ("beforeAgentId" in action) requireVisible(action.beforeAgentId);
-    const layout = await sidebarLayout.mutate(action, agents.sidebarChatIds());
+    const layout = await runCauseEffect(sidebarLayout.mutate(action, agents.sidebarChatIds()));
     return json(200, layout);
   }
   if (method === "GET" && url.pathname === TEAM_API_ROUTES.agents.usage) {
-    return json(200, await agents.getUsage());
+    const usage = await runCauseEffect(agents.getUsage());
+    const signIns = { ...usage, limits: usage.limits.filter((limit) => limit.accountId === undefined) };
+    return json(200, capabilities.has(TEAM_USAGE_READ_FAILED_CAPABILITY) ? signIns : usageWithoutReadFailed(signIns));
   }
   if (method === "GET" && url.pathname === TEAM_API_ROUTES.agents.models) {
-    return json(200, await agents.listModels());
+    const modelId = context.protocol < 6 ? V5_AGENT_MODEL : V6_AGENT_MODEL;
+    const models = (await agents.listModels())
+      .filter((model) => modelId.test(model.id))
+      .map(({ steersTurns: _steersTurns, ...model }) => model);
+    if (!visibleModels) return json(200, models);
+    const listed = await runCauseEffect(visibleModels.picker(models));
+    return json(
+      200,
+      listed.map(({ listing: _listing, ...model }) => model),
+    );
   }
   if (method === "GET" && url.pathname === TEAM_API_ROUTES.agents.all) {
     return json(200, agents.listAgents());
@@ -145,18 +212,26 @@ export async function routeAgents(
   }
   if (method === "POST" && url.pathname === TEAM_API_ROUTES.agents.all) {
     requireCompatibleDefault();
-    const body = await readJson(request);
-    return json(201, await agents.createAgent(agentCreate(body)));
+    const input = agentCreate(await readJson(request));
+    requireVisibleProvider(input);
+    const welcome = capabilities.has(AGENT_WELCOME_CAPABILITY);
+    return json(
+      201,
+      await runCauseEffect(agents.createAgent(input, undefined, undefined, memberSender(member), welcome)),
+    );
   }
 
   const agentMatch = url.pathname.match(/^\/v1\/agents\/([^/]+)(?:\/(.*))?$/);
   if (agentMatch) {
     const agentId = pathIdentifier(agentMatch[1], "agentId");
     const action = agentMatch[2] ?? "";
+    if (method !== "GET" && !(method === "DELETE" && !action))
+      requireAgentLevel(context, agentId, agentWriteLevel(action));
     if (method === "GET" && action === "analytics") {
       if (!capabilities.has("agent-analytics"))
-        throw new HttpError(400, "Agent analytics is not supported by this client.");
-      if (!agents.listAgents().some((agent) => agent.id === agentId)) throw new HttpError(404, "Agent not found.");
+        throw new HttpError(400, sourceText("error.team.agentAnalyticsUnsupported"));
+      if (!agents.listAgents().some((agent) => agent.id === agentId))
+        throw new HttpError(404, sourceText("error.team.agentNotFound"));
       const input = parseAgentAnalyticsInput({
         agentId,
         startDate: url.searchParams.get("startDate"),
@@ -166,41 +241,51 @@ export async function routeAgents(
       return json(200, agents.getAnalytics(input));
     }
     if (method === "GET" && action === "usage") {
-      return json(200, await agents.getUsage(agentId));
+      return json(200, await runCauseEffect(agents.getUsage(agentId)));
     }
     if (method === "GET" && action === "skills") {
-      return json(200, (await skills?.listInstalledForChatTags(agentId)) ?? []);
+      const problems = capabilities.has(SKILL_PROBLEMS_CAPABILITY);
+      return json(200, skills ? await runCauseEffect(skills.listInstalledForChatTags(agentId, { problems })) : []);
     }
     if (method === "PATCH" && !action) {
-      const body = await readJson(request);
-      return json(200, await agents.updateAgent(agentUpdate(body, agentId)));
+      const input = agentUpdate(await readJson(request), agentId);
+      if (input.provider !== undefined) requireVisibleProvider({ provider: input.provider });
+      return json(200, await runCauseEffect(agents.updateAgent(input, undefined, false)));
     }
     if (method === "POST" && action === "duplicate") {
       const body = await readJson(request);
-      return json(201, await duplicateAgent(agentId, stringField(body, "operationId")));
+      return json(201, await runCauseEffect(duplicateAgent(agentId, stringField(body, "operationId"))));
     }
     if (method === "DELETE" && !action) {
-      if (member.role === "member") throw new HttpError(403, "Members cannot delete agents.");
-      await agents.deleteAgent(agentId);
-      await sidebarLayout.removeAgent(agentId);
+      if (!canAdministerServer(member.role))
+        throw new HttpError(403, sourceText("error.team.membersCannotDeleteAgents"));
+      try {
+        await runCauseEffect(agents.deleteAgent(agentId));
+      } catch (error) {
+        if (error instanceof Error && DELETE_REFUSALS().includes(error.message))
+          throw new HttpError(409, error.message);
+        throw error;
+      }
+      await runCauseEffect(sidebarLayout.removeAgent(agentId));
+      if (libraryFolders) await runCauseEffect(libraryFolders.removeAgent(agentId));
       return empty(204);
     }
     if (action === "avatar") {
       if (method === "PUT") {
         const mimeType = request.headers["content-type"]?.split(";", 1)[0]?.trim() ?? "";
         if (!isAvatarMimeType(mimeType)) {
-          throw new HttpError(415, "Choose a PNG, JPEG, or WebP image.");
+          throw new HttpError(415, sourceText("error.team.avatarType"));
         }
         const bytes = await readBinary(request, AVATAR_IMAGE_LIMITS.storedBytes);
-        return json(200, await agents.setAvatar(agentId, { mimeType, bytes }));
+        return json(200, await runCauseEffect(agents.setAvatar(agentId, { mimeType, bytes })));
       }
       if (method === "DELETE") {
-        return json(200, await agents.setAvatar(agentId, null));
+        return json(200, await runCauseEffect(agents.setAvatar(agentId, null)));
       }
       if (method === "GET") {
         const avatar = agents.resolveAvatar(agentId);
         if (!avatar || avatar.version !== url.searchParams.get("v")) {
-          throw new HttpError(404, "Agent avatar not found.");
+          throw new HttpError(404, sourceText("error.team.avatarNotFound"));
         }
         const bytes = await readFile(avatar.path);
         response.writeHead(200, {
@@ -223,34 +308,96 @@ export async function routeAgents(
 
   if (method === "POST" && url.pathname === TEAM_API_ROUTES.respond.prompt) {
     const body = await readJson(request);
-    await agents.respondToPrompt({
-      requestId: promptRequestId(body.requestId),
-      answers: promptAnswers(body.answers),
-    });
+    const requestId = promptRequestId(body.requestId);
+    requireRequestAgent(agents.agentIdForRequest(requestId));
+    const sender = memberSender(member);
+    await runCauseEffect(
+      agents.respondToPrompt(
+        { requestId, answers: promptAnswers(body.answers) },
+        { ...(sender ? { sender } : {}), privileged: member.role !== "member" },
+      ),
+    ).catch(refusedPromptAnswer);
     return empty(204);
   }
   if (method === "POST" && url.pathname === TEAM_API_ROUTES.respond.approval) {
     const body = await readJson(request);
-    await agents.respondToApproval({
-      requestId: promptRequestId(body.requestId),
-      decision: approvalDecision(body.decision),
-    });
+    const requestId = promptRequestId(body.requestId);
+    requireRequestAgent(agents.agentIdForRequest(requestId));
+    await runCauseEffect(
+      agents.respondToApproval(
+        { requestId, decision: approvalDecision(body.decision) },
+        { owner: member.role === "owner" },
+      ),
+    ).catch(refusedPromptAnswer);
     return empty(204);
   }
   if (method === "POST" && url.pathname === BROWSER_SECRET_RESPONSE_PATH) {
     if (!capabilities.has("browser-secret-handoff"))
-      throw new HttpError(400, "Secure authentication is not supported by this client.");
-    await agents.respondToBrowserSecret(parseBrowserSecretResponse(await readJson(request)));
+      throw new HttpError(400, sourceText("error.team.secureAuthUnsupported"));
+    const input = parseBrowserSecretResponse(await readJson(request));
+    requireRequestAgent(input.agentId);
+    await runCauseEffect(agents.respondToBrowserSecret(input)).catch(inactiveAsConflict);
     return empty(204);
+  }
+  if (method === "POST" && url.pathname === BROWSER_SECRET_VAULT_ROUTES.respond) {
+    if (!capabilities.has("browser-secret-handoff"))
+      throw new HttpError(400, sourceText("error.team.secureAuthUnsupported"));
+    if (!capabilities.has(BROWSER_SECRET_VAULT_CAPABILITY))
+      throw new HttpError(400, sourceText("error.team.vaultUnsupported"));
+    const input = parseBrowserSecretResponse({ ...(await readJson(request)), decision: "submit" });
+    requireRequestAgent(input.agentId);
+    await runCauseEffect(agents.respondToBrowserSecret({ ...input, saveToVault: true })).catch(inactiveAsConflict);
+    return json(200, {});
   }
   if (method === "POST" && url.pathname === TEAM_API_ROUTES.respond.browserTakeover) {
     const body = await readJson(request);
-    await agents.respondToBrowserTakeover({
-      requestId: promptRequestId(body.requestId),
-      decision: browserTakeoverDecision(body.decision),
-    });
+    const requestId = promptRequestId(body.requestId);
+    requireRequestAgent(agents.agentIdForRequest(requestId));
+    await runCauseEffect(
+      agents.respondToBrowserTakeover(
+        {
+          requestId,
+          decision: browserTakeoverDecision(body.decision),
+        },
+        true,
+      ),
+    );
     return empty(204);
   }
 
   return "unmatched";
 }
+
+const OWN_ACTIONS = new Set(["conversation/read", "conversation/unread"]);
+const CHAT_ACTIONS = new Set([
+  "messages",
+  "reactions",
+  "interrupt",
+  "failures/acknowledge",
+  "queue/edit",
+  "queue/cancel",
+  "queue/steer",
+  "queue/update",
+  "queue/reorder",
+]);
+
+function agentWriteLevel(action: string): "view" | "chat" | "manage" {
+  if (OWN_ACTIONS.has(action)) return "view";
+  return CHAT_ACTIONS.has(action) ? "chat" : "manage";
+}
+
+function inactiveAsConflict(error: unknown): never {
+  if (error instanceof InactiveAttentionRequest) throw new HttpError(409, error.message);
+  throw error;
+}
+
+function refusedPromptAnswer(error: unknown): never {
+  if (error instanceof ForbiddenAttentionAnswer) throw new HttpError(403, error.message);
+  return inactiveAsConflict(error);
+}
+
+const DELETE_REFUSALS = () => [
+  sourceText("error.agent.stopBeforeDelete"),
+  sourceText("error.agent.deletionBusy"),
+  sourceText("error.agent.deleteWhenFolderFree"),
+];

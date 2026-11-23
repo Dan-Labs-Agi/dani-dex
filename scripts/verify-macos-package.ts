@@ -1,17 +1,21 @@
 import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
-import { access, mkdtemp, readFile, rm } from "node:fs/promises";
+import { access, lstat, mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { isDynamicRecord } from "@dani-dex/contracts/runtime-values";
-import { createDaniDexLogger } from "@dani-dex/logging";
+import { setTimeout as delay } from "node:timers/promises";
 import { FuseV1Options, getCurrentFuseWire } from "@electron/fuses";
-import { verifyPackagedFootprint } from "./packaged-footprint";
+import { isDynamicRecord } from "@openbot/contracts/runtime-values";
+import { createOpenBotLogger } from "@openbot/logging";
+import { isMissingFileError } from "../src/backend/file-errors";
 
-const logger = createDaniDexLogger("verify-macos-package");
+const logger = createOpenBotLogger("verify-macos-package");
 
 const FUSE_DISABLED = 48;
 const FUSE_ENABLED = 49;
+
+const launchStepLimitMs = 5 * 60_000;
+
 const EXPECTED_MACOS_ICON_FILES = [
   "icon_16x16.png",
   "icon_16x16@2x.png",
@@ -25,33 +29,57 @@ const EXPECTED_MACOS_ICON_FILES = [
   "icon_512x512@2x.png",
 ] as const;
 
-const appPath = resolve(process.argv[2] ?? "dist/mac-arm64/Dani-Dex.app");
+const architecture = process.arch === "arm64" ? "arm64" : process.arch === "x64" ? "x64" : null;
+if (!architecture) throw new Error(`OpenBot does not ship for macOS ${process.arch}.`);
+const machOArchitecture = architecture === "arm64" ? "arm64" : "x86_64";
+const appPath = resolve(
+  process.argv[2] ?? (architecture === "arm64" ? "dist/mac-arm64/OpenBot.app" : "dist/mac/OpenBot.app"),
+);
 const contentsPath = resolve(appPath, "Contents");
-const executablePath = resolve(contentsPath, "MacOS/Dani-Dex");
+const executablePath = resolve(contentsPath, "MacOS/OpenBot");
 const resourcesPath = resolve(contentsPath, "Resources");
-await verifyPackagedFootprint(resolve(resourcesPath, "app.asar"));
 const packagedIconPath = resolve(resourcesPath, "icon.icns");
 const sourceIconPath = resolve("build/icon-production.icns");
+const packagedIconCatalogPath = resolve(resourcesPath, "Assets.car");
+const sourceIconCatalogPath = resolve("build/macos/Assets.car");
 const plistPath = resolve(contentsPath, "Info.plist");
-const whisperExecutablePath = resolve(resourcesPath, "whisper/bin/whisper-cli");
-const whisperModelPath = resolve(resourcesPath, "whisper/model/ggml-medium-q5_0.bin");
-const remoteRuntimePath = resolve(resourcesPath, "remote-desktop-runtime/darwin/arm64");
-const cuaDriverPath = resolve(resourcesPath, "cua-driver/darwin/arm64");
-// The database host is spawned by path as its own process, so it has to survive the asar unchanged.
-// Packed into app.asar it would still be readable, but `utilityProcess` cannot start it from there.
+const voiceRuntimePath = resolve(resourcesPath, "voice/runtime");
+const voiceRuntimeLibraries = ["sherpa-onnx.node", "libsherpa-onnx-c-api.dylib", "libonnxruntime.dylib"];
+const voiceSessionSettingsPath = resolve(voiceRuntimePath, "no-arena.cfg");
+const remoteRuntimePath = resolve(resourcesPath, "remote-desktop-runtime/darwin", architecture);
+const cuaDriverPath = resolve(resourcesPath, "cua-driver/darwin", architecture);
 const databaseHostPath = resolve(resourcesPath, "app.asar.unpacked/out/main/agent-database-host.js");
+const voiceHostPath = resolve(resourcesPath, "app.asar.unpacked/out/main/voice-transcription-host.js");
+const speechHostPath = resolve(resourcesPath, "app.asar.unpacked/out/main/voice-speech-host.js");
 
 await Promise.all([
   access(executablePath),
+  access(resolve(resourcesPath, "app.asar.unpacked/node_modules/effect/package.json")),
+  access(resolve(resourcesPath, "app.asar.unpacked/node_modules/effect/dist/index.js")),
+  access(
+    resolve(
+      resourcesPath,
+      `app.asar.unpacked/node_modules/@koromix/koffi-darwin-${architecture}/darwin_${architecture}/koffi.node`,
+    ),
+  ),
   access(resolve(resourcesPath, "app.asar")),
   access(packagedIconPath),
   access(sourceIconPath),
   access(resolve(resourcesPath, "licenses/Electron-LICENSE")),
   access(resolve(resourcesPath, "licenses/LICENSES.chromium.html")),
+  access(resolve(resourcesPath, "licenses/sherpa-onnx-LICENSE")),
+  access(resolve(resourcesPath, "licenses/onnxruntime-LICENSE")),
+  access(resolve(resourcesPath, "licenses/NVIDIA-Parakeet-TDT-0.6B-v3-LICENSE")),
+  access(resolve(resourcesPath, "licenses/NVIDIA-Parakeet-Unified-EN-0.6B-LICENSE")),
+  access(resolve(resourcesPath, "licenses/Underdog-Bark-3.0-Plus-LICENSE")),
   access(resolve(resourcesPath, "licenses/OpenAI-Whisper-LICENSE")),
-  access(resolve(resourcesPath, "licenses/whisper.cpp-LICENSE")),
-  access(whisperExecutablePath),
+  access(resolve(resourcesPath, "licenses/Cohere-Transcribe-LICENSE")),
+  access(resolve(resourcesPath, "licenses/Supertone-Supertonic-3-LICENSE")),
+  ...voiceRuntimeLibraries.map((name) => access(resolve(voiceRuntimePath, name))),
+  access(voiceSessionSettingsPath),
   access(databaseHostPath),
+  access(voiceHostPath),
+  access(speechHostPath),
   access(resolve(resourcesPath, "remote-desktop-runtime/licenses/Sunshine-GPL-3.0.txt")),
   access(resolve(resourcesPath, "remote-desktop-runtime/licenses/moonlight-web-stream-GPL-3.0.txt")),
   access(resolve(resourcesPath, "remote-desktop-runtime/source-manifest.json")),
@@ -68,25 +96,29 @@ await Promise.all([
   access(resolve(cuaDriverPath, "cua-driver")),
   access(resolve(cuaDriverPath, "LICENSE.md")),
 ]);
-// Only this Mac's driver ships. A `from: build/cua-driver` that forgot the target would put the
-// Windows and Linux builds in every installer.
 await Promise.all(["win32", "linux"].map((name) => assertAbsent(resolve(resourcesPath, "cua-driver", name))));
-// `signIgnore` keeps the driver's own Developer ID signature, and with it the Automation
-// entitlement that re-signing under Dani-Dex's inherited entitlements would drop.
+const otherArchitecture = architecture === "arm64" ? "x64" : "arm64";
+await Promise.all(
+  ["remote-desktop-runtime", "cua-driver"].map((name) =>
+    assertAbsent(resolve(resourcesPath, name, "darwin", otherArchitecture)),
+  ),
+);
 assertCuaDriverSignature(resolve(cuaDriverPath, "cua-driver"));
 await verifyPackagedIcon(packagedIconPath, sourceIconPath);
+await verifyPackagedIconCatalog(packagedIconCatalogPath, sourceIconCatalogPath);
 await Promise.all(["codex", "claude", "grok"].map((name) => assertAbsent(resolve(resourcesPath, name))));
 await assertAbsent(resolve(resourcesPath, "cloudflared"));
 await assertAbsent(
-  resolve(resourcesPath, "app.asar.unpacked/node_modules/@anthropic-ai/claude-agent-sdk-darwin-arm64"),
+  resolve(resourcesPath, `app.asar.unpacked/node_modules/@anthropic-ai/claude-agent-sdk-darwin-${architecture}`),
 );
 
 const plist = JSON.parse(run("plutil", ["-convert", "json", "-o", "-", plistPath]));
 if (!isDynamicRecord(plist)) throw new Error("Info.plist is not a JSON object.");
-expectEqual(plist.CFBundleDisplayName, "Dani-Dex", "display name");
-expectEqual(plist.CFBundleExecutable, "Dani-Dex", "executable name");
-expectEqual(plist.CFBundleIdentifier, "dev.danlab.danidex.desktop", "bundle identifier");
+expectEqual(plist.CFBundleDisplayName, "OpenBot", "display name");
+expectEqual(plist.CFBundleExecutable, "OpenBot", "executable name");
+expectEqual(plist.CFBundleIdentifier, "app.openbot.desktop", "bundle identifier");
 expectEqual(plist.CFBundleIconFile, "icon.icns", "application icon");
+expectEqual(plist.CFBundleIconName, "Icon", "macOS 26 application icon");
 expectEqual(plist.LSMinimumSystemVersion, "13.0", "minimum macOS version");
 expectEqual(plist.ElectronTeamID, "ZTRDTUL87R", "Apple Team ID");
 if (!Array.isArray(plist.NSUserActivityTypes) || !plist.NSUserActivityTypes.includes("NSUserActivityTypeBrowsingWeb")) {
@@ -95,7 +127,7 @@ if (!Array.isArray(plist.NSUserActivityTypes) || !plist.NSUserActivityTypes.incl
 if (!plist.ElectronAsarIntegrity) throw new Error("ASAR integrity metadata is missing.");
 expectEqual(
   plist.NSMicrophoneUsageDescription,
-  "Dani-Dex uses the microphone to transcribe voice prompts locally on this Mac.",
+  "OpenBot uses the microphone to transcribe voice prompts locally on this Mac.",
   "microphone usage description",
 );
 
@@ -103,20 +135,45 @@ const packageJson = JSON.parse(await readFile("package.json", "utf8"));
 if (!isDynamicRecord(packageJson)) throw new Error("package.json is not a JSON object.");
 expectEqual(plist.CFBundleShortVersionString, packageJson.version, "application version");
 
-// Electron is unavailable to this process, and its own imports are what keep it startable there.
 const databaseHost = await readFile(databaseHostPath, "utf8");
-if (/from "(?!node:)/.test(databaseHost)) {
-  throw new Error("The database host must import nothing but node: builtins.");
+if (/from "(?!node:|effect["/])/.test(databaseHost)) {
+  throw new Error("The database host must import nothing but node: builtins and effect.");
+}
+for (const [path, name] of [
+  [voiceHostPath, "voice transcription"],
+  [speechHostPath, "speech"],
+] as const) {
+  if (/from "(?!node:)/.test(await readFile(path, "utf8"))) {
+    throw new Error(`The ${name} host must import nothing but node: builtins.`);
+  }
 }
 
-const architecture = run("file", [executablePath]);
-if (!architecture.includes("arm64")) throw new Error(`Expected an ARM64 executable: ${architecture}`);
-const whisperArchitecture = run("file", [whisperExecutablePath]);
-// Universal, so local voice runs on Intel Macs too.
-if (!whisperArchitecture.includes("arm64") || !whisperArchitecture.includes("x86_64")) {
-  throw new Error(`Expected a universal (arm64 + x86_64) Whisper executable: ${whisperArchitecture}`);
+const executableArchitecture = run("file", [executablePath]);
+if (!executableArchitecture.includes(machOArchitecture)) {
+  throw new Error(`Expected a ${machOArchitecture} executable: ${executableArchitecture}`);
 }
-if (existsSync(whisperModelPath)) throw new Error("The on-demand Whisper model must not be in the application.");
+for (const name of voiceRuntimeLibraries) {
+  const path = resolve(voiceRuntimePath, name);
+  const voiceArchitecture = run("file", [path]);
+  if (!voiceArchitecture.includes(machOArchitecture)) {
+    throw new Error(`Expected a ${machOArchitecture} voice runtime library: ${voiceArchitecture}`);
+  }
+}
+if (
+  [
+    "voice/model",
+    "voice/parakeet-unified-en-0.6b-int8",
+    "voice/bark-3.0-plus-int8",
+    "voice/whisper-turbo-int8",
+    "voice/cohere-transcribe-14-lang-int8",
+    "voice/supertonic-3-int8",
+  ].some((path) => existsSync(resolve(resourcesPath, path))) ||
+  ["encoder.int8.onnx", "turbo-encoder.int8.onnx", "vocoder.int8.onnx"].some((name) =>
+    existsSync(resolve(voiceRuntimePath, name)),
+  )
+) {
+  throw new Error("The on-demand voice models must not be in the application.");
+}
 
 for (const name of ["Sunshine.app", "web-server", "streamer"]) {
   run("codesign", ["--verify", "--strict", "--verbose=2", resolve(remoteRuntimePath, name)]);
@@ -143,7 +200,7 @@ await verifyLaunch(executablePath);
 
 logger.info(`Verified ${appPath}`);
 logger.info(
-  `Dani-Dex ${String(packageJson.version)} · ARM64 · icon · GPL remote runtime · WebRTC remote stack · ASAR integrity · hardened fuses · launch`,
+  `OpenBot ${String(packageJson.version)} · ${machOArchitecture} · icon · GPL remote runtime · WebRTC remote stack · ASAR integrity · hardened fuses · launch`,
 );
 
 function expectEqual(actual: unknown, expected: unknown, label: string): void {
@@ -167,8 +224,8 @@ async function verifyPackagedIcon(packagedPath: string, sourcePath: string): Pro
     throw new Error("The packaged macOS icon does not match build/icon-production.icns.");
   }
 
-  const iconRoot = await mkdtemp(join(tmpdir(), "dani-dex-icon-"));
-  const iconSetPath = join(iconRoot, "Dani-Dex.iconset");
+  const iconRoot = await mkdtemp(join(tmpdir(), "openbot-icon-"));
+  const iconSetPath = join(iconRoot, "OpenBot.iconset");
   try {
     run("iconutil", ["--convert", "iconset", packagedPath, "--output", iconSetPath]);
     await Promise.all(EXPECTED_MACOS_ICON_FILES.map((name) => access(join(iconSetPath, name))));
@@ -177,7 +234,13 @@ async function verifyPackagedIcon(packagedPath: string, sourcePath: string): Pro
   }
 }
 
-/** The Computer Use driver keeps the signature it was published with, not Dani-Dex's. */
+async function verifyPackagedIconCatalog(packagedPath: string, sourcePath: string): Promise<void> {
+  const [packagedCatalog, sourceCatalog] = await Promise.all([readFile(packagedPath), readFile(sourcePath)]);
+  if (!packagedCatalog.equals(sourceCatalog)) {
+    throw new Error("The packaged macOS icon catalog does not match build/macos/Assets.car.");
+  }
+}
+
 function assertCuaDriverSignature(binary: string): void {
   const description = run("codesign", ["-dvvv", binary], true);
   if (!description.includes("Authority=Developer ID Application: Cua AI, Inc. (YCK386LBJ7)")) {
@@ -203,15 +266,15 @@ function run(command: string, args: string[], includeStderr = false): string {
 }
 
 async function verifyLaunch(executable: string): Promise<void> {
-  const userDataPath = await mkdtemp(join(tmpdir(), "dani-dex-package-smoke-"));
+  const userDataPath = await mkdtemp(join(tmpdir(), "openbot-package-smoke-"));
   const child = spawn(executable, [`--user-data-dir=${userDataPath}`, "--use-mock-keychain"], {
     env: {
       ...process.env,
       CODEX_HOME: join(userDataPath, "codex-home"),
       CLAUDE_CONFIG_DIR: join(userDataPath, "claude-home"),
-      DANI_DEX_CODEX_PATH: join(userDataPath, "missing-codex"),
-      DANI_DEX_CLAUDE_PATH: join(userDataPath, "missing-claude"),
-      DANI_DEX_GROK_PATH: join(userDataPath, "missing-grok"),
+      OPENBOT_CODEX_PATH: join(userDataPath, "missing-codex"),
+      OPENBOT_CLAUDE_PATH: join(userDataPath, "missing-claude"),
+      OPENBOT_GROK_PATH: join(userDataPath, "missing-grok"),
     },
     stdio: ["ignore", "ignore", "pipe"],
   });
@@ -221,18 +284,33 @@ async function verifyLaunch(executable: string): Promise<void> {
     stderr = `${stderr}${chunk}`.slice(-4_000);
   });
 
+  const launchExit = new Promise<never>((_, reject) => {
+    child.once("exit", (code, signal) => {
+      reject(
+        new Error(`Packaged OpenBot exited during launch (${signal ?? `code ${String(code)}`}): ${stderr.trim()}`),
+      );
+    });
+  });
+
   try {
-    await Promise.race([
-      new Promise<never>((_, reject) => {
-        child.once("exit", (code, signal) => {
-          reject(
-            new Error(`Packaged Dani-Dex exited during launch (${signal ?? `code ${String(code)}`}): ${stderr.trim()}`),
-          );
-        });
-      }),
-      new Promise<void>((resolveDelay) => setTimeout(resolveDelay, 15_000)),
-    ]);
-    await verifySecondInstanceExits(executable, userDataPath);
+    await waitForFirstInstance(
+      launchExit,
+      () => pathExists(join(userDataPath, "SingletonLock")),
+      "take its lock",
+      () => stderr,
+    );
+    await waitForFirstInstance(
+      launchExit,
+      () => rendererCalledMain(userDataPath),
+      "load its window",
+      () => stderr,
+    );
+    await verifySecondInstanceExits(executable, userDataPath, launchExit);
+    if (child.exitCode !== null || child.signalCode !== null) {
+      throw new Error(
+        `Packaged OpenBot exited when a second instance started (${child.signalCode ?? `code ${String(child.exitCode)}`}): ${stderr.trim()}`,
+      );
+    }
   } finally {
     child.kill("SIGTERM");
     await Promise.race([
@@ -248,15 +326,61 @@ async function verifyLaunch(executable: string): Promise<void> {
   }
 }
 
-async function verifySecondInstanceExits(executable: string, userDataPath: string): Promise<void> {
+async function waitForFirstInstance(
+  launchExit: Promise<never>,
+  reached: () => Promise<boolean>,
+  step: string,
+  stderr: () => string,
+): Promise<void> {
+  const stop = new AbortController();
+  const waitForState = async () => {
+    const limit = Date.now() + launchStepLimitMs;
+    while (!(await reached())) {
+      if (Date.now() > limit) {
+        throw new Error(`Packaged OpenBot did not ${step} in 5 minutes: ${stderr().trim()}`);
+      }
+      await delay(200, undefined, { signal: stop.signal });
+    }
+  };
+  try {
+    await Promise.race([launchExit, waitForState()]);
+  } finally {
+    stop.abort();
+  }
+}
+
+async function pathExists(path: string): Promise<boolean> {
+  try {
+    await lstat(path);
+    return true;
+  } catch (error) {
+    if (isMissingFileError(error)) return false;
+    throw error;
+  }
+}
+
+async function rendererCalledMain(userDataPath: string): Promise<boolean> {
+  try {
+    return (await readFile(join(userDataPath, "logs", "trace.ndjson"), "utf8")).includes('"kind":"ipc"');
+  } catch (error) {
+    if (isMissingFileError(error)) return false;
+    throw error;
+  }
+}
+
+async function verifySecondInstanceExits(
+  executable: string,
+  userDataPath: string,
+  launchExit: Promise<never>,
+): Promise<void> {
   const second = spawn(executable, [`--user-data-dir=${userDataPath}`, "--use-mock-keychain"], {
     env: {
       ...process.env,
       CODEX_HOME: join(userDataPath, "codex-home"),
       CLAUDE_CONFIG_DIR: join(userDataPath, "claude-home"),
-      DANI_DEX_CODEX_PATH: join(userDataPath, "missing-codex"),
-      DANI_DEX_CLAUDE_PATH: join(userDataPath, "missing-claude"),
-      DANI_DEX_GROK_PATH: join(userDataPath, "missing-grok"),
+      OPENBOT_CODEX_PATH: join(userDataPath, "missing-codex"),
+      OPENBOT_CLAUDE_PATH: join(userDataPath, "missing-claude"),
+      OPENBOT_GROK_PATH: join(userDataPath, "missing-grok"),
     },
     stdio: ["ignore", "ignore", "pipe"],
   });
@@ -265,19 +389,25 @@ async function verifySecondInstanceExits(executable: string, userDataPath: strin
   second.stderr.on("data", (chunk: string) => {
     stderr = `${stderr}${chunk}`.slice(-4_000);
   });
-  const result = await Promise.race([
-    new Promise<{ code: number | null; signal: NodeJS.Signals | null }>((resolveExit) => {
-      second.once("exit", (code, signal) => resolveExit({ code, signal }));
-    }),
-    new Promise<null>((resolveDelay) => setTimeout(() => resolveDelay(null), 10_000)),
-  ]);
-  if (!result) {
-    second.kill("SIGKILL");
-    throw new Error(`A second Dani-Dex instance did not exit: ${stderr.trim()}`);
-  }
-  if (result.code !== 0 || result.signal) {
-    throw new Error(
-      `A second Dani-Dex instance exited unexpectedly (${result.signal ?? `code ${String(result.code)}`}).`,
-    );
+  const stop = new AbortController();
+  try {
+    const result = await Promise.race([
+      new Promise<{ code: number | null; signal: NodeJS.Signals | null }>((resolveExit) => {
+        second.once("exit", (code, signal) => resolveExit({ code, signal }));
+      }),
+      launchExit,
+      delay(launchStepLimitMs, null, { signal: stop.signal }),
+    ]);
+    if (!result) {
+      throw new Error(`A second OpenBot instance did not exit in 5 minutes: ${stderr.trim()}`);
+    }
+    if (result.code !== 0 || result.signal) {
+      throw new Error(
+        `A second OpenBot instance exited unexpectedly (${result.signal ?? `code ${String(result.code)}`}): ${stderr.trim()}`,
+      );
+    }
+  } finally {
+    stop.abort();
+    if (second.exitCode === null && second.signalCode === null) second.kill("SIGKILL");
   }
 }

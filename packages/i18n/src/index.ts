@@ -1,70 +1,53 @@
-import { type AppLanguage, DEFAULT_APP_LANGUAGE } from "@dani-dex/contracts/ipc";
+import { appTranslation } from "./app-catalogs";
+import type { TranslatedLocale } from "./locale";
 import { createTranslate, type MessageParams, type Translate } from "./message";
-import { type AppMessages, en } from "./messages/en";
-import { fr } from "./messages/fr";
-import { ja } from "./messages/ja";
+import { type AppMessages, en } from "./messages/en/index";
 
+export { APP_LANGUAGES, type AppLanguage, DEFAULT_APP_LANGUAGE } from "@openbot/contracts/app-language";
+export { type AppFormat, createFormat } from "./format";
+export {
+  formatLocale,
+  type LayoutDirection,
+  localeDirection,
+  resolveLocale,
+  TRANSLATED_LOCALES,
+  type TranslatedLocale,
+  withHourCycle,
+} from "./locale";
+export { loadLocale, localeLoaded } from "./locale-loading";
 export {
   createTranslate,
   type Message,
   type MessageCatalog,
   type MessageParams,
+  type PartialTranslation,
   type PluralMessage,
   type Translate,
-  type Translation,
 } from "./message";
-export type { AppMessages } from "./messages/en";
-export { en } from "./messages/en";
-export { fr } from "./messages/fr";
-export { ja } from "./messages/ja";
+export type { AppMessages } from "./messages/en/index";
+export {
+  localizeSourceText,
+  matchingSourceKeys,
+  type SourceMessages,
+  sourceText,
+  sourceTextValues,
+} from "./source-text";
+export { en };
 
-/** The languages a catalog exists for. `"system"` resolves to one of these; it is never one itself. */
-export const TRANSLATED_LOCALES = ["en", "fr", "ja"] as const;
+export type AppTranslate = Translate<AppMessages>;
 
-export type TranslatedLocale = (typeof TRANSLATED_LOCALES)[number];
-
-const catalogs = { en, fr, ja } as const;
-
-export type AppTranslate = Translate<typeof en>;
-
-/**
- * A key whose message takes no placeholders.
- *
- * A component that keeps a key in a list - a tab, a menu item, a column - holds this type rather
- * than `keyof AppMessages`. The wider union includes keys that need values, so `t(key)` on it would
- * demand a parameter object the list has no way to supply.
- */
 export type AppTextKey = {
   [Key in keyof AppMessages]: Record<never, never> extends MessageParams<AppMessages[Key]> ? Key : never;
 }[keyof AppMessages];
 
-function isTranslatedLocale(value: string): value is TranslatedLocale {
-  return TRANSLATED_LOCALES.some((locale) => locale === value);
-}
+const translators = new Map<TranslatedLocale, AppTranslate>();
 
-/**
- * The locale to draw in, given the saved preference and the computer's own language.
- *
- * A system locale is matched on its language subtag, so `ja-JP` and `ja` both read Japanese, and
- * anything without a catalog falls back to English rather than to a half-translated screen.
- */
-export function resolveLocale(language: AppLanguage, systemLocale: string): TranslatedLocale {
-  if (language !== "system") {
-    return isTranslatedLocale(language) ? language : "en";
-  }
-  const subtag = systemLocale.split("-")[0]?.toLowerCase() ?? "";
-  return isTranslatedLocale(subtag) ? subtag : "en";
-}
-
-/** The translator for a resolved locale. English is both a catalog and every other catalog's fallback. */
 export function translateFor(locale: TranslatedLocale): AppTranslate {
-  return createTranslate({ source: en, translation: catalogs[locale], locale, sourceLocale: "en" });
+  const cached = translators.get(locale);
+  if (cached) return cached;
+  const translation = appTranslation(locale);
+  if (!translation) return translateFor("en");
+  const translate = createTranslate({ source: en, translation, locale, sourceLocale: "en" });
+  translators.set(locale, translate);
+  return translate;
 }
-
-/** The translator for a preference, in one step, for a caller that holds no resolved locale. */
-export function translateForLanguage(language: AppLanguage, systemLocale: string): AppTranslate {
-  return translateFor(resolveLocale(language, systemLocale));
-}
-
-export type { AppLanguage };
-export { DEFAULT_APP_LANGUAGE };

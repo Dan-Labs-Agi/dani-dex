@@ -1,3 +1,4 @@
+import { CHAT_VISUAL_ITEM_TYPE_PREFIX } from "@openbot/contracts/chat-visual";
 import {
   AGENT_RUNTIME_PERMISSION_PATHS_LIMIT,
   AGENT_RUNTIME_QUESTION_DESCRIPTION_LIMIT,
@@ -7,7 +8,18 @@ import {
   type AgentApproval,
   type AgentPromptQuestion,
   type AgentRuntimeSnapshot,
-} from "@dani-dex/contracts/ipc";
+  type AgentSummary,
+  CONVERSATION_PLAN_ITEM_TYPE,
+  CONVERSATION_SUBAGENTS_ITEM_TYPE,
+  ROUTINE_QUIET_ANSWER_ITEM_TYPE,
+} from "@openbot/contracts/ipc";
+import type { MailboxStore } from "../mailbox-store";
+import type { OpenBotDatabase } from "../openbot-database";
+import { perfTimed } from "../perf-probe-hooks";
+import type { AttentionRegistry } from "./attention-registry";
+import type { ConversationRuntime } from "./conversation-runtime";
+import type { TurnLifecycle } from "./turn-lifecycle";
+import type { UsageLimitGate } from "./usage-limit-gate";
 
 export function compactRuntimeQuestion(
   question: AgentPromptQuestion,
@@ -16,12 +28,14 @@ export function compactRuntimeQuestion(
     id: question.id,
     header: question.header.slice(0, AGENT_RUNTIME_QUESTION_HEADER_LIMIT),
     question: question.question.slice(0, AGENT_RUNTIME_TEXT_LIMIT),
+    ...(question.detail ? { detail: question.detail.slice(0, AGENT_RUNTIME_TEXT_LIMIT) } : {}),
     isSecret: question.isSecret,
     options:
       question.options?.map((option) => ({
         label: option.label,
         description: option.description.slice(0, AGENT_RUNTIME_QUESTION_DESCRIPTION_LIMIT),
       })) ?? null,
+    ...(question.multiSelect ? { multiSelect: true } : {}),
   };
 }
 
@@ -60,8 +74,17 @@ export function compactRuntimeApproval(approval: AgentApproval): AgentRuntimeSna
   };
 }
 
-export function fitRuntimeSnapshot(snapshot: AgentRuntimeSnapshot): AgentRuntimeSnapshot {
+function fitRuntimeSnapshot(snapshot: AgentRuntimeSnapshot): AgentRuntimeSnapshot {
   if (runtimeSnapshotBytes(snapshot) <= AGENT_RUNTIME_SNAPSHOT_BYTES_LIMIT) return snapshot;
+
+  if (snapshot.threadContextStates?.length) {
+    snapshot.threadContextStates = [];
+    if (runtimeSnapshotBytes(snapshot) <= AGENT_RUNTIME_SNAPSHOT_BYTES_LIMIT) return snapshot;
+  }
+  if (snapshot.contextStates?.length) {
+    snapshot.contextStates = [];
+    if (runtimeSnapshotBytes(snapshot) <= AGENT_RUNTIME_SNAPSHOT_BYTES_LIMIT) return snapshot;
+  }
 
   snapshot.agents = snapshot.agents.map((agent) => ({ ...agent, preview: "", avatarUrl: null }));
   if (runtimeSnapshotBytes(snapshot) <= AGENT_RUNTIME_SNAPSHOT_BYTES_LIMIT) return snapshot;
@@ -115,6 +138,100 @@ export function fitRuntimeSnapshot(snapshot: AgentRuntimeSnapshot): AgentRuntime
   return snapshot;
 }
 
-export function runtimeSnapshotBytes(snapshot: AgentRuntimeSnapshot): number {
+function runtimeSnapshotBytes(snapshot: AgentRuntimeSnapshot): number {
   return Buffer.byteLength(JSON.stringify({ type: "runtime-snapshot", snapshot }));
+}
+
+export interface RuntimeSnapshotSources {
+  contextStates?: AgentRuntimeSnapshot["contextStates"];
+  threadContextStates?: AgentRuntimeSnapshot["threadContextStates"];
+  agents: AgentSummary[];
+  conversation: Pick<ConversationRuntime, "loadedSnapshot">;
+  database: Pick<OpenBotDatabase, "readConversationRuntime">;
+  mailbox: Pick<MailboxStore, "listRuntimeWork">;
+  turn: Pick<TurnLifecycle, "failedTurns" | "subagentTurns" | "backgroundWork">;
+  attention: Pick<AttentionRegistry, "runtimeAttention">;
+  usageLimits: Pick<UsageLimitGate, "limitedAgents" | "limitedModels" | "failedModels">;
+  waitsForLimit: (agentId: string) => boolean;
+}
+
+export function buildRuntimeSnapshot(sources: RuntimeSnapshotSources): AgentRuntimeSnapshot {
+  return perfTimed("runtime.snapshot", () => buildRuntimeSnapshotNow(sources));
+}
+
+function buildRuntimeSnapshotNow({
+  contextStates,
+  threadContextStates,
+  agents,
+  conversation,
+  database,
+  mailbox,
+  turn,
+  attention,
+  usageLimits,
+  waitsForLimit,
+}: RuntimeSnapshotSources): AgentRuntimeSnapshot {
+  const runtimeAgents: AgentRuntimeSnapshot["agents"] = agents.map((agent) => ({
+    id: agent.id,
+    name: agent.name,
+    notifications: agent.notifications,
+    preview: agent.preview.slice(0, AGENT_RUNTIME_TEXT_LIMIT),
+    updatedAt: agent.updatedAt,
+    avatarSeed: agent.avatarSeed,
+    avatarHue: agent.avatarHue,
+    avatarUrl: agent.avatarUrl,
+  }));
+  const agentIds = new Set(agents.map((agent) => agent.id));
+  const activeTurns: AgentRuntimeSnapshot["activeTurns"] = [];
+  const latestMessages: AgentRuntimeSnapshot["latestMessages"] = [];
+  for (const agent of agents) {
+    const live = conversation.loadedSnapshot(agent.id);
+    const liveLatest = live?.messages.findLast(
+      (message) =>
+        (message.author === "assistant" || message.author === "agent") &&
+        !message.senderAgentId &&
+        message.itemType !== "commentary" &&
+        message.itemType !== "question_prompt" &&
+        message.itemType !== "agent_attachment" &&
+        !message.itemType?.startsWith(CHAT_VISUAL_ITEM_TYPE_PREFIX) &&
+        message.itemType !== CONVERSATION_PLAN_ITEM_TYPE &&
+        message.itemType !== CONVERSATION_SUBAGENTS_ITEM_TYPE &&
+        message.itemType !== ROUTINE_QUIET_ANSWER_ITEM_TYPE,
+    );
+    const persisted =
+      !live || !liveLatest
+        ? database.readConversationRuntime(agent.id, agent.threadId)
+        : { activeTurnId: null, latestMessage: null };
+    const activeTurnId = live ? live.activeTurnId : persisted.activeTurnId;
+    if (activeTurnId && agent.threadId) {
+      activeTurns.push({ agentId: agent.id, threadId: agent.threadId, turnId: activeTurnId });
+    }
+    const latest = liveLatest ?? persisted.latestMessage;
+    if (latest) {
+      latestMessages.push({
+        agentId: agent.id,
+        id: latest.id,
+        text: latest.text.slice(0, AGENT_RUNTIME_TEXT_LIMIT),
+        createdAt: latest.createdAt,
+      });
+    }
+  }
+  return fitRuntimeSnapshot({
+    agents: runtimeAgents,
+    activeTurns,
+    work: mailbox.listRuntimeWork(
+      agents.map((agent) => agent.id),
+      turn.failedTurns(),
+    ),
+    latestMessages,
+    ...attention.runtimeAttention(),
+    failedTurns: [...turn.failedTurns()].map(([agentId, turnId]) => ({ agentId, turnId })),
+    usageLimits: usageLimits.limitedAgents().filter((limit) => waitsForLimit(limit.agentId)),
+    usageLimitedModels: usageLimits.limitedModels(),
+    failedModels: usageLimits.failedModels(),
+    subagentTurns: turn.subagentTurns(agentIds),
+    backgroundWork: turn.backgroundWork(agentIds),
+    ...(contextStates ? { contextStates } : {}),
+    ...(threadContextStates ? { threadContextStates } : {}),
+  });
 }

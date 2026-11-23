@@ -4,12 +4,17 @@ import { copyFile, mkdir, mkdtemp, rename, rm, writeFile } from "node:fs/promise
 import { arch, release as osRelease, tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { promisify } from "node:util";
-import type { AgentSummary, ExportResult } from "@dani-dex/contracts/ipc";
+import type { AgentSummary, ExportResult } from "@openbot/contracts/ipc";
+import type { AppTranslate } from "@openbot/i18n";
+import { Effect } from "effect";
 import { app, type BrowserWindow, dialog } from "electron";
 import type { AgentService } from "../backend/agent-service";
 import type { BrowserHost } from "../backend/browser-host";
 import type { MailboxStore } from "../backend/mailbox-store";
-import { readDaniFreeDiagnosticSummary } from "./dani-free-diagnostic";
+import { type ArchiveOperationError, archiveCall, archiveFailure, archiveSync } from "./archive-effects";
+import type { ResourceMonitor } from "./resource-monitor";
+import type { StartAttemptsSummary } from "./start-attempts";
+import { TraceFile } from "./trace-file";
 import type { UpdateService } from "./update-service";
 
 const execFileAsync = promisify(execFile);
@@ -19,89 +24,118 @@ interface MaintenanceContext {
   browser: BrowserHost;
   mailbox: MailboxStore;
   updater: UpdateService;
+  trace: TraceFile;
+  resources: ResourceMonitor;
   parentWindow: BrowserWindow | null;
+  translate: AppTranslate;
 }
-
-export async function exportDaniDexData(
-  context: Pick<MaintenanceContext, "service" | "mailbox" | "parentWindow">,
-): Promise<ExportResult> {
-  const destination = await chooseExportDestination(
+export const exportOpenBotData = Effect.fn("Archive.exportDani DexData")(function* (
+  context: Pick<MaintenanceContext, "service" | "mailbox" | "parentWindow" | "translate">,
+): Effect.fn.Return<ExportResult, ArchiveOperationError> {
+  const destination = yield* chooseExportDestinationEffect(
     context.parentWindow,
-    `Dani-Dex-backup-${new Date().toISOString().slice(0, 10)}.zip`,
-    [{ name: "ZIP archive", extensions: ["zip"] }],
+    `Dani Dex-backup-${new Date().toISOString().slice(0, 10)}.zip`,
+    [{ name: context.translate("dialog.filter.zipArchive"), extensions: ["zip"] }],
   );
   if (!destination) return { saved: false };
 
-  const temporaryRoot = await mkdtemp(join(tmpdir(), "dani-dex-export-"));
-  const exportRoot = join(temporaryRoot, "Dani-Dex Backup");
   const archiveCandidate = `${destination}.${randomUUID()}.tmp.zip`;
-  try {
-    await mkdir(exportRoot, { recursive: true, mode: 0o700 });
-    const agents = context.service.listAgents();
-    const [conversations, queues, attachments] = await Promise.all([
-      Promise.all(agents.map((agent) => context.service.readConversation(agent.id))),
-      Promise.resolve(agents.map((agent) => context.service.listQueue(agent.id))),
-      context.mailbox.listExportAttachments(),
-    ]);
-    const manifest = {
-      // 4, not 3: a schema 3 archive a released build wrote spells the roster `bots`, and this one spells
-      // it `agents`. Anything reading the manifest picks its parser by this number, so leaving it at 3
-      // hands a reader the wrong shape under a version that promised the old one.
-      schemaVersion: 4,
-      exportedAt: new Date().toISOString(),
-      application: { name: "Dani-Dex", version: app.getVersion() },
-      scope: {
-        includes: ["agent profiles", "agent memories", "conversation snapshots", "queues", "attachments"],
-        excludes: [
-          "Codex credentials",
-          "OpenCode Go key",
-          "custom provider API keys",
-          "browser cookies",
-          "agent workspace files",
-        ],
-      },
-      agents: agents.map(toBackupAgent),
-      memories: agents.flatMap((agent) => context.service.listMemories(agent.id)),
-      conversations,
-      queues,
-    };
-    await writeFile(join(exportRoot, "dani-dex-data.json"), `${JSON.stringify(manifest, null, 2)}\n`, {
-      encoding: "utf8",
-      mode: 0o600,
-    });
-    for (const attachment of attachments) {
-      const target = join(exportRoot, attachment.relativePath);
-      await mkdir(dirname(target), { recursive: true, mode: 0o700 });
-      await copyFile(attachment.sourcePath, target);
-    }
-    if (process.platform === "win32") {
-      await execFileAsync("powershell.exe", [
-        "-NoProfile",
-        "-NonInteractive",
-        "-Command",
-        `Compress-Archive -LiteralPath '${powerShellLiteral(exportRoot)}' -DestinationPath '${powerShellLiteral(archiveCandidate)}' -Force`,
-      ]);
-    } else {
-      await execFileAsync("/usr/bin/ditto", ["-c", "-k", "--keepParent", exportRoot, archiveCandidate]);
-    }
-    await rename(archiveCandidate, destination);
-    return { saved: true };
-  } finally {
-    await Promise.all([rm(temporaryRoot, { recursive: true, force: true }), rm(archiveCandidate, { force: true })]);
-  }
-}
+  return yield* Effect.acquireUseRelease(
+    archiveCall(() => mkdtemp(join(tmpdir(), "openbot-export-"))),
+    (temporaryRoot) =>
+      Effect.gen(function* () {
+        const exportRoot = join(temporaryRoot, "Dani Dex Backup");
+        yield* archiveCall(() => mkdir(exportRoot, { recursive: true, mode: 0o700 })).pipe(Effect.uninterruptible);
+        const agents = context.service.listAgents();
+        const [conversations, queues, attachments] = yield* Effect.all(
+          [
+            Effect.forEach(
+              agents,
+              (agent) =>
+                context.service
+                  .readConversation(agent.id)
+                  .pipe(Effect.mapError((error) => archiveFailure(error.cause))),
+              {
+                concurrency: "unbounded",
+              },
+            ),
+            archiveSync(() => agents.map((agent) => context.service.listQueue(agent.id))),
+            context.mailbox.listExportAttachments().pipe(Effect.mapError((error) => archiveFailure(error.cause))),
+          ],
+          { concurrency: "unbounded" },
+        );
+        const manifest = {
+          schemaVersion: 4,
+          exportedAt: new Date().toISOString(),
+          application: { name: "Dani Dex", version: app.getVersion() },
+          scope: {
+            includes: ["agent profiles", "agent memories", "conversation snapshots", "queues", "attachments"],
+            excludes: [
+              "Codex credentials",
+              "OpenCode Go key",
+              "custom provider API keys",
+              "custom agent environment values",
+              "browser cookies",
+              "agent workspace files",
+            ],
+          },
+          agents: agents.map(toBackupAgent),
+          memories: agents.flatMap((agent) => context.service.listMemories(agent.id)),
+          conversations,
+          queues,
+        };
+        yield* archiveCall(() =>
+          writeFile(join(exportRoot, "openbot-data.json"), `${JSON.stringify(manifest, null, 2)}\n`, {
+            encoding: "utf8",
+            mode: 0o600,
+          }),
+        ).pipe(Effect.uninterruptible);
+        for (const attachment of attachments) {
+          const target = join(exportRoot, attachment.relativePath);
+          yield* archiveCall(() => mkdir(dirname(target), { recursive: true, mode: 0o700 })).pipe(
+            Effect.uninterruptible,
+          );
+          yield* archiveCall(() => copyFile(attachment.sourcePath, target)).pipe(Effect.uninterruptible);
+        }
+        if (process.platform === "win32") {
+          yield* archiveCall(() =>
+            execFileAsync("powershell.exe", [
+              "-NoProfile",
+              "-NonInteractive",
+              "-Command",
+              `Compress-Archive -LiteralPath '${powerShellLiteral(exportRoot)}' -DestinationPath '${powerShellLiteral(archiveCandidate)}' -Force`,
+            ]),
+          ).pipe(Effect.uninterruptible);
+        } else {
+          yield* archiveCall(() =>
+            execFileAsync("/usr/bin/ditto", ["-c", "-k", "--keepParent", exportRoot, archiveCandidate]),
+          ).pipe(Effect.uninterruptible);
+        }
+        yield* archiveCall(() => rename(archiveCandidate, destination)).pipe(Effect.uninterruptible);
+        return { saved: true };
+      }),
+    (temporaryRoot) =>
+      Effect.gen(function* () {
+        yield* archiveCall(() =>
+          Promise.all([rm(temporaryRoot, { recursive: true, force: true }), rm(archiveCandidate, { force: true })]),
+        );
+      }),
+  );
+});
 
 function powerShellLiteral(value: string): string {
   return value.replaceAll("'", "''");
 }
-
-export async function exportDiagnostics(
-  context: Pick<MaintenanceContext, "service" | "browser" | "updater" | "parentWindow">,
-): Promise<ExportResult> {
-  const destination = await chooseExportDestination(
+export const exportDiagnostics = Effect.fn("Archive.exportDiagnostics")(function* (
+  context: Pick<
+    MaintenanceContext,
+    "service" | "browser" | "updater" | "trace" | "resources" | "parentWindow" | "translate"
+  >,
+): Effect.fn.Return<ExportResult, ArchiveOperationError> {
+  const destination = yield* chooseExportDestinationEffect(
     context.parentWindow,
-    `Dani-Dex-diagnostics-${new Date().toISOString().slice(0, 10)}.json`,
-    [{ name: "JSON document", extensions: ["json"] }],
+    `Dani Dex-diagnostics-${new Date().toISOString().slice(0, 10)}.json`,
+    [{ name: context.translate("dialog.filter.jsonDocument"), extensions: ["json"] }],
   );
   if (!destination) return { saved: false };
 
@@ -122,19 +156,9 @@ export async function exportDiagnostics(
   const mcpServers = context.service.listMcpServers();
   const update = context.updater.getStatus();
   const diagnostics = {
-    // 3, not 2: schema 2 reported `botCount` and `botId`, and this report says `agentCount` and `agentId`.
-    schemaVersion: 3,
+    schemaVersion: 4,
     generatedAt: new Date().toISOString(),
-    application: {
-      version: app.getVersion(),
-      packaged: app.isPackaged,
-      platform: process.platform,
-      architecture: arch(),
-      osRelease: osRelease(),
-      electron: process.versions.electron,
-      chromium: process.versions.chrome,
-      node: process.versions.node,
-    },
+    application: applicationDiagnostics(),
     agent: {
       phase: status.phase,
       cliVersion: status.cliVersion,
@@ -144,8 +168,6 @@ export async function exportDiagnostics(
       agentCount: agents.length,
       queues: queueCounts,
     },
-    // Ids, transports and whether each one is enabled. A name is user text and a configuration holds
-    // `env` values and headers, so neither one belongs in a report the user mails to somebody else.
     mcpServers: {
       count: mcpServers.length,
       enabledCount: mcpServers.filter((config) => config.enabled).length,
@@ -155,11 +177,11 @@ export async function exportDiagnostics(
         enabled: config.enabled,
       })),
     },
-    daniFree: await readDaniFreeDiagnosticSummary(join(app.getPath("userData"), "dani-free")),
     browser: {
       tabCount: context.browser.listTabs().length,
       activeControlCount: context.browser.getControlState().sessions.length,
     },
+    resources: context.resources.diagnostics(),
     update: {
       phase: update.phase,
       currentVersion: update.currentVersion,
@@ -169,31 +191,76 @@ export async function exportDiagnostics(
       errorCode: update.errorCode,
       history: context.updater.getDiagnostics(),
     },
+    trace: yield* context.trace.summarize(),
     privacy:
-      "Contains no conversations, URLs, email addresses, tokens, file contents, file paths, or raw error messages; Dani Free startup stages and exit codes are included.",
+      "Contains no conversations, URLs, email addresses, tokens, file contents, file paths, or raw error messages.",
   };
-  await writeFile(destination, `${JSON.stringify(diagnostics, null, 2)}\n`, {
-    encoding: "utf8",
-    mode: 0o600,
-  });
+  yield* archiveCall(() =>
+    writeFile(destination, `${JSON.stringify(diagnostics, null, 2)}\n`, {
+      encoding: "utf8",
+      mode: 0o600,
+    }),
+  ).pipe(Effect.uninterruptible);
   return { saved: true };
+});
+
+export const exportStartDiagnostics = Effect.fn("Archive.exportStartDiagnostics")(function* (
+  context: Pick<MaintenanceContext, "parentWindow" | "translate"> & { startAttempts: StartAttemptsSummary },
+): Effect.fn.Return<ExportResult, ArchiveOperationError> {
+  const destination = yield* chooseExportDestinationEffect(
+    context.parentWindow,
+    `Dani Dex-start-diagnostics-${new Date().toISOString().slice(0, 10)}.json`,
+    [{ name: context.translate("dialog.filter.jsonDocument"), extensions: ["json"] }],
+  );
+  if (!destination) return { saved: false };
+  const trace = new TraceFile({ directory: join(app.getPath("userData"), "logs") });
+  const diagnostics = {
+    schemaVersion: 1,
+    kind: "start-recovery",
+    generatedAt: new Date().toISOString(),
+    application: applicationDiagnostics(),
+    startAttempts: context.startAttempts,
+    trace: yield* trace.summarize(),
+    privacy:
+      "Contains no conversations, URLs, email addresses, tokens, file contents, file paths, or raw error messages.",
+  };
+  yield* archiveCall(() =>
+    writeFile(destination, `${JSON.stringify(diagnostics, null, 2)}\n`, {
+      encoding: "utf8",
+      mode: 0o600,
+    }),
+  ).pipe(Effect.uninterruptible);
+  return { saved: true };
+});
+
+function applicationDiagnostics() {
+  return {
+    version: app.getVersion(),
+    packaged: app.isPackaged,
+    platform: process.platform,
+    architecture: arch(),
+    osRelease: osRelease(),
+    electron: process.versions.electron,
+    chromium: process.versions.chrome,
+    node: process.versions.node,
+  };
 }
 
-async function chooseExportDestination(
+const chooseExportDestinationEffect = Effect.fn("Archive.chooseExportDestination")(function* (
   parentWindow: BrowserWindow | null,
   defaultName: string,
   filters: Electron.FileFilter[],
-): Promise<string | null> {
+): Effect.fn.Return<string | null, ArchiveOperationError> {
   const options: Electron.SaveDialogOptions = {
     defaultPath: join(app.getPath("documents"), defaultName),
     filters,
     showsTagField: false,
   };
   const result = parentWindow
-    ? await dialog.showSaveDialog(parentWindow, options)
-    : await dialog.showSaveDialog(options);
+    ? yield* archiveCall(() => dialog.showSaveDialog(parentWindow, options))
+    : yield* archiveCall(() => dialog.showSaveDialog(options));
   return result.canceled || !result.filePath ? null : result.filePath;
-}
+});
 
 function toBackupAgent(agent: AgentSummary): Omit<AgentSummary, "workspacePath"> {
   return {

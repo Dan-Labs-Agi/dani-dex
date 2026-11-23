@@ -1,49 +1,57 @@
-import { INPUT_LIMITS } from "@dani-dex/contracts/input-limits";
-import type { Channel, ChannelDraft } from "@dani-dex/contracts/ipc";
-import { createEffect, createStore, For, Show } from "solid-js";
-import { SettingsField, SettingsLinkGroup, SettingsLinkRow } from "../../components/SettingsPanel";
+import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
+import type { Channel, ChannelBrowser, ChannelDraft, ChannelIcon } from "@openbot/contracts/ipc";
 import {
   Button,
   buttonVariants,
   Crown,
-  DropdownMenu,
   Input,
   ItemActions,
   ItemGroup,
+  Listbox,
   Plus,
-  Textarea,
+  Popover,
+  Search,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SwitchField,
   Tooltip,
-} from "../../components/ui";
-import { AgentAvatar } from "../agents/AgentAvatar";
-import { useAgents } from "../agents/agents-context";
-import { ChannelMemberRow } from "./ChannelMemberRow";
+} from "@openbot/ui";
+import { createScrollFades } from "@openbot/ui/components/createScrollFades";
+import { ResizableTextarea } from "@openbot/ui/components/ResizableTextarea";
+import { SettingsField, SettingsLinkGroup, SettingsLinkRow } from "@openbot/ui/components/SettingsPanel";
+import { AgentAvatar } from "@openbot/ui/features/agents/AgentAvatar";
+import { InstructionsLimit, instructionsTooLong } from "@openbot/ui/features/agents/InstructionsLimit";
+import { ChannelContextActions } from "@openbot/ui/features/channels/ChannelContextActions";
+import { type ChannelFolders, ChannelFoldersRow } from "@openbot/ui/features/channels/ChannelFolders";
+import { ChannelMemberRow } from "@openbot/ui/features/channels/ChannelMemberRow";
+import { ChannelPictureEditor } from "@openbot/ui/features/channels/ChannelPictureEditor";
+import { ContentExitMotion } from "@openbot/ui/menu-motion";
+import { useText } from "@openbot/ui/text";
+import { createEffect, createMemo, createStore, For, onSettled, Show } from "solid-js";
 import { useChannels } from "./channels-context";
-import { toggleChannelMember } from "./channels-draft";
+import { matchesAgentSearch, toggleChannelMember } from "./channels-draft";
 
 interface ChannelEditorProps {
   memoryCount: number;
   routineCount: number;
   onOpenMemories: () => void;
   onOpenRoutines: () => void;
+  folders?: ChannelFolders | undefined;
+  onOpenFolders: () => void;
 }
 
-/**
- * Channel settings save themselves, the way agent settings do: the two text fields commit when
- * they are left and every member action commits at once, so there is nothing to confirm or
- * discard.
- *
- * That is why there is no draft of the channel here. Members and the lead are read live from the
- * open page, and only the text fields hold state, because a field must not be overwritten while
- * someone is typing in it - the `dirty` flags below are what protect an unsaved edit from the
- * refresh that follows every save.
- *
- * The two nav rows below the fields carry no state of their own: the host owns the counts and the
- * open flags, because the routines overlay covers the whole panel, not only this editor.
- */
 export function ChannelEditor(props: ChannelEditorProps) {
   const channels = useChannels();
-  const { agentList } = useAgents();
+  const { t } = useText();
+  const agentList = channels.agents;
   const channel = () => channels.state.page?.channel;
+  function deleteHistoryAction(channelId: string): (() => Promise<void>) | undefined {
+    if (!channels.historyDeletionSupported()) return undefined;
+    return () => channels.deleteHistory(channelId);
+  }
   const [fields, setFields] = createStore({ name: "", title: "", instructions: "" });
   const [dirty, setDirty] = createStore({ name: false, title: false, instructions: false });
   let lastSignature = "";
@@ -66,8 +74,6 @@ export function ChannelEditor(props: ChannelEditorProps) {
       if (!next) return;
       const signature = JSON.stringify([next.id, next.revision, next.name, next.title, next.instructions]);
       if (signature === lastSignature) return;
-      // Read the flags before writing them, so a different channel clears them here and replaces
-      // every field, while the same channel keeps whatever is still uncommitted.
       const changed = next.id !== lastChannelId;
       const keep = {
         name: !changed && dirty.name,
@@ -98,48 +104,74 @@ export function ChannelEditor(props: ChannelEditorProps) {
   const available = () =>
     agentList().filter((agent) => !channel()?.members.some((member) => member.agentId === agent.id));
 
-  /**
-   * The command carries a whole draft, so every save sends the fields as they are on screen. That
-   * is deliberate: removing a member commits the instructions the user can see, rather than
-   * reviving the stored ones.
-   */
+  const [picker, setPicker] = createStore<{ open: boolean; search: string; placement: "bottom-start" | "top-start" }>({
+    open: false,
+    search: "",
+    placement: "bottom-start",
+  });
+  const matching = () => available().filter((agent) => matchesAgentSearch(agent, picker.search));
+  let pickerPanel: HTMLElement | undefined;
+  const pickerFades = createScrollFades();
+  onSettled(() => pickerFades.stop);
+  createEffect(
+    () => matching(),
+    () => pickerFades.remeasure(),
+  );
+  let pickerSearch: HTMLInputElement | undefined;
+  let pickerTrigger: HTMLButtonElement | undefined;
+  function typeIntoSearch(event: KeyboardEvent) {
+    const erase = event.key === "Backspace";
+    if ((event.key.length !== 1 && !erase) || event.ctrlKey || event.metaKey || event.altKey) return;
+    event.preventDefault();
+    event.stopPropagation();
+    setPicker((state) => {
+      state.search = erase ? state.search.slice(0, -1) : state.search + event.key;
+    });
+    pickerSearch?.focus();
+  }
+  function focusFirstOption(): boolean {
+    const option = pickerPanel?.querySelector<HTMLElement>(".channel-member-option");
+    option?.focus();
+    return option !== null && option !== undefined;
+  }
+  function addMember(agentId: string) {
+    setPickerOpen(false);
+    requestAnimationFrame(() => pickerTrigger?.focus());
+    void commit((draft) => toggleChannelMember(draft, agentId, true));
+  }
+  function setPickerOpen(open: boolean) {
+    const trigger = pickerTrigger?.getBoundingClientRect();
+    setPicker((state) => {
+      state.open = open;
+      if (!open) state.search = "";
+      if (open && trigger)
+        state.placement = window.innerHeight - trigger.bottom >= trigger.top ? "bottom-start" : "top-start";
+    });
+    if (open) requestAnimationFrame(() => pickerSearch?.focus({ preventScroll: true }));
+    else pickerFades.stop();
+  }
+
   function draftFrom(current: Channel): ChannelDraft {
     return {
       name: fields.name.trim() || current.name,
       title: fields.title,
-      instructions: fields.instructions,
+      instructions: instructionsTooLong(fields.instructions) ? current.instructions : fields.instructions,
       members: current.members.map((member) => ({ agentId: member.agentId })),
       leadAgentId: current.leadAgentId,
     };
   }
 
-  /**
-   * One save at a time, and each draft built after the one before it has landed.
-   *
-   * The member controls stay enabled while a save is in flight, and a draft carries the whole
-   * member list. Two removals started together would both read the list as it was before either
-   * of them, so the second save would put the first member back.
-   */
   let saving: Promise<unknown> = Promise.resolve();
-  /** The draft the save before this one sent, for the channel it was sent to. */
   let sent: { channelId: string; draft: ChannelDraft } | null = null;
   function commit(patch?: (draft: ChannelDraft) => void): Promise<boolean> {
     const target = channel();
     if (!target) return Promise.resolve(false);
-    // The edit belongs to the channel that is open now, and the panel is open in the workspace the
-    // sidebar shares: the reader can leave for another channel while this save waits for the one
-    // before it. A queued save therefore keeps the channel and the fields it was made in, or it
-    // would send this channel's members and text to the one the reader went to.
     const targetId = target.id;
     const captured = draftFrom(target);
     const next = saving
       .catch(() => undefined)
       .then(() => {
         const current = channel();
-        // The live page first, because the save before this one landed in it: two removals in a
-        // row build on each other. Away from the channel, the members come from the save before
-        // this one and the text from this one, because each save carries the fields as they were
-        // when the reader left them.
         const previous = sent?.channelId === targetId ? sent.draft : captured;
         const draft =
           current?.id === targetId
@@ -163,7 +195,6 @@ export function ChannelEditor(props: ChannelEditorProps) {
     return next;
   }
 
-  /** An empty name is not a name the service accepts, so leaving the field blank restores it. */
   function saveName(): void {
     const current = channel();
     if (!current) return;
@@ -179,12 +210,12 @@ export function ChannelEditor(props: ChannelEditorProps) {
     });
   }
 
-  /** One saver for both free-text fields: the dirty flag clears only if that field still matches. */
   function saveText(key: "title" | "instructions"): () => void {
     return () => {
       const current = channel();
       if (!current) return;
       const value = fields[key];
+      if (key === "instructions" && instructionsTooLong(value)) return;
       void commit().then((saved) => {
         if (saved && channel()?.id === current.id && fields[key] === value)
           setDirty((state) => {
@@ -194,12 +225,75 @@ export function ChannelEditor(props: ChannelEditorProps) {
     };
   }
 
+  const browserOptions = createMemo(
+    () => ["kind:members", ...(channel()?.members ?? []).map((member) => `agent:${member.agentId}`), "kind:none"],
+    {
+      equals: (before, after) => before.length === after.length && before.every((item, index) => item === after[index]),
+    },
+  );
+  const browserValue = () => {
+    const browser = channel()?.browser;
+    if (browser?.kind === "member") return `agent:${browser.agentId}`;
+    return `kind:${browser?.kind ?? "members"}`;
+  };
+  function browserLabel(value: string): string {
+    if (value === "kind:members") return t("channel.settings.browserEveryone");
+    if (value === "kind:none") return t("channel.settings.browserNone");
+    const agentId = value.slice("agent:".length);
+    return agentList().find((agent) => agent.id === agentId)?.name ?? t("channel.members.unavailable", { id: agentId });
+  }
+  function chooseBrowser(value: string | null): void {
+    if (!value || value === browserValue()) return;
+    const browser: ChannelBrowser =
+      value === "kind:members" || value === "kind:none"
+        ? { kind: value === "kind:members" ? "members" : "none" }
+        : { kind: "member", agentId: value.slice("agent:".length) };
+    void commit((draft) => {
+      draft.browser = browser;
+    });
+  }
+
+  const pictureChannel = () => (channels.pictureSupported() ? channel() : undefined);
+
+  async function selectIcon(icon: ChannelIcon): Promise<void> {
+    const current = channel();
+    if (!current) return;
+    const saved = await commit((draft) => {
+      draft.icon = icon;
+    });
+    if (saved && current.imageUrl) await channels.setImage(current.id, null);
+  }
+
+  async function resetPicture(): Promise<void> {
+    const current = channel();
+    if (!current) return;
+    const saved =
+      !current.icon ||
+      (await commit((draft) => {
+        draft.icon = null;
+      }));
+    if (saved && current.imageUrl) await channels.setImage(current.id, null);
+  }
+
   return (
     <div class="channel-editor">
-      <SettingsField label="Name">
+      <Show when={pictureChannel()}>
+        {(current) => (
+          <ChannelPictureEditor
+            members={current().members}
+            agents={agentList()}
+            icon={current().icon}
+            imageUrl={current().imageUrl}
+            onSetImage={(image) => channels.setImage(current().id, image)}
+            onSelectIcon={selectIcon}
+            onReset={resetPicture}
+          />
+        )}
+      </Show>
+      <SettingsField label={t("channel.form.nameShort")}>
         <Input
-          aria-label="Channel name"
-          placeholder="Ex: Project Falcon"
+          aria-label={t("channel.form.name")}
+          placeholder={t("channel.form.namePlaceholder")}
           maxlength={INPUT_LIMITS.agentName}
           value={fields.name}
           onValueChange={(name) => {
@@ -213,10 +307,10 @@ export function ChannelEditor(props: ChannelEditorProps) {
           onBlur={saveName}
         />
       </SettingsField>
-      <SettingsField label="Title">
+      <SettingsField label={t("channel.form.title")}>
         <Input
-          aria-label="Channel title"
-          placeholder="Describe what this channel does"
+          aria-label={t("channel.form.titleLabel")}
+          placeholder={t("channel.form.titlePlaceholder")}
           maxlength={INPUT_LIMITS.agentTitle}
           value={fields.title}
           onValueChange={(title) => {
@@ -230,12 +324,14 @@ export function ChannelEditor(props: ChannelEditorProps) {
           onBlur={saveText("title")}
         />
       </SettingsField>
-      <SettingsField label="Instructions">
-        <Textarea
+      <SettingsField label={t("channel.form.instructions")}>
+        <ResizableTextarea
+          class="settings-instructions-input"
           rows="4"
-          aria-label="Channel instructions"
-          placeholder="What will this channel work on?"
-          maxlength={INPUT_LIMITS.agentDescription}
+          aria-label={t("channel.form.instructionsLabel")}
+          resizeLabel={t("channel.form.instructionsResize")}
+          placeholder={t("channel.form.instructionsPlaceholder")}
+          invalid={instructionsTooLong(fields.instructions)}
           value={fields.instructions}
           onValueChange={(instructions) => {
             setFields((state) => {
@@ -247,27 +343,81 @@ export function ChannelEditor(props: ChannelEditorProps) {
           }}
           onBlur={saveText("instructions")}
         />
+        <InstructionsLimit text={fields.instructions} />
       </SettingsField>
+      <Show when={channels.browserSupported()}>
+        <SettingsField label={t("channel.settings.browser")}>
+          <Select<string>
+            options={browserOptions()}
+            value={browserValue()}
+            onChange={chooseBrowser}
+            disabled={channel()?.archived === true}
+            itemComponent={(selectProps) => (
+              <SelectItem item={selectProps.item}>{browserLabel(selectProps.item.rawValue)}</SelectItem>
+            )}
+          >
+            <SelectTrigger aria-label={t("channel.settings.browser")}>
+              <SelectValue<string>>
+                {(state) => {
+                  const value = state.selectedOption();
+                  return value && browserLabel(value);
+                }}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent />
+          </Select>
+        </SettingsField>
+      </Show>
+      <Show when={channels.isolationSupported()}>
+        <SwitchField
+          checked={channel()?.isolated === true}
+          onChange={(isolated) =>
+            void commit((draft) => {
+              draft.isolated = isolated;
+            })
+          }
+          label={t("channel.settings.isolated")}
+          description={t("channel.settings.isolatedDescription")}
+        />
+      </Show>
       <SettingsLinkGroup>
-        <SettingsLinkRow label="Memories" value={`${props.memoryCount} saved`} onClick={props.onOpenMemories} />
-        <SettingsLinkRow label="Routines" value={`${props.routineCount} configured`} onClick={props.onOpenRoutines} />
+        <SettingsLinkRow
+          label={t("channel.settings.memories")}
+          value={t("channel.settings.memoryCount", { count: props.memoryCount })}
+          onClick={props.onOpenMemories}
+        />
+        <SettingsLinkRow
+          label={t("channel.settings.routines")}
+          value={t("channel.settings.routineCount", { count: props.routineCount })}
+          onClick={props.onOpenRoutines}
+        />
+        <Show when={props.folders}>
+          {(folders) => <ChannelFoldersRow folders={folders()} onOpen={props.onOpenFolders} />}
+        </Show>
       </SettingsLinkGroup>
-      <section class="channel-members" aria-label="Members">
-        <h3 class="channel-members-title">Members</h3>
+      <Show when={channels.contextActionsSupported() && !channel()?.archived && channel()}>
+        {(current) => (
+          <ChannelContextActions
+            channelName={current().name}
+            startNewConversation={() => channels.clearContext(current().id)}
+            compact={() => channels.compactContext(current().id)}
+            deleteHistory={deleteHistoryAction(current().id)}
+          />
+        )}
+      </Show>
+      <section class="channel-members" aria-label={t("channel.members.title")}>
+        <h3 class="channel-members-title">{t("channel.members.title")}</h3>
         <ItemGroup class="channel-member-list">
           <For each={members()}>
             {(entry) => (
               <ChannelMemberRow
                 agent={entry.agent}
-                fallbackName={`Unavailable member ${entry.agentId}`}
+                fallbackName={t("channel.members.unavailable", { id: entry.agentId })}
                 actions={
                   <ItemActions>
                     <Show when={entry.agent}>
                       {(agent) => (
                         <Tooltip.Root openDelay={250} closeDelay={75} placement="top" gutter={8}>
-                          {/* The trigger is the button itself, the way `ServerRail` does it: an
-                            `IconButton` inside a trigger would carry a `title` as well, and the
-                            crown would answer twice, once styled and once by the platform. */}
                           <Tooltip.Trigger
                             type="button"
                             class={buttonVariants({
@@ -278,8 +428,8 @@ export function ChannelEditor(props: ChannelEditorProps) {
                             aria-pressed={channel()?.leadAgentId === entry.agentId ? "true" : "false"}
                             aria-label={
                               channel()?.leadAgentId === entry.agentId
-                                ? `${agent().name} is the channel lead`
-                                : `Make ${agent().name} the channel lead`
+                                ? t("channel.members.isLead", { name: agent().name })
+                                : t("channel.members.makeLeadLabel", { name: agent().name })
                             }
                             onClick={() =>
                               void commit((draft) => {
@@ -291,7 +441,9 @@ export function ChannelEditor(props: ChannelEditorProps) {
                           </Tooltip.Trigger>
                           <Tooltip.Portal>
                             <Tooltip.Content class="ui-tooltip">
-                              {channel()?.leadAgentId === entry.agentId ? "Channel lead" : "Make channel lead"}
+                              {channel()?.leadAgentId === entry.agentId
+                                ? t("channel.members.lead")
+                                : t("channel.members.makeLead")}
                             </Tooltip.Content>
                           </Tooltip.Portal>
                         </Tooltip.Root>
@@ -302,43 +454,97 @@ export function ChannelEditor(props: ChannelEditorProps) {
                       variant="destructive"
                       class="channel-member-remove"
                       aria-label={
-                        entry.agent ? `Remove ${entry.agent.name}` : `Remove unavailable member ${entry.agentId}`
+                        entry.agent
+                          ? t("channel.members.remove", { name: entry.agent.name })
+                          : t("channel.members.removeUnavailable", { id: entry.agentId })
                       }
                       onClick={() => void commit((draft) => toggleChannelMember(draft, entry.agentId, false))}
                     >
-                      Remove
+                      {t("common.remove")}
                     </Button>
                   </ItemActions>
                 }
               />
             )}
           </For>
-          <DropdownMenu.Root placement="bottom-start" modal={false}>
-            <DropdownMenu.Trigger
+          <Popover.Root
+            open={picker.open}
+            onOpenChange={setPickerOpen}
+            placement={picker.placement}
+            flip={false}
+            modal={false}
+          >
+            <Popover.Trigger
+              ref={pickerTrigger}
               class={buttonVariants({ variant: "ghost", class: "channel-member-add" })}
               disabled={!available().length}
             >
               <Plus aria-hidden="true" />
-              Add member
-            </DropdownMenu.Trigger>
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content class="channel-member-menu">
-                <For each={available()}>
-                  {(agent) => (
-                    <DropdownMenu.Item
-                      onSelect={() => void commit((draft) => toggleChannelMember(draft, agent.id, true))}
-                    >
-                      <AgentAvatar agent={agent} />
-                      {agent.name}
-                    </DropdownMenu.Item>
-                  )}
-                </For>
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          </DropdownMenu.Root>
+              {t("channel.members.add")}
+            </Popover.Trigger>
+            <Popover.Portal>
+              <Popover.Content ref={(element) => (pickerPanel = element)} class="ui-action-menu channel-member-menu">
+                <ContentExitMotion panel={() => pickerPanel} />
+                <Popover.Title class="sr-only">{t("channel.members.add")}</Popover.Title>
+                <label class="search-field channel-member-search">
+                  <Search class="channel-search-icon" aria-hidden="true" />
+                  <Input
+                    ref={(element: HTMLInputElement) => (pickerSearch = element)}
+                    type="search"
+                    aria-label={t("channel.create.searchAgents")}
+                    placeholder={t("channel.create.searchAgents")}
+                    value={picker.search}
+                    onValueChange={(search) =>
+                      setPicker((state) => {
+                        state.search = search;
+                      })
+                    }
+                    onKeyDown={(event: KeyboardEvent) => {
+                      if (event.key === "ArrowDown" && focusFirstOption()) event.preventDefault();
+                    }}
+                  />
+                </label>
+                <Show
+                  when={matching().length}
+                  fallback={
+                    <p class="channel-member-menu-empty" role="status">
+                      {t("channel.create.noMatches")}
+                    </p>
+                  }
+                >
+                  <Listbox.Root
+                    as="div"
+                    ref={(element: HTMLElement) => {
+                      pickerFades.bind(element);
+                      element.addEventListener("keydown", typeIntoSearch, { capture: true });
+                    }}
+                    class={["channel-member-options", pickerFades.classes()]}
+                    onScroll={pickerFades.measure}
+                    aria-label={t("channel.members.add")}
+                    options={matching()}
+                    optionValue="id"
+                    optionTextValue="name"
+                    selectionMode="single"
+                    shouldFocusWrap
+                    shouldSelectOnPressUp
+                    onChange={(keys) => {
+                      const agentId = keys.values().next().value;
+                      if (agentId) addMember(agentId);
+                    }}
+                    renderItem={(item) => (
+                      <Listbox.Item item={item} class="channel-member-option">
+                        <AgentAvatar agent={item.rawValue} />
+                        {item.rawValue.name}
+                      </Listbox.Item>
+                    )}
+                  />
+                </Show>
+              </Popover.Content>
+            </Popover.Portal>
+          </Popover.Root>
         </ItemGroup>
         <Show when={!members().length}>
-          <p class="channel-members-note">A channel needs one member before it can route work.</p>
+          <p class="channel-members-note">{t("channel.members.empty")}</p>
         </Show>
       </section>
     </div>

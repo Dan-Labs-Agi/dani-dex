@@ -1,31 +1,41 @@
-import { isMobileConnectDevelopmentHost } from "@dani-dex/contracts/mobile-connect";
-import { DANI_DEX_ANALYTICS_API_URL, DANI_DEX_TEAM_HOST_SUFFIX } from "@dani-dex/contracts/online-services";
+import { isMobileConnectDevelopmentHost } from "@openbot/contracts/mobile-connect";
 
-export function buildContentSecurityPolicy(packaged: boolean, developmentSignalUrl?: string): string {
+export function buildContentSecurityPolicy(
+  packaged: boolean,
+  developmentSignalUrl?: string,
+  selfHostedSignalOrigin?: string | null,
+): string {
+  const selfHostedSignalSource = selfHostedSignalOrigin ? ` ${selfHostedSignalOrigin}` : "";
   const developmentSources = packaged
     ? ""
     : ` http://localhost:* ws://localhost:*${developmentSignalSource(developmentSignalUrl)}`;
   const developmentImageSources = packaged ? "" : " http://127.0.0.1:* http://localhost:*";
-  // Only services Dan Lab runs are allowed out. Each is empty while its origin is unset.
-  const analyticsSource = DANI_DEX_ANALYTICS_API_URL === null ? "" : ` ${new URL(DANI_DEX_ANALYTICS_API_URL).origin}`;
-  const teamHostSocketSource = DANI_DEX_TEAM_HOST_SUFFIX === null ? "" : ` wss://*${DANI_DEX_TEAM_HOST_SUFFIX}`;
-  const teamHostFrameSource = DANI_DEX_TEAM_HOST_SUFFIX === null ? "" : ` https://*${DANI_DEX_TEAM_HOST_SUFFIX}`;
 
   return [
     "default-src 'self'",
     "script-src 'self'",
     "style-src 'self' 'unsafe-inline'",
-    `img-src 'self' blob: data: dani-dex-attachment: dani-dex-remote-attachment: dani-dex-avatar: dani-dex-remote-avatar: dani-dex-server-logo: dani-dex-remote-server-logo: https:${developmentImageSources}`,
+    `img-src 'self' data: openbot-attachment: openbot-remote-attachment: openbot-avatar: openbot-remote-avatar: openbot-server-logo: openbot-remote-server-logo: https:${developmentImageSources}`,
     "font-src 'self' data:",
-    // The lightbox plays a recording from the attachment scheme, and the preview panel plays one
-    // from an object URL of the bytes that the main process sent. Neither matches `default-src`.
-    "media-src 'self' blob: dani-dex-attachment: dani-dex-remote-attachment:",
-    `connect-src 'self' dani-dex-attachment: dani-dex-remote-attachment:${analyticsSource} ws://127.0.0.1:*${teamHostSocketSource}${developmentSources}`,
+    "media-src 'self' blob: openbot-attachment: openbot-remote-attachment:",
+    `connect-src 'self' openbot-attachment: openbot-remote-attachment: https://analytics.openbot.run ws://127.0.0.1:* wss://*.openbot.run${selfHostedSignalSource}${developmentSources}`,
     "object-src 'none'",
-    // The remote desktop viewer uses a loopback proxy in packaged apps too.
-    `frame-src 'self' blob: dani-dex-attachment: dani-dex-remote-attachment:${teamHostFrameSource} http://127.0.0.1:* http://localhost:*`,
+    "frame-src 'self' openbot-attachment: openbot-remote-attachment: openbot-visual: openbot-remote-visual: https://*.openbot.run http://127.0.0.1:* http://localhost:*",
     "base-uri 'none'",
   ].join("; ");
+}
+
+export function readSelfHostedSignalOrigin(
+  authApiUrl: string | undefined,
+  signalUrl: string | undefined,
+): string | null {
+  if (!signalUrl) return null;
+  if (!authApiUrl) throw new Error("OPENBOT_REMOTE_SIGNAL_URL needs OPENBOT_AUTH_API_URL.");
+  const url = new URL(signalUrl);
+  if (url.protocol !== "wss:" || url.username !== "" || url.password !== "") {
+    throw new Error("OPENBOT_REMOTE_SIGNAL_URL must be a wss: URL without credentials.");
+  }
+  return url.origin;
 }
 
 function developmentSignalSource(value: string | undefined): string {

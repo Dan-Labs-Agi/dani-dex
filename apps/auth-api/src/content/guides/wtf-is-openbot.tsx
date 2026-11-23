@@ -1,16 +1,18 @@
-export function WtfIsDaniDex() {
+import { Link } from "@tanstack/solid-router";
+
+export function WtfIsOpenBot() {
   return (
     <>
       <p>
-        At first glance, Dani-Dex might look like another app for chatting with AI. But it is not a model or a chatbot
-        on its own. It is a workspace that brings the models and agents you already use into one place, together with
-        their files, conversations, and context.
+        At first glance, Dani Dex might look like another app for chatting with AI. But it is not a model or a chatbot on
+        its own. It is a workspace that brings the models and agents you already use into one place, together with their
+        files, conversations, and context.
       </p>
       <p>To understand how it works, it helps to separate those pieces first.</p>
 
-      <h2>Dani-Dex Is Not a Model</h2>
+      <h2>Dani Dex Is Not a Model</h2>
       <p>
-        Dani-Dex does not create its own AI model. It also does not replace tools like Codex, Claude Code, Grok CLI,
+        Dani Dex does not create its own AI model. It also does not replace tools like Codex, Claude Code, Grok CLI,
         OpenCode, or models that you host yourself.
       </p>
       <p>
@@ -19,17 +21,17 @@ export function WtfIsDaniDex() {
       </p>
       <p>
         Codex, Claude Code, Grok CLI, OpenCode, and similar tools act as provider integrations or runtimes. They connect
-        Dani-Dex to a model and handle the communication, authentication, and provider-specific parts of the process.
+        Dani Dex to a model and handle the communication, authentication, and provider-specific parts of the process.
       </p>
       <p>
-        Dani-Dex is the workspace around that process. It gives agents a role, a workspace, a conversation, a queue, and
+        Dani Dex is the workspace around that process. It gives agents a role, a workspace, a conversation, a queue, and
         a way to keep context, exchange files, and work with other agents.
       </p>
 
       <h2>Model, Provider, Agent: What’s the Difference?</h2>
       <p>A model generates the response.</p>
       <p>
-        A provider integration or runtime connects that model to Dani-Dex. It can be Codex, Claude Code, Grok CLI,
+        A provider integration or runtime connects that model to Dani Dex. It can be Codex, Claude Code, Grok CLI,
         OpenCode, or another configured runtime.
       </p>
       <p>
@@ -51,7 +53,7 @@ export function WtfIsDaniDex() {
 
       <h2>What an Agent Actually Owns</h2>
       <p>
-        An agent in Dani-Dex is more than a name attached to a model. It is a persistent setup for a particular kind of
+        An agent in Dani Dex is more than a name attached to a model. It is a persistent setup for a particular kind of
         work.
       </p>
       <p>
@@ -65,9 +67,9 @@ export function WtfIsDaniDex() {
 
       <h2>Where the Work Happens</h2>
       <p>
-        Dani-Dex runs on your computer, so an agent’s workspace is a local folder rather than a chat that disappears
-        when you close a browser tab. Its conversations, queues, attachments, and other app data stay with the desktop
-        app and the machine that hosts it.
+        Dani Dex runs on your computer, so an agent’s workspace is a local folder rather than a chat that disappears when
+        you close a browser tab. Its conversations, queues, attachments, and other app data stay with the desktop app
+        and the machine that hosts it.
       </p>
       <p>
         That does not mean every part of the process stays local. When an agent uses Codex, Claude, Grok, or another
@@ -75,21 +77,21 @@ export function WtfIsDaniDex() {
         network.
       </p>
       <p>
-        Local-first describes where Dani-Dex keeps your project and agent state. It does not mean that the entire setup
+        Local-first describes where Dani Dex keeps your project and agent state. It does not mean that the entire setup
         has to work offline.
       </p>
       <p>
-        You can also keep Dani-Dex running on one computer, such as a Mac mini, and connect to it from other devices.
-        The host remains the place where the agents and their workspaces live, while the other devices give you a way to
+        You can also keep Dani Dex running on one computer, such as a Mac mini, and connect to it from other devices. The
+        host remains the place where the agents and their workspaces live, while the other devices give you a way to
         follow the work.
       </p>
 
       <h2>A Task From Start to Finish</h2>
       <p>Imagine asking a research agent to prepare a short report.</p>
       <p>
-        You give it the task in its conversation, and Dani-Dex runs it with the agent’s instructions, workspace,
-        context, and selected provider. The agent can inspect local files, use the embedded browser, save notes, and
-        return the result in the same thread.
+        You give it the task in its conversation, and Dani Dex runs it with the agent’s instructions, workspace, context,
+        and selected provider. The agent can inspect local files, use the embedded browser, save notes, and return the
+        result in the same thread.
       </p>
       <p>
         When the first part is done, you can pass the work to another agent. A writing agent can use the research files,
@@ -99,9 +101,7 @@ export function WtfIsDaniDex() {
         Each agent can keep its own role and conversation, while the project stays in one place. You can follow the work
         as it happens, send another instruction, pause a task, or redirect it when the plan changes.
       </p>
-      <p>
-        The models still do the actual work. Dani-Dex keeps the tasks, files, conversations, and handoffs connected.
-      </p>
+      <p>The models still do the actual work. Dani Dex keeps the tasks, files, conversations, and handoffs connected.</p>
 
       <h2>Why Use More Than One Agent?</h2>
       <p>
@@ -110,7 +110,7 @@ export function WtfIsDaniDex() {
       </p>
       <p>Instead of asking one assistant to change roles constantly, you can give each agent a more focused job.</p>
       <p>
-        Dani-Dex lets agents exchange messages and files, pass work between their conversations, and work together in
+        Dani Dex lets agents exchange messages and files, pass work between their conversations, and work together in
         shared channels. A research agent can gather information, a writing agent can turn it into a draft, and a review
         agent can check the result.
       </p>
@@ -119,9 +119,9 @@ export function WtfIsDaniDex() {
         setup becomes useful when the work has clear stages, needs different perspectives, or has to continue over time.
       </p>
 
-      <h2>Who Is Dani-Dex Actually Built For?</h2>
+      <h2>Who Is Dani Dex Actually Built For?</h2>
       <p>
-        Dani-Dex is for people who want AI work to continue beyond a single answer. It makes the most sense when a task
+        Dani Dex is for people who want AI work to continue beyond a single answer. It makes the most sense when a task
         involves files, ongoing context, repeated steps, or more than one role.
       </p>
       <p>
@@ -130,27 +130,37 @@ export function WtfIsDaniDex() {
       </p>
       <p>An individual might keep an agent running recurring tasks instead of rebuilding the same setup every time.</p>
       <p>
-        If you only need a quick answer, a regular chatbot may be faster. Dani-Dex becomes useful when the work starts
-        to look more like a project than a conversation.
+        If you only need a quick answer, a regular chatbot may be faster. Dani Dex becomes useful when the work starts to
+        look more like a project than a conversation.
       </p>
       <p>
-        It is also worth remembering that Dani-Dex is still a development preview. Agents can access files, run
-        commands, use the network, and control the browser, so you should only give them tasks you trust and keep
-        backups of important work.
+        It is also worth remembering that agents work with full access. They can access files, run commands, use the
+        network, and control the browser, so you should only give them tasks you trust and keep backups of important
+        work.
       </p>
 
       <h2>More Than a Chat Window</h2>
       <p>
-        Dani-Dex is not a model and not just another chat app. It is a local-first workspace that keeps agents, models,
+        Dani Dex is not a model and not just another chat app. It is a local-first workspace that keeps agents, models,
         files, conversations, and tasks connected.
       </p>
       <p>
-        The model provides the responses. The provider integration connects it to Dani-Dex. The agent keeps the work
-        around the task. Dani-Dex brings these pieces together so you can keep working instead of starting from a blank
+        The model provides the responses. The provider integration connects it to Dani Dex. The agent keeps the work
+        around the task. Dani Dex brings these pieces together so you can keep working instead of starting from a blank
         chat each time.
       </p>
-      <p>That is the idea behind Dani-Dex: turning separate AI tools into persistent teammates for real work.</p>
-      <p>If you want to see how it works in practice, start with Dani-Dex 101.</p>
+      <p>That is the idea behind Dani Dex: turning separate AI tools into persistent teammates for real work.</p>
+      <p>
+        If you want to see how it works in practice, start with{" "}
+        <Link to="/guides/$slug" params={{ slug: "openbot-101" }}>
+          How to Use Dani Dex
+        </Link>
+        . To see how it differs from an agent app that runs in the cloud, read{" "}
+        <Link to="/compare/$slug" params={{ slug: "grok-bot" }}>
+          Dani Dex vs Grok Bot
+        </Link>
+        .
+      </p>
     </>
   );
 }

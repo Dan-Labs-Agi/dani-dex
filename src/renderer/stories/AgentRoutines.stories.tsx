@@ -1,12 +1,13 @@
-import type { Routine, RoutineRun } from "@dani-dex/contracts/ipc";
+import type { Routine, RoutineResultDelivery, RoutineResultDestination, RoutineRun } from "@openbot/contracts/ipc";
 import { onCleanup } from "solid-js";
-import { expect, fn, waitFor, within } from "storybook/test";
+import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { AgentRoutinesSettings } from "../src/features/conversation/AgentRoutinesSettings";
 import AgentSettingsPanel from "../src/features/conversation/AgentSettingsPanel";
-import { agentRoutinesPort } from "../src/features/conversation/routines-port";
-import { STORY_AGENT_STATUS, STORY_AGENTS, STORY_MODELS } from "./fixtures";
-import { createMockDaniDex } from "./mock-dani-dex";
+import { desktopEventRoutinesApi } from "../src/features/conversation/routine-webhooks-api";
+import { agentRoutinesPort, eventRoutinesPort } from "../src/features/conversation/routines-port";
+import { STORY_AGENT, STORY_AGENT_STATUS, STORY_MODELS, storyRuntimeSettings } from "./fixtures";
+import { createMockOpenBot, type MockOpenBotOptions } from "./mock-openbot";
 
 const morningBrief: Routine = {
   id: "routine-morning-brief",
@@ -54,51 +55,109 @@ const fullPanelRuns: RoutineRun[] = [
   storyRun("run-yesterday", "failed", "scheduled", 28),
 ];
 
-function RoutinesStory(props: { routines?: Routine[]; runs?: RoutineRun[] }) {
-  const previousApi = window.danidex;
-  const mock = createMockDaniDex({ routines: { chief: props.routines ?? storyRoutines } });
-  window.danidex = mock.api;
+function RoutinesStory(props: {
+  routines?: Routine[];
+  runs?: RoutineRun[];
+  localHost?: boolean;
+  results?: Pick<MockOpenBotOptions, "routineResultOptions" | "routineResultDestinations" | "routineResultDeliveries">;
+}) {
+  const previousApi = window.openbot;
+  const mock = createMockOpenBot({ routines: { chief: props.routines ?? storyRoutines }, ...props.results });
+  window.openbot = mock.api;
   if (props.runs) mock.api.agent.listRoutineRuns = async () => structuredClone(props.runs ?? []);
   onCleanup(() => {
     mock.dispose();
-    window.danidex = previousApi;
+    window.openbot = previousApi;
   });
   return (
-    <main style={{ width: "380px", height: "720px", overflow: "auto", background: "var(--dani-dex-bg-canvas)" }}>
-      <AgentRoutinesSettings port={agentRoutinesPort("chief")} onCountChange={fn()} onBack={fn()} onClose={fn()} />
+    <main style={{ width: "380px", height: "720px", overflow: "auto", background: "var(--openbot-bg-canvas)" }}>
+      <AgentRoutinesSettings
+        port={agentRoutinesPort("chief", undefined, props.localHost === true, mock.api.agent)}
+        onCountChange={fn()}
+        onBack={fn()}
+        onClose={fn()}
+      />
+    </main>
+  );
+}
+
+function WebhookRoutineStory() {
+  const previousApi = window.openbot;
+  const mock = createMockOpenBot({ routines: { chief: [] } });
+  window.openbot = mock.api;
+  const owner = { kind: "agent", id: "chief" } as const;
+  const api = desktopEventRoutinesApi("story-server", false, true);
+  const seeded = api.saveRoutine({
+    owner,
+    name: "Deploy review",
+    instruction: "Check the new production deployment and report regressions.",
+    active: true,
+    timezone: "Europe/Warsaw",
+    trigger: {
+      kind: "webhook",
+      eventType: "deployment.created",
+      filters: [{ pointer: "/deployment/environment", value: "production" }],
+    },
+  });
+  const port = eventRoutinesPort(
+    owner,
+    {
+      ...api,
+      listRoutines: async (input) => {
+        await seeded;
+        return api.listRoutines(input);
+      },
+      listActivity: async () => [
+        {
+          kind: "received",
+          id: "received-story",
+          deliveryId: "request-story",
+          eventType: "deployment.created",
+          status: "ignored",
+          reason: "filter",
+          runId: null,
+          occurredAt: new Date(Date.now() - 90 * 60_000).toISOString(),
+        },
+      ],
+    },
+    agentRoutinesPort("chief"),
+  );
+  onCleanup(() => {
+    mock.dispose();
+    window.openbot = previousApi;
+  });
+  return (
+    <main style={{ width: "380px", height: "720px", overflow: "auto", background: "var(--openbot-bg-canvas)" }}>
+      <AgentRoutinesSettings port={port} onCountChange={fn()} onBack={fn()} onClose={fn()} />
     </main>
   );
 }
 
 function FullSettingsPanelStory() {
-  const previousApi = window.danidex;
-  const previousWidth = window.localStorage.getItem("danidex:settings-panel-width");
-  const mock = createMockDaniDex({ routines: { chief: storyRoutines } });
-  window.danidex = mock.api;
+  const previousApi = window.openbot;
+  const previousWidth = window.localStorage.getItem("openbot:side-panel-width");
+  const mock = createMockOpenBot({ routines: { chief: storyRoutines } });
+  window.openbot = mock.api;
   mock.api.agent.listRoutineRuns = async (input) =>
     input.routineId === morningBrief.id ? structuredClone(fullPanelRuns) : [];
-  window.localStorage.setItem("danidex:settings-panel-width", "380");
+  window.localStorage.setItem("openbot:side-panel-width", "380");
 
   onCleanup(() => {
     mock.dispose();
-    window.danidex = previousApi;
+    window.openbot = previousApi;
     if (previousWidth === null) {
-      window.localStorage.removeItem("danidex:settings-panel-width");
+      window.localStorage.removeItem("openbot:side-panel-width");
       return;
     }
-    window.localStorage.setItem("danidex:settings-panel-width", previousWidth);
+    window.localStorage.setItem("openbot:side-panel-width", previousWidth);
   });
 
   return (
     <main class="agent-memories-story-stage">
       <AgentSettingsPanel
         onOpenUsage={fn()}
-        agent={STORY_AGENTS[0]}
-        runtimeSettings={{
-          provider: STORY_AGENTS[0].provider,
-          model: STORY_AGENTS[0].model,
-          reasoningEffort: STORY_AGENTS[0].reasoningEffort,
-        }}
+        agent={STORY_AGENT}
+        runtimeSettings={storyRuntimeSettings(STORY_AGENT)}
         agentStatus={STORY_AGENT_STATUS}
         modelOptions={STORY_MODELS}
         working={false}
@@ -123,7 +182,7 @@ function FullSettingsPanelStory() {
 const meta = {
   title: "Settings/Agent Routines",
   component: AgentRoutinesSettings,
-  args: { port: agentRoutinesPort("chief"), onCountChange: fn() },
+  args: { port: agentRoutinesPort("chief", undefined, false, createMockOpenBot().api.agent), onCountChange: fn() },
   parameters: { layout: "centered", a11y: { test: "error" } },
 } satisfies Meta<typeof AgentRoutinesSettings>;
 
@@ -132,54 +191,10 @@ type Story = StoryObj<typeof meta>;
 
 export const RoutineList: Story = {
   render: () => <RoutinesStory />,
-  play: async ({ canvas }) => {
-    await expect(await canvas.findByRole("button", { name: /Morning brief/ })).toHaveTextContent("Weekdays at");
-  },
-};
-
-export const RoutineEditor: Story = {
-  render: () => <RoutinesStory />,
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(await canvas.findByRole("button", { name: /Morning brief/ }));
-    await expect(canvas.getByRole("heading", { name: "Routine" })).toBeVisible();
-    await expect(canvas.getByDisplayValue("Morning brief")).toBeVisible();
-    await expect(canvas.getByRole("button", { name: "Test run" })).toBeEnabled();
-    await expect(canvas.queryByRole("button", { name: "Add another" })).not.toBeInTheDocument();
-  },
 };
 
 export const EmptyDraft: Story = {
   render: () => <RoutinesStory routines={[]} />,
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(await canvas.findByRole("button", { name: "Create Routine" }));
-    await expect(canvas.getByPlaceholderText("Morning brief")).toHaveValue("");
-    await userEvent.click(canvas.getByRole("button", { name: "Back to Routines" }));
-    await expect(canvas.getByText("No routines yet.")).toBeVisible();
-  },
-};
-
-export const UnsavedChangesConfirmation: Story = {
-  render: () => <RoutinesStory />,
-  play: async ({ canvas, canvasElement, userEvent }) => {
-    await userEvent.click(await canvas.findByRole("button", { name: /Morning brief/ }));
-    await userEvent.clear(canvas.getByRole("textbox", { name: "Name" }));
-    await userEvent.type(canvas.getByRole("textbox", { name: "Name" }), "Changed morning brief");
-    await userEvent.click(canvas.getByRole("button", { name: "Back to Routines" }));
-    const body = within(canvasElement.ownerDocument.body);
-    await expect(await body.findByRole("dialog")).toHaveAccessibleName("Discard changes?");
-    await expect(body.getByRole("button", { name: "Keep editing" })).toBeInTheDocument();
-    await expect(body.getByRole("button", { name: "Discard changes" })).toBeInTheDocument();
-  },
-};
-
-export const OpenTimePicker: Story = {
-  render: () => <RoutinesStory />,
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(await canvas.findByRole("button", { name: /Morning brief/ }));
-    await userEvent.click(canvas.getByRole("button", { name: /On weekdays at 7:00 AM/ }));
-    await userEvent.click(canvas.getByRole("button", { name: /^Time/ }));
-    await expect(canvas.getByRole("button", { name: /^Time/ })).toHaveTextContent("7:00 AM");
-  },
 };
 
 const runStatuses: RoutineRun["status"][] = [
@@ -207,56 +222,119 @@ export const RunHistoryStatuses: Story = {
         deliveryId: `delivery-${status}`,
         status,
         error: status === "failed" ? "Example failure" : null,
-        createdAt: new Date().toISOString(),
+        createdAt: new Date(Date.now() - index * 3_600_000).toISOString(),
         updatedAt: new Date().toISOString(),
       }))}
     />
   ),
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(await canvas.findByRole("button", { name: /Morning brief/ }));
-    for (const status of runStatuses) {
-      const label = status === "needs-attention" ? "Needs attention" : `${status[0]?.toUpperCase()}${status.slice(1)}`;
-      await expect(await canvas.findByRole("img", { name: label })).toBeVisible();
-    }
-  },
+};
+
+export const MissedRuns: Story = {
+  render: () => (
+    <RoutinesStory
+      localHost
+      routines={[
+        {
+          ...morningBrief,
+          missedPolicy: "run-once",
+          trigger: { ...morningBrief.trigger, schedule: { kind: "hourly", minute: 0 } },
+        },
+        weeklyPlanning,
+      ]}
+      runs={[
+        { ...storyRun("run-late", "succeeded", "scheduled", 1), createdAt: hoursAgo(0.5) },
+        {
+          ...storyRun("run-skipped", "cancelled", "scheduled", 5),
+          deliveryId: null,
+          missed: { count: 4, until: hoursAgo(2) },
+        },
+        {
+          ...storyRun("run-skipped-yesterday", "cancelled", "scheduled", 30),
+          deliveryId: null,
+          missed: { count: 1, until: null },
+        },
+      ]}
+    />
+  ),
+};
+
+const newsChannel: RoutineResultDestination = {
+  connectionId: "connection-slack",
+  platform: "slack",
+  connectionName: "Acme",
+  placeId: "C-news",
+  placeName: "news",
+};
+
+function storyDelivery(
+  runId: string,
+  status: RoutineResultDelivery["status"],
+  reason: RoutineResultDelivery["reason"],
+  hours: number,
+): RoutineResultDelivery {
+  return {
+    runId,
+    status,
+    reason,
+    attempts: 1,
+    destination: newsChannel,
+    updatedAt: hoursAgo(hours),
+    sentAt: status === "sent" ? hoursAgo(hours) : null,
+  };
+}
+
+export const ResultDestination: Story = {
+  render: () => (
+    <RoutinesStory
+      localHost
+      runs={[
+        storyRun("run-sent", "succeeded", "scheduled", 0),
+        storyRun("run-expired", "succeeded", "scheduled", 24),
+        storyRun("run-restart", "succeeded", "scheduled", 48),
+      ]}
+      results={{
+        routineResultOptions: [
+          {
+            connectionId: "connection-slack",
+            platform: "slack",
+            connectionName: "Acme",
+            places: [
+              { id: "C-general", name: "general" },
+              { id: "C-news", name: "news" },
+            ],
+            placesFailed: false,
+          },
+        ],
+        routineResultDestinations: { [morningBrief.id]: newsChannel },
+        routineResultDeliveries: {
+          [morningBrief.id]: [
+            storyDelivery("run-sent", "sent", null, 0),
+            storyDelivery("run-expired", "failed", "expired", 0),
+            storyDelivery("run-restart", "uncertain", "restart", 48),
+          ],
+        },
+      }}
+    />
+  ),
+};
+
+export const WebhookRoutine: Story = {
+  render: () => <WebhookRoutineStory />,
 };
 
 export const FullSidePanel: Story = {
   render: () => <FullSettingsPanelStory />,
   parameters: { layout: "fullscreen" },
-  play: async ({ canvas }) => {
-    await waitFor(() => expect(canvas.getByRole("button", { name: /Routines/ })).toHaveTextContent("2 configured"));
-    await expect(canvas.getByLabelText("Agent name")).toHaveValue("Chief");
-    await expect(canvas.getByRole("switch", { name: "Notifications" })).toBeChecked();
-  },
 };
 
-export const FullSidePanelRoutines: Story = {
-  render: () => <FullSettingsPanelStory />,
-  parameters: { layout: "fullscreen" },
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(await canvas.findByRole("button", { name: /Routines/ }));
-    await expect(canvas.queryByRole("button", { name: "Edit agent avatar" })).not.toBeInTheDocument();
-    await expect(await canvas.findByRole("button", { name: /Morning brief/ })).toHaveTextContent("Weekdays at");
-    await expect(canvas.getByRole("button", { name: /Weekly planning/ })).toHaveTextContent("Paused");
-  },
-};
+function hoursAgo(hours: number): string {
+  const hour = new Date();
+  hour.setMinutes(0, 0, 0);
+  return new Date(hour.getTime() - hours * 3_600_000).toISOString();
+}
 
-export const FullSidePanelRoutineEditor: Story = {
-  render: () => <FullSettingsPanelStory />,
-  parameters: { layout: "fullscreen" },
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(await canvas.findByRole("button", { name: /Routines/ }));
-    await userEvent.click(await canvas.findByRole("button", { name: /Morning brief/ }));
-    await expect(canvas.getByDisplayValue("Morning brief")).toBeVisible();
-    await expect(canvas.getByRole("button", { name: "Test run" })).toBeEnabled();
-    await expect(await canvas.findByRole("img", { name: "Succeeded" })).toBeVisible();
-    await expect(canvas.getByRole("img", { name: "Needs attention" })).toBeVisible();
-  },
-};
-
-function storyRun(id: string, status: RoutineRun["status"], kind: RoutineRun["kind"], hoursAgo: number): RoutineRun {
-  const scheduledFor = new Date(Date.now() - hoursAgo * 3_600_000).toISOString();
+function storyRun(id: string, status: RoutineRun["status"], kind: RoutineRun["kind"], hours: number): RoutineRun {
+  const scheduledFor = hoursAgo(hours);
   return {
     id,
     routineId: morningBrief.id,

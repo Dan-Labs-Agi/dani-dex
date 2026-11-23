@@ -1,47 +1,55 @@
-import type { AgentEvent, AgentSummary, ConversationSnapshot, QueueHold, QueueSnapshot } from "@dani-dex/contracts/ipc";
-import { sortConversationMessages } from "../conversation-snapshots";
-import type { DaniDexDatabase } from "../dani-dex-database";
+import { sortConversationMessages } from "@openbot/contracts/conversation-order";
+import {
+  type AgentEvent,
+  type AgentSummary,
+  type ConversationMessage,
+  type ConversationSnapshot,
+  modelSwitchReason,
+  type QueueDeliveryStatus,
+  type QueueHold,
+  type QueueSnapshot,
+} from "@openbot/contracts/ipc";
+import { Effect, type Scope } from "effect";
+import { isMailboxMessageCopy } from "../conversation-snapshots";
 import type { MailboxStore } from "../mailbox-store";
+import type { OpenBotDatabase } from "../openbot-database";
 import type { ConversationRuntime } from "./conversation-runtime";
 import { conversationContentSignature } from "./delivery-content";
 import type { RoutineScheduler } from "./routine-scheduler";
 
+const OPEN_STATUSES: ReadonlySet<QueueDeliveryStatus> = new Set(["queued", "starting", "running"]);
+
 export interface MailboxSyncHooks {
   emit(event: AgentEvent): void;
   emitError(code: string, error: unknown, agentId?: string): void;
-  /** What holds the queue back, when the reason is not this agent's own running turn. */
   queueHold(agentId: string): QueueHold | null;
+  threadRequestsChanged(agentId: string): void;
 }
 
 export interface MailboxSyncOptions {
-  database: DaniDexDatabase;
+  database: OpenBotDatabase;
   mailbox: MailboxStore;
   conversation: ConversationRuntime;
   routines: RoutineScheduler;
+  scope: () => Scope.Scope;
   hooks: MailboxSyncHooks;
 }
 
-/**
- * Keeps conversation snapshots merged with mailbox rows, and fans queue
- * state out to the renderer.
- *
- * Owns no durable state — every method reads the mailbox/database and writes
- * the in-memory snapshot. The facade keeps no wrappers: call sites use this
- * directly, and later extractions (drain, turn lifecycle) take it as a dep
- * instead of reaching into the mailbox themselves.
- */
 export class MailboxSync {
-  readonly #database: DaniDexDatabase;
+  readonly #database: OpenBotDatabase;
   readonly #mailbox: MailboxStore;
   readonly #conversation: ConversationRuntime;
   readonly #routines: RoutineScheduler;
+  readonly #scope: () => Scope.Scope;
   readonly #hooks: MailboxSyncHooks;
+  #threadRequests = new Map<string, string>();
 
   constructor(options: MailboxSyncOptions) {
     this.#database = options.database;
     this.#mailbox = options.mailbox;
     this.#conversation = options.conversation;
     this.#routines = options.routines;
+    this.#scope = options.scope;
     this.#hooks = options.hooks;
   }
 
@@ -49,7 +57,15 @@ export class MailboxSync {
     const context = this.#mailbox.getDelivery(deliveryId);
     const message = snapshot.messages.find((candidate) => candidate.id === deliveryId);
     if (!context || !message) return;
-    message.turnId = context.delivery.turnId ?? undefined;
+    const turnId =
+      context.planContinuation?.turnIds[0] ??
+      context.resumeAfterUsageLimit?.previousTurnIds[0] ??
+      context.delivery.turnId;
+    if (turnId === null) delete message.turnId;
+    else message.turnId = turnId;
+    if (turnId !== null && turnId !== deliveryId)
+      for (const note of snapshot.messages)
+        if (note.turnId === deliveryId && modelSwitchReason(note) !== null) note.turnId = turnId;
     message.delivery = {
       id: context.delivery.id,
       status: context.delivery.status,
@@ -57,10 +73,28 @@ export class MailboxSync {
     };
   }
 
-  syncMailboxMessages(snapshot: ConversationSnapshot): void {
+  syncMailboxMessages(snapshot: ConversationSnapshot, mailboxMessages?: readonly ConversationMessage[]): void {
     if (this.#conversation.isExecutionThread(snapshot.threadId)) return;
+    const fromCreatedAt = snapshot.messages[0]?.createdAt;
+    const mailboxCopies =
+      mailboxMessages ??
+      this.#mailbox.conversationMessages(snapshot.agentId, fromCreatedAt === undefined ? {} : { fromCreatedAt });
+    const deleted = snapshot.threadId
+      ? this.#database.deletedConversationMessageIds(snapshot.threadId)
+      : new Set<string>();
+    const incomingMailboxMessages =
+      deleted.size === 0 ? mailboxCopies : mailboxCopies.filter((message) => !deleted.has(message.id));
+    const incomingMessages = new Map(
+      mailboxCopies.flatMap((message) =>
+        message.exchange?.direction === "incoming" ? [[message.exchange.messageId, message] as const] : [],
+      ),
+    );
+    for (let index = snapshot.messages.length - 1; index >= 0; index--) {
+      const message = snapshot.messages[index];
+      if (message && isMailboxMessageCopy(message, incomingMessages)) snapshot.messages.splice(index, 1);
+    }
     const indexes = new Map(snapshot.messages.map((message, index) => [message.id, index]));
-    for (const mailboxMessage of this.#mailbox.conversationMessages(snapshot.agentId)) {
+    for (const mailboxMessage of incomingMailboxMessages) {
       const index = indexes.get(mailboxMessage.id);
       if (index !== undefined) snapshot.messages[index] = mailboxMessage;
       else {
@@ -68,6 +102,8 @@ export class MailboxSync {
         snapshot.messages.push(mailboxMessage);
       }
     }
+    const read = new Set(mailboxCopies.map((message) => message.id));
+    for (const message of snapshot.messages) if (!read.has(message.id)) this.#refreshOpenRequest(message);
     const reactions = this.#mailbox.reactionsFor(snapshot.agentId);
     for (const message of snapshot.messages) {
       message.reactions = reactions.get(message.id) ?? [];
@@ -76,60 +112,158 @@ export class MailboxSync {
     sortConversationMessages(snapshot.messages);
   }
 
-  reconcilePersistedMailboxMessages(agent: AgentSummary): void {
-    if (!agent.threadId) return;
-    const persisted = this.#database.readConversation(agent.id, agent.threadId);
-    const previousSignature = conversationContentSignature(persisted);
-    this.syncMailboxMessages(persisted);
-    if (conversationContentSignature(persisted) === previousSignature) return;
-    this.#database.persistConversation(persisted, "conversation.mailbox-reconciled", {
-      messageCount: persisted.messages.length,
-    });
-    const live = this.#conversation.snapshot(agent.id);
-    if (live) this.syncMailboxMessages(live);
+  #refreshOpenRequest(message: ConversationMessage): void {
+    const exchange = message.exchange;
+    if (exchange?.direction !== "outgoing" || !exchange.deliveries.some(({ status }) => OPEN_STATUSES.has(status)))
+      return;
+    message.exchange = {
+      ...exchange,
+      deliveries: exchange.deliveries.map((delivery) => {
+        const current = this.#mailbox.getDelivery(delivery.id)?.delivery;
+        if (!current) return delivery;
+        const held =
+          current.status === "completed" &&
+          exchange.expectsReply !== false &&
+          this.#mailbox.heldByTask(current.recipientAgentId, exchange.messageId);
+        return {
+          ...delivery,
+          status: held ? "running" : current.status,
+          position: current.position,
+          error: current.error,
+        };
+      }),
+    };
   }
 
-  /**
-   * The queue the user reads, carrying the reason it waits when something outside this agent holds
-   * it. `AgentService.listQueue` returns this as well, so a reload and a reconnect report the same
-   * wait as the event below.
-   */
+  #emitThreadRequests(): void {
+    const requests = new Map<string, string>();
+    for (const request of this.#mailbox.awaitedThreadRequests()) {
+      const key = `${request.deliveryId}:${request.status};`;
+      requests.set(request.senderAgentId, (requests.get(request.senderAgentId) ?? "") + key);
+    }
+    const before = this.#threadRequests;
+    this.#threadRequests = requests;
+    for (const agentId of new Set([...before.keys(), ...requests.keys()]))
+      if (before.get(agentId) !== requests.get(agentId)) this.#hooks.threadRequestsChanged(agentId);
+  }
+
+  refreshQueuePositions(messages: readonly ConversationMessage[]): void {
+    const queued = (delivery: { status: string } | undefined) => delivery?.status === "queued";
+    if (!messages.some((message) => queued(message.delivery) || message.exchange?.deliveries.some(queued))) return;
+    const positions = this.#mailbox.queuedPositions();
+    for (const message of messages) {
+      if (message.delivery && queued(message.delivery))
+        message.delivery.position = positions.get(message.delivery.id) ?? message.delivery.position;
+      for (const delivery of message.exchange?.deliveries ?? [])
+        if (queued(delivery)) delivery.position = positions.get(delivery.id) ?? delivery.position;
+    }
+  }
+
+  reconcilePersistedMailboxMessages(agent: AgentSummary): void {
+    if (!agent.threadId) return;
+    const page = this.#database.readConversationPage(agent.id, agent.threadId, { type: "latest" }, 100);
+    const persisted: ConversationSnapshot = {
+      agentId: page.agentId,
+      threadId: page.threadId,
+      activeTurnId: page.activeTurnId,
+      revision: page.revision,
+      messages: page.messages,
+    };
+    const previousMessageIds = new Set(persisted.messages.map((message) => message.id));
+    const previousSignature = conversationContentSignature(persisted);
+    const oldest = persisted.messages[0]?.createdAt;
+    this.syncMailboxMessages(
+      persisted,
+      this.#mailbox.conversationMessages(agent.id, oldest === undefined ? {} : { fromCreatedAt: oldest }),
+    );
+    if (conversationContentSignature(persisted) === previousSignature) return;
+    const changedMessages = this.#database.changedConversationMessages(agent.threadId, persisted.messages);
+    const removedMessageIds = [...previousMessageIds].filter(
+      (messageId) => !persisted.messages.some((message) => message.id === messageId),
+    );
+    if (changedMessages.length > 0 || removedMessageIds.length > 0) {
+      this.#database.persistConversationChanges({
+        agentId: agent.id,
+        threadId: agent.threadId,
+        activeTurnId: persisted.activeTurnId,
+        changedMessages,
+        removedMessageIds,
+        eventType: "conversation.mailbox-reconciled",
+        detail: {
+          messageCount: changedMessages.length,
+        },
+      });
+    }
+    const live = this.#conversation.snapshot(agent.id);
+    if (live) {
+      const liveOldest = live.messages[0]?.createdAt;
+      this.syncMailboxMessages(
+        live,
+        this.#mailbox.conversationMessages(agent.id, liveOldest === undefined ? {} : { fromCreatedAt: liveOldest }),
+      );
+    }
+  }
+
   queueSnapshot(agentId: string): QueueSnapshot {
-    const queue = this.#mailbox.listQueue(agentId);
+    return this.withHold(this.#mailbox.listQueue(agentId));
+  }
+
+  withHold(queue: QueueSnapshot): QueueSnapshot {
     if (!queue.deliveries.some((delivery) => delivery.status === "queued")) return queue;
-    const hold = this.#hooks.queueHold(agentId);
+    const hold = this.#hooks.queueHold(queue.agentId);
     return hold ? { ...queue, hold } : queue;
   }
 
   emitQueue(agentId: string): void {
     const queue = this.queueSnapshot(agentId);
     let routinesChanged = false;
-    for (const delivery of queue.deliveries) {
+    for (const delivery of [...queue.deliveries, ...this.#mailbox.taskRoutineDeliveries(agentId)]) {
       if (this.#routines.reconcileDelivery(delivery)) routinesChanged = true;
     }
     this.#hooks.emit({ type: "queue-changed", snapshot: queue });
     if (routinesChanged) this.#routines.stateChanged(agentId);
+    this.#emitThreadRequests();
     const affectedAgents = new Set([agentId, ...this.#mailbox.senderAgentIdsForRecipient(agentId)]);
     for (const affectedAgentId of affectedAgents) {
-      const snapshot = this.#conversation.snapshot(affectedAgentId);
+      const snapshot = this.#conversation.snapshotToUpdate(affectedAgentId);
       if (!snapshot) continue;
       const previousSignature = conversationContentSignature(snapshot);
       this.syncMailboxMessages(snapshot);
-      if (conversationContentSignature(snapshot) !== previousSignature) this.#conversation.emitConversation(snapshot);
+      const signature = conversationContentSignature(snapshot);
+      if (signature !== previousSignature) this.#conversation.emitConversation(snapshot);
       else if (!this.#conversation.hasPublishedConversation(affectedAgentId))
-        this.#conversation.publishConversation(snapshot);
+        this.#conversation.publishConversation(snapshot, signature);
     }
   }
 
-  retryDeliveryReconciliation(agentId: string): void {
+  retryDeliveryReconciliation(agentId: string, turnId?: string, deliveryIds: readonly string[] = []): void {
     queueMicrotask(() => {
-      try {
-        this.emitQueue(agentId);
-        const snapshot = this.#conversation.snapshot(agentId);
-        if (snapshot) this.#conversation.emitConversation(snapshot);
-      } catch (error) {
-        this.#hooks.emitError("delivery_reconciliation_pending", error, agentId);
-      }
+      Effect.runFork(
+        Effect.gen({ self: this }, function* () {
+          if (turnId && this.#conversation.snapshotWithTurn(agentId, turnId)) {
+            const accepted = new Set(deliveryIds);
+            for (const deliveryId of accepted) {
+              const current = this.#mailbox.getDelivery(deliveryId)?.delivery;
+              if (current?.recipientAgentId !== agentId || current.status !== "starting" || current.turnId !== null)
+                continue;
+              yield* this.#mailbox.markRunning(deliveryId, turnId);
+            }
+          }
+          yield* Effect.sync(() => {
+            this.emitQueue(agentId);
+            const snapshot = this.#conversation.snapshotToUpdate(agentId);
+            if (snapshot) this.#conversation.emitConversation(snapshot);
+          });
+        })
+          .pipe(
+            Effect.catch((failure) =>
+              Effect.sync(() => {
+                this.#hooks.emitError("delivery_reconciliation_pending", failure, agentId);
+              }),
+            ),
+          )
+          .pipe(Effect.forkIn(this.#scope(), { startImmediately: true })),
+      );
     });
   }
 }

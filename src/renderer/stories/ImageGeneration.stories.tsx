@@ -1,9 +1,9 @@
-import type { AttachmentSummary } from "@dani-dex/contracts/ipc";
+import type { AttachmentSummary } from "@openbot/contracts/ipc";
+import { ImageGeneration, type ImageGenerationProps } from "@openbot/ui/features/conversation/ImageGeneration";
 import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { ImageGeneration, type ImageGenerationProps } from "../src/features/conversation/ImageGeneration";
 
-const generatedPreview = new URL("../src/assets/dani-dex-logo-production.png", import.meta.url).href;
+const generatedPreview = new URL("../src/assets/openbot-logo-production.png", import.meta.url).href;
 
 const generatedAttachment: AttachmentSummary = {
   id: "generated-image-1",

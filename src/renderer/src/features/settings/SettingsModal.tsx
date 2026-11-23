@@ -1,239 +1,208 @@
+import type { CreditsState } from "@openbot/contracts/credits";
 import type {
   AccountSession,
-  AgentProviderId,
-  AgentStatus,
   AppInfo,
+  AvatarColor,
   AvatarImageInput,
+  BillingDesktopApi,
   CentralAuthUser,
-  CustomProviderRestart,
-  CustomProviderSummary,
-  HostedSitesDesktopApi,
+  CreditsDesktopApi,
+  DynamicIslandGeometry,
+  HostedServersDesktopApi,
+  LicenseDesktopApi,
   MobileConnectedDevice,
+  MobileConnectLink,
   MobileConnectTicket,
-  ProviderApiKeyStatus,
-  ProviderRuntimeStatus,
-  SaveCustomProviderInput,
+  ReferralDesktopApi,
+  RemoteNetworkRoute,
+  RemoteNetworkRouteState,
+  ServerNotificationLevel,
+  ServerSummary,
   UpdateStatus,
-} from "@dani-dex/contracts/ipc";
-import { agentProviderDescriptor } from "@dani-dex/contracts/ipc";
-import type { AppTextKey } from "@dani-dex/i18n";
-import { createEffect, createSignal, Show } from "solid-js";
-import { ProviderCodeLoginDialog } from "../../components/ProviderCodeLoginDialog";
-import type { ProviderCodeLoginApi } from "../../components/provider-code-login-api";
+} from "@openbot/contracts/ipc";
 import {
+  Alert,
+  AlertActions,
+  AlertContent,
+  AlertDescription,
+  AlertIcon,
   Button,
-  CircleArrowDown,
-  Globe2,
-  MousePointer2,
-  Settings,
-  Smartphone,
   Tabs,
-  Text,
-  UserRound,
-} from "../../components/ui";
+  TriangleAlert,
+} from "@openbot/ui";
+import { BillingPanel } from "@openbot/ui/features/billing/BillingPanel";
+import { createBillingStore } from "@openbot/ui/features/billing/billing-store";
+import { LicenseSection } from "@openbot/ui/features/billing/LicenseSection";
+import { createLicenseStore } from "@openbot/ui/features/billing/license-store";
+import { CreditActivitySection } from "@openbot/ui/features/credits/CreditActivitySection";
+import { CreditsSection } from "@openbot/ui/features/credits/CreditsSection";
+import { createCreditsStore } from "@openbot/ui/features/credits/credits-store";
+import { ReferralPanel } from "@openbot/ui/features/referral/ReferralPanel";
+import { createReferralStore } from "@openbot/ui/features/referral/referral-store";
+import type { GeneralSettingsValue } from "@openbot/ui/features/settings/app-settings";
+import {
+  SettingsDialogShell,
+  SettingsNavGroupLabel,
+  type SettingsPagePlacement,
+} from "@openbot/ui/features/settings/SettingsDialogShell";
+import type { MobileInstallRequest } from "@openbot/ui/features/settings/SettingsMobileConnectTab";
+import { SettingsMobileConnectTab } from "@openbot/ui/features/settings/SettingsMobileConnectTab";
+import { SettingsProfileTab } from "@openbot/ui/features/settings/SettingsProfileTab";
+import { SettingsUpdatesTab } from "@openbot/ui/features/settings/SettingsUpdatesTab";
+import { createSettingsHostedServersStore } from "@openbot/ui/features/settings/stores/hosted-servers-store";
+import { createSettingsMobileConnectStore } from "@openbot/ui/features/settings/stores/mobile-connect-store";
+import { createSettingsProfileStore } from "@openbot/ui/features/settings/stores/profile-store";
+import { createSettingsUpdatesStore } from "@openbot/ui/features/settings/stores/updates-store";
+import { createEffect, createSignal, Show, untrack } from "solid-js";
 import { useI18n } from "../../i18n-context";
 import { ComputerUseSetup } from "../computer-use/ComputerUseSetup";
-import type { GeneralSettingsValue } from "./app-settings";
-import type { HarnessSettingsApi } from "./HarnessSettings";
-import { OpenCodeKeyDialog, type ProviderKeyApi } from "./OpenCodeKeyDialog";
-import { SaveBarDock, SettingsDialogShell } from "./SettingsDialogShell";
+import type { CodexLiveAccess } from "../speech/codex-live-access";
+import type { LiveVoiceAccountChoice } from "./LiveVoiceAccountRow";
+import { licenseContactUs, trackLicenseEvent } from "./license-analytics";
+import { createNotificationLevelsStore } from "./notification-levels-store";
+import { createProfileActivityStore } from "./profile-activity-store";
+import { renderProfileShareImage } from "./profile-share-image";
+import { type AgentDockSettingsModel, SettingsAgentDockTab } from "./SettingsAgentDockTab";
+import { SettingsDynamicIslandTab } from "./SettingsDynamicIslandTab";
 import { SettingsGeneralTab } from "./SettingsGeneralTab";
-import { SettingsHostedSitesTab } from "./SettingsHostedSitesTab";
-import { SettingsMobileConnectTab } from "./SettingsMobileConnectTab";
-import { SettingsProfileTab } from "./SettingsProfileTab";
-import { SettingsUpdatesTab } from "./SettingsUpdatesTab";
-import { createSettingsGeneralStore } from "./stores/general-store";
-import { createSettingsHostedSitesStore } from "./stores/hosted-sites-store";
-import { createSettingsMobileConnectStore } from "./stores/mobile-connect-store";
-import { createSettingsProfileStore } from "./stores/profile-store";
-import { createSettingsUpdatesStore } from "./stores/updates-store";
-import { TalkKeyPicker } from "./TalkKeyPicker";
-import type { VoiceKeyApi } from "./VoiceKeySettings";
+import { SettingsKeyboardTab } from "./SettingsKeyboardTab";
+import { SettingsNotificationsTab } from "./SettingsNotificationsTab";
+import { SettingsVoiceTab } from "./SettingsVoiceTab";
+import { dynamicIslandSettingsShown, navItem, navItems, type SettingsTab, settingsTabShown } from "./settings-tabs";
+import { createSettingsVoiceStore } from "./settings-voice-store";
 
 export interface SettingsModalProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
   value: GeneralSettingsValue;
   onValueChange: (value: GeneralSettingsValue) => void;
+  preferencesLoadFailed?: boolean;
+  onRetryPreferencesLoad?: () => void;
   appInfo: AppInfo | null;
+  chatWindow?: boolean;
+  builtInDisplayGeometry?: DynamicIslandGeometry | undefined;
+  agentDock?: AgentDockSettingsModel | undefined;
+  servers?: readonly ServerSummary[];
+  onSetServerNotificationLevel?: ((serverId: string, level: ServerNotificationLevel) => Promise<void>) | undefined;
+  onSetServerMuted?: ((serverId: string, muted: boolean, durationMs?: number) => Promise<void>) | undefined;
+  notificationFocusRequest?: { serverId: string; nonce: number } | null | undefined;
   updateStatus: UpdateStatus;
   onUpdateAction: () => Promise<void>;
+  onOpenWhatsNew?: (() => void) | undefined;
+  onCancelScheduledRestart?: () => Promise<void>;
+  onRestartWhenIdle?: () => Promise<void>;
+  onCancelIdleRestart?: () => Promise<void>;
+  onRestartNow?: () => Promise<void>;
   account: CentralAuthUser;
   onUpdateAccountName: (name: string) => Promise<void>;
   onUpdateAccountAvatar: (image: AvatarImageInput | null) => Promise<void>;
-  /**
-   * False while the account has no Dani-Dex online service behind it. Mobile connect and hosted
-   * sites are then left out of the sidebar, and the photo comes from the sign-in provider.
-   */
-  onlineServices?: boolean;
+  onSetChatColor: (color: AvatarColor | null) => Promise<void>;
   onCreateMobileConnect?: () => Promise<MobileConnectTicket>;
+  onCancelMobileConnect?: () => Promise<void>;
+  onGetMobileConnectLink?: () => Promise<MobileConnectLink | null>;
+  onCreateMobileConnectLink?: () => Promise<MobileConnectLink>;
+  onRevokeMobileConnectLink?: () => Promise<void>;
   onListMobileConnectedDevices?: () => Promise<MobileConnectedDevice[]>;
   onRevokeMobileConnectedDevice?: (sessionId: string) => Promise<void>;
+  onGetRemoteNetworkRoute?: () => Promise<RemoteNetworkRouteState>;
+  onSetRemoteNetworkRoute?: (route: RemoteNetworkRoute) => Promise<RemoteNetworkRouteState>;
   onListAccountSessions?: () => Promise<AccountSession[]>;
   onRevokeAccountSession?: (sessionId: string) => Promise<void>;
+  onSignOut?: (() => Promise<void>) | undefined;
   processAvatarFile?: (file: File) => Promise<AvatarImageInput>;
-  agentStatus?: AgentStatus;
-  providerRuntimeStatuses?: Partial<Record<AgentProviderId, ProviderRuntimeStatus>>;
-  /** Dani's free models are the only model: the provider section shows the one Dani row instead. */
-  daniOnly?: boolean;
-  providerAvailableVersions?: Partial<Record<AgentProviderId, string | null>>;
-  onDownloadProvider?: (provider: AgentProviderId) => void | Promise<void>;
-  onCancelProviderDownload?: (provider: AgentProviderId) => void | Promise<void>;
-  onUpdateProvider?: (provider: AgentProviderId) => void | Promise<void>;
-  onInstallProvider?: (provider: AgentProviderId) => void | Promise<void>;
-  onOptionalApiKey?: (provider: AgentProviderId) => void;
-  onConnectProvider?: (provider: AgentProviderId) => void | Promise<void>;
-  /** Accepts a described endpoint from the General tab. Omitted on a remote server, which hides it. */
-  onAddCustomProvider?: (value: SaveCustomProviderInput) => Promise<CustomProviderRestart>;
-  customProviders?: readonly CustomProviderSummary[];
-  onDeleteCustomProvider?: (id: string) => Promise<CustomProviderRestart>;
-  /**
-   * Reads and writes the optional provider keys. Absent while the active server is not this
-   * computer, which is also what takes the row's sign-in button away.
-   */
-  providerKeys?: ProviderKeyApi;
-  /**
-   * The code sign-in, for the providers that offer one. Absent for the same reason as
-   * `providerKeys`: a remote server's provider is not signed in from this computer.
-   */
-  codeLogin?: ProviderCodeLoginApi;
-  hostedSitesApi?: HostedSitesDesktopApi;
-  /** The agents granted a standing approval, so the user can see and undo each one. */
-  turboModePending?: boolean;
-  /**
-   * The harness row. Absent on a remote server, whose agents run on that host's harness, and in
-   * stories without a setup to save into.
-   */
-  harness?: HarnessSettingsApi;
-  /** The BYOK OpenAI key for voice calls. Local only, like the harness row. */
-  voiceKey?: VoiceKeyApi;
+  billingApi?: BillingDesktopApi;
+  referralApi?: ReferralDesktopApi | undefined;
+  licenseApi?: LicenseDesktopApi | undefined;
+  creditsApi?: CreditsDesktopApi | undefined;
+  onCreditsChange?: ((credits: CreditsState) => void) | undefined;
+  onBuyCredits?: ((serverId: string | null) => void) | undefined;
+  onContactUs?: (() => void) | undefined;
+  hostedServersApi?: HostedServersDesktopApi | undefined;
+  onAddHostedServer?: (() => void) | undefined;
+  codexLiveAccess?: CodexLiveAccess | undefined;
+  liveVoiceAccount?: LiveVoiceAccountChoice | undefined;
+  onConnectCodex?: (() => void) | undefined;
+  hostedServerDeleteRequest?: { serverId: string; nonce: number } | null;
+  mobileInstallRequest?: MobileInstallRequest | null;
+  onMobileInstallRequestHandled?: (() => void) | undefined;
+  onTestNotification?: () => void | Promise<void>;
+  onOpenNotificationSettings?: () => void | Promise<void>;
   restoreFocusTarget?: HTMLElement | null;
+  initialTab?: SettingsTab | undefined;
+  openTab?: SettingsTab | undefined;
+  page: SettingsPagePlacement | undefined;
 }
 
-type SettingsTab = "general" | "hotkey" | "computer-use" | "profile" | "mobile-connect" | "updates" | "hosted-sites";
-
-/**
- * A tab holds the keys of its label and its header text, not the text itself. The list is read at
- * module level, before any component exists to translate it, and a label captured there would keep
- * the language the app started in.
- */
-type SettingsNavItem = {
-  value: SettingsTab;
-  titleKey: AppTextKey;
-  descriptionKey: AppTextKey;
-  icon: typeof Settings;
-};
-
-const navItems: ReadonlyArray<SettingsNavItem> = [
-  {
-    value: "general",
-    titleKey: "settings.tab.general.title",
-    descriptionKey: "settings.tab.general.description",
-    icon: Settings,
-  },
-  {
-    value: "hotkey",
-    titleKey: "settings.tab.hotkey.title",
-    descriptionKey: "settings.tab.hotkey.description",
-    icon: Settings,
-  },
-  {
-    value: "computer-use",
-    titleKey: "settings.tab.computerUse.title",
-    descriptionKey: "settings.tab.computerUse.description",
-    icon: MousePointer2,
-  },
-  {
-    value: "profile",
-    titleKey: "settings.tab.profile.title",
-    descriptionKey: "settings.tab.profile.description",
-    icon: UserRound,
-  },
-  {
-    value: "mobile-connect",
-    titleKey: "settings.tab.mobileConnect.title",
-    descriptionKey: "settings.tab.mobileConnect.description",
-    icon: Smartphone,
-  },
-  {
-    value: "updates",
-    titleKey: "settings.tab.updates.title",
-    descriptionKey: "settings.tab.updates.description",
-    icon: CircleArrowDown,
-  },
-  {
-    value: "hosted-sites",
-    titleKey: "settings.tab.hostedSites.title",
-    descriptionKey: "settings.tab.hostedSites.description",
-    icon: Globe2,
-  },
-];
-
-function navItem(tab: SettingsTab): SettingsNavItem {
-  const found = navItems.find((item) => item.value === tab);
-  if (!found) throw new Error(`Unknown settings tab: ${tab}`);
-  return found;
-}
-
-/**
- * The dialog shell: the tab list, the header, the footer save bar, and one delegation per panel.
- *
- * Every panel's state is a store created here rather than inside its tab, because Kobalte unmounts
- * an unselected `Tabs.Content` when the dialog closes. A list owned by the tab would lose the rows
- * it is showing while it refetches on reopen, and the footer below could not read the profile
- * draft while another tab is selected.
- */
 export function SettingsModal(props: SettingsModalProps) {
   const i18n = useI18n();
-  const [activeTab, setActiveTab] = createSignal<SettingsTab>("general");
-  const [openCodeKeyOpen, setOpenCodeKeyOpen] = createSignal(false);
-  /**
-   * Whether the optional OpenCode key is saved, for the row's badge. Read through the key API
-   * like the dialog does, on open and after the dialog closes with a save or a removal. Absent
-   * until the first read, and on a read failure, so the row shows no key badge rather than a
-   * wrong one.
-   */
-  const [openCodeKeyStatus, setOpenCodeKeyStatus] = createSignal<ProviderApiKeyStatus | undefined>(undefined);
-  let modalElement: HTMLElement | undefined;
-
-  const general = createSettingsGeneralStore({
-    get agentStatus() {
-      return props.agentStatus;
-    },
-    get providerRuntimeStatuses() {
-      return props.providerRuntimeStatuses;
-    },
-    get providerAvailableVersions() {
-      return props.providerAvailableVersions;
-    },
-    openCodeKeyStatus,
-  });
-  async function refreshOpenCodeKeyStatus(): Promise<void> {
-    if (!props.providerKeys) return;
-    try {
-      setOpenCodeKeyStatus((await props.providerKeys.getProviderApiKeyState("opencode")).status);
-    } catch {
-      setOpenCodeKeyStatus(undefined);
-    }
-  }
-  // The badge has to answer on first paint: the key state arrives after the rows, so an open
-  // without a read would show no badge until something else re-renders the list.
-  createEffect(
-    () => props.open,
-    (open) => {
-      if (open) void refreshOpenCodeKeyStatus();
-    },
+  const [activeTab, setActiveTab] = createSignal<SettingsTab>(
+    untrack(() => (props.initialTab === "hosted-servers" ? "billing" : props.initialTab)) ?? "general",
   );
+  let modalElement: HTMLElement | undefined;
   const profile = createSettingsProfileStore(props, () => activeTab() === "profile");
+  const profileActivity = createProfileActivityStore(
+    () => props.open && activeTab() === "profile",
+    (stats) => renderProfileShareImage(props.account, stats),
+  );
   const mobileConnect = createSettingsMobileConnectStore(props, () => activeTab() === "mobile-connect");
   const updates = createSettingsUpdatesStore(props);
-  const hostedSites = createSettingsHostedSitesStore(props, () => activeTab() === "hosted-sites");
+  const billing = createBillingStore(
+    () => props.billingApi,
+    () => props.open && activeTab() === "billing",
+  );
+  const referral = createReferralStore(
+    () => props.referralApi,
+    () => props.open && activeTab() === "referral",
+  );
+  const license = createLicenseStore(
+    () => props.licenseApi,
+    () => props.open && activeTab() === "billing",
+    trackLicenseEvent,
+  );
+  const credits = createCreditsStore(
+    () => props.creditsApi,
+    () => props.open && activeTab() === "billing",
+    (state) => props.onCreditsChange?.(state),
+    { activity: true },
+  );
+  const hostedServers = createSettingsHostedServersStore(props, () => activeTab() === "billing");
+  const voice = createSettingsVoiceStore(() => props.open && activeTab() === "voice");
+  const notificationLevels = createNotificationLevelsStore({
+    visible: () => props.open && activeTab() === "notifications",
+    servers: () => props.servers ?? [],
+  });
+  let handledHostedServerDeleteNonce = 0;
+  createEffect(
+    () => (props.open ? props.hostedServerDeleteRequest : null),
+    (request) => {
+      if (!request || request.nonce === handledHostedServerDeleteNonce) return;
+      handledHostedServerDeleteNonce = request.nonce;
+      hostedServers.requestDeleteById(request.serverId);
+    },
+  );
+
+  const dynamicIslandShown = () => dynamicIslandSettingsShown(props.appInfo?.platform, props.chatWindow === true);
+  createEffect(
+    () => {
+      const tab = props.open ? props.openTab : undefined;
+      return tab === "hosted-servers" ? "billing" : tab;
+    },
+    (tab) => {
+      if (!tab) return;
+      setActiveTab(tab);
+    },
+  );
+  const agentDockShown = () =>
+    settingsTabShown("agent-dock", { platform: props.appInfo?.platform, chatWindow: props.chatWindow === true }) &&
+    props.agentDock !== undefined;
+  const visibleNavItems = () =>
+    navItems.filter(
+      (item) =>
+        settingsTabShown(item.value, { platform: props.appInfo?.platform, chatWindow: props.chatWindow === true }) &&
+        (item.value !== "agent-dock" || props.agentDock !== undefined),
+    );
 
   const title = () => i18n.t(navItem(activeTab()).titleKey);
-  const description = () =>
-    activeTab() === "mobile-connect" && props.onlineServices === false
-      ? "Pair your phone with this running Dani-Dex host. No account needed."
-      : i18n.t(navItem(activeTab()).descriptionKey);
+  const description = () => i18n.t(navItem(activeTab()).descriptionKey);
 
   const tabsProps = {
     get value() {
@@ -242,12 +211,19 @@ export function SettingsModal(props: SettingsModalProps) {
     onChange(value: string) {
       if (
         value === "general" ||
-        value === "hotkey" ||
+        value === "appearance" ||
+        value === "app-behavior" ||
+        value === "notifications" ||
+        value === "voice" ||
+        value === "keyboard" ||
+        (value === "dynamic-island" && dynamicIslandShown()) ||
+        (value === "agent-dock" && agentDockShown()) ||
         value === "computer-use" ||
         value === "profile" ||
+        value === "billing" ||
+        value === "referral" ||
         value === "mobile-connect" ||
-        value === "updates" ||
-        value === "hosted-sites"
+        value === "updates"
       ) {
         setActiveTab(value);
       }
@@ -256,93 +232,55 @@ export function SettingsModal(props: SettingsModalProps) {
     activationMode: "automatic" as const,
   };
 
-  /** OpenCode is the only provider whose sign-in is a pasted key, so it is the only row served. */
-  function openProviderKeyDialog(provider: AgentProviderId): void {
-    if (provider === "opencode") setOpenCodeKeyOpen(true);
-  }
+  const preferencesLoadError = () => (
+    <Show when={props.preferencesLoadFailed}>
+      <Alert tone="danger" role="alert" report={{ operation: "settings", source: "system", cause_code: "unknown" }}>
+        <AlertIcon>
+          <TriangleAlert aria-hidden="true" />
+        </AlertIcon>
+        <AlertContent>
+          <AlertDescription>{i18n.t("settings.preferences.loadFailed")}</AlertDescription>
+        </AlertContent>
+        <Show when={props.onRetryPreferencesLoad}>
+          {(retry) => (
+            <AlertActions>
+              <Button type="button" variant="outline" size="sm" onClick={() => retry()()}>
+                {i18n.t("common.retry")}
+              </Button>
+            </AlertActions>
+          )}
+        </Show>
+      </Alert>
+    </Show>
+  );
 
   function updateSetting<Key extends keyof GeneralSettingsValue>(key: Key, value: GeneralSettingsValue[Key]): void {
     props.onValueChange({ ...props.value, [key]: value });
+  }
+
+  function updateSettings(patch: Partial<GeneralSettingsValue>): void {
+    props.onValueChange({ ...props.value, ...patch });
   }
 
   return (
     <Tabs.Root {...tabsProps} class="settings-modal-tabs-root">
       <SettingsDialogShell
         class="app-settings-modal-shell"
+        page={props.page}
         open={props.open}
-        onOpenChange={props.onOpenChange}
         title={title()}
         description={description()}
         contentKey={activeTab()}
         restoreFocusTarget={props.restoreFocusTarget}
         onContentElement={(element) => (modalElement = element)}
-        floatingContent={
-          <>
-            <Show when={openCodeKeyOpen() && props.providerKeys}>
-              {(api) => (
-                <OpenCodeKeyDialog
-                  api={api()}
-                  onClose={() => {
-                    setOpenCodeKeyOpen(false);
-                    void refreshOpenCodeKeyStatus();
-                  }}
-                  onReconnect={props.onConnectProvider ? () => props.onConnectProvider?.("opencode") : undefined}
-                />
-              )}
-            </Show>
-            <Show when={props.codeLogin?.provider() ? props.codeLogin : undefined}>
-              {(api) => (
-                <ProviderCodeLoginDialog
-                  open={true}
-                  providerName={agentProviderDescriptor(api().provider() ?? "codex").displayName}
-                  state={api().state()}
-                  onOpenVerificationUrl={api().openVerificationUrl}
-                  onCancel={api().cancel}
-                />
-              )}
-            </Show>
-          </>
-        }
-        footer={
-          <SaveBarDock value={profile.nameDirty() ? true : null}>
-            {() => (
-              <section class="settings-modal-save-bar" aria-label={i18n.t("settings.save.region")}>
-                <Text variant="caption" tone="muted">
-                  {i18n.t("settings.save.notSaved")}
-                </Text>
-                <div class="settings-modal-save-actions">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    disabled={profile.state.profile.busy}
-                    onClick={profile.resetName}
-                  >
-                    {i18n.t("settings.save.reset")}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="default"
-                    loading={profile.state.profile.busy}
-                    loadingLabel={i18n.t("settings.save.saving")}
-                    disabled={profile.state.profile.busy}
-                    onClick={() => void profile.saveName()}
-                  >
-                    {i18n.t("settings.save.save")}
-                  </Button>
-                </div>
-              </section>
-            )}
-          </SaveBarDock>
-        }
         sidebar={
           <Tabs.List class="settings-modal-nav" aria-label={i18n.t("settings.sections.label")}>
-            {navItems
-              .filter((item) => props.onlineServices !== false || item.value !== "hosted-sites")
-              .map((item) => {
-                const NavIcon = item.icon;
-                return (
+            {visibleNavItems().map((item, index, items) => {
+              const NavIcon = item.icon;
+              const group = item.group !== items[index - 1]?.group ? item.group : undefined;
+              return (
+                <>
+                  {group ? <SettingsNavGroupLabel label={i18n.t(group)} /> : null}
                   <Tabs.Trigger
                     class="settings-modal-nav-item"
                     value={item.value}
@@ -351,72 +289,187 @@ export function SettingsModal(props: SettingsModalProps) {
                     <NavIcon aria-hidden="true" />
                     <span>{i18n.t(item.titleKey)}</span>
                   </Tabs.Trigger>
-                );
-              })}
+                </>
+              );
+            })}
           </Tabs.List>
         }
       >
         <Tabs.Content value="general" class="settings-modal-tab-panel" data-tab="general">
+          {preferencesLoadError()}
           <SettingsGeneralTab
-            daniOnly={props.daniOnly}
-            store={general}
+            part="general"
             value={props.value}
-            onUpdateSetting={updateSetting}
+            variant={props.appInfo?.variant ?? "production"}
             platform={props.appInfo?.platform}
+            onUpdateSetting={updateSetting}
+            onUpdateSettings={updateSettings}
             selectMount={modalElement}
-            onDownloadProvider={props.onDownloadProvider}
-            onCancelProviderDownload={props.onCancelProviderDownload}
-            onUpdateProvider={props.onUpdateProvider}
-            onOptionalApiKey={props.onOptionalApiKey}
-            onConnectProvider={props.onConnectProvider}
-            onInstallProvider={props.onInstallProvider}
-            onAddCustomProvider={props.onAddCustomProvider}
-            customProviders={props.customProviders}
-            onDeleteCustomProvider={props.onDeleteCustomProvider}
-            onSignInProvider={props.providerKeys ? openProviderKeyDialog : undefined}
-            onSignInWithCodeProvider={props.codeLogin?.start}
-            turboModePending={props.turboModePending}
-            harness={props.harness}
-            voiceKey={props.voiceKey}
+            chatColor={props.account.chatColor ?? null}
+            onSetChatColor={props.onSetChatColor}
           />
         </Tabs.Content>
 
-        <Tabs.Content value="hotkey" class="settings-modal-tab-panel" data-tab="hotkey">
-          <TalkKeyPicker platform={props.appInfo?.platform ?? "darwin"} />
+        <Tabs.Content value="appearance" class="settings-modal-tab-panel" data-tab="appearance">
+          {preferencesLoadError()}
+          <SettingsGeneralTab
+            part="appearance"
+            value={props.value}
+            variant={props.appInfo?.variant ?? "production"}
+            platform={props.appInfo?.platform}
+            onUpdateSetting={updateSetting}
+            onUpdateSettings={updateSettings}
+            selectMount={modalElement}
+            chatColor={props.account.chatColor ?? null}
+            onSetChatColor={props.onSetChatColor}
+          />
         </Tabs.Content>
+
+        <Tabs.Content value="app-behavior" class="settings-modal-tab-panel" data-tab="app-behavior">
+          {preferencesLoadError()}
+          <SettingsGeneralTab
+            part="app-behavior"
+            value={props.value}
+            variant={props.appInfo?.variant ?? "production"}
+            platform={props.appInfo?.platform}
+            onUpdateSetting={updateSetting}
+            onUpdateSettings={updateSettings}
+            selectMount={modalElement}
+            chatColor={props.account.chatColor ?? null}
+            onSetChatColor={props.onSetChatColor}
+          />
+        </Tabs.Content>
+
+        <Tabs.Content value="notifications" class="settings-modal-tab-panel" data-tab="notifications">
+          {preferencesLoadError()}
+          <SettingsNotificationsTab
+            value={props.value}
+            onUpdateSetting={updateSetting}
+            onUpdateSettings={updateSettings}
+            onTestNotification={props.onTestNotification}
+            onOpenNotificationSettings={
+              props.appInfo?.platform === "darwin" || props.appInfo?.platform === "win32"
+                ? props.onOpenNotificationSettings
+                : undefined
+            }
+            levels={notificationLevels}
+            onSetServerLevel={(serverId, level) =>
+              props.onSetServerNotificationLevel?.(serverId, level) ?? Promise.resolve()
+            }
+            onSetServerMuted={(serverId, muted, durationMs) =>
+              props.onSetServerMuted?.(serverId, muted, durationMs) ?? Promise.resolve()
+            }
+            focusRequest={props.notificationFocusRequest}
+            menuMount={modalElement}
+          />
+        </Tabs.Content>
+
+        <Tabs.Content value="voice" class="settings-modal-tab-panel" data-tab="voice">
+          <SettingsVoiceTab
+            store={voice}
+            selectMount={modalElement}
+            codexLiveAccess={props.codexLiveAccess}
+            onConnectCodex={props.onConnectCodex}
+            liveVoiceAccount={props.liveVoiceAccount}
+            platform={props.appInfo?.platform}
+          />
+        </Tabs.Content>
+
+        <Tabs.Content value="keyboard" class="settings-modal-tab-panel" data-tab="keyboard">
+          <SettingsKeyboardTab />
+        </Tabs.Content>
+
+        <Show when={dynamicIslandShown()}>
+          <Tabs.Content value="dynamic-island" class="settings-modal-tab-panel" data-tab="dynamic-island">
+            {preferencesLoadError()}
+            <SettingsDynamicIslandTab
+              value={props.value}
+              variant={props.appInfo?.variant ?? "production"}
+              platform={props.appInfo?.platform}
+              builtInDisplayGeometry={props.builtInDisplayGeometry}
+              servers={props.servers ?? []}
+              onUpdateSetting={updateSetting}
+              onUpdateSettings={updateSettings}
+            />
+          </Tabs.Content>
+        </Show>
+
+        <Show when={agentDockShown() && props.agentDock}>
+          {(model) => (
+            <Tabs.Content value="agent-dock" class="settings-modal-tab-panel" data-tab="agent-dock">
+              <SettingsAgentDockTab model={model()} selectMount={modalElement} />
+            </Tabs.Content>
+          )}
+        </Show>
+
         <Tabs.Content value="computer-use" class="settings-modal-tab-panel" data-tab="computer-use">
           <ComputerUseSetup variant="settings" />
         </Tabs.Content>
 
-        <Tabs.Content value="profile" class="settings-modal-tab-panel" data-tab="profile">
+        <Tabs.Content value="profile" class="settings-modal-tab-panel profile-panel" data-tab="profile">
           <SettingsProfileTab
             store={profile}
             account={props.account}
+            activity={profileActivity}
             canListSessions={Boolean(props.onListAccountSessions)}
-            canEditAvatar={props.onlineServices !== false}
             canRevokeSession={Boolean(props.onRevokeAccountSession)}
+            onSignOut={props.onSignOut}
           />
+        </Tabs.Content>
+
+        <Tabs.Content value="billing" class="settings-modal-tab-panel" data-tab="billing">
+          <BillingPanel
+            store={billing}
+            available={Boolean(props.billingApi)}
+            hostedServers={hostedServers}
+            onAddServer={hostedServers.state.available ? props.onAddHostedServer : undefined}
+            license={
+              <LicenseSection
+                store={license}
+                onManagePayment={() => void billing.openPortal({ flow: "manage" })}
+                onContactUs={licenseContactUs(props.onContactUs)}
+                billingDetails={props.billingApi}
+              />
+            }
+            credits={
+              <Show when={props.onBuyCredits}>
+                {(onBuy) => (
+                  <>
+                    <CreditsSection store={credits} onBuy={(serverId) => onBuy()(serverId)} />
+                    <CreditActivitySection store={credits} />
+                  </>
+                )}
+              </Show>
+            }
+          />
+        </Tabs.Content>
+
+        <Tabs.Content value="referral" class="settings-modal-tab-panel" data-tab="referral">
+          <ReferralPanel store={referral} available={props.referralApi !== undefined} />
         </Tabs.Content>
 
         <Tabs.Content value="mobile-connect" class="settings-modal-tab-panel" data-tab="mobile-connect">
           <SettingsMobileConnectTab
             store={mobileConnect}
-            accountAvailable={props.onlineServices !== false}
             canCreateTicket={Boolean(props.onCreateMobileConnect)}
+            canCancelTicket={Boolean(props.onCancelMobileConnect)}
+            canManageLink={Boolean(props.onCreateMobileConnectLink && props.onRevokeMobileConnectLink)}
             canRevokeDevice={Boolean(props.onRevokeMobileConnectedDevice)}
+            canSetRoute={Boolean(props.onSetRemoteNetworkRoute)}
+            installRequest={props.open ? props.mobileInstallRequest : null}
+            onInstallRequestHandled={props.onMobileInstallRequestHandled}
           />
         </Tabs.Content>
 
         <Tabs.Content value="updates" class="settings-modal-tab-panel" data-tab="updates">
+          {preferencesLoadError()}
           <SettingsUpdatesTab
             store={updates}
+            onOpenWhatsNew={props.onOpenWhatsNew}
             value={props.value}
             onUpdateSetting={updateSetting}
             selectMount={modalElement}
           />
-        </Tabs.Content>
-        <Tabs.Content value="hosted-sites" class="settings-modal-tab-panel" data-tab="hosted-sites">
-          <SettingsHostedSitesTab store={hostedSites} available={Boolean(props.hostedSitesApi)} />
         </Tabs.Content>
       </SettingsDialogShell>
     </Tabs.Root>

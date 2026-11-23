@@ -1,19 +1,21 @@
-import { emptyAnalyticsTotals, type HostAnalytics } from "@dani-dex/contracts/ipc";
+import { emptyAnalyticsTotals, type HostAnalytics, type MachineMetrics } from "@openbot/contracts/ipc";
+import { UsageMachineMeter } from "@openbot/ui/features/usage/UsageMachineMeter";
 import { onCleanup } from "solid-js";
 import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { AgentUsagePanel } from "../src/features/usage/AgentUsagePanel";
 import { mockHostAnalytics } from "../src/preview/mock-agent-analytics";
-import { createMockDaniDex } from "./mock-dani-dex";
+import { createMockOpenBot } from "./mock-openbot";
 
 function UsageStory(props: {
   state: "ready" | "empty" | "partial" | "loading" | "error" | "unsupported" | "large" | "small" | "long";
   narrow?: boolean;
   agentId?: string;
+  machine?: "normal" | "high";
 }) {
-  const previous = window.danidex;
-  const mock = createMockDaniDex();
-  window.danidex = mock.api;
+  const previous = window.openbot;
+  const mock = createMockOpenBot();
+  window.openbot = mock.api;
   mock.api.agent.getHostAnalytics = async (input) => {
     if (props.state === "error") throw new Error("Host is offline.");
     if (props.state === "unsupported") return null;
@@ -50,21 +52,46 @@ function UsageStory(props: {
   };
   onCleanup(() => {
     mock.dispose();
-    window.danidex = previous;
+    if (window.openbot === mock.api) window.openbot = previous;
   });
+  const machine = () => {
+    const load = props.machine;
+    return load && <UsageMachineMeter metrics={machineMetrics(load)} onOpenStorage={fn()} />;
+  };
   return (
     <main
       style={{
         width: props.narrow ? "390px" : "100%",
         height: "900px",
         overflow: "hidden",
-        background: "var(--dani-dex-bg-canvas)",
+        background: "var(--openbot-bg-canvas)",
       }}
     >
-      <AgentUsagePanel hostName="Local host" serverId="local" agentId={props.agentId} onBack={fn()} />
+      <AgentUsagePanel
+        hostName="Local host"
+        serverId="local"
+        agentId={props.agentId}
+        onBack={fn()}
+        machine={machine()}
+      />
     </main>
   );
 }
+const GB = 1024 ** 3;
+
+function machineMetrics(load: "normal" | "high"): MachineMetrics {
+  return {
+    diskUsedBytes: 31 * GB,
+    diskFreeBytes: 45 * GB,
+    diskTotalBytes: 76 * GB,
+    memoryAvailableBytes: Math.round((load === "high" ? 0.3 : 2.5) * GB),
+    memoryTotalBytes: Math.round(7.6 * GB),
+    cpuPercent: load === "high" ? 94 : 37,
+    cpuMillicores: 4000,
+    checkedAt: "2026-11-04T12:00:00.000Z",
+  };
+}
+
 const meta = {
   title: "Agents/Usage",
   component: UsageStory,
@@ -85,3 +112,7 @@ export const SmallCosts: Story = { args: { state: "small" } };
 export const LongModelNames: Story = { args: { state: "long", narrow: true } };
 
 export const SingleAgent: Story = { args: { agentId: "chief" } };
+
+export const Machine: Story = { args: { machine: "normal" } };
+export const MachineHigh: Story = { args: { machine: "high" } };
+export const MachineNarrow: Story = { args: { machine: "normal", narrow: true } };

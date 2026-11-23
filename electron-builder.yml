@@ -1,7 +1,8 @@
 appId: dev.danlab.danidex.desktop
-productName: Dani-Dex
+productName: Dani Dex
+copyright: Copyright © 2026 Synthetify Labs spółka z ograniczoną odpowiedzialnością
 protocols:
-  - name: Dani-Dex invitations
+  - name: Dani Dex invitations
     schemes:
       - dani-dex
 asar: true
@@ -29,64 +30,57 @@ files:
   - "!node_modules/@anthropic-ai/claude-agent-sdk-darwin-*/**/*"
   - "!node_modules/@anthropic-ai/claude-agent-sdk-linux-*/**/*"
   - "!node_modules/@anthropic-ai/claude-agent-sdk-win32-*/**/*"
-  # Renderer imports are already compiled into out/renderer. Never ship a second
-  # raw copy of their libraries in the main-process dependency tree.
-  - "!node_modules/lucide-solid/**/*"
-  - "!node_modules/three/**/*"
-  - "!node_modules/@types/three/**/*"
-  - "!node_modules/@dimforge/**/*"
-  - "!node_modules/rrweb/**/*"
-  - "!node_modules/rrdom/**/*"
-  - "!node_modules/rrweb-snapshot/**/*"
-  - "!node_modules/@fontsource-variable/**/*"
-  - "!node_modules/solid-recharts/**/*"
-  - "!node_modules/@solidjs/**/*"
-  - "!node_modules/@kobalte/**/*"
-  - "!node_modules/@norbert_bodziony/**/*"
-  - "!node_modules/@paper-design/**/*"
-  - "!node_modules/@speed-highlight/**/*"
-  - "!node_modules/@tanstack/virtual-core/**/*"
-  - "!node_modules/class-variance-authority/**/*"
-  - "!node_modules/solid-sonner/**/*"
-  - "!node_modules/solid-js/**/*"
+  - "!node_modules/effect/src/**/*"
   - "!node_modules/**/*.map"
-  - "!node_modules/**/*.test.*"
-  - "!node_modules/**/*.d.ts"
-
 asarUnpack:
-  # The database host is loaded by path as a separate process, not required into the main bundle.
   - out/main/agent-database-host.js
+  - out/main/voice-transcription-host.js
+  - out/main/voice-speech-host.js
+  - node_modules/effect/**/*
+  - node_modules/@koromix/koffi-*/**/*
 extraResources:
   - from: resources/managed-skills
     to: managed-skills
-  - from: resources/skill-packs
-    to: skill-packs
   - from: resources/plugin-catalog
     to: plugin-catalog
+  - from: resources/agent-import
+    to: agent-import
+  - from: resources/cli
+    to: cli
+  - from: resources/agent-runtime
+    to: agent-runtime
   - from: build/icon-production.png
     to: icons/icon-production.png
   - from: build/icon-dev.png
     to: icons/icon-dev.png
   - from: build/icon-preview.png
     to: icons/icon-preview.png
+  - from: build/logo-colors
+    to: icons/logo-colors
   - from: node_modules/electron/dist/LICENSE
     to: licenses/Electron-LICENSE
   - from: node_modules/electron/dist/LICENSES.chromium.html
     to: licenses/LICENSES.chromium.html
+  - from: build/licenses/sherpa-onnx-LICENSE
+    to: licenses/sherpa-onnx-LICENSE
+  - from: build/licenses/onnxruntime-LICENSE
+    to: licenses/onnxruntime-LICENSE
+  - from: build/licenses/NVIDIA-Parakeet-TDT-0.6B-v3-LICENSE
+    to: licenses/NVIDIA-Parakeet-TDT-0.6B-v3-LICENSE
+  - from: build/licenses/NVIDIA-Parakeet-Unified-EN-0.6B-LICENSE
+    to: licenses/NVIDIA-Parakeet-Unified-EN-0.6B-LICENSE
+  - from: build/licenses/Underdog-Bark-3.0-Plus-LICENSE
+    to: licenses/Underdog-Bark-3.0-Plus-LICENSE
   - from: build/licenses/OpenAI-Whisper-LICENSE
     to: licenses/OpenAI-Whisper-LICENSE
-  - from: build/licenses/whisper.cpp-LICENSE
-    to: licenses/whisper.cpp-LICENSE
-  - from: build/licenses/Silero-VAD-LICENSE
-    to: licenses/Silero-VAD-LICENSE
-  - from: build/licenses/OpenCode-MIT-LICENSE
-    to: licenses/OpenCode-MIT-LICENSE
-# Voice and remote desktop are prepared for macOS and Windows only, and each Computer Use driver
-# is built for one target, so their resources are listed under each platform instead of here.
-# electron-builder merges the root and platform lists, so every build still gets its own, while a
-# build has no missing `from` to fail on and no other platform's driver to carry.
+  - from: build/licenses/Cohere-Transcribe-LICENSE
+    to: licenses/Cohere-Transcribe-LICENSE
+  - from: build/licenses/Supertone-Supertonic-3-LICENSE
+    to: licenses/Supertone-Supertonic-3-LICENSE
 directories:
   output: dist
+toolsets:
+  appimage: "1.0.3"
 mac:
   category: public.app-category.productivity
   minimumSystemVersion: "13.0"
@@ -94,106 +88,87 @@ mac:
   hardenedRuntime: true
   icon: build/icon-production.icns
   extraResources:
+    - from: build/macos/Assets.car
+      to: Assets.car
     - from: build/icon-production-macos-safe-area.png
       to: icons/icon-production-macos-safe-area.png
     - from: build/icon-dev-macos-safe-area.png
       to: icons/icon-dev-macos-safe-area.png
     - from: build/icon-preview-macos-safe-area.png
       to: icons/icon-preview-macos-safe-area.png
-    - from: .dani-dex-build/whisper/bin
-      to: whisper/bin
+    - from: build/macos/tray
+      to: icons/tray
+      filter:
+        - "*.png"
+    - from: .openbot-build/voice/runtime
+      to: voice/runtime
     - from: build/remote-desktop-runtime
       to: remote-desktop-runtime
-    - from: build/cua-driver/darwin/arm64
-      to: cua-driver/darwin/arm64
-    # The Hermes harness: a relocatable CPython with hermes-agent[acp] installed, staged by
-    # `install:hermes-runtime`. `bundledHermesExecutable` reads this exact layout.
-    - from: build/hermes/mac/arm64
-      to: hermes/mac/arm64
-    # The Dani-Free proxy, one unsigned executable per platform, staged by
-    # `scripts/install-dani-free.ts`. `bundledDaniFreeExecutable` reads this exact layout.
-    - from: build/dani-free/darwin/arm64
-      to: dani-free/darwin/arm64
-    - from: build/dani-free-engine/darwin/arm64
-      to: dani-free-engine/darwin/arm64
-  # The Computer Use driver arrives signed by Cua AI with the hardened runtime, a secure timestamp
-  # and `com.apple.security.automation.apple-events`. Re-signing it with Dani-Dex's inherited
-  # entitlements would drop that entitlement and break the driver's Automation route, so its own
-  # Developer ID signature is kept. Notarization accepts a nested binary signed by another team.
+    - from: build/cua-driver/darwin/${arch}
+      to: cua-driver/darwin/${arch}
   signIgnore:
     - Contents/Resources/cua-driver/
   entitlements: build/entitlements.mac.plist
   entitlementsInherit: build/entitlements.mac.inherit.plist
   darkModeSupport: true
   extendInfo:
+    CFBundleIconName: Icon
     ElectronTeamID: ZTRDTUL87R
-    NSMicrophoneUsageDescription: Dani-Dex uses the microphone to transcribe voice prompts locally on this Mac.
-    # Computer Use runs the driver as a child process, so macOS asks for both grants in Dani-Dex's
-    # name and shows these sentences.
-    NSScreenCaptureUsageDescription: Dani-Dex captures the screen so an agent can see the app windows you ask it to control.
-    NSAppleEventsUsageDescription: Dani-Dex sends Automation events so an agent can control the apps you ask it to control.
+    NSMicrophoneUsageDescription: OpenBot uses the microphone to transcribe voice prompts locally on this Mac.
+    NSScreenCaptureUsageDescription: OpenBot captures the screen so an agent can see the app windows you ask it to control.
+    NSAppleEventsUsageDescription: OpenBot sends Automation events so an agent can control the apps you ask it to control.
+    NSCalendarsFullAccessUsageDescription: OpenBot lets the commands that an agent runs read and change your calendar events.
+    NSCalendarsWriteOnlyAccessUsageDescription: OpenBot lets the commands that an agent runs add events to your calendars.
+    NSCalendarsUsageDescription: OpenBot lets the commands that an agent runs use your calendars.
+    NSRemindersFullAccessUsageDescription: OpenBot lets the commands that an agent runs read and change your reminders.
+    NSRemindersUsageDescription: OpenBot lets the commands that an agent runs use your reminders.
     NSUserActivityTypes:
       - NSUserActivityTypeBrowsingWeb
   target:
-    - target: dmg
-      arch:
-        - arm64
-    - target: zip
-      arch:
-        - arm64
+    - dmg
+    - zip
 win:
   icon: build/icon-production.ico
   extraResources:
-    - from: .dani-dex-build/whisper/bin
-      to: whisper/bin
+    - from: .openbot-build/voice/runtime
+      to: voice/runtime
     - from: build/remote-desktop-runtime
       to: remote-desktop-runtime
     - from: build/cua-driver/win32/x64
       to: cua-driver/win32/x64
-    - from: build/hermes/win/x64
-      to: hermes/win/x64
-    - from: build/dani-free/win32/x64
-      to: dani-free/win32/x64
-    - from: build/dani-free-engine/win32/x64
-      to: dani-free-engine/win32/x64
   target:
     - target: nsis
       arch:
         - x64
 nsis:
   oneClick: false
-  include: build/dani-free-installer.nsh
-  # The installer EXE, setup header, and uninstall entry use the same white/black production mark
-  # as the installed app. Do not pick up an old build/installerIcon.ico by default.
-  installerIcon: build/icon-production.ico
-  installerHeaderIcon: build/icon-production.ico
-  uninstallerIcon: build/icon-production.ico
+  allowToChangeInstallationDirectory: true
 linux:
-  category: Utility
+  category: Development
   icon: build/icon-production.png
-  synopsis: A local-first desktop workspace with Dani Free included.
-  description: Dani-Dex includes Dani Free.
+  synopsis: A local-first multi-agent desktop workspace.
   extraResources:
-    - from: build/linux/dani-dex.apparmor
-      to: linux/dani-dex.apparmor
-    - from: build/cua-driver/linux/x64
-      to: cua-driver/linux/x64
-    - from: build/hermes/linux/x64
-      to: hermes/linux/x64
-    - from: build/dani-free/linux/x64
-      to: dani-free/linux/x64
-    - from: build/dani-free-engine/linux/x64
-      to: dani-free-engine/linux/x64
-  # Electron takes its Linux app id from `desktopName` in package.json, and the window manager
-  # matches a running window to the launcher through `StartupWMClass`. Syncing the two from one
-  # value is what makes the taskbar icon group with the window it belongs to.
+    - from: build/linux/openbot.apparmor
+      to: linux/openbot.apparmor
+    - from: scripts/hosting
+      to: hosting
+      filter:
+        - "**/*"
+        - "!*.ts"
+    - from: .openbot-build/voice/runtime
+      to: voice/runtime
+    - from: build/remote-desktop-runtime
+      to: remote-desktop-runtime
+    - from: build/cua-driver/linux/${arch}
+      to: cua-driver/linux/${arch}
   syncDesktopName: true
   target:
     - target: AppImage
       arch:
         - x64
+        - arm64
 dmg:
-  title: ${productName} ${version} - Dani Free included
+  title: ${productName} ${version}
   background: build/dmg-background.png
   iconSize: 128
   iconTextSize: 14

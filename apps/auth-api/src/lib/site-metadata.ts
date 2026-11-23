@@ -1,50 +1,154 @@
-// No Vite-only import belongs in this file. `vite.config.ts` reads it, through the
-// news artwork generator, while plain Node loads the config, and Node cannot
-// resolve an `?url` specifier. That is why the font asset arrives as an argument
-// from the root route instead of as an import here.
+import { faqStructuredData, type LandingQuestion } from "./landing-faq";
+import { OPENBOT_ALTERNATE_DOWNLOAD_LINKS, OPENBOT_DOWNLOAD_LINKS, OPENBOT_LINKS } from "./landing-links";
 
-export const DANI_DEX_SITE_URL = "https://openbot.run/";
-export const DANI_DEX_SITE_TITLE = "Dani-Dex: AI teammates for real work";
-export const DANI_DEX_SITE_DESCRIPTION =
-  "Run Codex and Claude side by side as persistent AI teammates, each with its own workspace, queue, and context.";
-export const DANI_DEX_SOCIAL_IMAGE_URL = `${DANI_DEX_SITE_URL}dani-dex-social.png`;
-export const DANI_DEX_SOCIAL_IMAGE_ALT = "Meet Dani-Dex on a dark grid background";
+export const OPENBOT_SITE_URL = "https://openbot.run/";
+export const OPENBOT_SITE_TITLE = "Dani Dex: Run a team of AI agents on your computer";
+export const OPENBOT_SITE_DESCRIPTION =
+  "A free desktop app that runs AI agents as a team on your own computer, with the ChatGPT, Claude, Gemini or Grok plan you already pay for, or your own model.";
+export const OPENBOT_SOCIAL_IMAGE_URL = `${OPENBOT_SITE_URL}openbot-social.png`;
+export const OPENBOT_X_HANDLE = "@Dani Dex_";
+const OPENBOT_X_URL = "https://x.com/Dani Dex_";
+const OPENBOT_REPOSITORY_URL = "https://github.com/nightly-labs/openbot";
+const OPENBOT_PRODUCT_HUNT_URL = "https://www.producthunt.com/products/openbot-3";
+const OPENBOT_LICENSE_URL = "https://polyformproject.org/licenses/noncommercial/1.0.0/";
+const OPENBOT_ORGANIZATION_ID = `${OPENBOT_SITE_URL}#organization`;
+const OPENBOT_WEBSITE_ID = `${OPENBOT_SITE_URL}#website`;
+const OPENBOT_APPLICATION_ID = `${OPENBOT_SITE_URL}#app`;
+export const OPENBOT_LOGO_URL = `${OPENBOT_SITE_URL}icon-512x512.png`;
+export const OPENBOT_SOCIAL_IMAGE_ALT = "Meet Dani Dex on a dark grid background";
 
-// The hosts production answers on. Both serve the same pages, and those pages go by
-// openbot.run.
-const DANI_DEX_PRODUCTION_HOSTS = new Set(["openbot.run", "api.openbot.run"]);
+export const OPENBOT_SOCIAL_IMAGE_META = [
+  { property: "og:image", content: OPENBOT_SOCIAL_IMAGE_URL },
+  { property: "og:image:type", content: "image/png" },
+  { property: "og:image:width", content: "1600" },
+  { property: "og:image:height", content: "900" },
+  { property: "og:image:alt", content: OPENBOT_SOCIAL_IMAGE_ALT },
+] as const;
 
-/**
- * The site that the head tags of a page served at `pageUrl` name. Social sites fetch
- * `og:url` and `og:image` themselves and show no card when those answer 404. A
- * pull-request preview serves pages and images that openbot.run does not have yet,
- * so any host other than production names itself. Cloudflare marks preview URLs
- * `noindex`, so a preview canonical does not compete with production.
- */
-export function siteUrlForPage(pageUrl: URL): string {
-  return DANI_DEX_PRODUCTION_HOSTS.has(pageUrl.hostname) ? DANI_DEX_SITE_URL : `${pageUrl.origin}/`;
-}
-
-export const DANI_DEX_SOFTWARE_APPLICATION = {
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  name: "Dani-Dex",
-  url: DANI_DEX_SITE_URL,
-  image: DANI_DEX_SOCIAL_IMAGE_URL,
-  description: DANI_DEX_SITE_DESCRIPTION,
-  applicationCategory: "DeveloperApplication",
-  operatingSystem: ["macOS 13 or later", "Windows 10 or later"],
-  downloadUrl: [`${DANI_DEX_SITE_URL}download/macos`, `${DANI_DEX_SITE_URL}download/windows`],
-  isAccessibleForFree: true,
-  offers: {
-    "@type": "Offer",
-    price: "0",
-    priceCurrency: "USD",
-  },
-  sameAs: ["https://github.com/nightly-labs/openbot"],
+export const OPENBOT_SOCIAL_IMAGE_TAGS = {
+  openGraph: OPENBOT_SOCIAL_IMAGE_META,
+  twitter: [
+    { name: "twitter:image", content: OPENBOT_SOCIAL_IMAGE_URL },
+    { name: "twitter:image:alt", content: OPENBOT_SOCIAL_IMAGE_ALT },
+  ],
 } as const;
 
-export const DANI_DEX_SECURITY_HEADERS = {
+export interface PageSocialImage {
+  path: string;
+  alt: string;
+}
+
+export const OPENBOT_LEGAL_SOCIAL_IMAGE: PageSocialImage = {
+  path: "/social/legal.jpg",
+  alt: "Plain terms. No surprises. Dani Dex agents beside a paper map",
+};
+
+export function pageSocialImageMeta(image: PageSocialImage, siteUrl: string) {
+  const url = new URL(image.path, siteUrl).toString();
+  return {
+    openGraph: [
+      { property: "og:image", content: url },
+      { property: "og:image:type", content: "image/jpeg" },
+      { property: "og:image:width", content: "1600" },
+      { property: "og:image:height", content: "900" },
+      { property: "og:image:alt", content: image.alt },
+    ],
+    twitter: [
+      { name: "twitter:image", content: url },
+      { name: "twitter:image:alt", content: image.alt },
+    ],
+  } as const;
+}
+
+const OPENBOT_PRODUCTION_HOSTS = new Set(["openbot.run", "api.openbot.run"]);
+
+export function siteUrlForPage(pageUrl: URL): string {
+  return OPENBOT_PRODUCTION_HOSTS.has(pageUrl.hostname) ? OPENBOT_SITE_URL : `${pageUrl.origin}/`;
+}
+
+export interface OpenBotApplicationFacts {
+  version: string;
+  screenshot: string;
+}
+
+export function openBotSoftwareApplication(facts: OpenBotApplicationFacts) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "@id": OPENBOT_APPLICATION_ID,
+    name: "Dani Dex",
+    url: OPENBOT_SITE_URL,
+    image: OPENBOT_SOCIAL_IMAGE_URL,
+    description: OPENBOT_SITE_DESCRIPTION,
+    applicationCategory: "DeveloperApplication",
+    applicationSubCategory: "AI agent app",
+    operatingSystem: [
+      "macOS 13 or later (Apple silicon or Intel)",
+      "Windows 10 or later (x64)",
+      "Linux (x64 or arm64)",
+    ],
+    downloadUrl: [
+      OPENBOT_DOWNLOAD_LINKS.macos,
+      OPENBOT_ALTERNATE_DOWNLOAD_LINKS.macos,
+      OPENBOT_DOWNLOAD_LINKS.windows,
+      OPENBOT_DOWNLOAD_LINKS.linux,
+      OPENBOT_ALTERNATE_DOWNLOAD_LINKS.linux,
+    ].map((path) => new URL(path, OPENBOT_SITE_URL).toString()),
+    featureList: [
+      "Runs Codex, Claude Code, Gemini (Antigravity), Grok and OpenCode agents",
+      "Uses your ChatGPT, Claude, Google AI Pro or Ultra, or Grok plan",
+      "Any OpenAI-compatible model server, also one on your own computer",
+      "Agents that work as a team and keep their workspace and history",
+      "Chats, files and workspaces stay on your computer",
+      "iPhone and Android apps that connect to your own computer",
+      "Free for noncommercial use",
+    ],
+    isAccessibleForFree: true,
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+    softwareVersion: facts.version,
+    screenshot: facts.screenshot,
+    license: OPENBOT_LICENSE_URL,
+    publisher: { "@id": OPENBOT_ORGANIZATION_ID },
+    sameAs: [OPENBOT_REPOSITORY_URL, OPENBOT_PRODUCT_HUNT_URL],
+  } as const;
+}
+
+export type OpenBotSoftwareApplication = ReturnType<typeof openBotSoftwareApplication>;
+
+const OPENBOT_ORGANIZATION = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": OPENBOT_ORGANIZATION_ID,
+  name: "Dani Dex",
+  url: OPENBOT_SITE_URL,
+  logo: OPENBOT_LOGO_URL,
+  sameAs: [
+    OPENBOT_REPOSITORY_URL,
+    OPENBOT_X_URL,
+    OPENBOT_LINKS.threads,
+    OPENBOT_LINKS.linkedin,
+    OPENBOT_LINKS.reddit,
+    OPENBOT_LINKS.instagram,
+    OPENBOT_LINKS.tiktok,
+    OPENBOT_LINKS.facebook,
+    OPENBOT_PRODUCT_HUNT_URL,
+  ],
+} as const;
+
+const OPENBOT_WEBSITE = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": OPENBOT_WEBSITE_ID,
+  name: "Dani Dex",
+  url: OPENBOT_SITE_URL,
+  publisher: { "@id": OPENBOT_ORGANIZATION_ID },
+} as const;
+
+export const OPENBOT_SECURITY_HEADERS = {
   "Permissions-Policy": "camera=(), geolocation=(), microphone=(), payment=(), usb=()",
   "Referrer-Policy": "strict-origin-when-cross-origin",
   "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
@@ -52,22 +156,14 @@ export const DANI_DEX_SECURITY_HEADERS = {
   "X-Frame-Options": "SAMEORIGIN",
 } as const;
 
-/**
- * @param interLatinFont The hashed URL of Inter's upright latin range, the one font
- * file this site downloads. It is reached through two levels of CSS `@import`, so a
- * browser only learns of it after the stylesheet has parsed. That is late enough
- * that the first paint uses a fallback face and every line of text moves when Inter
- * replaces it. The caller passes the same hashed asset the `@font-face` rule asks
- * for, so the preload below is that request and not a second one.
- */
-export function daniDexRootHead(interLatinFont: string) {
+export function openBotRootHead(interLatinFont: string) {
   return {
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: DANI_DEX_SITE_TITLE },
-      { name: "description", content: DANI_DEX_SITE_DESCRIPTION },
-      { name: "application-name", content: "Dani-Dex" },
+      { title: OPENBOT_SITE_TITLE },
+      { name: "description", content: OPENBOT_SITE_DESCRIPTION },
+      { name: "application-name", content: "Dani Dex" },
       { name: "color-scheme", content: "dark" },
       { name: "theme-color", content: "#1a1a1a" },
     ],
@@ -87,27 +183,55 @@ export function daniDexRootHead(interLatinFont: string) {
   };
 }
 
-export function daniDexHomeHead() {
+const OPENBOT_HOME_SOCIAL_IMAGE: PageSocialImage = {
+  path: "/social/home.jpg",
+  alt: "Models come and go. Your team stays. Dani Dex agents on a paper planet",
+};
+
+export interface HomePageHead {
+  title: string;
+  description: string;
+  questions: readonly LandingQuestion[];
+  path: string;
+  openGraphLocale: string;
+  alternates: readonly { hreflang: string; path: string }[];
+}
+
+export function openBotHomeHead(application: OpenBotSoftwareApplication, siteUrl: string, page: HomePageHead) {
+  const image = pageSocialImageMeta(OPENBOT_HOME_SOCIAL_IMAGE, siteUrl);
+  const url = new URL(page.path, OPENBOT_SITE_URL).toString();
+  const [fallback] = page.alternates;
   return {
     meta: [
-      { "script:ld+json": DANI_DEX_SOFTWARE_APPLICATION },
+      { title: page.title },
+      { name: "description", content: page.description },
+      { "script:ld+json": application },
+      { "script:ld+json": OPENBOT_ORGANIZATION },
+      { "script:ld+json": OPENBOT_WEBSITE },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "Dani-Dex" },
-      { property: "og:locale", content: "en_US" },
-      { property: "og:url", content: DANI_DEX_SITE_URL },
-      { property: "og:title", content: DANI_DEX_SITE_TITLE },
-      { property: "og:description", content: DANI_DEX_SITE_DESCRIPTION },
-      { property: "og:image", content: DANI_DEX_SOCIAL_IMAGE_URL },
-      { property: "og:image:type", content: "image/png" },
-      { property: "og:image:width", content: "1600" },
-      { property: "og:image:height", content: "900" },
-      { property: "og:image:alt", content: DANI_DEX_SOCIAL_IMAGE_ALT },
+      { property: "og:site_name", content: "Dani Dex" },
+      { property: "og:locale", content: page.openGraphLocale },
+      { property: "og:url", content: url },
+      { property: "og:title", content: page.title },
+      { property: "og:description", content: page.description },
+      ...image.openGraph,
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: DANI_DEX_SITE_TITLE },
-      { name: "twitter:description", content: DANI_DEX_SITE_DESCRIPTION },
-      { name: "twitter:image", content: DANI_DEX_SOCIAL_IMAGE_URL },
-      { name: "twitter:image:alt", content: DANI_DEX_SOCIAL_IMAGE_ALT },
+      { name: "twitter:site", content: OPENBOT_X_HANDLE },
+      { name: "twitter:title", content: page.title },
+      { name: "twitter:description", content: page.description },
+      ...image.twitter,
+      { "script:ld+json": faqStructuredData(page.questions) },
     ],
-    links: [{ rel: "canonical", href: DANI_DEX_SITE_URL }],
+    links: [
+      { rel: "canonical", href: url },
+      ...page.alternates.map((alternate) => ({
+        rel: "alternate",
+        hreflang: alternate.hreflang,
+        href: new URL(alternate.path, OPENBOT_SITE_URL).toString(),
+      })),
+      ...(fallback
+        ? [{ rel: "alternate", hreflang: "x-default", href: new URL(fallback.path, OPENBOT_SITE_URL).toString() }]
+        : []),
+    ],
   };
 }

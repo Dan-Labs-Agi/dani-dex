@@ -1,0 +1,40 @@
+import type { PartialTranslation } from "../../message";
+import type { messages as source } from "../en/menu";
+
+export const messages = {
+  "menu.stopAllAgents": "Zatrzymaj wszystkich agentów",
+  "menu.checkForUpdates": "Sprawdź aktualizacje…",
+  "menu.preferences": "Ustawienia…",
+  "menu.actualSize": "Rzeczywisty rozmiar",
+  "menu.zoomIn": "Powiększ",
+  "menu.zoomOut": "Pomniejsz",
+  "menu.closeDeveloperTools": "Zamknij narzędzia dla programistów",
+  "menu.copyLink": "Kopiuj link",
+  "menu.copyImage": "Kopiuj obraz",
+  "menu.quit": "Zamknij Dani Dex",
+  "menu.quitConfirmTitle": "Zamknąć Dani Dex?",
+  "menu.quitConfirmBody": "Agenci i rutyny zatrzymają się, dopóki nie otworzysz Dani Dex ponownie.",
+  "menu.quitConfirm": "Zamknij",
+  "menu.quitHint": "Przytrzymaj ⌘Q lub naciśnij dwa razy, aby zamknąć",
+  "menu.closeWorkingTitle": {
+    one: "{count} agent nadal pracuje",
+    few: "{count} agenci nadal pracują",
+    many: "{count} agentów nadal pracuje",
+    other: "{count} agenta nadal pracuje",
+  },
+  "menu.closeWorkingBody":
+    "Jeśli zamkniesz Dani Dex, agenci się zatrzymają. Zostaw go uruchomionego, aby skończyli. Aby znowu pokazać okno, otwórz Dani Dex.",
+  "menu.closeKeepRunning": "Nie zamykaj",
+  "menu.trayOpen": "Otwórz Dani Dex",
+  "menu.trayQuit": "Zamknij Dani Dex",
+  "menu.trayTooltip": "Dani Dex",
+  "menu.hideDynamicIsland": "Ukryj Dynamic Island",
+  "menu.undo": "Cofnij",
+  "menu.redo": "Przywróć",
+  "menu.cut": "Wytnij",
+  "menu.copy": "Kopiuj",
+  "menu.paste": "Wklej",
+  "menu.pasteAndMatchStyle": "Wklej i dopasuj styl",
+  "menu.delete": "Usuń",
+  "menu.selectAll": "Zaznacz wszystko",
+} as const satisfies PartialTranslation<typeof source>;

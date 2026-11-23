@@ -1,4 +1,4 @@
-import { INPUT_LIMITS } from "@dani-dex/contracts/input-limits";
+import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import {
   type HostedSiteConversationEventAction,
   type HostedSiteConversationEventDetails,
@@ -6,8 +6,7 @@ import {
   type HostedSiteSummary,
   hostedSiteConversationEventText,
   isHostedSiteConversationEventUrl,
-} from "@dani-dex/contracts/ipc";
-import { DANI_DEX_HOSTED_SITE_SUFFIX } from "@dani-dex/contracts/online-services";
+} from "@openbot/contracts/ipc";
 
 export type HostedSiteMutationTool = "publish_site" | "replace_site" | "delete_site";
 
@@ -54,16 +53,11 @@ export function hostedSiteEventDetails(site: HostedSiteSummary, siteId = site.id
   return details;
 }
 
-export function hostedSiteMarkerHostname(value: string): string | null {
+function hostedSiteMarkerHostname(value: string): string | null {
   if (!value || value.length > INPUT_LIMITS.hostname || value !== value.toLowerCase()) return null;
   try {
     const parsed = new URL(`https://${value}`);
-    return parsed.hostname === value &&
-      parsed.port === "" &&
-      DANI_DEX_HOSTED_SITE_SUFFIX !== null &&
-      value.endsWith(DANI_DEX_HOSTED_SITE_SUFFIX)
-      ? value
-      : null;
+    return parsed.hostname === value && parsed.port === "" && value.endsWith(".openbot.site") ? value : null;
   } catch {
     return null;
   }

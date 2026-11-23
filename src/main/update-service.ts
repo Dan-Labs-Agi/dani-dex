@@ -1,43 +1,40 @@
-import { execFile } from "node:child_process";
 import { EventEmitter } from "node:events";
-import { appendFile, mkdir, readdir, rename, rm, stat } from "node:fs/promises";
-import { join } from "node:path";
-import type { UpdateBusyPhase, UpdateFailureCode, UpdateStatus } from "@dani-dex/contracts/ipc";
-import { isUpdateBusyPhase } from "@dani-dex/contracts/ipc";
+import { constants } from "node:fs";
+import { access, appendFile, mkdir, readdir, readFile, rename, rm, stat } from "node:fs/promises";
+import { homedir } from "node:os";
+import { basename, dirname, join } from "node:path";
+import type {
+  IdleRestart,
+  ScheduledUpdateRestart,
+  UpdateBusyPhase,
+  UpdateFailureCode,
+  UpdateStatus,
+} from "@openbot/contracts/ipc";
+import { isUpdateBusyPhase } from "@openbot/contracts/ipc";
+import { isNewerRelease } from "@openbot/contracts/release-version";
+import { sourceText } from "@openbot/i18n/source";
+import { createOpenBotLogger, toLogValue } from "@openbot/logging";
+import { Cause, Deferred, Effect, Exit, Fiber, Result, Schema, Scope, Semaphore } from "effect";
 import type { ProgressInfo, UpdateInfo } from "electron-updater";
 import type { HostUpdateState } from "../../packages/contracts/src/host-manager";
-import { restartActivityGeneration } from "../backend/restart-activity";
-import type { DaniDexSiblingInstance } from "./update-sibling-instances";
+import { causeHelpers } from "../backend/effect-boundary";
+import { writeUpdateHandover, writeUpdateInstallRecord } from "./update-install-guard";
+import type { OpenBotSiblingInstance, SiblingScanFailed } from "./update-sibling-instances";
+import { verifyWindowsUpdateSignature } from "./windows-update-signature";
 
-/** Only the part of electron-updater's cancellation token this service depends on. */
+const logger = createOpenBotLogger("update");
+
 export type UpdateCancellationToken = {
   readonly cancelled: boolean;
   cancel: () => void;
 };
 
-/** Only the part of a check result this service depends on. */
 export type UpdateCheckOutcome = {
   readonly isUpdateAvailable: boolean;
   readonly updateInfo: { readonly version: string };
   readonly cancellationToken?: UpdateCancellationToken;
 };
 
-/**
- * The subset of electron-updater this service drives. Four behaviours of the installed version are
- * load bearing here, none of them public API, all verified against 6.8.9 and pinned by
- * electron-updater-assumptions.test.ts:
- *
- * 1. `MacUpdater.updateDownloaded` only calls `nativeUpdater.checkForUpdates()` - the call that makes
- *    Squirrel stage the ZIP and eventually emit the native `update-downloaded` - while
- *    `autoInstallOnAppQuit` is true. We keep that off, so nothing here may wait on that event; doing
- *    so is what left macOS stuck on "Preparing update..." in issue #152.
- * 2. `MacUpdater.quitAndInstall` stages on demand when Squirrel has not already done so, which is why
- *    `ready` is a valid state the moment the download completes.
- * 3. `AppUpdater.doCheckForUpdates` mints a `CancellationToken` for every available update and returns
- *    it on the result, so cancellation needs no direct dependency on builder-util-runtime.
- * 4. `BaseUpdater.quitAndInstall` can return without quitting when `install()` fails, so an install
- *    failure has to release the latch or the restart action never becomes available again.
- */
 export type UpdateAdapter = {
   allowPrerelease: boolean;
   autoDownload: boolean;
@@ -51,6 +48,7 @@ export type UpdateAdapter = {
   on(event: "update-downloaded", listener: (info: UpdateInfo) => void): unknown;
   on(event: "error", listener: (error: Error) => void): unknown;
   quitAndInstall: (isSilent?: boolean, isForceRunAfter?: boolean) => void;
+  isUserWithinRollout?: (info: UpdateInfo) => boolean | Promise<boolean>;
 };
 
 export function createDisabledUpdateAdapter(): UpdateAdapter {
@@ -65,16 +63,38 @@ export function createDisabledUpdateAdapter(): UpdateAdapter {
   };
 }
 
-export function isValidSemver(version: string): boolean {
-  return /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-(?:0|[1-9]\d*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$/u.test(
-    version,
-  );
+export async function loadElectronUpdater(): Promise<UpdateAdapter | null> {
+  try {
+    const updaterModule = await import("electron-updater");
+    const adapter = updaterModule.autoUpdater ?? updaterModule.default?.autoUpdater ?? updaterModule.default;
+    const NsisUpdater = updaterModule.NsisUpdater ?? updaterModule.default?.NsisUpdater;
+    if (NsisUpdater && adapter instanceof NsisUpdater) {
+      adapter.verifyUpdateCodeSignature = (publisherNames, file) =>
+        Effect.runPromise(verifyWindowsUpdateSignature(publisherNames, file));
+    }
+    if (adapter) return adapter;
+    logger.warn("Dani Dex updates are disabled: electron-updater did not export autoUpdater");
+  } catch {
+    logger.warn("Dani Dex updates are disabled: electron-updater failed to load");
+  }
+  return null;
+}
+
+export function electronUpdaterCacheDirectory(): string {
+  const root =
+    process.platform === "win32"
+      ? process.env.LOCALAPPDATA || join(homedir(), "AppData", "Local")
+      : process.platform === "darwin"
+        ? join(homedir(), "Library", "Caches")
+        : process.env.XDG_CACHE_HOME || join(homedir(), ".cache");
+  return join(root, "openbot-updater");
 }
 
 type UpdateOperation = "check" | "download" | "install";
 
 interface UpdateServiceEvents {
   status: [status: UpdateStatus];
+  diagnostic: [event: UpdateDiagnosticEvent];
 }
 
 interface UpdateServiceOptions {
@@ -82,24 +102,23 @@ interface UpdateServiceOptions {
   enabled: boolean;
   autoDownload: boolean;
   beforeInstall: () => Promise<void>;
-  checkSiblingInstances?: () => Promise<readonly DaniDexSiblingInstance[]>;
-  /** Every live-work condition must be clear before an automatic restart. */
-  mayAutoInstall?: () => boolean;
-  autoInstallIdleMs?: number;
+  checkSiblingInstances?: (() => Effect.Effect<readonly OpenBotSiblingInstance[], SiblingScanFailed>) | undefined;
+  currentUid?: number | undefined;
   platform?: NodeJS.Platform;
+  appBundlePath?: string | undefined;
+  restartFromInstalledCopy?: ((bundlePath: string) => Effect.Effect<boolean>) | undefined;
+  appImagePath?: string | undefined;
   logDirectory?: string;
-  shipItDirectory?: string;
+  shipItDirectory?: string | undefined;
+  handoverPath?: string | undefined;
+  installRecordPath?: string | undefined;
+  notInstalledVersion?: string | null | undefined;
+  updaterCacheDirectory?: string | undefined;
   initialCheckDelayMs?: number;
   checkIntervalMs?: number;
   checkTimeoutMs?: number;
   downloadStallTimeoutMs?: number;
   installTimeoutMs?: number;
-  /**
-   * Set when the installed app cannot replace itself. Updates are still found, but the download
-   * action hands the user the release page for the new version instead of a background download,
-   * and automatic downloads are off.
-   */
-  openManualDownload?: (version: string) => Promise<void>;
 }
 
 export interface UpdateDiagnosticEvent {
@@ -108,48 +127,18 @@ export interface UpdateDiagnosticEvent {
   errorCode: UpdateFailureCode | null;
 }
 
-// One manifest request every four minutes, because the loop stops by itself: checkForUpdates()
-// returns early in "downloading", "ready" and "installing", so a poll this frequent costs nothing
-// more than a small GET while the app sits idle, and a user who leaves Dani-Dex open picks up a
-// release within minutes instead of hours.
 const DEFAULT_CHECK_INTERVAL = 4 * 60 * 1_000;
 const MAX_LOG_BYTES = 1024 * 1024;
 const MAX_DIAGNOSTIC_EVENTS = 20;
 
-/**
- * Every busy phase needs a deadline, and typing this as a total record over `UpdateBusyPhase` is what
- * enforces it: adding a phase to `UPDATE_BUSY_PHASES` without a timeout here fails to compile. A busy
- * phase with no bound is exactly how "Preparing update..." became a state the UI could never leave.
- */
+export const UPDATE_INSTALL_TIMEOUT_MS = 300_000;
+
 const DEFAULT_PHASE_TIMEOUTS: Record<UpdateBusyPhase, number> = {
-  /**
-   * A backstop above builder-util-runtime's own 60s socket timeout, which aborts the request and
-   * rejects the call. Letting that fire first means the library reports the real failure and clears
-   * its outstanding promise, so the next scheduled check issues a fresh request; this only covers a
-   * stall outside the request itself, such as provider resolution.
-   */
   checking: 90_000,
-  /**
-   * Time without a single progress event, not a cap on the whole transfer: release artifacts run to
-   * hundreds of megabytes, so a slow link must stay supported while a dead socket must not.
-   */
   downloading: 120_000,
-  /**
-   * Shutdown preparation plus the handover to the installer. Generous because on macOS
-   * quitAndInstall asks Squirrel to stage the ZIP and only quits when that finishes, which is disk
-   * bound on an artifact of a few hundred megabytes. Firing early here would report a failure over a
-   * working install.
-   */
-  installing: 300_000,
+  installing: UPDATE_INSTALL_TIMEOUT_MS,
 };
 
-/**
- * Whether the installed app can replace itself in place.
- *
- * Linux is conditional: electron-updater can only self-update an AppImage, and the AppImage runtime
- * is the thing that says so, through `APPIMAGE`. An unpacked or repackaged Linux build has nothing
- * to write back to, so it reports no updates rather than failing at install time.
- */
 export function supportsInstalledUpdates(
   platform: NodeJS.Platform,
   environment: NodeJS.ProcessEnv = process.env,
@@ -158,39 +147,12 @@ export function supportsInstalledUpdates(
   return platform === "darwin" || platform === "win32";
 }
 
-/** Where the release assets live; `latest-mac.yml` names files relative to a tag here. */
-export const RELEASE_DOWNLOAD_BASE = "https://github.com/somdipto/dani-dex/releases/download";
-
-/** Where a build that cannot replace itself sends the user for a new version. */
-export function releasePageUrl(version: string): string {
-  return `https://github.com/somdipto/dani-dex/releases/tag/v${encodeURIComponent(version)}`;
+export function isNixStoreInstall(executablePath: string = process.execPath): boolean {
+  return executablePath.startsWith("/nix/store/");
 }
 
-/**
- * Whether a Mac app bundle carries a Developer ID signature. Squirrel.Mac only installs an update
- * that satisfies the running app's designated requirement, which an unsigned or ad-hoc signed build
- * cannot state, so without one an in-place update fails at install time.
- */
-export async function hasDeveloperIdSignature(
-  appBundlePath: string,
-  run: (file: string, args: string[]) => Promise<string> = runCodesign,
-): Promise<boolean> {
-  try {
-    const output = await run("/usr/bin/codesign", ["--display", "--verbose=2", appBundlePath]);
-    return /^Authority=Developer ID Application:/mu.test(output);
-  } catch {
-    return false;
-  }
-}
-
-function runCodesign(file: string, args: string[]): Promise<string> {
-  return new Promise((resolvePromise, reject) => {
-    // codesign writes the signature details to stderr.
-    execFile(file, args, { timeout: 10_000 }, (error, stdout, stderr) => {
-      if (error) reject(error);
-      else resolvePromise(`${stdout}${stderr}`);
-    });
-  });
+function unsupportedMessage(): string {
+  return sourceText(isNixStoreInstall() ? "error.update.managedByNix" : "error.update.unsupported");
 }
 
 export class UpdateService extends EventEmitter<UpdateServiceEvents> {
@@ -200,40 +162,53 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
   > &
     Pick<
       UpdateServiceOptions,
+      | "appBundlePath"
+      | "restartFromInstalledCopy"
+      | "appImagePath"
       | "beforeInstall"
       | "checkSiblingInstances"
-      | "mayAutoInstall"
+      | "currentUid"
+      | "handoverPath"
+      | "installRecordPath"
       | "logDirectory"
+      | "notInstalledVersion"
       | "shipItDirectory"
-      | "openManualDownload"
+      | "updaterCacheDirectory"
     > & {
       phaseTimeoutsMs: Record<UpdateBusyPhase, number>;
-      autoInstallIdleMs: number;
     };
   #status: UpdateStatus;
   #checkTimer: ReturnType<typeof setTimeout> | null = null;
   #phaseTimer: ReturnType<typeof setTimeout> | null = null;
-  #autoInstallTimer: ReturnType<typeof setTimeout> | null = null;
-  #autoInstallActivity = restartActivityGeneration();
-  #autoInstallAttempt = false;
-  #autoInstallPending = false;
   #started = false;
+  #checksScheduled = false;
   #installStarted = false;
+  #pendingInstallRequests = 0;
+  #installHandedOver = false;
+  #installedCopyRestart: Deferred.Deferred<boolean> | null = null;
   #operation: UpdateOperation = "check";
   #history: UpdateDiagnosticEvent[] = [];
-  #logWrite = Promise.resolve();
+  readonly #logLock = Semaphore.makeUnsafe(1);
+  readonly #logWrites = new Set<Fiber.Fiber<void, UpdateOperationFailure>>();
+  readonly #workScope = Scope.makeUnsafe();
   #autoDownload: boolean;
   #downloadedVersion: string | null = null;
   #managedByHost = false;
+  #scheduledRestart: ScheduledUpdateRestart | null = null;
+  #idleRestart: IdleRestart | null = null;
   #cancellationToken: UpdateCancellationToken | null = null;
   #checkGeneration = 0;
   #downloadGeneration = 0;
   #installGeneration = 0;
   #activeDownload: number | null = null;
   #activeInstall: number | null = null;
-  #checkRequest: Promise<UpdateCheckOutcome | null> | null = null;
+  #checkRequest: Deferred.Deferred<UpdateCheckOutcome | null, UpdateOperationFailure> | null = null;
   #downloadInFlight = false;
   #teardownCommitted = false;
+  #requestedVersion: string | null = null;
+  #rolloutMiss: string | null = null;
+  #stagedVersion: string | null = null;
+  #requiredVersion: string | null = null;
 
   constructor(updater: UpdateAdapter, options: UpdateServiceOptions) {
     super();
@@ -244,39 +219,54 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
       platform: options.platform ?? process.platform,
       initialCheckDelayMs: options.initialCheckDelayMs ?? 12_000,
       checkIntervalMs: options.checkIntervalMs ?? DEFAULT_CHECK_INTERVAL,
-      autoInstallIdleMs: options.autoInstallIdleMs ?? 5 * 60_000,
       phaseTimeoutsMs: {
         checking: options.checkTimeoutMs ?? DEFAULT_PHASE_TIMEOUTS.checking,
         downloading: options.downloadStallTimeoutMs ?? DEFAULT_PHASE_TIMEOUTS.downloading,
         installing: options.installTimeoutMs ?? DEFAULT_PHASE_TIMEOUTS.installing,
       },
     };
+    if (options.notInstalledVersion)
+      logger.warn(`The last update restart did not install Dani Dex ${options.notInstalledVersion}.`);
     this.#status = {
       phase: options.enabled ? "idle" : "unsupported",
       currentVersion: options.currentVersion,
       availableVersion: null,
       progress: null,
       checkedAt: null,
-      message: options.enabled ? null : "Updates are available in installed desktop builds.",
+      message: options.enabled ? null : unsupportedMessage(),
       errorCode: null,
     };
+    this.on("diagnostic", (event) => {
+      const directory = this.#options.logDirectory;
+      if (!directory) return;
+      const write = Effect.runFork(this.#logLock.withPermit(appendUpdateLog(directory, event)));
+      this.#logWrites.add(write);
+      write.addObserver(() => this.#logWrites.delete(write));
+    });
     this.#recordStatus();
+  }
+
+  flushLog(): Effect.Effect<void> {
+    return Effect.suspend(() => Fiber.awaitAll([...this.#logWrites])).pipe(Effect.asVoid);
   }
 
   start(scheduleChecks = true): void {
     if (this.#started) return;
     this.#started = true;
-    // The automatic download is driven from this service so that both flows share one download path
-    // and one cancellation token. autoInstallOnAppQuit stays off so nothing installs without the
-    // explicit restart action, which is the only path that runs shutdown preparation.
     this.#updater.autoDownload = false;
     this.#updater.autoInstallOnAppQuit = false;
     this.#updater.allowPrerelease = false;
+    const stagedRollout = this.#updater.isUserWithinRollout;
+    if (stagedRollout) {
+      this.#updater.isUserWithinRollout = async (info) => {
+        const percentage = stagingPercentage(info.stagingPercentage);
+        if (percentage !== 0 && info.version === this.#requestedVersion) return true;
+        const within = await stagedRollout(info);
+        if (!within && percentage !== null && percentage > 0) this.#rolloutMiss = info.version;
+        return within;
+      };
+    }
 
-    // The check lifecycle is driven entirely by checkForUpdates(), whose result is generation
-    // guarded, so there are deliberately no checking-for-update / update-available /
-    // update-not-available listeners: a second, unguarded writer is how a late event from an
-    // abandoned check could overwrite a newer download or ready state.
     this.#updater.on("download-progress", (progress: ProgressInfo) => {
       if (!this.#isDownloadLive()) return;
       this.#setStatus({ phase: "downloading", progress: clampProgress(progress.percent), errorCode: null });
@@ -284,41 +274,66 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
     this.#updater.on("update-downloaded", (info: UpdateInfo) => {
       if (!this.#isDownloadLive()) return;
       this.#activeDownload = null;
-      // electron-updater has staged everything it needs by now. On macOS quitAndInstall asks the
-      // native updater for the ZIP on demand, so the restart action is available immediately.
       this.#markReady(info.version);
     });
-    this.#updater.on("error", () => {
-      // Both awaited calls reject on failure, so this only has to cover errors raised outside them,
-      // and only for an operation still in flight. An abandoned operation reporting late must not
-      // replace the state the user is now looking at.
-      if (this.#operation === "install" && this.#isInstallLive()) {
-        // quitAndInstall can return without quitting. Shutdown preparation has already run by then,
-        // so the app cannot install again; it reports the failure and asks to be relaunched.
+    this.#updater.on("error", (error: Error) => {
+      if (this.#operation === "install" && this.#installHandedOver && this.#isInstallLive()) {
         this.#installGeneration += 1;
         this.#activeInstall = null;
+        logUpdateFailure("Dani Dex update install failed.", error);
         this.#setError("install_failed", INSTALL_FAILED_MESSAGE);
         return;
       }
       if (this.#operation === "download" && this.#isDownloadLive()) {
         this.#activeDownload = null;
-        this.#setError("download_failed");
+        this.#setError("download_failed", downloadFailureMessage(error));
       }
     });
     if (this.#options.platform === "darwin" && this.#options.shipItDirectory) {
-      void pruneShipItLogs(this.#options.shipItDirectory);
+      this.#fork(pruneShipItLogs(this.#options.shipItDirectory));
+    }
+    if (this.#options.updaterCacheDirectory) {
+      this.#fork(pruneInstalledUpdate(this.#options.updaterCacheDirectory, this.#options.currentVersion));
     }
 
+    this.#checksScheduled = scheduleChecks;
     if (scheduleChecks && this.#options.enabled) {
       this.#scheduleCheck(this.#options.initialCheckDelayMs);
     }
   }
 
+  resume(): void {
+    if (!this.#started) return;
+    if (!this.#phaseTimer) this.#armPhaseTimer();
+    if (!this.#checksScheduled || !this.#options.enabled || this.#checkTimer) return;
+    this.#scheduleCheck(this.#options.initialCheckDelayMs);
+  }
+
   getStatus(): UpdateStatus {
     const status = { ...this.#status };
     if (this.#managedByHost) status.managedByHost = true;
-    if (this.#options.openManualDownload) status.manualDownload = true;
+    if (this.#scheduledRestart)
+      status.scheduledRestart = { ...this.#scheduledRestart, waitingFor: [...this.#scheduledRestart.waitingFor] };
+    if (this.#idleRestart) status.idleRestart = { ...this.#idleRestart, waitingFor: [...this.#idleRestart.waitingFor] };
+    if (this.#stagedVersion && status.phase === "up-to-date") status.stagedVersion = this.#stagedVersion;
+    if (this.#requiredVersion) status.requiredVersion = this.#requiredVersion;
     return status;
+  }
+
+  setRequiredVersion(version: string | null): void {
+    if (this.#requiredVersion === version) return;
+    this.#requiredVersion = version;
+    this.emit("status", this.getStatus());
+  }
+
+  setScheduledRestart(restart: ScheduledUpdateRestart | null): void {
+    this.#scheduledRestart = restart ? { ...restart, waitingFor: [...restart.waitingFor] } : null;
+    this.emit("status", this.getStatus());
+  }
+
+  setIdleRestart(restart: IdleRestart | null): void {
+    this.#idleRestart = restart ? { ...restart, waitingFor: [...restart.waitingFor] } : null;
+    this.emit("status", this.getStatus());
   }
 
   getDiagnostics(): UpdateDiagnosticEvent[] {
@@ -326,36 +341,42 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
   }
 
   getAutoDownload(): boolean {
-    return this.#autoDownload && !this.#options.openManualDownload;
+    return this.#autoDownload;
   }
 
-  setAutoDownload(enabled: boolean): void {
+  readonly setAutoDownload = Effect.fn("UpdateService.setAutoDownload")(function* (
+    this: UpdateService,
+    enabled: boolean,
+  ) {
     this.#autoDownload = enabled;
-    if (!enabled) this.#clearAutoInstallTimer();
-    else if (this.#status.phase === "ready") this.#scheduleAutoInstall();
-    if (this.#options.openManualDownload) return;
-    if (!enabled || !this.#started || !this.#options.enabled || this.#managedByHost || this.#teardownCommitted) return;
-    if (this.#canDownload()) void this.downloadUpdate();
-    else if (["idle", "up-to-date", "error"].includes(this.#status.phase)) void this.checkForUpdates();
-  }
+    if (enabled && this.#options.enabled && this.#status.phase === "available") {
+      yield* Effect.forkIn(this.downloadUpdate(), this.#workScope, { startImmediately: true });
+    }
+  });
 
-  /** Host-managed sessions display host state and never invoke the tenant updater. */
   setManagedByHost(managed: boolean): void {
     if (this.#managedByHost === managed) return;
     this.#managedByHost = managed;
-    if (managed) this.#clearAutoInstallTimer();
-    if (!managed) {
-      this.#downloadedVersion = null;
-      this.#setStatus({
-        phase: this.#options.enabled ? "idle" : "unsupported",
-        availableVersion: null,
-        progress: null,
-        message: null,
-        errorCode: null,
-      });
-      if (this.#options.enabled) this.#scheduleCheck(this.#options.initialCheckDelayMs);
+    if (managed) {
+      this.#checkGeneration += 1;
+      this.#downloadGeneration += 1;
+      this.#activeDownload = null;
+      this.#cancellationToken?.cancel();
+      this.#cancellationToken = null;
+      if (this.#installStarted) {
+        this.#setStatus({});
+        return;
+      }
     }
-    this.#setStatus({});
+    this.#downloadedVersion = null;
+    this.#setStatus({
+      phase: this.#options.enabled ? "idle" : "unsupported",
+      availableVersion: null,
+      progress: null,
+      message: null,
+      errorCode: null,
+    });
+    if (!managed && this.#options.enabled) this.#scheduleCheck(this.#options.initialCheckDelayMs);
   }
 
   setHostState(state: HostUpdateState): void {
@@ -385,196 +406,288 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
     });
   }
 
-  /**
-   * The user-facing check. Unlike the periodic loop this one always reports: it moves into
-   * "checking" and settles on a real outcome even when an earlier call is still unsettled, because
-   * an action that answers a press by leaving the same error on screen reads as a dead button.
-   */
-  async checkForUpdates(): Promise<UpdateStatus> {
+  checkForUpdates(): Effect.Effect<UpdateStatus, UpdateOperationFailure> {
     return this.#check(true);
   }
 
-  async #check(joinOutstandingRequest: boolean): Promise<UpdateStatus> {
-    if (this.#managedByHost || !this.#options.enabled || this.#teardownCommitted) return this.getStatus();
-    if (["checking", "downloading", "ready", "installing"].includes(this.#status.phase)) {
-      return this.getStatus();
-    }
-    // electron-updater returns the outstanding promise when a check is already running, so issuing
-    // another one here would only re-await the call this service has already given up on. The
-    // periodic loop waits quietly for it rather than spinning the UI once every interval; a user
-    // who asked for an answer joins that call instead, and gets progress and its real outcome.
-    if (this.#checkRequest && !joinOutstandingRequest) {
-      // Keep the periodic loop alive, or refusing here would be the last check of the session.
-      this.#scheduleCheck(this.#options.checkIntervalMs);
-      return this.getStatus();
-    }
-    const generation = ++this.#checkGeneration;
-    this.#operation = "check";
-    this.#setStatus({ phase: "checking", progress: null, message: null, errorCode: null });
-    try {
-      const result = await (this.#checkRequest ?? this.#issueCheck());
-      if (this.#checkGeneration !== generation) return this.getStatus();
-      this.#cancellationToken = result?.cancellationToken ?? null;
-      if (result?.isUpdateAvailable) {
-        if (result.updateInfo.version !== this.#downloadedVersion) this.#downloadedVersion = null;
-        this.#setStatus({
-          phase: "available",
-          availableVersion: result.updateInfo.version,
-          progress: null,
-          message: null,
-          errorCode: null,
-          checkedAt: new Date().toISOString(),
-        });
-      } else {
-        this.#downloadedVersion = null;
-        this.#setStatus({
-          phase: "up-to-date",
-          availableVersion: null,
-          progress: null,
-          message: null,
-          errorCode: null,
-          checkedAt: new Date().toISOString(),
-        });
-      }
-    } catch (error) {
-      if (this.#checkGeneration === generation) this.#setError("check_failed", describeCheckFailure(error));
-    } finally {
-      // A late completion must not push out the schedule the timeout branch already set.
-      if (this.#checkGeneration === generation) this.#scheduleCheck(this.#options.checkIntervalMs);
-    }
-    // downloadUpdate() moves into "downloading" before its first await, so the caller and the
-    // renderer see the download start rather than a stale "available".
-    if (this.getAutoDownload() && this.#status.phase === "available") void this.downloadUpdate();
-    return this.getStatus();
-  }
-
-  async downloadUpdate(): Promise<UpdateStatus> {
-    if (this.#managedByHost) return this.getStatus();
-    if (!this.#options.enabled || this.#teardownCommitted || !this.#canDownload()) return this.getStatus();
-    const openManualDownload = this.#options.openManualDownload;
-    if (openManualDownload) {
-      // The page is the download: the status stays "available" so the action keeps pointing there.
-      const version = this.#status.availableVersion;
-      if (version) await openManualDownload(version);
-      return this.getStatus();
-    }
-    // Same deduplication applies to downloads, and starting a second attempt while the abandoned one
-    // is still unsettled is also what would let its buffered events be read as the new attempt's.
-    if (this.#downloadInFlight) return this.getStatus();
-    this.#downloadInFlight = true;
-    const generation = ++this.#downloadGeneration;
-    this.#activeDownload = generation;
-    this.#operation = "download";
-    this.#setStatus({ phase: "downloading", progress: 0, message: null, errorCode: null });
-    try {
-      const token = await this.#ensureCancellationToken();
-      if (this.#downloadGeneration !== generation) return this.getStatus();
-      if (!token) {
-        // Without a token the stall watchdog could not stop the transfer, so the attempt would run
-        // untracked and an unsettled one would block every retry. Refuse instead of starting it.
-        this.#activeDownload = null;
-        this.#setError("download_failed");
+  #check(joinOutstandingRequest: boolean): Effect.Effect<UpdateStatus, UpdateOperationFailure> {
+    return Effect.gen({ self: this }, function* () {
+      if (this.#managedByHost || !this.#options.enabled || this.#teardownCommitted) return this.getStatus();
+      if (this.#status.phase === "ready") return yield* this.#checkSupersedingRelease();
+      if (["checking", "downloading", "installing"].includes(this.#status.phase)) {
+        if (this.#status.phase === "downloading" && !joinOutstandingRequest) {
+          this.#scheduleCheck(this.#options.checkIntervalMs);
+        }
         return this.getStatus();
       }
-      await this.#updater.downloadUpdate(token);
-    } catch {
-      // A superseded attempt is one the stall watchdog already cancelled and reported, so its
-      // rejection must not overwrite the error the user is looking at.
-      if (this.#downloadGeneration === generation) {
-        this.#activeDownload = null;
-        this.#setError("download_failed");
+      if (this.#checkRequest && !joinOutstandingRequest) {
+        this.#scheduleCheck(this.#options.checkIntervalMs);
+        return this.getStatus();
       }
-    } finally {
-      this.#downloadInFlight = false;
-    }
-    return this.getStatus();
-  }
-
-  async installUpdate(): Promise<void> {
-    if (!this.#canInstall() || this.#installStarted) {
-      throw new Error("An update is not ready to install.");
-    }
-    // Host-managed tenants never install on their own, even with no sibling in sight: the
-    // host owns the timing. Like the sibling refusal this throws before the latch, so the
-    // update stays ready.
-    if (this.#managedByHost) {
-      throw new Error(MANAGED_HOST_MESSAGE);
-    }
-    await this.#install();
-  }
-
-  async #install(): Promise<void> {
-    // Replacing the application bundle while another login session runs Dani-Dex from it breaks
-    // that session, so refuse before the one-shot install latch and before shutdown preparation.
-    // Nothing is torn down, the update stays ready, and the user retries once every session stopped.
-    const siblings = (await this.#options.checkSiblingInstances?.()) ?? [];
-    if (
-      this.#autoInstallAttempt &&
-      (restartActivityGeneration() !== this.#autoInstallActivity ||
-        !this.#started ||
-        !this.#autoDownload ||
-        this.#managedByHost ||
-        !this.#options.mayAutoInstall?.())
-    ) {
-      throw new Error("Active work appeared before the automatic update could restart.");
-    }
-    if (siblings.length > 0) {
-      throw new Error(SIBLING_SESSION_MESSAGE);
-    }
-    if (this.#managedByHost) throw new Error(MANAGED_HOST_MESSAGE);
-    if (!this.#canInstall() || this.#installStarted) throw new Error("An update is not ready to install.");
-    const generation = ++this.#installGeneration;
-    this.#activeInstall = generation;
-    this.#installStarted = true;
-    this.#operation = "install";
-    this.#clearAutoInstallTimer();
-    this.#setStatus({ phase: "installing", progress: 100, message: null, errorCode: null });
-    try {
-      // Shutdown preparation stops services for good and is not reversible, so from here on this
-      // process can only quit into the installer or be relaunched. Checking or downloading would be
-      // acting on a torn-down app, so both are refused for the rest of its life.
-      this.#teardownCommitted = true;
-      await this.#options.beforeInstall();
-      // Shutdown preparation can outlive the install deadline. Once the watchdog has reported the
-      // attempt as failed, or a retry has taken over, this attempt must not go on to restart the
-      // app behind a UI that says it did not happen.
-      if (this.#installGeneration !== generation) return;
-      this.#updater.quitAndInstall(false, true);
-      // The handover is where a restart is most likely to stall, and shutdown preparation may have
-      // torn down the deadline along with everything else, so re-arm it here as well.
-      this.#armPhaseTimer();
-    } catch {
-      if (this.#installGeneration !== generation) return;
-      this.#setError("install_failed", INSTALL_FAILED_MESSAGE);
-      throw new Error("Dani-Dex could not restart to install the update.");
-    }
-  }
-
-  stop(): void {
-    if (this.#checkTimer) clearTimeout(this.#checkTimer);
-    this.#checkTimer = null;
-    this.#clearAutoInstallTimer();
-    this.#started = false;
-    // An install runs shutdown preparation, which stops background work through this method. The
-    // install deadline has to survive that: it is the only thing that can release a restart which
-    // never happens, and clearing it here would leave the app latched in "installing" forever.
-    if (this.#status.phase !== "installing") this.#clearPhaseTimer();
-  }
-
-  /**
-   * Issues the one outstanding request every caller shares. The handle is cleared when the call
-   * settles, so `#checkRequest` answers exactly the question the join above asks: is electron-updater
-   * still holding a promise that a fresh call would be answered by?
-   */
-  #issueCheck(): Promise<UpdateCheckOutcome | null> {
-    const request = this.#updater.checkForUpdates().finally(() => {
-      if (this.#checkRequest === request) this.#checkRequest = null;
+      const generation = ++this.#checkGeneration;
+      this.#operation = "check";
+      this.#setStatus({ phase: "checking", progress: null, message: null, errorCode: null });
+      const checked = yield* this.#issueRequestedCheck(joinOutstandingRequest, generation).pipe(
+        Effect.ensuring(
+          Effect.sync(() => {
+            if (this.#checkGeneration === generation) this.#scheduleCheck(this.#options.checkIntervalMs);
+          }),
+        ),
+      );
+      if (this.#checkGeneration !== generation) return this.getStatus();
+      this.#stagedVersion = null;
+      if (Result.isFailure(checked)) this.#setError("check_failed", describeCheckFailure(checked.failure.cause));
+      else {
+        const result = checked.success;
+        this.#cancellationToken = result?.cancellationToken ?? null;
+        if (result?.isUpdateAvailable) {
+          if (result.updateInfo.version !== this.#downloadedVersion) this.#downloadedVersion = null;
+          this.#markAvailable(result.updateInfo.version);
+        } else {
+          this.#downloadedVersion = null;
+          if (this.#rolloutMiss && isNewerRelease(this.#rolloutMiss, this.#status.currentVersion))
+            this.#stagedVersion = this.#rolloutMiss;
+          this.#setStatus({
+            phase: "up-to-date",
+            availableVersion: null,
+            progress: null,
+            message: null,
+            errorCode: null,
+            checkedAt: new Date().toISOString(),
+          });
+        }
+      }
+      if (this.#autoDownload && this.#status.phase === "available")
+        yield* Effect.forkIn(this.downloadUpdate(), this.#workScope, { startImmediately: true });
+      return this.getStatus();
     });
-    this.#checkRequest = request;
-    return request;
   }
 
-  /** True while the download the service still believes in is the one events are reporting on. */
+  #checkSupersedingRelease(): Effect.Effect<UpdateStatus, UpdateOperationFailure> {
+    return Effect.gen({ self: this }, function* () {
+      this.#scheduleCheck(this.#options.checkIntervalMs);
+      if (!this.#autoDownload || this.#checkRequest) return this.getStatus();
+      const downloaded = this.#downloadedVersion;
+      const checked = yield* Effect.result(this.#issueCheck());
+      if (Result.isFailure(checked)) return this.getStatus();
+      const result = checked.success;
+      if (
+        this.#status.phase !== "ready" ||
+        this.#downloadedVersion !== downloaded ||
+        this.#installStarted ||
+        this.#pendingInstallRequests > 0 ||
+        this.#managedByHost ||
+        this.#teardownCommitted ||
+        !this.#autoDownload ||
+        !result?.isUpdateAvailable ||
+        downloaded === null ||
+        !isNewerRelease(result.updateInfo.version, downloaded)
+      ) {
+        return this.getStatus();
+      }
+      this.#cancellationToken = result.cancellationToken ?? null;
+      this.#downloadedVersion = null;
+      this.#markAvailable(result.updateInfo.version);
+      yield* Effect.forkIn(this.downloadUpdate(), this.#workScope, { startImmediately: true });
+      return this.getStatus();
+    });
+  }
+
+  downloadUpdate(): Effect.Effect<UpdateStatus, UpdateOperationFailure> {
+    return Effect.gen({ self: this }, function* () {
+      if (this.#managedByHost) return this.getStatus();
+      if (!this.#options.enabled || this.#teardownCommitted || !this.#canDownload()) return this.getStatus();
+      if (this.#downloadInFlight) return this.getStatus();
+      this.#downloadInFlight = true;
+      const generation = ++this.#downloadGeneration;
+      this.#activeDownload = generation;
+      this.#operation = "download";
+      this.#setStatus({ phase: "downloading", progress: null, message: null, errorCode: null });
+      yield* Effect.gen({ self: this }, function* () {
+        const token = yield* this.#ensureCancellationToken();
+        if (this.#downloadGeneration !== generation) return;
+        if (!token) {
+          this.#activeDownload = null;
+          this.#setError("download_failed");
+          return;
+        }
+        const result = yield* Effect.result(
+          updateIO(() => this.#updater.downloadUpdate(token)).pipe(
+            Effect.onInterrupt(() => Effect.sync(() => token.cancel())),
+          ),
+        );
+        if (Result.isFailure(result) && this.#downloadGeneration === generation) {
+          logUpdateFailure("Dani Dex update download failed.", result.failure.cause);
+          this.#activeDownload = null;
+          this.#setError("download_failed", downloadFailureMessage(result.failure.cause));
+        }
+      }).pipe(
+        Effect.ensuring(
+          Effect.sync(() => {
+            this.#downloadInFlight = false;
+          }),
+        ),
+      );
+      return this.getStatus();
+    });
+  }
+
+  installUpdate(): Effect.Effect<void, UpdateOperationFailure> {
+    return Effect.gen({ self: this }, function* () {
+      if (!this.#canInstall() || this.#installStarted)
+        return yield* new UpdateOperationFailure({ cause: new Error(sourceText("error.update.notReady")) });
+      if (this.#managedByHost) return yield* new UpdateOperationFailure({ cause: new Error(MANAGED_HOST_MESSAGE) });
+      yield* this.#install();
+    });
+  }
+
+  #restartFromInstalledCopy(bundle: string): Effect.Effect<boolean> {
+    return Effect.gen({ self: this }, function* () {
+      const { restartFromInstalledCopy } = this.#options;
+      if (!restartFromInstalledCopy) return false;
+      if (this.#installedCopyRestart) return yield* Deferred.await(this.#installedCopyRestart);
+      const result = Deferred.makeUnsafe<boolean>();
+      this.#installedCopyRestart = result;
+      return yield* restartFromInstalledCopy(bundle).pipe(
+        Effect.catchDefect(() => Effect.succeed(false)),
+        Effect.onExit((exit) =>
+          Effect.gen({ self: this }, function* () {
+            const restarted = Exit.isSuccess(exit) && exit.value;
+            if (!restarted) this.#installedCopyRestart = null;
+            yield* Deferred.succeed(result, restarted);
+          }),
+        ),
+      );
+    });
+  }
+
+  #install(): Effect.Effect<void, UpdateOperationFailure> {
+    return Effect.gen({ self: this }, function* () {
+      this.#pendingInstallRequests += 1;
+      const siblings = yield* Effect.suspend(
+        () => this.#options.checkSiblingInstances?.() ?? Effect.succeed<readonly OpenBotSiblingInstance[]>([]),
+      ).pipe(
+        Effect.mapError(({ cause }) => new UpdateOperationFailure({ cause })),
+        Effect.ensuring(
+          Effect.sync(() => {
+            this.#pendingInstallRequests -= 1;
+          }),
+        ),
+      );
+      if (siblings.length > 0)
+        return yield* new UpdateOperationFailure({ cause: new Error(this.#siblingSessionMessage(siblings)) });
+      const bundle = this.#options.platform === "darwin" ? this.#options.appBundlePath : undefined;
+      if (bundle && (yield* isOnReadOnlyVolume(bundle))) {
+        if (yield* this.#restartFromInstalledCopy(bundle)) return;
+        logger.warn("Dani Dex update install refused: the application runs from a read-only volume.");
+        return yield* new UpdateOperationFailure({ cause: new Error(sourceText("error.update.readOnlyLocation")) });
+      }
+      const appImage = this.#options.platform === "linux" ? this.#options.appImagePath : undefined;
+      const appImageProblem = appImage ? yield* findAppImageInstallProblem(appImage) : null;
+      if (appImageProblem === "missing") {
+        logger.warn("Dani Dex update install refused: the AppImage file is missing.");
+        return yield* new UpdateOperationFailure({ cause: new Error(sourceText("error.update.appImageMissing")) });
+      }
+      if (appImageProblem === "readOnly") {
+        logger.warn("Dani Dex update install refused: the AppImage folder is not writable.");
+        return yield* new UpdateOperationFailure({ cause: new Error(sourceText("error.update.appImageReadOnly")) });
+      }
+      if (this.#managedByHost) return yield* new UpdateOperationFailure({ cause: new Error(MANAGED_HOST_MESSAGE) });
+      if (!this.#canInstall() || this.#installStarted)
+        return yield* new UpdateOperationFailure({ cause: new Error(sourceText("error.update.notReady")) });
+      const generation = ++this.#installGeneration;
+      this.#activeInstall = generation;
+      this.#installStarted = true;
+      this.#operation = "install";
+      this.#setStatus({ phase: "installing", progress: 100, message: null, errorCode: null });
+      const installed = yield* Effect.result(
+        Effect.gen({ self: this }, function* () {
+          this.#teardownCommitted = true;
+          yield* updateIO(() => this.#options.beforeInstall());
+          if (this.#installGeneration !== generation) return;
+          if (this.#checkRequest) yield* Deferred.await(this.#checkRequest).pipe(Effect.catch(() => Effect.void));
+          if (this.#installGeneration !== generation) return;
+          this.#installHandedOver = true;
+          if (this.#options.platform === "darwin" && this.#options.handoverPath) {
+            yield* writeUpdateHandover(this.#options.handoverPath, this.#options.currentVersion, Date.now()).pipe(
+              Effect.catch((error) =>
+                Effect.sync(() => logger.warn("The update handover record was not saved.", toLogValue(error))),
+              ),
+            );
+          }
+          const { installRecordPath } = this.#options;
+          if (this.#options.platform === "darwin" && installRecordPath && this.#downloadedVersion) {
+            yield* writeUpdateInstallRecord(
+              installRecordPath,
+              this.#options.currentVersion,
+              this.#downloadedVersion,
+            ).pipe(
+              Effect.catch((error) =>
+                Effect.sync(() => logger.warn("The update install record was not saved.", toLogValue(error))),
+              ),
+            );
+          }
+          yield* updateSync(() => this.#updater.quitAndInstall(false, true));
+          this.#armPhaseTimer();
+        }),
+      );
+      if (Result.isFailure(installed) && this.#installGeneration === generation) {
+        logUpdateFailure("Dani Dex update install failed.", installed.failure.cause);
+        this.#setError("install_failed", INSTALL_FAILED_MESSAGE);
+        return yield* new UpdateOperationFailure({ cause: new Error(sourceText("error.update.restartFailed")) });
+      }
+    }).pipe(Effect.uninterruptible);
+  }
+
+  #siblingSessionMessage(siblings: readonly OpenBotSiblingInstance[]): string {
+    const currentUid = this.#options.currentUid;
+    if (currentUid !== undefined && siblings.every((sibling) => sibling.uid === currentUid)) {
+      return sourceText("error.update.siblingSessionSameAccount");
+    }
+    return SIBLING_SESSION_MESSAGE;
+  }
+
+  stop(): Effect.Effect<void> {
+    return Effect.sync(() => {
+      if (this.#checkTimer) clearTimeout(this.#checkTimer);
+      this.#checkTimer = null;
+      if (this.#status.phase !== "installing") this.#clearPhaseTimer();
+    });
+  }
+
+  #issueCheck(): Effect.Effect<UpdateCheckOutcome | null, UpdateOperationFailure> {
+    return Effect.gen({ self: this }, function* () {
+      if (this.#checkRequest) return yield* Deferred.await(this.#checkRequest);
+      const request = Deferred.makeUnsafe<UpdateCheckOutcome | null, UpdateOperationFailure>();
+      this.#checkRequest = request;
+      this.#rolloutMiss = null;
+      return yield* updateIO(() => this.#updater.checkForUpdates()).pipe(
+        Effect.tapError(({ cause }) => Effect.sync(() => logUpdateFailure("Dani Dex update check failed.", cause))),
+        Effect.onExit((exit) =>
+          Effect.gen({ self: this }, function* () {
+            yield* Deferred.done(request, exit);
+            if (this.#checkRequest === request) this.#checkRequest = null;
+          }),
+        ),
+        Effect.uninterruptible,
+      );
+    });
+  }
+
+  #issueRequestedCheck(
+    requested: boolean,
+    generation: number,
+  ): Effect.Effect<Result.Result<UpdateCheckOutcome | null, UpdateOperationFailure>> {
+    return Effect.gen({ self: this }, function* () {
+      const checked = yield* Effect.result(this.#issueCheck());
+      const missed = this.#rolloutMiss;
+      if (!requested || !missed || Result.isFailure(checked) || this.#checkGeneration !== generation) return checked;
+      if (checked.success?.isUpdateAvailable) return checked;
+      this.#requestedVersion = missed;
+      return yield* Effect.result(this.#issueCheck());
+    });
+  }
+
   #isDownloadLive(): boolean {
     return this.#activeDownload !== null && this.#activeDownload === this.#downloadGeneration;
   }
@@ -592,31 +705,29 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
     );
   }
 
-  /**
-   * Installing is one shot per session. beforeInstall is shutdown preparation - it flushes browser
-   * storage, destroys the browser and stops services - and it is not transactional, so once it has
-   * begun there is no state to safely retry from. A failed or timed-out install therefore keeps the
-   * latch and asks the user to relaunch rather than offering an action that would run teardown a
-   * second time, concurrently with the first.
-   */
   #canInstall(): boolean {
     return this.#downloadedVersion !== null && this.#status.phase === "ready";
   }
 
-  /**
-   * A cancellation token is single use, and electron-updater only mints one alongside update
-   * metadata. Re-check quietly when the stored token is missing or spent so that a retry after the
-   * stall watchdog cancelled the last attempt still downloads under a live token.
-   */
-  async #ensureCancellationToken(): Promise<UpdateCancellationToken | null> {
-    if (this.#cancellationToken && !this.#cancellationToken.cancelled) return this.#cancellationToken;
-    try {
-      const result = await this.#updater.checkForUpdates();
-      this.#cancellationToken = result?.cancellationToken ?? null;
-    } catch {
-      this.#cancellationToken = null;
-    }
-    return this.#cancellationToken;
+  #ensureCancellationToken(): Effect.Effect<UpdateCancellationToken | null, UpdateOperationFailure> {
+    return Effect.gen({ self: this }, function* () {
+      if (this.#cancellationToken && !this.#cancellationToken.cancelled) return this.#cancellationToken;
+      const checked = yield* Effect.result(updateIO(() => this.#updater.checkForUpdates()));
+      if (Result.isFailure(checked)) logUpdateFailure("Dani Dex update check failed.", checked.failure.cause);
+      this.#cancellationToken = Result.isSuccess(checked) ? (checked.success?.cancellationToken ?? null) : null;
+      return this.#cancellationToken;
+    });
+  }
+
+  #markAvailable(version: string): void {
+    this.#setStatus({
+      phase: "available",
+      availableVersion: version,
+      progress: null,
+      message: null,
+      errorCode: null,
+      checkedAt: new Date().toISOString(),
+    });
   }
 
   #markReady(version: string | null): void {
@@ -625,48 +736,37 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
       phase: "ready",
       availableVersion: version,
       progress: 100,
-      message: null,
+      message: version !== null && version === this.#options.notInstalledVersion ? NOT_INSTALLED_MESSAGE : null,
       errorCode: null,
     });
-    this.#scheduleAutoInstall();
-  }
-
-  #scheduleAutoInstall(): void {
-    this.#clearAutoInstallTimer();
-    if (!this.#started || !this.#autoDownload || !this.#options.mayAutoInstall || this.#managedByHost) return;
-    if (!this.#canInstall() || this.#teardownCommitted) return;
-    this.#autoInstallActivity = restartActivityGeneration();
-    this.#autoInstallTimer = setTimeout(() => {
-      this.#autoInstallTimer = null;
-      if (this.#autoInstallPending) return;
-      if (!this.#started || !this.#autoDownload || this.#managedByHost || !this.#canInstall()) return;
-      if (restartActivityGeneration() !== this.#autoInstallActivity || !this.#options.mayAutoInstall?.()) {
-        this.#scheduleAutoInstall();
-        return;
-      }
-      this.#autoInstallAttempt = true;
-      this.#autoInstallPending = true;
-      void this.installUpdate()
-        .catch(() => undefined)
-        .finally(() => {
-          this.#autoInstallAttempt = false;
-          this.#autoInstallPending = false;
-          // A sibling session or racing activity leaves the download ready. Check again after idle.
-          if (this.#canInstall() && !this.#managedByHost) this.#scheduleAutoInstall();
-        });
-    }, this.#options.autoInstallIdleMs);
-    this.#autoInstallTimer.unref?.();
-  }
-
-  #clearAutoInstallTimer(): void {
-    if (this.#autoInstallTimer) clearTimeout(this.#autoInstallTimer);
-    this.#autoInstallTimer = null;
   }
 
   #scheduleCheck(delayMs: number): void {
     if (this.#checkTimer) clearTimeout(this.#checkTimer);
-    this.#checkTimer = setTimeout(() => void this.#check(false), delayMs);
+    this.#checkTimer = setTimeout(() => this.#fork(this.#check(false)), delayMs);
     this.#checkTimer.unref?.();
+  }
+
+  #fork(work: Effect.Effect<unknown, UpdateOperationFailure>): void {
+    Effect.runFork(
+      Effect.forkIn(
+        work.pipe(
+          Effect.catchCause((cause) =>
+            Cause.hasInterruptsOnly(cause)
+              ? Effect.void
+              : Effect.sync(() => {
+                  const error = Cause.squash(cause);
+                  logger.error(
+                    "Background update work failed.",
+                    toLogValue(error instanceof UpdateOperationFailure ? error.cause : error),
+                  );
+                }),
+          ),
+        ),
+        this.#workScope,
+        { startImmediately: true },
+      ),
+    );
   }
 
   #clearPhaseTimer(): void {
@@ -674,11 +774,6 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
     this.#phaseTimer = null;
   }
 
-  /**
-   * Every phase that renders as busy is bounded here, so no status the user waits on can outlive its
-   * timeout. Re-armed on each status write, which makes download progress events refresh the stall
-   * deadline for free.
-   */
   #armPhaseTimer(): void {
     this.#clearPhaseTimer();
     const timeoutMs = this.#phaseTimeoutMs();
@@ -699,8 +794,6 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
     if (this.#status.phase === "checking") {
       this.#checkGeneration += 1;
       this.#setError("check_failed", CHECK_STALLED_MESSAGE);
-      // The pending call never settles, so its finally block will not run. Without rescheduling
-      // here the app would silently stop checking for updates until it restarts.
       this.#scheduleCheck(this.#options.checkIntervalMs);
       return;
     }
@@ -709,12 +802,10 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
       this.#activeDownload = null;
       this.#cancellationToken?.cancel();
       this.#cancellationToken = null;
-      this.#setError("download_failed", "The update download stopped responding. Try again.");
+      this.#setError("download_failed", sourceText("error.update.downloadStalled"));
       return;
     }
     if (this.#status.phase === "installing") {
-      // The latch deliberately stays set: shutdown preparation may already have torn services down,
-      // so a second attempt would run teardown concurrently with the first.
       this.#installGeneration += 1;
       this.#activeInstall = null;
       this.#setError("install_failed", INSTALL_FAILED_MESSAGE);
@@ -741,30 +832,19 @@ export class UpdateService extends EventEmitter<UpdateServiceEvents> {
   #recordStatus(): void {
     const event = { at: new Date().toISOString(), phase: this.#status.phase, errorCode: this.#status.errorCode };
     this.#history = [...this.#history.slice(-(MAX_DIAGNOSTIC_EVENTS - 1)), event];
-    const logDirectory = this.#options.logDirectory;
-    if (logDirectory) {
-      this.#logWrite = this.#logWrite.then(() => appendUpdateLog(logDirectory, event));
-    }
+    this.emit("diagnostic", event);
   }
 }
 
-const INSTALL_FAILED_MESSAGE = "Could not install the update. Quit and reopen Dani-Dex, then try again.";
-const MANAGED_HOST_MESSAGE =
-  "Updates on this Mac are installed by the host. The update stays ready until the host's maintenance runs.";
-const SIBLING_SESSION_MESSAGE =
-  "Another Dani-Dex session is still running from this application. Stop Dani-Dex in every other macOS user account first, then install the update again.";
-const CHECK_STALLED_MESSAGE = "The update check stopped responding. Try again.";
-const CHECK_OFFLINE_MESSAGE = "Could not reach the update service. Check your internet connection, then try again.";
-const CHECK_SERVICE_MESSAGE = "The update service did not answer. Dani-Dex tries again on its own in a few minutes.";
-const CHECK_NO_RELEASE_MESSAGE =
-  "No published update was found for this platform. Dani-Dex tries again on its own in a few minutes.";
+const INSTALL_FAILED_MESSAGE = sourceText("error.update.installFailed");
+const MANAGED_HOST_MESSAGE = sourceText("error.update.managedByHost");
+const NOT_INSTALLED_MESSAGE = sourceText("error.update.notInstalled");
+const SIBLING_SESSION_MESSAGE = sourceText("error.update.siblingSession");
+const CHECK_STALLED_MESSAGE = sourceText("error.update.checkStalled");
+const CHECK_OFFLINE_MESSAGE = sourceText("error.update.checkOffline");
+const CHECK_SERVICE_MESSAGE = sourceText("error.update.checkUnavailable");
+const CHECK_NO_RELEASE_MESSAGE = sourceText("error.update.checkNoRelease");
 
-/**
- * Node reports a link that never carried the request through `error.code`. electron-updater wraps
- * its own failures with a code of its own and keeps the original stack in the message, so the raw
- * text is searched as well: a wrapped `ENOTFOUND` is still a connectivity problem to the user, and
- * telling them to check the network is the one instruction that helps.
- */
 const OFFLINE_ERROR_CODES = [
   "EAI_AGAIN",
   "ECONNABORTED",
@@ -780,18 +860,12 @@ const OFFLINE_ERROR_CODES = [
   "ERR_NAME_NOT_RESOLVED",
 ];
 
-/** electron-updater codes that mean the feed answered but carried no release this build can use. */
 const NO_RELEASE_ERROR_CODES = [
   "ERR_UPDATER_CHANNEL_FILE_NOT_FOUND",
   "ERR_UPDATER_NO_PUBLISHED_VERSIONS",
   "ERR_UPDATER_INVALID_RELEASE_FEED",
 ];
 
-/**
- * What the user is told after a failed check. The three recoverable causes need different
- * instructions - a dropped link is theirs to fix, a refusing or unpublished feed is not - and
- * "Try again." on its own tells someone with no network to repeat the action that cannot work.
- */
 function describeCheckFailure(error: unknown) {
   const code = typeof error === "object" && error !== null && "code" in error ? String(error.code) : "";
   const text = `${code} ${error instanceof Error ? error.message : String(error ?? "")}`;
@@ -800,48 +874,122 @@ function describeCheckFailure(error: unknown) {
   const status =
     typeof error === "object" && error !== null && "statusCode" in error ? Number(error.statusCode) : Number.NaN;
   if (status === 429 || status >= 500) return CHECK_SERVICE_MESSAGE;
-  // ERR_UPDATER_LATEST_VERSION_NOT_FOUND wraps whatever the release lookup threw, so it only lands
-  // here once the causes above have been ruled out of its message.
   if (code === "ERR_UPDATER_LATEST_VERSION_NOT_FOUND") return CHECK_SERVICE_MESSAGE;
   return errorMessage("check_failed");
 }
 
-function errorMessage(code: UpdateFailureCode) {
-  if (code === "download_failed") return "Could not download the update. Try again.";
-  if (code === "install_failed") return INSTALL_FAILED_MESSAGE;
-  return "Could not check for updates. Try again.";
+function logUpdateFailure(text: string, error: unknown): void {
+  const fields = typeof error === "object" && error !== null ? error : {};
+  logger.warn(
+    text,
+    toLogValue({
+      code: "code" in fields ? fields.code : undefined,
+      statusCode: "statusCode" in fields ? fields.statusCode : undefined,
+      message: error instanceof Error ? error.message : error,
+    }),
+  );
 }
 
-async function appendUpdateLog(directory: string, event: UpdateDiagnosticEvent): Promise<void> {
-  try {
-    await mkdir(directory, { recursive: true, mode: 0o700 });
+function isOnReadOnlyVolume(bundlePath: string): Effect.Effect<boolean> {
+  if (bundlePath.includes("/AppTranslocation/")) return Effect.succeed(true);
+  return updateIO(() => access(bundlePath, constants.W_OK)).pipe(
+    Effect.as(false),
+    Effect.catch(({ cause }) =>
+      Effect.succeed(typeof cause === "object" && cause !== null && "code" in cause && cause.code === "EROFS"),
+    ),
+  );
+}
+
+function findAppImageInstallProblem(appImagePath: string): Effect.Effect<"missing" | "readOnly" | null> {
+  return Effect.gen(function* () {
+    const missing = yield* updateIO(() => stat(appImagePath)).pipe(
+      Effect.as(false),
+      Effect.catch(({ cause }) => Effect.succeed(isMissingPathError(cause))),
+    );
+    if (missing) return "missing";
+    const writable = yield* updateIO(() => access(dirname(appImagePath), constants.W_OK)).pipe(
+      Effect.as(true),
+      Effect.catch(() => Effect.succeed(false)),
+    );
+    return writable ? null : "readOnly";
+  });
+}
+
+function isMissingPathError(cause: unknown): boolean {
+  const code = typeof cause === "object" && cause !== null && "code" in cause ? cause.code : undefined;
+  return code === "ENOENT" || code === "ENOTDIR";
+}
+
+/** The download finished, but the Windows signature check did not accept the installer (`NsisUpdater`). */
+function downloadFailureMessage(error: unknown): string | undefined {
+  const code = typeof error === "object" && error !== null && "code" in error ? error.code : undefined;
+  return code === "ERR_UPDATER_INVALID_SIGNATURE" ? sourceText("error.update.signatureNotConfirmed") : undefined;
+}
+
+function errorMessage(code: UpdateFailureCode) {
+  if (code === "download_failed") return sourceText("error.update.downloadFailed");
+  if (code === "install_failed") return INSTALL_FAILED_MESSAGE;
+  return sourceText("error.update.checkFailed");
+}
+
+function appendUpdateLog(directory: string, event: UpdateDiagnosticEvent): Effect.Effect<void, UpdateOperationFailure> {
+  return Effect.gen(function* () {
+    yield* updateIO(() => mkdir(directory, { recursive: true, mode: 0o700 }));
     const path = join(directory, "update.log");
     const rotatedPath = `${path}.1`;
-    const size = await stat(path)
-      .then((value) => value.size)
-      .catch(() => 0);
+    const size = yield* updateIO(() => stat(path)).pipe(
+      Effect.map((value) => value.size),
+      Effect.catch(() => Effect.succeed(0)),
+    );
     if (size >= MAX_LOG_BYTES) {
-      await rm(rotatedPath, { force: true });
-      await rename(path, rotatedPath);
+      yield* updateIO(() => rm(rotatedPath, { force: true }));
+      yield* updateIO(() => rename(path, rotatedPath));
     }
-    await appendFile(path, `${JSON.stringify(event)}\n`, { encoding: "utf8", mode: 0o600 });
-  } catch {
-    // Update logging must not block updates.
-  }
+    yield* updateIO(() => appendFile(path, `${JSON.stringify(event)}\n`, { encoding: "utf8", mode: 0o600 }));
+  }).pipe(Effect.catch(() => Effect.void));
 }
 
-export async function pruneShipItLogs(directory: string): Promise<void> {
-  try {
-    const entries = (await readdir(directory, { withFileTypes: true }))
+function pruneShipItLogs(directory: string): Effect.Effect<void, UpdateOperationFailure> {
+  return Effect.gen(function* () {
+    const entries = (yield* updateIO(() => readdir(directory, { withFileTypes: true })))
       .filter((entry) => entry.isFile() && /^ShipIt_(?:stdout|stderr)\.log\.\d+$/u.test(entry.name))
       .map((entry) => entry.name)
       .sort((left, right) => Number(right.split(".").at(-1)) - Number(left.split(".").at(-1)));
-    await Promise.all(entries.slice(10).map((entry) => rm(join(directory, entry), { force: true })));
-  } catch {
-    // ShipIt creates this directory only after its first update.
-  }
+    yield* Effect.forEach(entries.slice(10), (entry) => updateIO(() => rm(join(directory, entry), { force: true })), {
+      concurrency: "unbounded",
+      discard: true,
+    });
+  }).pipe(Effect.catch(() => Effect.void));
 }
 
-function clampProgress(value: number): number {
-  return Math.max(0, Math.min(100, Number.isFinite(value) ? Math.round(value) : 0));
+const decodePendingUpdateInfo = Schema.decodeUnknownEffect(
+  Schema.fromJsonString(Schema.Struct({ fileName: Schema.String })),
+);
+
+function pruneInstalledUpdate(directory: string, currentVersion: string): Effect.Effect<void, never> {
+  return Effect.gen(function* () {
+    const pending = join(directory, "pending");
+    const text = yield* updateIO(() => readFile(join(pending, "update-info.json"), "utf8"));
+    const { fileName } = yield* decodePendingUpdateInfo(text);
+    const version = /-(\d+\.\d+\.\d+)-/u.exec(fileName)?.[1];
+    if (version === undefined || isNewerRelease(version, currentVersion)) return;
+    yield* updateIO(() => rm(join(pending, basename(fileName)), { force: true }));
+    yield* updateIO(() => rm(join(pending, "update-info.json"), { force: true }));
+  }).pipe(Effect.catch(() => Effect.void));
 }
+
+function stagingPercentage(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  const percentage = Number.parseInt(String(value), 10);
+  return Number.isNaN(percentage) ? null : percentage;
+}
+
+function clampProgress(value: number): number | null {
+  return Number.isFinite(value) ? Math.max(0, Math.min(100, Math.round(value))) : null;
+}
+
+export class UpdateOperationFailure extends Schema.TaggedError<UpdateOperationFailure>()("UpdateOperationFailure", {
+  cause: Schema.Defect(),
+}) {}
+
+const { io: updateIO, sync: updateSync } = causeHelpers(UpdateOperationFailure);

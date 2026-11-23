@@ -1,200 +1,256 @@
-import { INPUT_LIMITS } from "@dani-dex/contracts/input-limits";
-import type {
-  AgentApproval,
-  AgentEvent,
-  AgentModelId,
-  AgentModelOption,
-  AgentOperatingInstructions,
-  AgentProviderId,
-  AgentReasoningEffort,
-  AgentStatus,
-  AvatarImageInput,
-  BrowserTakeoverRequest,
-  CustomProviderSummary,
-  MarketplaceSkillDetail,
-  ProviderRuntimeStatus,
-  UpdateAgentInput,
-} from "@dani-dex/contracts/ipc";
-import { createEffect, createMemo, createSignal, createStore, For, onCleanup, onSettled, Show } from "solid-js";
-import { ProviderModelPicker, reasoningLabel } from "../../components/ProviderModelPicker";
 import {
-  createSettingsPanelWidth,
-  SettingsField,
-  SettingsLinkGroup,
-  SettingsLinkRow,
-  SettingsPanel,
-  SettingsPanelContent,
-  SettingsPanelHeader,
-} from "../../components/SettingsPanel";
+  type AgentBrowserProfile,
+  agentAutomationAllowed,
+  agentNotificationLevelMap,
+  type BrowserProfileSummary,
+  type BrowserProxyComputer,
+  type BrowserProxySummary,
+  DEFAULT_AGENT_DEFAULTS,
+  type FilePreview,
+  type ServerNotificationLevel,
+  type TestRoutineInput,
+  userAssignedSkills,
+} from "@openbot/contracts/ipc";
+import { Blocks, BookMarked, CalendarClock, FileText, Folder, Gauge, Puzzle, Table2, Upload } from "@openbot/ui";
+import { SettingsLinkGroup, SettingsLinkRow } from "@openbot/ui/components/SettingsPanel";
+import type { AgentProfile } from "@openbot/ui/data";
+import type { BrowserProfileSelectProfile } from "@openbot/ui/features/browser/BrowserProfileSelect";
+import { browserProfileProxyNames } from "@openbot/ui/features/browser/BrowserProxies";
 import {
-  Button,
-  Input,
-  Popover,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Switch,
-  Text,
-  Textarea,
-} from "../../components/ui";
-import type { AgentProfile } from "../../data";
-import { errorMessage } from "../../error-message";
-import { AgentAvatar } from "../agents/AgentAvatar";
-import { ROBOT_ROLES } from "../agents/manzanilla/robot-model";
-import { SettingsPeople } from "../settings/SettingsPeople";
-import { SettingsTelegram } from "../settings/SettingsTelegram";
-import { AgentMemoriesModal } from "./AgentMemoriesModal";
-import { AgentOperatingInstructionsModal } from "./AgentOperatingInstructionsModal";
-import { AgentRoutinesSettings, type RoutineSelectionRequest } from "./AgentRoutinesSettings";
-import { AgentSkillsModal, type AgentSkillsMode, userAssignedSkills } from "./AgentSkillsModal";
-import { AgentWorkOverview } from "./AgentWorkOverview";
-import { agentMemoriesPort } from "./memories-port";
-import { agentRoutinesPort } from "./routines-port";
+  type AgentInstructionsCalls,
+  AgentInstructionsView,
+} from "@openbot/ui/features/conversation/AgentInstructionsView";
+import {
+  AgentSessionSettings,
+  type AgentSessionSettingsApi,
+} from "@openbot/ui/features/conversation/AgentSessionSettings";
+import SharedAgentSettingsPanel, {
+  type AgentBrowserProfileOptions,
+  type AgentNotificationLevelOptions,
+  type AgentSettingsPanelProps as SharedAgentSettingsPanelProps,
+} from "@openbot/ui/features/conversation/AgentSettingsPanel";
+import type { AgentSettingLinkId, AgentSettingReveal } from "@openbot/ui/features/conversation/agent-setting-links";
+import { agentFilesLinkValue } from "@openbot/ui/features/files/AgentFilesView";
+import { useText } from "@openbot/ui/text";
+import { createEffect, createMemo, createSignal, createStore, Show, untrack } from "solid-js";
+import { actionToast } from "../../action-toast";
+import { createSidePanelWidth, readSidePanelWidth, saveSidePanelWidth } from "../../components/side-panel-width";
+import type { SkillCatalogCalls } from "../../skills-port";
+import { agentSkillCalls, skillsPort } from "../../skills-port";
+import type { BrowserProfileCalls } from "../browser/browser-profiles-port";
+import { createBrowserProfilesStore } from "../browser/stores/browser-profiles-store";
+import { type AgentFilesOptions, AgentFilesSettings } from "../files/AgentFilesSettings";
+import { filesPort } from "../files/files-port";
+import { createStorageUsage } from "../files/storage-usage";
+import { AgentMemoriesSettings } from "./AgentMemoriesSettings";
+import { AgentRoutinesSettings, type DetailLeaveGuard, type RoutineSelectionRequest } from "./AgentRoutinesSettings";
+import { AgentSkillsModal, type AgentSkillsMode, type SkillDetail } from "./AgentSkillsModal";
+import { conversationPort, type SharedTableCalls } from "./conversation-port";
+import type { AgentNotificationLevelCalls, ConversationRuntime } from "./conversation-runtime";
+import { type AgentMemoriesApi, agentMemoriesPort, type MemoriesPort } from "./memories-port";
+import type { EventRoutinesApi } from "./routine-webhooks-api";
+import {
+  type AgentRoutinesApi,
+  agentRoutinesPort,
+  eventRoutinesPort,
+  type RoutineResultsCalls,
+  type RoutinesPort,
+} from "./routines-port";
 import { SharedTablesModal } from "./SharedTablesModal";
 
-export interface AgentRuntimeSettings {
-  provider: AgentProviderId;
-  model: AgentModelId;
-  reasoningEffort: AgentReasoningEffort;
-}
-
-export type AgentRuntimeSettingsPatch = AgentRuntimeSettings | Pick<AgentRuntimeSettings, "reasoningEffort">;
-
-interface AgentSettingsPanelProps {
-  overviewPrompt?: Extract<AgentEvent, { type: "prompt" }>;
-  overviewApproval?: AgentApproval;
-  overviewTakeover?: BrowserTakeoverRequest;
-  onOpenOverviewAgent?: (id: string) => void;
-  onOpenUsage: (trigger: HTMLButtonElement) => void;
-  agent: AgentProfile;
-  runtimeSettings: AgentRuntimeSettings;
-  agentStatus: AgentStatus;
-  modelOptions: AgentModelOption[];
-  working: boolean;
-  providerRuntimeStatuses?: Partial<Record<AgentProviderId, ProviderRuntimeStatus>>;
-  /** Threaded, not read from `useCustomProviders()`: this component is mounted bare by its test. */
-  customProviders?: readonly CustomProviderSummary[];
-  onDownloadProvider?: (provider: AgentProviderId) => void | Promise<void>;
-  onCancelProviderDownload?: (provider: AgentProviderId) => void | Promise<void>;
-  onConnectProvider?: (provider: AgentProviderId) => void | Promise<void>;
-  maxWidth: () => number;
-  onClose: () => void;
+interface AgentSettingsPanelProps
+  extends Omit<
+    SharedAgentSettingsPanelProps,
+    | "width"
+    | "onResize"
+    | "onResizeEnd"
+    | "links"
+    | "detailOpen"
+    | "children"
+    | "browserProfiles"
+    | "notificationLevel"
+    | "reveal"
+  > {
+  remoteClient?: boolean;
+  skillCatalog?: SkillCatalogCalls | undefined;
+  localHost?: boolean;
+  sessionSettingsEditable?: boolean;
+  memoryLimit?: number | undefined;
+  adminCalls?: ConversationRuntime["admin"] | undefined;
+  onPublish?: (() => void) | undefined;
+  onOpenUsage?: ((trigger: HTMLButtonElement) => void) | undefined;
+  onOpenApps?: (() => void) | undefined;
   onWidthChange: (width: number) => void;
-  onUpdateAgent: (agentId: string, updates: Omit<UpdateAgentInput, "agentId">) => Promise<void>;
-  onUpdateRuntimeSettings: (
-    agentId: string,
-    settings: AgentRuntimeSettings,
-    updates: AgentRuntimeSettingsPatch,
-  ) => Promise<boolean>;
-  onSetAgentAvatar: (agentId: string, image: AvatarImageInput | null) => Promise<void>;
-  skillSelectionRequest?: { skillId: string } | null;
-  routineSelectionRequest?: RoutineSelectionRequest | null;
-  onRoutineSelectionRequestHandled?: (nonce: number) => void;
-  onOpenRoutineRun?: (messageId: string) => void;
-  skillsMode?: AgentSkillsMode;
-  skillsMarketplaceOpen?: boolean;
-  /** The shared data lives on the computer that runs the agents, so a remote server hides it. */
-  tablesVisible?: boolean;
-  /** Names the agent that keeps each set of records. Threaded like `customProviders`, for the same reason. */
-  agents?: readonly AgentProfile[];
-  onCreateSkill?: () => void;
-  onTrySkill?: (skill: MarketplaceSkillDetail) => void;
-  onAddFromMarketplace?: (agentId: string) => void;
+  skillSelectionRequest?: { skillId: string } | null | undefined;
+  onSkillsClosed?: (() => void) | undefined;
+  instructionsFile?: AgentInstructionsCalls | undefined;
+  instructionsRequest?: { agentId: string } | null | undefined;
+  settingReveal?: AgentSettingReveal | null | undefined;
+  onSettingRevealHandled?: ((nonce: number) => void) | undefined;
+  routineSelectionRequest?: RoutineSelectionRequest | null | undefined;
+  onRoutineSelectionRequestHandled?: ((nonce: number) => void) | undefined;
+  onOpenRoutineRun?: ((messageId: string, routineId?: string) => void) | undefined;
+  onOpenRoutineThread?: ((routineId: string) => Promise<boolean>) | undefined;
+  skillsMode?: AgentSkillsMode | undefined;
+  skillsServerId?: string | undefined;
+  skillsMarketplaceOpen?: boolean | undefined;
+  workspaceCovered?: boolean | undefined;
+  tablesVisible?: boolean | undefined;
+  agents?: readonly AgentProfile[] | undefined;
+  eventRoutines?: EventRoutinesApi | undefined;
+  routines?: AgentRoutinesApi | undefined;
+  routineRunPlace?: boolean | undefined;
+  routinesOnce?: boolean | undefined;
+  routineRunCommand?: ((input: TestRoutineInput) => Promise<string>) | undefined;
+  routineResultsServerId?: string | RoutineResultsCalls | undefined;
+  memoriesApi?: AgentMemoriesApi | undefined;
+  onCreateSkill?: (() => void) | undefined;
+  onTrySkill?: ((skill: SkillDetail) => void) | undefined;
+  previewWorkspaceFile?: ((path: string) => Promise<FilePreview>) | undefined;
+  onAddFromMarketplace?: ((agentId: string) => void) | undefined;
+  files?: AgentFilesOptions | undefined;
+  browserProfileCalls?: BrowserProfileCalls | undefined;
+  onManageBrowserProfiles?: ((trigger: HTMLElement) => void) | undefined;
+  notificationLevelCalls?: AgentNotificationLevelCalls | undefined;
+  serverNotificationLevel?: ServerNotificationLevel | undefined;
+  onOpenNotificationSettings?: ((trigger: HTMLElement) => void) | undefined;
 }
 
 export type { AgentSkillsMode };
 
-const INSTRUCTIONS_SAVE_DELAY_MS = 400;
-
-/** The three free-text fields of the panel, each with a flag for edits made since the last save. */
-interface AgentTextFields {
-  description: string;
-  name: string;
-  title: string;
-}
-
-interface AvatarEditor {
-  pickerOpen: boolean;
-  seed: string;
-}
-
-/**
- * Everything the panel is editing for the agent it currently shows. `fields` and `dirty` stay
- * parallel records so the props sync can write every field the user has not touched; `runtime` is
- * one record because the three settings are sent, and rolled back, together.
- */
-interface AgentSettingsDraft {
-  avatar: AvatarEditor;
-  dirty: Record<keyof AgentTextFields, boolean>;
-  fields: AgentTextFields;
-  tables: { count: number; open: boolean };
-  memories: { count: number; open: boolean };
-  operating: { summary: string; open: boolean };
-  notifications: boolean;
-  routines: { count: number; open: boolean };
-  skills: { count: number; open: boolean; reopenAfterMarketplace: boolean };
-  runtime: AgentRuntimeSettings;
-  saveError: string | null;
-}
-
-interface TextSaveRequest {
-  agentId: string;
-  draftValue: string;
-  field: keyof AgentTextFields;
-  storedValue: string;
+function profilesWithProxies(
+  state: {
+    profiles: readonly BrowserProfileSummary[] | undefined;
+    proxies: readonly BrowserProxySummary[] | undefined;
+    computers: readonly BrowserProxyComputer[] | undefined;
+  },
+  t: ReturnType<typeof useText>["t"],
+): BrowserProfileSelectProfile[] | undefined {
+  const names = browserProfileProxyNames(state.proxies ?? [], state.computers ?? [], t);
+  return state.profiles?.map((profile) => ({ ...profile, proxy: names.get(profile.id) }));
 }
 
 export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
-  const [profileOpen, setProfileOpen] = createSignal(false);
-  const [settingsTab, setSettingsTab] = createSignal("overview");
-  const [newSchedule, setNewSchedule] = createSignal(false);
-  const [panelWidth, setPanelWidth] = createSettingsPanelWidth();
-  const [draft, setDraft] = createStore<AgentSettingsDraft>({
-    avatar: {
-      pickerOpen: false,
-      seed: "agent",
-    },
-    dirty: { description: false, name: false, title: false },
-    fields: { description: "", name: "", title: "" },
+  const { t, errorMessage } = useText();
+  const sessionSettings = createMemo((): AgentSessionSettingsApi | undefined => {
+    if (!props.sessionSettingsEditable) return undefined;
+    if (props.remoteClient) return props.adminCalls?.sessionSettings;
+    const serverId = props.skillsServerId;
+    const api = conversationPort().agent;
+    return {
+      read: (agentId) => api.readAgentSessionSettings(agentId, serverId),
+      set: (input) => api.setAgentSessionSetting(input, serverId),
+      reset: (input) => api.resetAgentSessionSetting(input, serverId),
+      subscribe: (agentId, listener) =>
+        api.onScopedEvent((scoped) => {
+          if (
+            scoped.serverId === serverId &&
+            scoped.event.type === "agent-session-settings-changed" &&
+            scoped.event.agentId === agentId
+          )
+            listener();
+        }),
+    };
+  });
+  const [panelWidth, setPanelWidth] = createSidePanelWidth();
+  const [draft, setDraft] = createStore({
     tables: { count: 0, open: false },
     memories: { count: 0, open: false },
-    operating: { summary: "", open: false },
-    notifications: true,
     routines: { count: 0, open: false },
+    files: { open: false },
+    instructions: { open: false },
     skills: { count: 0, open: false, reopenAfterMarketplace: false },
-    runtime: { ...props.runtimeSettings },
-    saveError: null,
   });
-
-  /** The message under the form: every save path clears it first and reports its failure through it. */
-  function setSaveError(message: string | null): void {
-    setDraft((state) => {
-      state.saveError = message;
-    });
-  }
-
-  const memoriesPort = createMemo(() => agentMemoriesPort(props.agent.id, props.agent.name));
-  const routinesPort = createMemo(() => agentRoutinesPort(props.agent.id));
-  const skillsMode = () => props.skillsMode ?? "mutable";
-  let lastSkillsMarketplaceOpen = props.skillsMarketplaceOpen === true;
-  const selectedModel = createMemo(() =>
-    props.modelOptions.find(
-      (option) => option.provider === draft.runtime.provider && option.id === draft.runtime.model,
+  const browserProfiles = createMemo(() => {
+    const calls = props.browserProfileCalls;
+    return calls ? createBrowserProfilesStore(() => calls) : undefined;
+  });
+  const [hostChoice, setHostChoice] = createSignal<AgentBrowserProfile | undefined>(undefined);
+  let choiceRequest = 0;
+  createEffect(
+    () => ({
+      store: props.workspaceCovered === true ? undefined : browserProfiles(),
+      calls: props.browserProfileCalls,
+      agentId: props.agent.id,
+      local: props.localHost === true,
+    }),
+    ({ store, calls, agentId, local }) => {
+      ++choiceRequest;
+      setHostChoice(undefined);
+      if (!store || !calls) return;
+      const failed = (error: unknown) => actionToast.error(errorMessage(error, t("browser.profiles.loadFailed")));
+      const readChoice = (report: (error: unknown) => void) => {
+        const request = ++choiceRequest;
+        calls
+          .readAgent(agentId)
+          .then((choice) => {
+            if (request === choiceRequest) setHostChoice(choice);
+          })
+          .catch(report);
+      };
+      store.refresh().catch(failed);
+      if (local) return store.follow();
+      readChoice(failed);
+      return store.follow(() => readChoice(() => undefined));
+    },
+  );
+  const browserProfileOptions = (): AgentBrowserProfileOptions | undefined => {
+    const store = browserProfiles();
+    const manage = props.onManageBrowserProfiles;
+    const current = hostChoice();
+    if (!store || !manage || (!props.localHost && !current)) return undefined;
+    return {
+      profiles: profilesWithProxies(store.state, t),
+      current,
+      onChange: async (agentId, profile) => {
+        const saved = await store.assign(agentId, profile);
+        if (!props.localHost && agentId === props.agent.id) setHostChoice(saved);
+      },
+      onCreate: store.create,
+      onManage: manage,
+    };
+  };
+  const memoriesPort = createMemo(() =>
+    agentMemoriesPort(props.agent.id, props.agent.name, props.memoryLimit ?? null, props.memoriesApi),
+  );
+  const memoriesShown = () => !props.remoteClient || props.memoriesApi !== undefined;
+  const routinesShown = () => !props.remoteClient || props.routines !== undefined;
+  const legacyRoutinesPort = createMemo(() =>
+    agentRoutinesPort(
+      props.agent.id,
+      (
+        props.localHost === true
+          ? agentAutomationAllowed(props.agent, props.agentDefaults ?? DEFAULT_AGENT_DEFAULTS)
+          : props.agent.allowAutomation === true
+      )
+        ? props.routineRunCommand
+        : undefined,
+      props.localHost === true,
+      props.routines,
+      props.localHost === true || props.routineRunPlace === true,
+      props.routineResultsServerId,
+      props.localHost === true || props.routinesOnce === true,
     ),
   );
-  const reasoningOptions = createMemo(() => selectedModel()?.supportedReasoningEfforts ?? []);
-  let avatarPickerRoot: HTMLDivElement | undefined;
-  let lastSignature: string | undefined;
-  let lastAgentId: string | undefined;
-  // Instructions save while the field remains focused. One queue also keeps blur, panel-close and
-  // agent-change saves ordered, so an older completion cannot declare a newer draft clean.
-  let instructionsSaveTimer: ReturnType<typeof setTimeout> | undefined;
-  let activeTextSave: TextSaveRequest | null = null;
-  let disposed = false;
-  const pendingTextSaves = new Map<string, TextSaveRequest>();
-
+  const routinesPort = createMemo(() => {
+    const eventApi = props.eventRoutines ?? props.adminCalls?.eventRoutines;
+    return eventApi
+      ? eventRoutinesPort({ kind: "agent", id: props.agent.id }, eventApi, legacyRoutinesPort())
+      : legacyRoutinesPort();
+  });
+  const skillsMode = () => props.skillsMode ?? "mutable";
+  const skillCatalog = () => (props.remoteClient ? (props.skillCatalog ?? null) : undefined);
+  const tableCalls = (): SharedTableCalls => props.adminCalls?.sharedTables ?? conversationPort().agent;
+  const skillCalls = () =>
+    props.adminCalls?.skills ?? agentSkillCalls(skillsMode() === "host" ? props.skillsServerId : undefined);
+  const storage = createStorageUsage(
+    () => {
+      const files = props.files;
+      return files ? { serverId: files.serverId, input: { scope: "agent", agentId: props.agent.id } } : null;
+    },
+    () => props.files?.calls ?? filesPort(),
+  );
+  let lastSkillsMarketplaceOpen = untrack(() => props.skillsMarketplaceOpen === true);
   createEffect(
     () => panelWidth(),
     (width) => {
@@ -202,66 +258,70 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
     },
   );
 
+  const currentAgentId = createMemo(() => props.agent.id);
+
+  const [ownLevels, setOwnLevels] = createSignal<ReadonlyMap<string, ServerNotificationLevel> | undefined>(undefined);
+  let levelsRequest = 0;
+  let levelsCalls: AgentNotificationLevelCalls | undefined;
   createEffect(
-    () => {
-      const agent = props.agent;
-      const runtimeSettings = props.runtimeSettings;
-      return {
-        agent,
-        runtimeSettings,
-        signature: [
-          agent.id,
-          agent.name,
-          agent.title,
-          agent.description,
-          String(agent.notifications),
-          runtimeSettings.provider,
-          runtimeSettings.model,
-          runtimeSettings.reasoningEffort,
-          agent.avatarSeed,
-          String(agent.avatarHue),
-        ].join("\u0000"),
-      };
+    () => ({ calls: props.notificationLevelCalls, agentId: currentAgentId() }),
+    ({ calls }) => {
+      const request = ++levelsRequest;
+      if (calls !== levelsCalls) {
+        levelsCalls = calls;
+        setOwnLevels(undefined);
+      }
+      if (!calls) return;
+      calls.list().then(
+        (snapshot) => {
+          if (request === levelsRequest) setOwnLevels(agentNotificationLevelMap(snapshot));
+        },
+        () => undefined,
+      );
     },
-    ({ agent, runtimeSettings, signature }) => {
-      if (signature === lastSignature) return;
-      const agentChanged = agent.id !== lastAgentId;
-      if (agentChanged && lastAgentId) flushDirtyTextFields(lastAgentId);
-      // A field the user has edited keeps its draft, unless this is a different agent, whose values
-      // replace the panel wholesale. Read before the write, so a fresh agent clears the flags here.
-      const keep = {
-        description: !agentChanged && draft.dirty.description,
-        name: !agentChanged && draft.dirty.name,
-        title: !agentChanged && draft.dirty.title,
-      };
-      lastSignature = signature;
-      lastAgentId = agent.id;
-      setDraft((state) => {
-        if (agentChanged) {
-          state.dirty.description = false;
-          state.dirty.name = false;
-          state.dirty.title = false;
-        }
-        if (!keep.name) state.fields.name = agent.name;
-        if (!keep.title) state.fields.title = agent.title;
-        if (!keep.description) state.fields.description = agent.description;
-        state.notifications = agent.notifications;
-        state.runtime.provider = runtimeSettings.provider;
-        state.runtime.model = runtimeSettings.model;
-        state.runtime.reasoningEffort = runtimeSettings.reasoningEffort;
-        state.avatar.seed = agent.avatarSeed;
-        if (agentChanged) {
-          state.avatar.pickerOpen = false;
-          state.tables.open = false;
-          state.memories.open = false;
-          state.operating.open = false;
-          state.routines.open = false;
-          state.skills.open = false;
-          state.skills.reopenAfterMarketplace = false;
+  );
+  createEffect(
+    () => props.notificationLevelCalls,
+    (calls) => {
+      if (!calls?.subscribe) return;
+      return calls.subscribe((snapshot) => {
+        if (calls === levelsCalls) {
+          ++levelsRequest;
+          setOwnLevels(agentNotificationLevelMap(snapshot));
         }
       });
-      if (agentChanged) {
-        void window.danidex.agent
+    },
+  );
+  const notificationLevelOptions = (): AgentNotificationLevelOptions | undefined => {
+    const open = props.onOpenNotificationSettings;
+    const levels = ownLevels();
+    if (!open || !levels) return undefined;
+    return {
+      current: levels.get(props.agent.id) ?? null,
+      serverLevel: props.serverNotificationLevel ?? "all",
+      onOpen: open,
+    };
+  };
+  createEffect(
+    () => ({
+      agentId: currentAgentId(),
+      remoteClient: untrack(() => props.remoteClient === true),
+      tablesVisible: untrack(() => props.tablesVisible !== false),
+      memories: untrack(memoriesShown),
+      routines: untrack(routinesShown),
+    }),
+    ({ agentId, remoteClient, tablesVisible, memories, routines }) => {
+      setDraft((state) => {
+        state.tables.open = false;
+        state.memories.open = false;
+        state.routines.open = false;
+        state.files.open = false;
+        state.instructions.open = false;
+        state.skills.open = false;
+        state.skills.reopenAfterMarketplace = false;
+      });
+      if (!remoteClient || tablesVisible) {
+        void tableCalls()
           .listTables()
           .catch(() => [])
           .then((items) => {
@@ -269,33 +329,57 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
               state.tables.count = items.length;
             });
           });
-        void window.danidex.agent
-          .listMemories(agent.id)
-          .catch(() => [])
-          .then((items) => {
-            setDraft((state) => {
-              state.memories.count = items.length;
-            });
-          });
-        void window.danidex.agent
-          .getOperatingInstructions(agent.id)
-          .then(operatingSummary)
-          .catch(() => "")
-          .then((summary) => {
-            setDraft((state) => {
-              state.operating.summary = summary;
-            });
-          });
-        void window.danidex.agent
-          .listRoutines(agent.id)
-          .catch(() => [])
-          .then((items) => {
-            setDraft((state) => {
-              state.routines.count = items.length;
-            });
-          });
-        void loadSkillsCount(agent.id);
       }
+      void untrack(() => loadSkillsCount(agentId));
+      if (memories) untrack(() => loadMemoriesCount(memoriesPort()));
+      if (routines) untrack(() => loadRoutinesCount(routinesPort()));
+    },
+  );
+
+  createEffect(
+    () => ({
+      memories: memoriesShown() ? memoriesPort() : null,
+      routines: routinesShown() ? routinesPort() : null,
+    }),
+    ({ memories, routines }) => {
+      const stopMemories = memories?.subscribe(() => loadMemoriesCount(memories));
+      const stopRoutines = routines?.subscribe(() => loadRoutinesCount(routines));
+      return () => {
+        stopMemories?.();
+        stopRoutines?.();
+      };
+    },
+  );
+
+  function loadMemoriesCount(port: MemoriesPort): void {
+    void port
+      .list()
+      .catch(() => [])
+      .then((items) => {
+        setDraft((state) => {
+          state.memories.count = items.length;
+        });
+      });
+  }
+
+  function loadRoutinesCount(port: RoutinesPort): void {
+    void port
+      .list()
+      .catch(() => [])
+      .then((items) => {
+        setDraft((state) => {
+          state.routines.count = items.length;
+        });
+      });
+  }
+
+  createEffect(
+    () => [props.agent.id, skillsMode(), skillCalls()] as const,
+    ([agentId, mode, calls]) => {
+      if (mode === "hidden" || !calls.onChanged) return;
+      return calls.onChanged((changedId) => {
+        if (changedId === agentId) void loadSkillsCount(agentId);
+      });
     },
   );
 
@@ -309,8 +393,8 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
     try {
       const items =
         skillsMode() === "readonly"
-          ? await window.danidex.agent.listInstalledSkills(agentId)
-          : await window.danidex.skills.listInstalled(agentId);
+          ? await skillsPort().agent.listInstalledSkills(agentId)
+          : await skillCalls().listInstalled(agentId);
       setDraft((state) => {
         state.skills.count = userAssignedSkills(items).length;
       });
@@ -322,12 +406,15 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
   }
 
   createEffect(
-    () => props.skillsMarketplaceOpen === true,
-    (open) => {
-      if (lastSkillsMarketplaceOpen && !open && draft.skills.reopenAfterMarketplace) {
+    () => ({
+      open: props.skillsMarketplaceOpen === true,
+      covered: untrack(() => props.workspaceCovered === true),
+    }),
+    ({ open, covered }) => {
+      if (lastSkillsMarketplaceOpen && !open && untrack(() => draft.skills.reopenAfterMarketplace)) {
         setDraft((state) => {
           state.skills.reopenAfterMarketplace = false;
-          state.skills.open = true;
+          state.skills.open = !covered;
         });
       }
       lastSkillsMarketplaceOpen = open;
@@ -345,572 +432,224 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
     },
   );
 
-  createEffect(
-    () => props.skillSelectionRequest,
-    (request) => {
-      if (request)
-        setDraft((state) => {
-          state.skills.open = true;
-        });
-    },
-  );
-
-  onSettled(() => {
-    const closeAvatarPicker = (event: PointerEvent) => {
-      if (!draft.avatar.pickerOpen) return;
-      if (event.target instanceof Node && avatarPickerRoot?.contains(event.target)) return;
+  const skillSelectionRequest = createMemo(() => props.skillSelectionRequest);
+  createEffect(skillSelectionRequest, (request) => {
+    if (request)
       setDraft((state) => {
-        state.avatar.pickerOpen = false;
+        state.skills.open = true;
       });
-    };
-    window.addEventListener("pointerdown", closeAvatarPicker);
-    return () => window.removeEventListener("pointerdown", closeAvatarPicker);
   });
 
-  onCleanup(() => {
-    if (lastAgentId) flushDirtyTextFields(lastAgentId);
-    disposed = true;
+  const instructionsRequest = createMemo(() => props.instructionsRequest);
+  createEffect(instructionsRequest, (request) => {
+    if (request)
+      setDraft((state) => {
+        state.instructions.open = true;
+      });
   });
 
-  async function saveAgentPatch(
-    updates: Omit<UpdateAgentInput, "agentId">,
-    agentId = props.agent.id,
-  ): Promise<boolean> {
-    if (!disposed && props.agent.id === agentId) setSaveError(null);
-    try {
-      await props.onUpdateAgent(agentId, updates);
-      return true;
-    } catch (error) {
-      if (!disposed && props.agent.id === agentId) {
-        setSaveError(errorMessage(error, "Could not save agent settings."));
-      }
-      return false;
-    }
-  }
-
-  function textSaveRequest(
-    field: keyof AgentTextFields,
-    agentId: string,
-    draftValue = draft.fields[field],
-  ): TextSaveRequest {
-    return {
-      agentId,
-      draftValue,
-      field,
-      storedValue:
-        field === "name" ? draftValue.trim() || "New agent" : field === "title" ? draftValue.trim() : draftValue,
-    };
-  }
-
-  function textSaveKey(request: TextSaveRequest): string {
-    return `${request.agentId}\u0000${request.field}`;
-  }
-
-  function textSavePatch(request: TextSaveRequest): Omit<UpdateAgentInput, "agentId"> {
-    switch (request.field) {
-      case "name":
-        return { name: request.storedValue };
-      case "title":
-        return { title: request.storedValue };
-      case "description":
-        return { description: request.storedValue };
-    }
-  }
-
-  function queueTextSave(request: TextSaveRequest): void {
-    if (
-      activeTextSave?.agentId === request.agentId &&
-      activeTextSave.field === request.field &&
-      activeTextSave.draftValue === request.draftValue
-    ) {
-      return;
-    }
-    pendingTextSaves.set(textSaveKey(request), request);
-    void drainTextSaves();
-  }
-
-  async function drainTextSaves(): Promise<void> {
-    if (activeTextSave) return;
-    const entry = pendingTextSaves.entries().next().value;
-    if (!entry) return;
-    const [key, request] = entry;
-    pendingTextSaves.delete(key);
-    activeTextSave = request;
-    const saved = await saveAgentPatch(textSavePatch(request), request.agentId);
-    if (
-      !disposed &&
-      saved &&
-      props.agent.id === request.agentId &&
-      draft.fields[request.field] === request.draftValue
-    ) {
-      setDraft((state) => {
-        state.dirty[request.field] = false;
-      });
-    }
-    activeTextSave = null;
-    if (pendingTextSaves.size > 0) void drainTextSaves();
-  }
-
-  function cancelInstructionsSaveTimer(): void {
-    if (instructionsSaveTimer === undefined) return;
-    clearTimeout(instructionsSaveTimer);
-    instructionsSaveTimer = undefined;
-  }
-
-  function scheduleInstructionsSave(value: string): void {
-    cancelInstructionsSaveTimer();
-    const request = textSaveRequest("description", props.agent.id, value);
-    instructionsSaveTimer = setTimeout(() => {
-      instructionsSaveTimer = undefined;
-      queueTextSave(request);
-    }, INSTRUCTIONS_SAVE_DELAY_MS);
-  }
-
-  function flushDirtyTextFields(agentId: string): void {
-    cancelInstructionsSaveTimer();
-    for (const field of ["name", "title", "description"] as const) {
-      if (draft.dirty[field]) queueTextSave(textSaveRequest(field, agentId));
-    }
-  }
-
-  async function saveRuntimeSettings(
-    settings: AgentRuntimeSettings,
-    updates: AgentRuntimeSettingsPatch,
-    agentId = props.agent.id,
-  ): Promise<boolean> {
-    setSaveError(null);
-    try {
-      const saved = await props.onUpdateRuntimeSettings(agentId, settings, updates);
-      if (!saved && props.agent.id === agentId) setSaveError("Could not save agent settings.");
-      return saved;
-    } catch (error) {
-      if (props.agent.id === agentId) {
-        setSaveError(errorMessage(error, "Could not save agent settings."));
-      }
-      return false;
-    }
-  }
-
-  function saveName(): void {
-    const value = draft.fields.name.trim() || "New agent";
+  const settingReveal = createMemo(() => props.settingReveal);
+  const [panelReveal, setPanelReveal] = createSignal<AgentSettingReveal | null>(null);
+  let detailLeaveGuard: DetailLeaveGuard | null = null;
+  createEffect(settingReveal, (request) => {
+    if (!request) return;
+    props.onSettingRevealHandled?.(request.nonce);
+    const guard = detailLeaveGuard;
+    untrack(() => (guard ? guard(() => revealSetting(request)) : revealSetting(request)));
+  });
+  function revealSetting(request: AgentSettingReveal): void {
+    const detail = revealDetail(request.settingId);
     setDraft((state) => {
-      state.fields.name = value;
+      state.instructions.open = detail === "instructions";
+      state.memories.open = detail === "memories";
+      state.skills.open = detail === "skills";
+      state.routines.open = detail === "routines";
+      state.files.open = false;
     });
-    queueTextSave(textSaveRequest("name", props.agent.id));
+    setPanelReveal(detail === "skills" ? null : request);
   }
-
-  function saveTitle(): void {
-    const value = draft.fields.title.trim();
-    setDraft((state) => {
-      state.fields.title = value;
-    });
-    queueTextSave(textSaveRequest("title", props.agent.id));
-  }
-
-  function saveDescription(): void {
-    cancelInstructionsSaveTimer();
-    queueTextSave(textSaveRequest("description", props.agent.id));
-  }
-
-  async function selectRobotAvatar(seed: string): Promise<void> {
-    if (await saveAgentPatch({ avatarSeed: seed })) {
-      setDraft((state) => {
-        state.avatar.seed = seed;
-      });
-    }
-  }
-
-  async function selectModel(nextModel: AgentModelId, nextProvider: AgentProviderId): Promise<void> {
-    const option = props.modelOptions.find(
-      (candidate) => candidate.provider === nextProvider && candidate.id === nextModel,
-    );
-    if (!option) return;
-    // A plain copy, not `snapshot`: a snapshot of an unmodified subtree is the store's own object,
-    // which the write below would mutate, leaving nothing to roll back to.
-    const previous: AgentRuntimeSettings = {
-      model: draft.runtime.model,
-      provider: draft.runtime.provider,
-      reasoningEffort: draft.runtime.reasoningEffort,
-    };
-    const agentId = props.agent.id;
-    const settings: AgentRuntimeSettings = {
-      model: nextModel,
-      provider: nextProvider,
-      reasoningEffort: option.supportedReasoningEfforts.includes(previous.reasoningEffort)
-        ? previous.reasoningEffort
-        : option.defaultReasoningEffort,
-    };
-    setDraft((state) => {
-      state.runtime.provider = settings.provider;
-      state.runtime.model = settings.model;
-      state.runtime.reasoningEffort = settings.reasoningEffort;
-    });
-    if (await saveRuntimeSettings(settings, settings, agentId)) return;
-    // Roll back only what this call wrote: another agent, or a later pick, owns the panel now.
-    if (props.agent.id !== agentId || !sameRuntimeSettings(draft.runtime, settings)) return;
-    setDraft((state) => {
-      state.runtime.provider = previous.provider;
-      state.runtime.model = previous.model;
-      state.runtime.reasoningEffort = previous.reasoningEffort;
-    });
-  }
-
-  async function selectReasoning(nextReasoning: AgentReasoningEffort): Promise<void> {
-    const agentId = props.agent.id;
-    const previousReasoning = draft.runtime.reasoningEffort;
-    const settings: AgentRuntimeSettings = {
-      model: draft.runtime.model,
-      provider: draft.runtime.provider,
-      reasoningEffort: nextReasoning,
-    };
-    setDraft((state) => {
-      state.runtime.reasoningEffort = nextReasoning;
-    });
-    if (await saveRuntimeSettings(settings, { reasoningEffort: nextReasoning }, agentId)) return;
-    if (props.agent.id === agentId && sameRuntimeSettings(draft.runtime, settings)) {
-      setDraft((state) => {
-        state.runtime.reasoningEffort = previousReasoning;
-      });
-    }
+  function revealDetail(settingId: AgentSettingLinkId): "instructions" | "memories" | "skills" | "routines" | null {
+    if (settingId === "agent.instructions" && props.instructionsFile) return "instructions";
+    if (settingId === "agent.memories" && memoriesShown()) return "memories";
+    if (settingId === "agent.skills" && skillsMode() !== "hidden") return "skills";
+    if (settingId === "agent.routines" && routinesShown()) return "routines";
+    return null;
   }
 
   return (
-    <SettingsPanel
-      id="settings-side-panel"
-      label="Agent settings"
+    <SharedAgentSettingsPanel
+      {...props}
+      reveal={panelReveal()}
+      browserProfiles={browserProfileOptions()}
+      notificationLevel={notificationLevelOptions()}
       width={panelWidth()}
-      maxWidth={props.maxWidth}
       onResize={setPanelWidth}
-    >
-      <Show when={!draft.routines.open}>
-        <SettingsPanelHeader
-          title="Settings"
-          onBack={props.onClose}
-          backLabel="Back to details"
-          onClose={props.onClose}
-          closeLabel="Close details"
-        />
-      </Show>
-      <Show when={!draft.routines.open}>
-        <nav class="agent-options-tabs" aria-label="Agent options">
-          <For each={["overview", "people", "channels", "memory"]}>
-            {(tab) => (
-              <Button
-                variant="ghost"
-                size="sm"
-                aria-pressed={settingsTab() === tab ? "true" : "false"}
-                class={{ selected: settingsTab() === tab }}
-                onClick={() => {
-                  setSettingsTab(tab);
-                  if (tab === "memory")
-                    setDraft((s) => {
-                      s.memories.open = true;
-                    });
-                }}
-              >
-                {tab[0].toUpperCase() + tab.slice(1)}
-              </Button>
+      onResizeEnd={saveSidePanelWidth}
+      preferredWidth={readSidePanelWidth}
+      onUnshownSaveError={(message) =>
+        actionToast.error(message, {
+          id: "agent-settings-save-failed",
+          report: { operation: "settings", source: "action", cause_code: "unknown" },
+        })
+      }
+      detailOpen={draft.routines.open || draft.files.open || draft.memories.open || draft.instructions.open}
+      links={
+        <>
+          <Show when={sessionSettings()}>
+            {(api) => (
+              <AgentSessionSettings
+                agentId={props.agent.id}
+                providerIdentity={`${props.runtimeSettings.provider}:${props.runtimeSettings.model}`}
+                api={api()}
+              />
             )}
-          </For>
-        </nav>
-      </Show>
-      <Show when={!draft.routines.open && settingsTab() === "people"}>
-        <SettingsPanelContent>
-          <SettingsPeople agentId={props.agent.id} />
-        </SettingsPanelContent>
-      </Show>
-      <Show when={!draft.routines.open && settingsTab() === "channels"}>
-        <SettingsPanelContent>
-          <h3>{props.agent.name}'s channels</h3>
-          <Show
-            when={props.agent.id === "chief" || props.agent.id === "chief-of-staff"}
-            fallback={<Text>Channels are managed by Chief. Specialist delivery is not available yet.</Text>}
-          >
-            <SettingsTelegram />
           </Show>
-          <Text>Slack and WhatsApp are not connected.</Text>
-        </SettingsPanelContent>
-      </Show>
-      <Show when={!draft.routines.open && settingsTab() === "memory"}>
-        <SettingsPanelContent>
-          <Text>Memory stays local to this agent.</Text>
-          <Button
-            onClick={() =>
-              setDraft((s) => {
-                s.memories.open = true;
-              })
+          <Show
+            when={
+              memoriesShown() ||
+              skillsMode() !== "hidden" ||
+              props.tablesVisible !== false ||
+              props.files ||
+              props.instructionsFile
             }
           >
-            Open memory
-          </Button>
-        </SettingsPanelContent>
-      </Show>
-      <Show when={!draft.routines.open && !profileOpen() && settingsTab() === "overview"}>
-        <SettingsPanelContent>
-          <AgentWorkOverview
-            agent={props.agent}
-            agents={props.agents ?? [props.agent]}
-            prompt={props.overviewPrompt}
-            approval={props.overviewApproval}
-            takeover={props.overviewTakeover}
-            onOpenAgent={props.onOpenOverviewAgent}
-            onSettings={() => setProfileOpen(true)}
-            onChannels={() => setSettingsTab("channels")}
-            onCreateSchedule={() => {
-              setNewSchedule(true);
-              setDraft((s) => {
-                s.routines.open = true;
-              });
-            }}
-            onManageSchedules={() => {
-              setNewSchedule(false);
-              setDraft((s) => {
-                s.routines.open = true;
-              });
-            }}
-          />
-        </SettingsPanelContent>
-      </Show>
-      <Show when={!draft.routines.open && profileOpen() && settingsTab() === "overview"}>
-        <SettingsPanelContent>
-          <Button variant="ghost" onClick={() => setProfileOpen(false)}>
-            Back to Overview
-          </Button>
-          <div ref={(element) => (avatarPickerRoot = element)} class="agent-settings-avatar-picker">
-            <Popover.Root
-              open={draft.avatar.pickerOpen}
-              placement="bottom"
-              gutter={11}
-              onOpenChange={(open) =>
-                setDraft((state) => {
-                  state.avatar.pickerOpen = open;
-                })
-              }
-            >
-              <Popover.Trigger class="agent-settings-avatar" aria-label="Edit agent avatar">
-                <AgentAvatar agent={props.agent} seed={draft.avatar.seed} motion="always" />
-              </Popover.Trigger>
-              <Popover.Content class="avatar-editor" aria-hidden={draft.avatar.pickerOpen ? undefined : "true"}>
-                <Popover.Title class="sr-only">Avatar editor</Popover.Title>
-                <fieldset class="avatar-face-grid" aria-label="Robot avatars">
-                  <For each={ROBOT_ROLES}>
-                    {(role) => (
-                      <Button
-                        variant="ghost"
-                        type="button"
-                        class={[
-                          "avatar-face-choice",
-                          { "avatar-choice-selected": draft.avatar.seed === `manzanilla:${role.id}` },
-                        ]}
-                        aria-label={role.label}
-                        aria-pressed={draft.avatar.seed === `manzanilla:${role.id}` ? "true" : "false"}
-                        onClick={() => void selectRobotAvatar(`manzanilla:${role.id}`)}
-                      >
-                        <AgentAvatar seed={`manzanilla:${role.id}`} />
-                      </Button>
-                    )}
-                  </For>
-                </fieldset>
-              </Popover.Content>
-            </Popover.Root>
-          </div>
-          <SettingsField label="Name">
-            <Input
-              value={draft.fields.name}
-              aria-label="Agent name"
-              maxlength={INPUT_LIMITS.agentName}
-              onValueChange={(value) =>
-                setDraft((state) => {
-                  state.fields.name = value;
-                  state.dirty.name = true;
-                })
-              }
-              onBlur={saveName}
-            />
-          </SettingsField>
-          <SettingsField label="Title">
-            <Input
-              value={draft.fields.title}
-              aria-label="Agent title"
-              placeholder="Describe what your agent does"
-              maxlength={INPUT_LIMITS.agentTitle}
-              onValueChange={(value) =>
-                setDraft((state) => {
-                  state.fields.title = value;
-                  state.dirty.title = true;
-                })
-              }
-              onBlur={saveTitle}
-            />
-          </SettingsField>
-          <SettingsField label="Instructions">
-            <Textarea
-              rows="4"
-              value={draft.fields.description}
-              aria-label="Agent instructions"
-              placeholder="What this agent is for"
-              maxlength={INPUT_LIMITS.agentDescription}
-              onValueChange={(value) => {
-                setDraft((state) => {
-                  state.fields.description = value;
-                  state.dirty.description = true;
-                });
-                scheduleInstructionsSave(value);
-              }}
-              onBlur={saveDescription}
-            />
-          </SettingsField>
-          <SettingsLinkGroup>
-            <SettingsLinkRow label="Usage" onClick={props.onOpenUsage} />
-            <SettingsLinkRow
-              label="Memories"
-              value={`${draft.memories.count} saved`}
-              onClick={() =>
-                setDraft((state) => {
-                  state.memories.open = true;
-                })
-              }
-            />
-            <Show when={draft.operating.summary}>
-              <SettingsLinkRow
-                label="Operating instructions"
-                value={draft.operating.summary}
-                onClick={() =>
-                  setDraft((state) => {
-                    state.operating.open = true;
-                  })
-                }
-              />
-            </Show>
-            <Show when={skillsMode() !== "hidden"}>
-              <SettingsLinkRow
-                label="Skills"
-                value={`${draft.skills.count} assigned`}
-                onClick={() =>
-                  setDraft((state) => {
-                    state.skills.open = true;
-                  })
-                }
-              />
-            </Show>
-            <Show when={props.tablesVisible !== false}>
-              <SettingsLinkRow
-                label="Tables"
-                value={`${draft.tables.count} ${draft.tables.count === 1 ? "table" : "tables"}`}
-                onClick={() =>
-                  setDraft((state) => {
-                    state.tables.open = true;
-                  })
-                }
-              />
-            </Show>
-            <SettingsLinkRow
-              label="Routines"
-              value={`${draft.routines.count} configured`}
-              onClick={() =>
-                setDraft((state) => {
-                  state.routines.open = true;
-                })
-              }
-            />
-          </SettingsLinkGroup>
-          <section class="agent-settings-model" aria-labelledby="agent-model-heading">
-            <div class="agent-settings-section-heading">
-              <strong id="agent-model-heading">Runtime</strong>
-              <span>Choose how this agent runs</span>
-            </div>
-            <div class="agent-settings-model-controls">
-              <div class="agent-settings-model-option">
-                <ProviderModelPicker
-                  variant="field"
-                  ariaLabel="Agent model"
-                  provider={draft.runtime.provider}
-                  value={draft.runtime.model}
-                  agentStatus={props.agentStatus}
-                  modelOptions={props.modelOptions}
-                  runtimeStatuses={props.providerRuntimeStatuses}
-                  customProviders={props.customProviders}
-                  onDownloadProvider={props.onDownloadProvider}
-                  onCancelProviderDownload={props.onCancelProviderDownload}
-                  onConnectProvider={props.onConnectProvider}
-                  disabled={props.working}
-                  disabledReason={
-                    props.working
-                      ? "Wait for the current work to finish before changing models."
-                      : "Models are available after an agent CLI connects."
+            <SettingsLinkGroup inset title={t("agentSettings.groups.knows")}>
+              <Show when={props.instructionsFile}>
+                <SettingsLinkRow
+                  icon={<FileText aria-hidden="true" />}
+                  label={t("agentSettings.instructions")}
+                  onClick={() =>
+                    setDraft((state) => {
+                      state.instructions.open = true;
+                    })
                   }
-                  onChange={(nextModel, provider) => void selectModel(nextModel, provider)}
                 />
-              </div>
-              <Show when={reasoningOptions().length > 0}>
-                <div class="agent-settings-model-row agent-settings-thinking-row">
-                  <span>Reasoning</span>
-                  <Select<AgentReasoningEffort>
-                    class="agent-settings-reasoning-control"
-                    options={reasoningOptions()}
-                    value={draft.runtime.reasoningEffort}
-                    onChange={(nextReasoning) => {
-                      if (!nextReasoning || nextReasoning === draft.runtime.reasoningEffort) return;
-                      void selectReasoning(nextReasoning);
-                    }}
-                    itemComponent={(item) => (
-                      <SelectItem item={item.item}>{reasoningLabel(item.item.rawValue)}</SelectItem>
-                    )}
-                  >
-                    <SelectTrigger size="sm" class="agent-settings-reasoning-select" aria-label="Agent reasoning level">
-                      <SelectValue<AgentReasoningEffort>>
-                        {(state) => {
-                          const effort = state.selectedOption();
-                          return effort ? reasoningLabel(effort) : "Select reasoning";
-                        }}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent />
-                  </Select>
-                </div>
               </Show>
-              <div class="agent-settings-model-row agent-settings-workspace-row">
-                <span>Workspace folder</span>
-                <span>{props.agent.workspacePath ?? "Not available yet"}</span>
-              </div>
-              <p class="agent-settings-access-note">
-                The agent runs with full computer access from its workspace and the shared folder.{" "}
-                {draft.runtime.provider === "claude"
-                  ? "Claude acts without asking for approval, except for questions it puts to you."
-                  : "Depending on the provider, sensitive commands may ask for approval first."}
-              </p>
-            </div>
-          </section>
-          <Show when={draft.saveError}>
-            {(message) => (
-              <p class="agent-settings-save-error" role="alert">
-                {message()}
-              </p>
-            )}
+              <Show when={memoriesShown()}>
+                <SettingsLinkRow
+                  icon={<BookMarked aria-hidden="true" />}
+                  label={t("agentSettings.links.memories")}
+                  value={t("agentSettings.links.memoriesCount", { count: draft.memories.count })}
+                  onClick={() =>
+                    setDraft((state) => {
+                      state.memories.open = true;
+                    })
+                  }
+                />
+              </Show>
+              <Show when={skillsMode() !== "hidden"}>
+                <SettingsLinkRow
+                  icon={<Puzzle aria-hidden="true" />}
+                  label={t("agentSettings.links.skills")}
+                  value={t("agentSettings.links.skillsCount", { count: draft.skills.count })}
+                  onClick={() =>
+                    setDraft((state) => {
+                      state.skills.open = true;
+                    })
+                  }
+                />
+              </Show>
+              <Show when={props.files}>
+                <SettingsLinkRow
+                  icon={<Folder aria-hidden="true" />}
+                  label={t("agentSettings.links.files")}
+                  value={storage.state.usage ? agentFilesLinkValue(storage.state.usage.breakdown) : undefined}
+                  onClick={() =>
+                    setDraft((state) => {
+                      state.files.open = true;
+                    })
+                  }
+                />
+              </Show>
+              <Show when={props.tablesVisible !== false}>
+                <SettingsLinkRow
+                  icon={<Table2 aria-hidden="true" />}
+                  label={t("agentSettings.links.tables")}
+                  value={t("agentSettings.links.tablesCount", { count: draft.tables.count })}
+                  onClick={() =>
+                    setDraft((state) => {
+                      state.tables.open = true;
+                    })
+                  }
+                />
+              </Show>
+            </SettingsLinkGroup>
           </Show>
-          <div class="agent-settings-notifications">
-            <div>
-              <strong>Notifications</strong>
-              <span>Get notified when this agent finishes or needs input</span>
-            </div>
-            <Switch
-              size="sm"
-              aria-label="Notifications"
-              checked={draft.notifications}
-              onChange={(next) => {
-                setDraft((state) => {
-                  state.notifications = next;
-                });
-                void saveAgentPatch({ notifications: next });
-              }}
-            />
-          </div>
-        </SettingsPanelContent>
+          <Show when={routinesShown() || props.onOpenUsage || props.onOpenApps || props.onPublish}>
+            <SettingsLinkGroup inset title={t("agentSettings.groups.does")}>
+              <Show when={routinesShown()}>
+                <SettingsLinkRow
+                  icon={<CalendarClock aria-hidden="true" />}
+                  label={t("agentSettings.links.routines")}
+                  value={t("agentSettings.links.routinesCount", { count: draft.routines.count })}
+                  onClick={() =>
+                    setDraft((state) => {
+                      state.routines.open = true;
+                    })
+                  }
+                />
+              </Show>
+              <Show when={props.onOpenUsage}>
+                <SettingsLinkRow
+                  icon={<Gauge aria-hidden="true" />}
+                  label={t("agentSettings.links.usage")}
+                  onClick={(trigger) => props.onOpenUsage?.(trigger)}
+                />
+              </Show>
+              <Show when={props.onOpenApps}>
+                <SettingsLinkRow
+                  icon={<Blocks aria-hidden="true" />}
+                  label={t("agentSettings.links.apps")}
+                  value={t("agentSettings.links.appsScope")}
+                  onClick={() => props.onOpenApps?.()}
+                />
+              </Show>
+              <Show when={props.onPublish}>
+                <SettingsLinkRow
+                  icon={<Upload aria-hidden="true" />}
+                  label={t("conversation.header.publish")}
+                  onClick={() => props.onPublish?.()}
+                />
+              </Show>
+            </SettingsLinkGroup>
+          </Show>
+        </>
+      }
+    >
+      <Show when={draft.instructions.open && props.instructionsFile}>
+        {(calls) => (
+          <AgentInstructionsView
+            agentId={props.agent.id}
+            folder={props.agent.workspacePath}
+            working={props.working}
+            calls={calls()}
+            onBack={() =>
+              setDraft((state) => {
+                state.instructions.open = false;
+              })
+            }
+            onClose={props.onClose}
+          />
+        )}
+      </Show>
+      <Show when={draft.files.open && props.files}>
+        {(files) => (
+          <AgentFilesSettings
+            {...files()}
+            agentName={props.agent.name}
+            storage={storage}
+            onBack={() =>
+              setDraft((state) => {
+                state.files.open = false;
+              })
+            }
+            onClose={props.onClose}
+          />
+        )}
       </Show>
       <Show when={draft.routines.open}>
         <div class="agent-routines-overlay">
           <AgentRoutinesSettings
-            createOnOpen={newSchedule()}
             port={routinesPort()}
             onCountChange={(count) =>
               setDraft((state) => {
@@ -923,15 +662,21 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
               })
             }
             onClose={props.onClose}
+            registerLeaveGuard={(guard) => {
+              detailLeaveGuard = guard;
+            }}
             selectionRequest={props.routineSelectionRequest}
             onSelectionRequestHandled={props.onRoutineSelectionRequestHandled}
             onOpenRun={props.onOpenRoutineRun}
+            onOpenThread={props.onOpenRoutineThread}
+            agentName={props.agent.name}
           />
         </div>
       </Show>
       <Show when={props.tablesVisible !== false}>
         <SharedTablesModal
           agents={props.agents ?? []}
+          calls={props.adminCalls?.sharedTables}
           open={draft.tables.open}
           onOpenChange={(open) =>
             setDraft((state) => {
@@ -945,32 +690,18 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
           }
         />
       </Show>
-      <AgentMemoriesModal
+      <AgentMemoriesSettings
         port={memoriesPort()}
         open={draft.memories.open}
-        onOpenChange={(open) =>
+        onBack={() =>
           setDraft((state) => {
-            state.memories.open = open;
+            state.memories.open = false;
           })
         }
+        onClose={props.onClose}
         onCountChange={(count) =>
           setDraft((state) => {
             state.memories.count = count;
-          })
-        }
-      />
-      <AgentOperatingInstructionsModal
-        agentId={props.agent.id}
-        agentName={props.agent.name}
-        open={draft.operating.open}
-        onOpenChange={(open) =>
-          setDraft((state) => {
-            state.operating.open = open;
-          })
-        }
-        onChange={(instructions) =>
-          setDraft((state) => {
-            state.operating.summary = operatingSummary(instructions);
           })
         }
       />
@@ -979,10 +710,15 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
           selectionRequest={props.skillSelectionRequest}
           agentId={props.agent.id}
           agentName={props.agent.name}
+          agentProvider={props.agent.provider}
           open={draft.skills.open}
           skillsMode={skillsMode()}
+          serverId={props.skillsServerId}
+          calls={props.adminCalls?.skills}
+          catalog={skillCatalog()}
           onCreateSkill={props.onCreateSkill}
           onTrySkill={props.onTrySkill}
+          previewWorkspaceFile={props.previewWorkspaceFile}
           onAddFromMarketplace={
             props.onAddFromMarketplace
               ? (agentId) => {
@@ -994,11 +730,12 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
                 }
               : undefined
           }
-          onOpenChange={(open) =>
+          onOpenChange={(open) => {
             setDraft((state) => {
               state.skills.open = open;
-            })
-          }
+            });
+            if (!open) props.onSkillsClosed?.();
+          }}
           onCountChange={(count) =>
             setDraft((state) => {
               state.skills.count = count;
@@ -1006,22 +743,6 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
           }
         />
       </Show>
-    </SettingsPanel>
+    </SharedAgentSettingsPanel>
   );
-}
-
-/** True when the panel still shows exactly the settings a save was issued for. */
-function sameRuntimeSettings(current: AgentRuntimeSettings, settings: AgentRuntimeSettings): boolean {
-  return (
-    current.provider === settings.provider &&
-    current.model === settings.model &&
-    current.reasoningEffort === settings.reasoningEffort
-  );
-}
-
-/** Empty for a bot the settings cannot reach them for, such as one on another computer. */
-function operatingSummary(instructions: AgentOperatingInstructions): string {
-  if (instructions.source === "none") return instructions.autoEvolve ? "Learning" : "Paused";
-  const lines = instructions.text.split("\n").filter((line) => line.trim()).length;
-  return `${lines} ${lines === 1 ? "line" : "lines"}${instructions.autoEvolve ? "" : " · paused"}`;
 }

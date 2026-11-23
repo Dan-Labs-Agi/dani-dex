@@ -11,18 +11,18 @@ repository actually does, not against React or shadcn habits.
 
 Report a finding when the diff:
 
-- Introduces a colour literal where a semantic `--dani-dex-*` token from `src/renderer/src/styles.css`
+- Introduces a colour literal where a semantic `--openbot-*` token from `src/renderer/src/styles.css`
   exists. *Exception:* fixed integration colours, generated assets, inline SVG payloads, and platform
   chrome are allowed to carry literals at their boundary.
-- Adds a token to one palette only. `--dani-dex-*` is declared separately in
+- Adds a token to one palette only. `--openbot-*` is declared separately in
   `src/renderer/src/styles.css`, `apps/auth-api/src/styles.css`, and `apps/mobile/global.css`. Flag
   this only when the change plainly needs the token on more than one surface.
-- Adds an inline SVG or a local icon component where a `lucide-solid` icon exists, without a comment
-  explaining why Lucide does not fit.
+- Adds an inline SVG or a local icon component where a `lucide-solid` icon exists, without a reason
+  in the PR description for why Lucide does not fit.
 - Duplicates a primitive that already exists in `src/renderer/src/components/ui`, or copies a shared
   primitive into a feature component instead of extending the shared one.
 - Changes an IPC-facing renderer surface without the matching update to
-  `src/renderer/src/preview/mock-dani-dex.ts`, which Storybook and the preview run against.
+  `src/renderer/src/preview/mock-openbot.ts`, which Storybook and the preview run against.
 - Adds a state a user can enter but not leave — a snooze with no unsnooze, a pause with no resume.
 
 Do **not** report:

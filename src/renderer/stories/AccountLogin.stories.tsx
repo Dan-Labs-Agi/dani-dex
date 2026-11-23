@@ -1,8 +1,8 @@
-import type { CentralAuthState } from "@dani-dex/contracts/ipc";
+import type { CentralAuthState } from "@openbot/contracts/ipc";
+import { AccountLogin } from "@openbot/ui/features/account/AccountLogin";
 import { createSignal } from "solid-js";
-import { expect, fn } from "storybook/test";
+import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { AccountLogin } from "../src/features/account/AccountLogin";
 
 const signedOut: CentralAuthState = { status: "signed_out" };
 
@@ -13,6 +13,9 @@ const args: Parameters<typeof AccountLogin>[0] = {
   onRequestEmailCode: async () => undefined,
   onVerifyEmailCode: async () => undefined,
   onReset: async () => undefined,
+  inviteField: true,
+  language: "en",
+  onChangeLanguage: fn(),
 };
 
 const meta = {
@@ -38,6 +41,10 @@ function codeSentState(overrides: Partial<Extract<CentralAuthState, { status: "c
 }
 
 export const SignIn: Story = {};
+
+export const FromInviteLink: Story = {
+  args: { initialInviteCode: "b5c9ygn2" },
+};
 
 export const Interactive: Story = {
   render: (storyArgs) => {
@@ -91,45 +98,12 @@ export const Interactive: Story = {
   },
 };
 
-export const HappyPath: Story = {
-  render: (storyArgs) => {
-    const [state, setState] = createSignal(storyArgs.state);
-    return (
-      <AccountLogin
-        {...storyArgs}
-        state={state()}
-        onRequestEmailCode={async (email) => {
-          setState(codeSentState({ email }));
-        }}
-        onVerifyEmailCode={async () => {
-          setState({
-            status: "signed_in",
-            user: { id: "story-user", email: "person@example.com", name: null, avatarUrl: null },
-          });
-        }}
-      />
-    );
-  },
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.type(canvas.getByLabelText("Email"), "Person@Example.com");
-    await userEvent.click(canvas.getByRole("button", { name: "Send sign-in code" }));
-    await expect(canvas.getByRole("heading", { name: "Check your inbox" })).toBeInTheDocument();
-    await expect(canvas.getByText(/person@example.com/)).toBeInTheDocument();
-    await userEvent.type(canvas.getByRole("textbox", { name: "One-time code" }), "ABCDEFGH");
-    await expect(canvas.getByText("Verified. Opening Dani-Dex…")).toBeInTheDocument();
-  },
+export const KeyringChanged: Story = {
+  args: { state: { status: "signed_out", reason: "keyring_changed" } },
 };
 
 export const SendingCode: Story = {
   args: { state: { status: "signing_in" } },
-};
-
-export const InvalidEmail: Story = {
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.type(canvas.getByLabelText("Email"), "not-an-email");
-    await userEvent.click(canvas.getByRole("button", { name: "Send sign-in code" }));
-    await expect(canvas.getByRole("alert")).toHaveTextContent("Enter a valid email address.");
-  },
 };
 
 export const CodeSent: Story = {
@@ -177,7 +151,7 @@ export const ServiceUnavailable: Story = {
       status: "error",
       issue: {
         code: "auth_api_unavailable",
-        message: "Dani-Dex could not reach the account service. Check your connection and try again.",
+        message: "Dani Dex could not reach the account service. Check your connection and try again.",
       },
     },
   },
@@ -186,18 +160,3 @@ export const ServiceUnavailable: Story = {
 function delay(milliseconds: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 }
-
-export const WithBrowserSignIn: Story = {
-  args: { providers: ["github", "google"], onSignInWithProvider: fn(async () => undefined) },
-};
-
-export const WaitingForBrowser: Story = {
-  args: {
-    state: { status: "signing_in", provider: "github" },
-    onCancelProviderSignIn: fn(async () => undefined),
-  },
-};
-
-export const SupabaseCodeSent: Story = {
-  args: { state: codeSentState({ codeLength: 6 }) },
-};

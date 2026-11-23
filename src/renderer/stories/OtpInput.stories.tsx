@@ -1,6 +1,6 @@
+import { OtpInput } from "@openbot/ui/features/account/OtpInput";
 import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { OtpInput } from "../src/components/ui/otp-input";
 
 const meta = {
   title: "Auth/OtpInput",
@@ -10,7 +10,7 @@ const meta = {
     status: "idle",
     hint: "Enter all 8 characters to continue.",
     errorMessage: null,
-    successMessage: "Verified. Opening Dani-Dex…",
+    successMessage: "Verified. Opening Dani Dex…",
     onChange: fn(),
     onComplete: fn(),
   },

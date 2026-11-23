@@ -1,28 +1,51 @@
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { accessSync } from "node:fs";
+import { accessSync, copyFileSync, mkdirSync, realpathSync } from "node:fs";
 import { cp, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { type BundledLibrary, bundledLibraryLicenses, bundleMacDynamicLibraries } from "./mac-runtime-dylibs";
+import {
+  type BundledLibrary,
+  bundledLibraryLicense,
+  bundledLibraryLicenses,
+  bundleMacDynamicLibraries,
+} from "./mac-runtime-dylibs";
 import { createRemoteDesktopSourceManifest, loadNativeRuntimeLock } from "./native-runtime-lock";
 
-const platform = process.platform === "darwin" ? "darwin" : process.platform === "win32" ? "win32" : null;
-if (!platform) throw new Error("The remote desktop runtime supports macOS and Windows only.");
+const platform =
+  process.platform === "darwin" || process.platform === "win32" || process.platform === "linux"
+    ? process.platform
+    : null;
+if (!platform) throw new Error("The remote desktop runtime supports macOS, Windows and Linux only.");
 const architecture = process.arch === "arm64" ? "arm64" : process.arch === "x64" ? "x64" : null;
-if (
-  !architecture ||
-  (platform === "darwin" && architecture !== "arm64") ||
-  (platform === "win32" && architecture !== "x64")
-) {
+if (!architecture || (platform === "win32" && architecture !== "x64")) {
   throw new Error(`Unsupported remote desktop target: ${process.platform}-${process.arch}.`);
 }
 const tarExecutable =
   process.platform === "win32" ? join(process.env.SystemRoot ?? "C:\\Windows", "System32", "tar.exe") : "tar";
 
+const LINUX_SUNSHINE_OPTIONS = [
+  "-DBOOST_LOCALE_ENABLE_ICU=OFF",
+  "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON",
+  "-DCMAKE_INSTALL_RPATH=$ORIGIN/lib",
+  "-DSUNSHINE_ENABLE_CUDA=OFF",
+  "-DSUNSHINE_ENABLE_DRM=OFF",
+  "-DSUNSHINE_ENABLE_KWIN=OFF",
+  "-DSUNSHINE_ENABLE_PORTAL=OFF",
+  "-DSUNSHINE_ENABLE_TRAY=OFF",
+  "-DSUNSHINE_ENABLE_VAAPI=OFF",
+  "-DSUNSHINE_ENABLE_VULKAN=OFF",
+  "-DSUNSHINE_ENABLE_WAYLAND=OFF",
+  "-DSUNSHINE_ENABLE_X11=ON",
+];
+
+const LINUX_BUNDLED_LIBRARIES: Readonly<Record<string, string>> = {
+  "libminiupnpc.so.17": "libminiupnpc17",
+};
+
 const lock = await loadNativeRuntimeLock();
 const outputRoot = resolve("build/remote-desktop-runtime", platform, architecture);
-const workRoot = await mkdtemp(join(tmpdir(), "dani-dex-remote-desktop-build-"));
+const workRoot = await mkdtemp(join(tmpdir(), "openbot-remote-desktop-build-"));
 
 try {
   const sunshineSource = await downloadAndExtract(
@@ -37,8 +60,8 @@ try {
   );
   await preparePinnedCheckout(sunshineSource, lock.remoteDesktop.sunshine, requiredSunshineSubmodules(platform));
   await preparePinnedCheckout(moonlightSource, lock.remoteDesktop.moonlightWeb);
-  await prepareDaniDexSource(sunshineSource, lock.remoteDesktop.sunshine);
-  await prepareDaniDexSource(moonlightSource, lock.remoteDesktop.moonlightWeb);
+  await prepareOpenBotSource(sunshineSource, lock.remoteDesktop.sunshine);
+  await prepareOpenBotSource(moonlightSource, lock.remoteDesktop.moonlightWeb);
   auditNpmDependencies(sunshineSource);
   auditNpmDependencies(moonlightSource);
 
@@ -51,11 +74,16 @@ try {
   const sunshineBinary = findSunshineBinary(sunshineSource);
   const executableSuffix = platform === "win32" ? ".exe" : "";
   if (platform === "darwin") {
-    await cp(join(sunshineSource, "build-danidex", "Sunshine.app"), join(outputRoot, "Sunshine.app"), {
+    await cp(join(sunshineSource, "build-openbot", "Sunshine.app"), join(outputRoot, "Sunshine.app"), {
       recursive: true,
     });
   } else {
     await cp(sunshineBinary, join(outputRoot, `sunshine${executableSuffix}`));
+  }
+  if (platform === "win32") {
+    await cp(join(sunshineSource, "src_assets/windows/assets/shaders"), join(outputRoot, "assets/shaders"), {
+      recursive: true,
+    });
   }
   await cp(
     join(moonlightSource, "target/release", `web-server${executableSuffix}`),
@@ -70,19 +98,18 @@ try {
   if (platform === "darwin") {
     const bundled = bundleMacRuntimeDependencies(outputRoot);
     bundledLibraries = bundled.libraries;
-    // Before signing, not after: rewriting a load command invalidates the signature over it.
     signMacRuntime(outputRoot, bundled.signTargets);
   }
+  if (platform === "linux") bundledLibraries = bundleLinuxRuntimeDependencies(outputRoot);
 
   const licenses = resolve("build/remote-desktop-runtime/licenses");
   await mkdir(licenses, { recursive: true });
   await Promise.all([
     cp(join(sunshineSource, "LICENSE"), join(licenses, "Sunshine-GPL-3.0.txt")),
     cp(join(moonlightSource, "LICENSE"), join(licenses, "moonlight-web-stream-GPL-3.0.txt")),
-    // The copies the runtime now carries are Dani-Dex's to redistribute, so their notices ship with
-    // them. Taken from the tree that was linked against, so the notice is the one for the binary in
-    // the archive rather than whatever the formula says today.
-    ...bundledLibraryLicenses(bundledLibraries).map(({ file, source }) => cp(source, join(licenses, file))),
+    ...(platform === "linux" ? linuxLibraryLicenses(bundledLibraries) : bundledLibraryLicenses(bundledLibraries)).map(
+      ({ file, source }) => cp(source, join(licenses, file)),
+    ),
     writeFile(
       resolve("build/remote-desktop-runtime/source-manifest.json"),
       `${JSON.stringify(createRemoteDesktopSourceManifest(lock), null, 2)}\n`,
@@ -108,7 +135,7 @@ async function packageCorrespondingSource(
     "--exclude=node_modules",
     "--exclude=target",
     "--exclude=dist",
-    "--exclude=build-danidex",
+    "--exclude=build-openbot",
   ];
   execFileSync(
     tarExecutable,
@@ -136,15 +163,15 @@ async function packageCorrespondingSource(
   );
   await cp(
     resolve(lock.remoteDesktop.sunshine.patch.path),
-    join(sourceOutput, lock.remoteDesktop.sunshine.patch.path.split("/").at(-1) ?? "sunshine-danidex.patch"),
+    join(sourceOutput, lock.remoteDesktop.sunshine.patch.path.split("/").at(-1) ?? "sunshine-openbot.patch"),
   );
   await cp(
     resolve(lock.remoteDesktop.moonlightWeb.patch.path),
-    join(sourceOutput, lock.remoteDesktop.moonlightWeb.patch.path.split("/").at(-1) ?? "moonlight-danidex.patch"),
+    join(sourceOutput, lock.remoteDesktop.moonlightWeb.patch.path.split("/").at(-1) ?? "moonlight-openbot.patch"),
   );
   await writeFile(
     join(sourceOutput, "README.txt"),
-    "These archives are the corresponding source used to build the bundled GPL-3.0 Sunshine and Moonlight Web programs. Both archives already contain the Dani-Dex changes. The separate patches show those changes against the pinned upstream versions.\n",
+    "These archives are the corresponding source used to build the bundled GPL-3.0 Sunshine and Moonlight Web programs. Both archives already contain the OpenBot changes. The separate patches show those changes against the pinned upstream versions.\n",
   );
 }
 
@@ -195,7 +222,7 @@ async function preparePinnedCheckout(
   }
 }
 
-function requiredSunshineSubmodules(targetPlatform: "darwin" | "win32"): string[] {
+function requiredSunshineSubmodules(targetPlatform: "darwin" | "win32" | "linux"): string[] {
   const common = [
     "third-party/Simple-Web-Server",
     "third-party/build-deps",
@@ -208,13 +235,13 @@ function requiredSunshineSubmodules(targetPlatform: "darwin" | "win32"): string[
     "third-party/nv-codec-headers",
     "third-party/tray",
   ];
-  return targetPlatform === "darwin"
-    ? [...common, "third-party/TPCircularBuffer"]
-    : [...common, "third-party/ViGEmClient", "third-party/glad", "third-party/nvapi"];
+  if (targetPlatform === "darwin") return [...common, "third-party/TPCircularBuffer"];
+  if (targetPlatform === "linux") return [...common, "third-party/glad", "third-party/inputtino"];
+  return [...common, "third-party/ViGEmClient", "third-party/glad", "third-party/nvapi"];
 }
 
 function buildSunshine(source: string, version: string, commit: string): void {
-  const build = join(source, "build-danidex");
+  const build = join(source, "build-openbot");
   const generator = process.env.CMAKE_GENERATOR ?? (hasExecutable("ninja") ? "Ninja" : "Unix Makefiles");
   const buildEnvironment = {
     ...process.env,
@@ -235,8 +262,9 @@ function buildSunshine(source: string, version: string, commit: string): void {
       "-DCMAKE_BUILD_TYPE=Release",
       "-DBUILD_DOCS=OFF",
       "-DBUILD_TESTS=ON",
-      "-DDANI_DEX_SECURITY_TESTS=ON",
+      "-DOPENBOT_SECURITY_TESTS=ON",
       "-DBUILD_WERROR=OFF",
+      ...(platform === "linux" ? LINUX_SUNSHINE_OPTIONS : []),
     ],
     { env: buildEnvironment, stdio: "inherit" },
   );
@@ -271,10 +299,24 @@ function buildSunshine(source: string, version: string, commit: string): void {
 function buildMoonlight(source: string): void {
   execFileSync("npm", ["ci"], { cwd: source, stdio: "inherit" });
   execFileSync("npm", ["run", "build"], { cwd: source, stdio: "inherit" });
-  execFileSync("cargo", ["build", "--locked", "--release"], { cwd: source, stdio: "inherit" });
+  execFileSync("cargo", ["build", "--locked", "--release"], {
+    cwd: source,
+    env: moonlightCargoEnvironment(),
+    stdio: "inherit",
+  });
 }
 
-async function applyDaniDexPatch(source: string, entry: { path: string; sha256: string }): Promise<void> {
+function moonlightCargoEnvironment(): NodeJS.ProcessEnv {
+  if (platform !== "darwin" || architecture !== "x64") return process.env;
+  const resourceDirectory = execFileSync("xcrun", ["clang", "-print-resource-dir"], { encoding: "utf8" }).trim();
+  const runtimeLibrary = join(resourceDirectory, "lib", "darwin", "libclang_rt.osx.a");
+  accessSync(runtimeLibrary);
+  const variable = "CARGO_TARGET_X86_64_APPLE_DARWIN_RUSTFLAGS";
+  const flags = [process.env[variable], `-C link-arg=${runtimeLibrary}`].filter(Boolean).join(" ");
+  return { ...process.env, [variable]: flags };
+}
+
+async function applyOpenBotPatch(source: string, entry: { path: string; sha256: string }): Promise<void> {
   const patch = resolve(entry.path);
   if (sha256(await readFile(patch)) !== entry.sha256) {
     throw new Error(`Runtime patch checksum failed for ${entry.path}.`);
@@ -283,18 +325,18 @@ async function applyDaniDexPatch(source: string, entry: { path: string; sha256: 
   execFileSync("git", ["apply", patch], { cwd: source, stdio: "inherit" });
 }
 
-async function prepareDaniDexSource(
+async function prepareOpenBotSource(
   source: string,
   runtime: Awaited<ReturnType<typeof loadNativeRuntimeLock>>["remoteDesktop"]["sunshine"],
 ): Promise<void> {
   if (runtime.sourceMode === "upstream-with-patch") {
-    await applyDaniDexPatch(source, runtime.patch);
+    await applyOpenBotPatch(source, runtime.patch);
     await applyRuntimeOverrides(source, runtime.overrides);
     return;
   }
 
   if (runtime.overrides.length > 0) {
-    throw new Error(`The Dani-Dex fork must include its overrides: ${runtime.repository}.`);
+    throw new Error(`The OpenBot fork must include its overrides: ${runtime.repository}.`);
   }
 }
 
@@ -317,15 +359,8 @@ function auditNpmDependencies(source: string): void {
   execFileSync("npm", ["audit", "--audit-level=high"], { cwd: source, stdio: "inherit" });
 }
 
-// CMake links Sunshine against Homebrew's miniupnpc and OpenSSL by absolute path, so the binary that
-// runs on the build runner cannot start on a Mac without those formulae -- and nothing downstream
-// would say so: the app reports remote control as available, the session opens, and no frame ever
-// arrives. `verify-remote-desktop-runtime.ts` fails the build if any of this is left behind.
 function bundleMacRuntimeDependencies(root: string): { libraries: BundledLibrary[]; signTargets: string[] } {
   const app = join(root, "Sunshine.app", "Contents");
-  // The app bundle signs `--deep`, so its own copies need no separate pass. The two loose
-  // executables do, which is why only their libraries come back as signing targets. Both sets need
-  // their licences, so both are returned.
   const inBundle = bundleMacDynamicLibraries(join(app, "MacOS", "Sunshine"), join(app, "Frameworks"));
   const besideExecutables = ["web-server", "streamer"].flatMap((executable) =>
     bundleMacDynamicLibraries(join(root, executable), join(root, "lib")),
@@ -334,6 +369,33 @@ function bundleMacRuntimeDependencies(root: string): { libraries: BundledLibrary
     libraries: [...inBundle, ...besideExecutables],
     signTargets: besideExecutables.map((library) => library.path),
   };
+}
+
+function bundleLinuxRuntimeDependencies(root: string): BundledLibrary[] {
+  const libraries: BundledLibrary[] = [];
+  for (const line of execFileSync("ldd", [join(root, "sunshine")], { encoding: "utf8" }).split("\n")) {
+    const [, name, load] = /^\s*(\S+) => (\/\S+)/.exec(line) ?? [];
+    if (!name || !load || !LINUX_BUNDLED_LIBRARIES[name]) continue;
+    const path = join(root, "lib", name);
+    const origin = realpathSync(load);
+    mkdirSync(dirname(path), { recursive: true });
+    copyFileSync(origin, path);
+    libraries.push({ name, path, origin });
+  }
+  const missing = Object.keys(LINUX_BUNDLED_LIBRARIES).filter(
+    (name) => !libraries.some((library) => library.name === name),
+  );
+  if (missing.length > 0) throw new Error(`Sunshine does not load ${missing.join(", ")}, so it cannot be bundled.`);
+  return libraries;
+}
+
+// Debian keeps the licence of a package in /usr/share/doc/<package>/copyright.
+function linuxLibraryLicenses(libraries: readonly BundledLibrary[]): { file: string; source: string }[] {
+  return libraries.map((library) => {
+    const entry = bundledLibraryLicense(library.name);
+    if (!entry) throw new Error(`${library.name} would ship in the runtime with no licence recorded for it.`);
+    return { file: entry.license, source: `/usr/share/doc/${LINUX_BUNDLED_LIBRARIES[library.name]}/copyright` };
+  });
 }
 
 function signMacRuntime(root: string, bundledLibraries: string[] = []): void {
@@ -348,18 +410,16 @@ function signMacRuntime(root: string, bundledLibraries: string[] = []): void {
 function findSunshineBinary(source: string): string {
   const suffix = platform === "win32" ? ".exe" : "";
   const candidates = [
-    join(source, "build-danidex", `sunshine${suffix}`),
-    join(source, "build-danidex", "sunshine", `sunshine${suffix}`),
-    join(source, "build-danidex", "Release", `sunshine${suffix}`),
-    join(source, "build-danidex", "Sunshine.app", "Contents", "MacOS", "Sunshine"),
+    join(source, "build-openbot", `sunshine${suffix}`),
+    join(source, "build-openbot", "sunshine", `sunshine${suffix}`),
+    join(source, "build-openbot", "Release", `sunshine${suffix}`),
+    join(source, "build-openbot", "Sunshine.app", "Contents", "MacOS", "Sunshine"),
   ];
   for (const candidate of candidates) {
     try {
       accessSync(candidate);
       return candidate;
-    } catch {
-      // Continue to the next platform-specific CMake output.
-    }
+    } catch {}
   }
   throw new Error("The Sunshine build did not produce its executable.");
 }

@@ -1,6 +1,13 @@
-import type { AccountUsage, AccountUsageLimit, AccountUsageWindow } from "@dani-dex/contracts/ipc";
-import { isNumber } from "@dani-dex/contracts/runtime-values";
-import type { AccountRateLimitResult, AccountRateLimitsReadResult } from "../protocol";
+import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
+import {
+  type AccountUsage,
+  type AccountUsageGroup,
+  type AccountUsageLimit,
+  type AccountUsageWindow,
+  MAX_USAGE_GROUPS,
+} from "@openbot/contracts/ipc";
+import { isNumber } from "@openbot/contracts/runtime-values";
+import type { AccountRateLimitGroupResult, AccountRateLimitResult, AccountRateLimitsReadResult } from "../protocol";
 
 export function normalizeAccountUsage(rateLimits: AccountRateLimitsReadResult | null, model?: string): AccountUsage {
   const entries = rateLimits?.rateLimitsByLimitId
@@ -11,12 +18,44 @@ export function normalizeAccountUsage(rateLimits: AccountRateLimitsReadResult | 
   const fallback: [string, AccountRateLimitResult] | null = rateLimits?.rateLimits
     ? [rateLimits.rateLimits.limitId ?? "codex", rateLimits.rateLimits]
     : null;
-  // No model means the dock's account-wide reading: one bucket per provider, not every
-  // Codex model window mixed into the same unlabeled list.
   const selectedEntries = model ? selectModelRateLimits(entries, model, fallback) : fallback ? [fallback] : entries;
   const limits = selectedEntries.map(([id, limit]) => normalizeAccountLimit(id, limit));
+  const groups = rateLimits?.groups?.slice(0, MAX_USAGE_GROUPS).map(normalizeUsageGroup);
+  if (groups?.length && limits.length === 1 && limits[0]) limits[0] = { ...limits[0], groups };
+  if (rateLimits?.sharedQuotaWith && limits.length === 1 && limits[0])
+    limits[0] = { ...limits[0], sharedQuotaWith: rateLimits.sharedQuotaWith };
+  const tertiary = normalizeUsageWindow(rateLimits?.tertiary);
+  if (tertiary && limits.length === 1 && limits[0]) limits[0] = { ...limits[0], tertiary };
 
   return { limits };
+}
+
+function normalizeUsageGroup(group: AccountRateLimitGroupResult): AccountUsageGroup {
+  return {
+    name: group.name.slice(0, INPUT_LIMITS.identifier),
+    models: group.models.slice(0, MAX_USAGE_GROUPS).map((model) => model.slice(0, INPUT_LIMITS.identifier)),
+    primary: normalizeUsageWindow(group.primary),
+    secondary: normalizeUsageWindow(group.secondary),
+  };
+}
+
+export function usageWindowHasReset(limit: AccountUsageLimit): boolean {
+  const now = Date.now() / 1_000;
+  return [limit, ...(limit.groups ?? [])].some((group) =>
+    usageWindows(group).some((window) => window?.resetsAt != null && window.resetsAt <= now),
+  );
+}
+
+export function usageWindowResetSince(limit: AccountUsageLimit, sinceMs: number): boolean {
+  const now = Date.now() / 1_000;
+  const since = sinceMs / 1_000;
+  return [limit, ...(limit.groups ?? [])].some((group) =>
+    usageWindows(group).some((window) => window?.resetsAt != null && window.resetsAt > since && window.resetsAt <= now),
+  );
+}
+
+function usageWindows(limit: Pick<AccountUsageLimit, "primary" | "secondary" | "tertiary">) {
+  return [limit.primary, limit.secondary, limit.tertiary];
 }
 
 function selectModelRateLimits(
@@ -33,15 +72,16 @@ function selectModelRateLimits(
   return entries.filter(([id, limit]) => id === "codex" || limit.limitId === "codex");
 }
 
-export function normalizeAccountLimit(id: string, limit: AccountRateLimitResult): AccountUsageLimit {
+function normalizeAccountLimit(id: string, limit: AccountRateLimitResult): AccountUsageLimit {
   return {
     id: limit.limitId ?? id,
     primary: normalizeUsageWindow(limit.primary),
     secondary: normalizeUsageWindow(limit.secondary),
+    ...(limit.credits === undefined ? {} : { creditsAvailable: limit.credits?.available ?? false }),
   };
 }
 
-export function normalizeUsageWindow(window: AccountRateLimitResult["primary"]): AccountUsageWindow | null {
+function normalizeUsageWindow(window: AccountRateLimitResult["primary"]): AccountUsageWindow | null {
   const usedPercent = finiteNumberOrNull(window?.usedPercent);
   if (usedPercent === null) return null;
   return {

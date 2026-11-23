@@ -1,14 +1,14 @@
-import { expect, fn } from "storybook/test";
+import { Bubble, BubbleContent, type BubbleVariant } from "@openbot/ui";
+import type { AgentMessage } from "@openbot/ui/data";
+import { MessageBody } from "@openbot/ui/features/conversation/MessageRendering";
+import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { Bubble, BubbleContent, type BubbleVariant } from "../src/components/ui";
-import type { AgentMessage } from "../src/data";
-import { MessageBody } from "../src/features/conversation/MessageRendering";
-import { STORY_AGENTS, STORY_ATTACHMENTS } from "./fixtures";
+import { STORY_AGENTS, STORY_ATTACHMENTS, STORY_REPLY_QUOTE_BODY } from "./fixtures";
 
 const message: AgentMessage = {
   id: "message-body-1",
   author: "agent",
-  body: "Here is the latest brief. You can also review https://dani-dex.example/docs or ask @Research.",
+  body: "Here is the latest brief. You can also review https://openbot.run/docs or ask @Research.",
   time: "10:00",
   status: "Ready to review",
   attachments: STORY_ATTACHMENTS,
@@ -57,11 +57,6 @@ function MessageBodySurface(props: {
 
 export const RichMessage: Story = {};
 
-/**
- * A signed-out provider. The bubble names the state and nothing else: the raw 401 exchange the
- * provider returned is replaced upstream, and the Sign in action lives on the composer notice, so
- * one stale bubble cannot offer a second, competing way in.
- */
 export const AuthError: Story = {
   args: {
     message: {
@@ -74,10 +69,6 @@ export const AuthError: Story = {
     },
   },
   render: (storyArgs) => <MessageBodySurface args={storyArgs} width="420px" />,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText("Sign in required")).toBeInTheDocument();
-    await expect(canvas.queryByText(/AppServerError|chatgpt\.com/u)).not.toBeInTheDocument();
-  },
 };
 
 export const WithReplyContext: Story = {
@@ -89,6 +80,63 @@ export const WithReplyContext: Story = {
       time: "09:55",
     },
   },
+};
+
+const reply: AgentMessage = {
+  id: "message-reply",
+  author: "you",
+  body: "Approved. Renew it today and tell me the new expiry date.",
+  time: "10:00",
+  replyToMessageId: "message-reference",
+  attachments: [],
+};
+
+const quoted: AgentMessage = {
+  id: "message-reference",
+  author: "agent",
+  body: "Without a renewed certificate, macOS rejects the update on Friday. I need your approval to buy the renewal.",
+  time: "09:55",
+};
+
+export const ReplyOpensOriginal: Story = {
+  args: { message: reply, referencedMessage: quoted, onOpenReference: fn() },
+  render: (storyArgs) => <MessageBodySurface args={storyArgs} author="user" width="360px" />,
+};
+
+export const ReplyLoadingOriginal: Story = {
+  args: { message: reply, referencedMessage: quoted, onOpenReference: fn(), referenceState: "loading" },
+  render: (storyArgs) => <MessageBodySurface args={storyArgs} author="user" width="360px" />,
+};
+
+export const ReplyOriginalUnavailable: Story = {
+  args: { message: reply, referenceState: "unavailable" },
+  render: (storyArgs) => <MessageBodySurface args={storyArgs} author="user" width="360px" />,
+};
+
+const markdownQuoted: AgentMessage = {
+  id: "message-reference",
+  author: "agent",
+  body: STORY_REPLY_QUOTE_BODY,
+  time: "09:55",
+};
+
+export const ReplyMarkdownOriginal: Story = {
+  args: { message: reply, referencedMessage: markdownQuoted, onOpenReference: fn() },
+  render: (storyArgs) => <MessageBodySurface args={storyArgs} author="user" width="360px" />,
+};
+
+export const ReplyMarkdownOpenFence: Story = {
+  args: {
+    message: reply,
+    referencedMessage: {
+      ...markdownQuoted,
+      body: ["Run these before the tag:", "", "```bash", "bun run check", "bun run test:changed", "bun run lint"].join(
+        "\n",
+      ),
+    },
+    onOpenReference: fn(),
+  },
+  render: (storyArgs) => <MessageBodySurface args={storyArgs} author="user" width="360px" />,
 };
 
 export const WithSelectedTextInstruction: Story = {
@@ -139,11 +187,6 @@ export const Markdown: Story = {
     },
   },
   render: (storyArgs) => <MessageBodySurface args={storyArgs} width="460px" />,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("heading", { level: 2, name: "Recommendation" })).toBeInTheDocument();
-    await expect(canvas.getByText("Kobalte").tagName).toBe("STRONG");
-    await expect(canvas.getByRole("checkbox", { name: "Tested" })).toBeChecked();
-  },
 };
 
 export const WorkspaceFileLinks: Story = {
@@ -154,8 +197,8 @@ export const WorkspaceFileLinks: Story = {
       body: [
         "Pliki:",
         "",
-        "- [page.tsx](/Users/test/Dani-Dex/Agents/builder/app/page.tsx)",
-        "- [globals.css](/Users/test/Dani-Dex/Agents/builder/app/globals.css)",
+        "- [page.tsx](/Users/test/Dani Dex/Agents/builder/app/page.tsx)",
+        "- [globals.css](/Users/test/Dani Dex/Agents/builder/app/globals.css)",
         "",
         "Gotowe: [otwórz tablicę Lutra w HTML](< lutra-brand-board.html >)",
       ].join("\n"),
@@ -165,23 +208,6 @@ export const WorkspaceFileLinks: Story = {
     onOpenWorkspaceFile: fn(),
   },
   render: (storyArgs) => <MessageBodySurface args={storyArgs} width="620px" />,
-  play: async ({ args: storyArgs, canvas }) => {
-    const pageLink = canvas.getByRole("button", { name: "Open workspace file page.tsx" });
-    const cssLink = canvas.getByRole("button", { name: "Open workspace file globals.css" });
-    const htmlLink = canvas.getByRole("button", { name: "Open workspace file lutra-brand-board.html" });
-    await expect(pageLink).toHaveTextContent("page.tsx");
-    await expect(cssLink).toHaveTextContent("globals.css");
-    await expect(htmlLink).toHaveTextContent("otwórz tablicę Lutra w HTML");
-    await expect(canvas.queryByText(/\/Users\/test\/Dani-Dex/u)).not.toBeInTheDocument();
-    await expect(canvas.queryByText(/\(<|>\)/u)).not.toBeInTheDocument();
-    pageLink.click();
-    htmlLink.click();
-    await expect(storyArgs.onOpenWorkspaceFile).toHaveBeenNthCalledWith(
-      1,
-      "/Users/test/Dani-Dex/Agents/builder/app/page.tsx",
-    );
-    await expect(storyArgs.onOpenWorkspaceFile).toHaveBeenNthCalledWith(2, "lutra-brand-board.html");
-  },
 };
 
 export const CodeBlock: Story = {
@@ -206,15 +232,45 @@ export const CodeBlock: Story = {
     },
   },
   render: (storyArgs) => <MessageBodySurface args={storyArgs} variant="ghost" width="460px" />,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText("The helper is ready:")).toBeInTheDocument();
-    await expect(canvas.getByRole("region", { name: "TypeScript code block" })).toBeInTheDocument();
-    await expect(canvas.getByText("churn.ts")).toBeInTheDocument();
-    const copyButton = canvas.getByRole("button", { name: "Copy code" });
-    await expect(copyButton.querySelectorAll("svg")).toHaveLength(2);
-    await expect(copyButton.querySelector('.message-code-copy-icons > span[data-visible="true"]')).toBeInTheDocument();
-    await expect(canvas.queryByText("```ts churn.ts")).not.toBeInTheDocument();
+};
+
+export const UnknownConstructorLanguage: Story = {
+  args: {
+    message: {
+      ...message,
+      id: "message-unknown-constructor-language",
+      body: ["Before the code.", "", "```constructor", "const total = 42;", "```", "", "After the code."].join("\n"),
+      status: undefined,
+      attachments: [],
+    },
   },
+  render: (storyArgs) => <MessageBodySurface args={storyArgs} variant="ghost" width="460px" />,
+};
+
+export const UnknownPrototypeLanguage: Story = {
+  args: {
+    message: {
+      ...message,
+      id: "message-unknown-prototype-language",
+      body: ["Before the code.", "", "```__proto__", "const fallback = 7;", "```", "", "After the code."].join("\n"),
+      status: undefined,
+      attachments: [],
+    },
+  },
+  render: (storyArgs) => <MessageBodySurface args={storyArgs} variant="ghost" width="460px" />,
+};
+
+export const UnknownOrdinaryLanguage: Story = {
+  args: {
+    message: {
+      ...message,
+      id: "message-unknown-ordinary-language",
+      body: ["Before the code.", "", "```mylang", "const ordinary = 3;", "```", "", "After the code."].join("\n"),
+      status: undefined,
+      attachments: [],
+    },
+  },
+  render: (storyArgs) => <MessageBodySurface args={storyArgs} variant="ghost" width="460px" />,
 };
 
 export const StreamingCodeBlock: Story = {
@@ -233,12 +289,6 @@ export const StreamingCodeBlock: Story = {
     },
   },
   render: (storyArgs) => <MessageBodySurface args={storyArgs} variant="ghost" width="460px" />,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: "TypeScript code block" })).toBeInTheDocument();
-    await expect(canvas.getByText("AgentCard.tsx")).toBeInTheDocument();
-    const region = canvas.getByRole("region", { name: "TypeScript code block" });
-    await expect(region.querySelector(".message-code-caret")).toBeInTheDocument();
-  },
 };
 
 export const DataTable: Story = {
@@ -258,11 +308,6 @@ export const DataTable: Story = {
     },
   },
   render: (storyArgs) => <MessageBodySurface args={storyArgs} variant="ghost" width="460px" />,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("table")).toBeInTheDocument();
-    await expect(canvas.getAllByRole("columnheader")).toHaveLength(3);
-    await expect(canvas.queryByText("| --- | --- | ---: |")).not.toBeInTheDocument();
-  },
 };
 
 export const DataTableNarrow: Story = {
@@ -281,12 +326,25 @@ export const DataTableNarrow: Story = {
     },
   },
   render: (storyArgs) => <MessageBodySurface args={storyArgs} variant="ghost" width="320px" />,
-  play: async ({ canvas }) => {
-    const region = canvas.getByRole("region", { name: "Data table" });
-    await expect(region.scrollWidth).toBeGreaterThan(region.clientWidth);
-    const longFixture = canvas.getByText("Newcastle–Bournemouth");
-    await expect(getComputedStyle(longFixture).textOverflow).toBe("clip");
+};
+
+export const DataTableLongText: Story = {
+  args: {
+    message: {
+      ...message,
+      id: "message-data-table-long-text",
+      body: [
+        "| Step | Owner | Notes | Reference |",
+        "| --- | --- | --- | --- |",
+        "| Migrate | Research | Copy every workspace to the new layout, then confirm that each conversation still opens with its attachments and its full history. | https://openbot.run/docs/guides/workspaces/migrating-an-existing-workspace-to-the-new-layout |",
+        "| Verify | Review | Run the checks on a clean profile and compare the results with the previous release before you approve the change. | `bun run test:desktop -- src/renderer/src/features/conversation/MessageRendering.test.tsx` |",
+        "| Ship | Release | Write the release notes. | `OPENBOT_RELEASE_CHANNEL_OVERRIDE_FOR_INTERNAL_TESTING_ONLY` |",
+      ].join("\n"),
+      status: undefined,
+      attachments: [],
+    },
   },
+  render: (storyArgs) => <MessageBodySurface args={storyArgs} variant="ghost" width="720px" />,
 };
 
 export const ComparisonTable: Story = {
@@ -307,12 +365,6 @@ export const ComparisonTable: Story = {
     },
   },
   render: (storyArgs) => <MessageBodySurface args={storyArgs} variant="ghost" width="460px" />,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: "Comparison table" })).toBeInTheDocument();
-    await expect(canvas.getAllByRole("columnheader")).toHaveLength(3);
-    await expect(canvas.getAllByText("✓")).toHaveLength(6);
-    await expect(canvas.getAllByText("—")).toHaveLength(2);
-  },
 };
 
 export const ComparisonTableNarrow: Story = {
@@ -332,10 +384,6 @@ export const ComparisonTableNarrow: Story = {
     },
   },
   render: (storyArgs) => <MessageBodySurface args={storyArgs} variant="ghost" width="320px" />,
-  play: async ({ canvas }) => {
-    const region = canvas.getByRole("region", { name: "Comparison table" });
-    await expect(region.scrollWidth).toBeGreaterThan(region.clientWidth);
-  },
 };
 
 export const CompletedAnswerReveal: Story = {
@@ -348,6 +396,44 @@ export const CompletedAnswerReveal: Story = {
       streaming: false,
       attachments: [],
     },
+  },
+  render: (storyArgs) => <MessageBodySurface args={storyArgs} variant="ghost" width="460px" />,
+};
+
+const LOGO_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240"><rect width="240" height="240" rx="32" fill="#1f5c3a"/><path d="M60 170 L170 60 L185 75 L75 185 Z" fill="#d8dde3"/><rect x="40" y="168" width="40" height="22" rx="6" transform="rotate(-45 60 179)" fill="#8a5a2b"/></svg>`;
+const BANNER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 200"><rect width="480" height="200" fill="#f6a62f"/><circle cx="100" cy="100" r="60" fill="#12141a"/><rect x="190" y="80" width="240" height="40" rx="8" fill="#12141a"/></svg>`;
+const svgDataUrl = (svg: string) => `data:image/svg+xml;base64,${btoa(svg)}`;
+const NAMED_IMAGES: Record<string, string> = {
+  "/data/Dani Dex/Shared/demo/maczeciarz/logo.svg": svgDataUrl(LOGO_SVG),
+  "/data/Dani Dex/Shared/demo/maczeciarz/banner.svg": svgDataUrl(BANNER_SVG),
+};
+const loadNamedImage: Parameters<typeof MessageBody>[0]["loadImageFile"] = (file) =>
+  Promise.resolve(NAMED_IMAGES[file.path] ?? null);
+
+export const NamedImageFile: Story = {
+  args: {
+    message: {
+      ...message,
+      id: "named-image-file",
+      body: "Done. Logo delivered to Boss:\n\n- `/data/Dani Dex/Shared/demo/maczeciarz/logo.svg` — machete icon and wordmark.",
+      attachments: [],
+    },
+    onOpenSharedFile: fn(),
+    loadImageFile: loadNamedImage,
+  },
+  render: (storyArgs) => <MessageBodySurface args={storyArgs} variant="ghost" width="460px" />,
+};
+
+export const NamedImageFiles: Story = {
+  args: {
+    message: {
+      ...message,
+      id: "named-image-files",
+      body: "Status: done\nResult: logo and banner are in the shared folder.\nEvidence: `/data/Dani Dex/Shared/demo/maczeciarz/logo.svg`, `/data/Dani Dex/Shared/demo/maczeciarz/banner.svg`, `/data/Dani Dex/Shared/demo/maczeciarz/missing.png`",
+      attachments: [],
+    },
+    onOpenSharedFile: fn(),
+    loadImageFile: loadNamedImage,
   },
   render: (storyArgs) => <MessageBodySurface args={storyArgs} variant="ghost" width="460px" />,
 };

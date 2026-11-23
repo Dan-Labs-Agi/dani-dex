@@ -1,78 +1,45 @@
-import { INPUT_LIMITS } from "@dani-dex/contracts/input-limits";
-import { isCanonicalInviteUrl } from "@dani-dex/contracts/invite-links";
-import { isString } from "@dani-dex/contracts/runtime-values";
 import { createFileRoute } from "@tanstack/solid-router";
-import { emailDeliveryFailure, isEmailDeliveryFailure, normalizeEmail } from "../../../server/auth-service";
+import { Effect } from "effect";
+import { runApiResponse } from "../../../server/effect-runtime";
 import { readJsonObject } from "../../../server/json-body";
 import {
   apiError,
   authErrorResponse,
   bearerToken,
   requestAuthService,
-  requestSourceIp,
+  requestRemoteControlPlane,
   requestTeamInviteEmailDelivery,
 } from "../../../server/request-auth";
+import { requestSourceIp } from "../../../server/source-ip";
+import { sendTeamInviteEmail } from "../../../server/team-invite-email";
 
 export const Route = createFileRoute("/v1/team-invitations/email")({
   server: {
     handlers: {
-      POST: async ({ request }) => {
-        try {
-          const token = bearerToken(request);
-          if (!token) return apiError(401, "unauthorized", "Sign in is required.");
-          const auth = requestAuthService();
-          const user = await auth.authenticate(token);
-          if (!user) return apiError(401, "unauthorized", "The session is invalid.");
-          const body = await readJsonObject(request);
-          if (
-            !isString(body.email) ||
-            !isString(body.serverName) ||
-            !isString(body.inviteUrl) ||
-            (body.role !== "admin" && body.role !== "member")
-          ) {
-            return apiError(400, "invalid_invitation", "The invitation details are invalid.");
-          }
-          const email = normalizeEmail(body.email);
-          if (
-            body.serverName.trim().length < INPUT_LIMITS.serverNameMin ||
-            body.serverName.trim().length > INPUT_LIMITS.serverName ||
-            /[\r\n]/u.test(body.serverName) ||
-            !isValidInviteUrl(body.inviteUrl)
-          ) {
-            return apiError(400, "invalid_invitation", "The invitation details are invalid.");
-          }
-          await auth.enforceTeamInviteRateLimit(user.id, email, requestSourceIp(request));
-          const delivery = requestTeamInviteEmailDelivery();
-          if (!delivery) {
-            return apiError(503, "email_delivery_not_configured", "Email delivery is unavailable.");
-          }
-          await delivery.send({
-            email,
-            inviterEmail: user.email,
-            serverName: body.serverName,
-            inviteUrl: body.inviteUrl,
-            role: body.role,
-          });
-          return new Response(null, { status: 204 });
-        } catch (error) {
-          if (error instanceof SyntaxError) {
-            return apiError(400, "invalid_json", "The request body is invalid.");
-          }
-          if (isEmailDeliveryFailure(error)) {
-            return authErrorResponse(emailDeliveryFailure(error.message, "Dani-Dex could not send the invitation."));
-          }
-          return authErrorResponse(error);
-        }
-      },
+      POST: ({ request }) =>
+        runApiResponse(
+          Effect.gen(function* () {
+            const token = bearerToken(request);
+            if (!token) return apiError(401, "unauthorized", "Sign in is required.");
+            const auth = requestAuthService();
+            const user = yield* auth.authenticate(token);
+            if (!user) return apiError(401, "unauthorized", "The session is invalid.");
+            const body = yield* readJsonObject(request);
+            yield* sendTeamInviteEmail(
+              { auth, remote: requestRemoteControlPlane(), delivery: requestTeamInviteEmailDelivery },
+              user,
+              body,
+              requestSourceIp(request),
+            );
+            return new Response(null, { status: 204 });
+          }),
+          (error) => {
+            if (error instanceof SyntaxError) {
+              return apiError(400, "invalid_json", "The request body is invalid.");
+            }
+            return authErrorResponse(error);
+          },
+        ),
     },
   },
 });
-
-function isValidInviteUrl(value: string): boolean {
-  if (value.length > 4_096 || /[\r\n]/u.test(value)) return false;
-  try {
-    return isCanonicalInviteUrl(value);
-  } catch {
-    return false;
-  }
-}

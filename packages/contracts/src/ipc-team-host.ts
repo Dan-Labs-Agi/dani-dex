@@ -1,18 +1,30 @@
+import type { CustomServerPlan } from "./custom-server-plans";
+import { type AvatarColor, isAvatarColor } from "./ipc-agent-identity";
 import type { AvatarImageInput } from "./ipc-agents";
 import type { IceServer } from "./signal-protocol/messages";
+import type { HostAppearanceEvent, ServerAppearance } from "./team-protocol/host-appearance-v1";
+import type { HostRestartEvent, HostRestartState } from "./team-protocol/host-update-v1";
+import type { LiveVoiceEvent } from "./team-protocol/live-voice-v1";
+import type { MachineAlertEvent } from "./team-protocol/machine-resources-v1";
 
-// The id every IPC payload carries for "this computer" rather than a remote team server. It is a
-// wire value the main process, the preload bridge and the renderer all compare against, so it lives
-// beside the types they share instead of being retyped at each comparison.
+export type { HostAppearanceEvent, ServerAppearance, ServerAppearanceShape } from "./team-protocol/host-appearance-v1";
+
 export const LOCAL_SERVER_ID = "local";
+
+export const LOCAL_SERVER_LIMIT = 5;
 
 export type ServerConnectionState = "online" | "connecting" | "offline" | "error" | "incompatible";
 export type TeamRole = "owner" | "admin" | "member";
+
+export function canAdministerServer(role: TeamRole | null | undefined): boolean {
+  return role === "owner" || role === "admin";
+}
 
 export type ServerConnectionIssueCode =
   | "client_update_required"
   | "host_update_required"
   | "protocol_error"
+  | "server_safe_mode"
   | "authentication_required"
   | "network_unavailable";
 
@@ -20,6 +32,7 @@ export interface ServerConnectionIssue {
   code: ServerConnectionIssueCode;
   message: string;
   retryable: boolean;
+  reference?: string;
 }
 
 export interface ServerCompatibility {
@@ -31,8 +44,32 @@ export interface ServerCompatibility {
   capabilities: string[];
 }
 
+export type ServerNotificationLevel = "all" | "needs-me" | "nothing";
+export const SERVER_NOTIFICATION_LEVELS: readonly ServerNotificationLevel[] = ["all", "needs-me", "nothing"];
+
+export const SERVER_MUTE_DURATIONS_MS: readonly number[] = [
+  15 * 60_000,
+  60 * 60_000,
+  3 * 60 * 60_000,
+  8 * 60 * 60_000,
+  24 * 60 * 60_000,
+];
+
+export interface SetServerMutedInput {
+  serverId: string;
+  muted: boolean;
+  durationMs?: number;
+}
+
+export interface SetServerNotificationLevelInput {
+  serverId: string;
+  level: ServerNotificationLevel;
+}
+
 export interface ServerSummary {
   notificationsMuted: boolean;
+  notificationsMutedUntil: number | null;
+  notificationLevel: ServerNotificationLevel;
   id: string;
   name: string;
   kind: "local" | "remote";
@@ -40,12 +77,37 @@ export interface ServerSummary {
   apiUrl: string | null;
   remoteDesktopAvailable: boolean;
   logoUrl: string | null;
+  appearance?: ServerAppearance | null;
   role: TeamRole | null;
   active: boolean;
+  memberLimit?: number;
+  hosted?: boolean;
+  restartAvailable?: boolean;
+  storageGb?: number;
+  paymentRequired?: true;
+  customPlan?: CustomServerPlan;
+  keyChangedAt?: number;
+  thisComputer?: true;
   compatibility?: ServerCompatibility | null;
   issue?: ServerConnectionIssue | null;
   connectionSequence?: number;
+  capabilitiesPending?: true;
+  hostRestart?: { state: Exclude<HostRestartState, "none">; version: string | null } | null;
+  hostedSleep?: HostedServerSleep | null;
+  hostedIssue?: HostedServerIssue | null;
+  hostedStart?: HostedServerStart | null;
 }
+
+export type HostedServerIssue = "plan_ended" | "wake_failed" | "start_timeout";
+
+export type HostedServerStartStep = "machine" | "restore" | "openbot" | "provider_limit";
+
+export interface HostedServerStart {
+  step: HostedServerStartStep;
+  startedAt: number;
+}
+
+export type HostedServerSleep = "sleeping" | "waking";
 
 export interface JoinServerInput {
   inviteUrl: string;
@@ -79,11 +141,11 @@ export interface HostStatus {
   serverName: string | null;
   apiUrl: string | null;
   logoUrl: string | null;
+  appearance: ServerAppearance | null;
   apiOnline: boolean;
   remoteDesktopReady: boolean;
-  // True once this host has refused a member because the operating system will not let Dani-Dex record
-  // the screen. The member's error tells them to ask the host owner; this is what the host owner sees.
   remoteDesktopScreenRecordingDenied: boolean;
+  remoteDesktopNeedsX11Session: boolean;
   remoteDesktopUnattended: boolean;
   remoteDesktopActiveSessions: number;
   remoteDesktopMaxSessions: number;
@@ -98,6 +160,7 @@ export interface ConfigureHostInput {
 export interface UpdateHostIdentityInput {
   serverName?: string;
   logo?: AvatarImageInput | null;
+  appearance?: ServerAppearance | null;
 }
 
 export interface TeamMemberSummary {
@@ -106,6 +169,7 @@ export interface TeamMemberSummary {
   email: string | null;
   name: string | null;
   avatarUrl?: string | null;
+  chatColor?: AvatarColor;
   role: TeamRole;
   createdAt: string;
   disabled: boolean;
@@ -155,7 +219,7 @@ export interface DirectConversationSnapshot {
   otherMemberId: string;
   messages: DirectMessage[];
   revision: number;
-  readState?: DirectConversationReadState;
+  readState?: DirectConversationReadState | undefined;
 }
 
 export type DirectConversationPageAnchor =
@@ -177,8 +241,10 @@ export interface DirectConversationPage {
   pageInfo: {
     hasOlder: boolean;
     olderCursor: string | null;
+    olderCount?: number;
+    oldestAt?: string;
   };
-  readState?: DirectConversationReadState;
+  readState?: DirectConversationReadState | undefined;
 }
 
 export interface DirectConversationReadState {
@@ -224,7 +290,11 @@ export type TeamRealtimeEvent =
       senderMemberId: string;
       recipientMemberId: string;
       typing: boolean;
-    };
+    }
+  | HostRestartEvent
+  | HostAppearanceEvent
+  | LiveVoiceEvent
+  | MachineAlertEvent;
 
 export type DirectMessageRealtimeEvent = Extract<TeamRealtimeEvent, { type: "team-direct-message" }>;
 
@@ -257,7 +327,7 @@ export function isTeamRealtimeEvent(value: unknown): value is TeamRealtimeEvent 
   );
 }
 
-function isTeamPresenceSnapshot(value: unknown): value is TeamPresenceSnapshot {
+export function isTeamPresenceSnapshot(value: unknown): value is TeamPresenceSnapshot {
   if (!isDynamicRecord(value) || !Array.isArray(value.members)) return false;
   return (
     (value.serverId === null || isIdentifier(value.serverId)) &&
@@ -275,6 +345,7 @@ function isTeamPresenceMember(value: unknown): value is TeamPresenceMember {
     (value.email === null || isLimitedString(value.email, INPUT_LIMITS.email)) &&
     (value.name === null || isLimitedString(value.name, INPUT_LIMITS.accountName)) &&
     (value.avatarUrl === undefined || value.avatarUrl === null || isHttpUrl(value.avatarUrl, INPUT_LIMITS.avatarUrl)) &&
+    (value.chatColor === undefined || isAvatarColor(value.chatColor)) &&
     (value.role === "owner" || value.role === "admin" || value.role === "member") &&
     isTimestamp(value.createdAt) &&
     isBoolean(value.disabled) &&
@@ -380,9 +451,6 @@ export interface RemoteDesktopDisplay {
   primary: boolean;
 }
 
-// The ICE servers the Signal service hands a peer, forwarded to the renderer unchanged. It is the
-// same shape by construction rather than by coincidence: this is the IPC-side name for it, kept
-// because it is what every `remoteDesktop:*` payload already spells.
 export type RemoteDesktopIceServer = IceServer;
 
 export interface RemoteDesktopCapabilities {
@@ -400,9 +468,6 @@ export interface RemoteDesktopCapabilities {
 export type RemoteDesktopPhase = "starting_host" | "connecting" | "connected" | "disconnecting" | "error";
 export type RemoteDesktopTransport = "unknown" | "p2p" | "relay";
 
-// Every reason a host gives for refusing a remote screen, as a closed table. Exported as values
-// because both ends need to check a code they were handed: the host writes one into a session it is
-// ending, and the client decodes one out of a host's answer.
 export const REMOTE_DESKTOP_ERROR_CODES = [
   "host_unavailable",
   "host_permissions_required",
@@ -414,6 +479,25 @@ export const REMOTE_DESKTOP_ERROR_CODES = [
 ] as const;
 
 export type RemoteDesktopErrorCode = (typeof REMOTE_DESKTOP_ERROR_CODES)[number];
+
+export const REMOTE_CONTROL_ACCESS_LEVELS = ["owner", "admins", "members"] as const;
+export type RemoteControlAccess = (typeof REMOTE_CONTROL_ACCESS_LEVELS)[number];
+
+export interface RemoteControlPolicy {
+  access: RemoteControlAccess;
+  askOnHost: boolean;
+}
+
+export const DEFAULT_REMOTE_CONTROL_POLICY: RemoteControlPolicy = { access: "members", askOnHost: false };
+
+export function isRemoteControlAccess(value: unknown): value is RemoteControlAccess {
+  return isOneOf(REMOTE_CONTROL_ACCESS_LEVELS, value);
+}
+
+export function remoteControlAllowsRole(access: RemoteControlAccess, role: TeamRole): boolean {
+  if (access === "members") return true;
+  return access === "admins" ? canAdministerServer(role) : role === "owner";
+}
 
 export interface RemoteDesktopSession {
   id: string;
@@ -430,15 +514,6 @@ export interface RemoteDesktopSession {
   grantExpiresAt: string;
 }
 
-/**
- * What `remoteDesktop.connect` answers.
- *
- * A host that refuses names its reason, and the reason decides what the workspace can offer: a
- * missing screen recording grant is a setup step on the host, while a failed connection is a retry.
- * Rejecting the call would leave the renderer holding the sentence and none of the code -- an IPC
- * rejection carries a message and nothing else -- so a refusal the host answered with travels as a
- * value. A call that never reached the host still rejects.
- */
 export type RemoteDesktopConnectResult =
   | { status: "connected"; session: RemoteDesktopSession }
   | { status: "refused"; errorCode: RemoteDesktopErrorCode; message: string };
@@ -453,73 +528,4 @@ export interface RemoteDesktopSelectDisplayInput {
 }
 
 import { INPUT_LIMITS } from "./input-limits";
-import { isBoolean, isDynamicRecord, isNumber, isString } from "./runtime-values";
-
-export interface TelegramGatewayStatus {
-  /** Source metadata only. No download, transcription or delivery is implied. */
-  mediaPending?: Array<{
-    updateId: string;
-    messageId: string;
-    conversationId: string;
-    senderId: string;
-    kind: "voice" | "document";
-    fileId: string;
-    uniqueId: string;
-    size: number | null;
-    claimedMimeType: string | null;
-    safeName: string;
-    caption: string;
-    edited: boolean;
-    reviewDigest: string;
-  }>;
-  uncertainReplies: Array<{ replyId: string; conversationId: string }>;
-  replies: Array<{ replyId: string; conversationId: string; senderId: string; body: string }>;
-  configured: boolean;
-  enabled: boolean;
-  error: string | null;
-  pending: Array<{
-    eventId: string;
-    conversationId: string;
-    senderId: string;
-    body: string;
-    generation: number;
-    nextOffset: number;
-  }>;
-}
-
-export interface PeerOwnerReview {
-  requestId: string;
-  contactId: string;
-  transportPrincipal: string;
-  contextId: string;
-  claimedPrincipal: { handle: string; display: string };
-  verifiedHumanHandle?: string;
-  displayText?: string;
-  displayEnvelope?: import("./runtime-values").DynamicRecord;
-  envelopeHash?: string;
-  text: string;
-  envelope: import("./runtime-values").DynamicRecord;
-  state: string;
-  deadline: number | null;
-}
-export interface PeerOwnerGrantInput {
-  contactId: string;
-  purpose: string;
-  capabilities: string[];
-  audiences: string[];
-  expiresAt: number;
-}
-export interface V2ControlStatus {
-  contacts: Array<{ contactId: string; humanHandle: string; connected: boolean }>;
-  grants: Array<{ grantId: string; contactId: string; purpose: string; expiresAt: number; revoked: boolean }>;
-  requests: Array<{ requestId: string; contactId: string; state: string; deadline: number | null }>;
-}
-
-export interface RcGatewayStatus {
-  enabled: boolean;
-  phase: "off" | "connecting" | "online" | "reconnecting" | "error";
-  origin: string | null;
-  previousOrigin: string | null;
-  changedAt: string | null;
-  message: string | null;
-}
+import { isBoolean, isDynamicRecord, isNumber, isOneOf, isString } from "./runtime-values";

@@ -1,21 +1,28 @@
-import type { AgentHarnessSetting } from "./agent-harness-routing";
-import type { ManagedProviderId, ManagedToolRuntimeId } from "./agent-providers";
-import type { AgentModelId } from "./ipc-agent-identity";
+import type { InstallerProviderId, ManagedProviderId, ManagedToolRuntimeId } from "./agent-providers";
+import type { AboveAppsSupport } from "./ipc-agent-dock";
+import type { AgentModelId, AvatarColor } from "./ipc-agent-identity";
 import type { AgentProviderId } from "./ipc-agent-status";
-import type { AvatarImageInput } from "./ipc-agents";
-import type { AccountSession, MobileConnectedDevice, MobileConnectTicket } from "./mobile-connect";
+import { integerInRange, isFiniteNumber, isIdentifier } from "./ipc-bounded-values";
+import { decodeRecord, nullableNumber, requiredBoolean, requiredNumber, requiredString } from "./ipc-decoding";
+import { isDynamicRecord, isString } from "./runtime-values";
 
 export type DesktopPlatform = "darwin" | "win32" | "linux";
 export type AppVariant = "production" | "dev" | "preview";
+export type HourCycle = "h12" | "h23";
 
 export interface AppInfo {
   name: string;
   version: string;
   platform: DesktopPlatform;
   variant: AppVariant;
+  analyticsCaptureUrl?: string;
+  analyticsInstallId?: string;
+  softwareRendering?: boolean;
+  hourCycle?: HourCycle;
+  aboveAppsSupport?: AboveAppsSupport;
+  dynamicIslandUnavailable?: boolean;
 }
 
-/** The phase list is the source of truth: `UpdatePhase` is derived from it. */
 export const UPDATE_PHASES = [
   "idle",
   "checking",
@@ -30,15 +37,10 @@ export const UPDATE_PHASES = [
 
 export type UpdatePhase = (typeof UPDATE_PHASES)[number];
 
-/**
- * Phases where the user is waiting on work already under way. Every one of these must be bounded by
- * a timeout in the main-process updater, otherwise the UI renders a spinner that can never resolve.
- */
 export const UPDATE_BUSY_PHASES = ["checking", "downloading", "installing"] as const satisfies readonly UpdatePhase[];
 
 export type UpdateBusyPhase = (typeof UPDATE_BUSY_PHASES)[number];
 
-/** Phases where an update is in play, which is what makes the update UI visible. */
 export const UPDATE_ACTIVE_PHASES = [
   "available",
   "downloading",
@@ -65,31 +67,62 @@ export interface UpdateStatus {
   checkedAt: string | null;
   message: string | null;
   errorCode: UpdateFailureCode | null;
-  /**
-   * True on a Mac whose host manages updates for every tenant. The tenant UI hides its own
-   * install, download and check actions but keeps showing the status; absent means unmanaged.
-   */
   managedByHost?: boolean;
-  /**
-   * True when this build cannot replace itself, as with an unsigned Mac app, which Squirrel.Mac
-   * refuses to update. The download action then opens the release page for `availableVersion`
-   * instead of downloading in the background; absent means in-place updates.
-   */
-  manualDownload?: boolean;
+  scheduledRestart?: ScheduledUpdateRestart;
+  idleRestart?: IdleRestart;
+  stagedVersion?: string;
+  requiredVersion?: string;
 }
 
-export type UpdateFailureCode = "check_failed" | "download_failed" | "install_failed";
+export const IDLE_RESTART_TARGETS = ["relaunch", "update"] as const;
+export type IdleRestartTarget = (typeof IDLE_RESTART_TARGETS)[number];
+
+export interface IdleRestart {
+  target: IdleRestartTarget;
+  waitingFor: string[];
+  error?: string;
+}
+
+export const UPDATE_FAILURE_CODES = ["check_failed", "download_failed", "install_failed"] as const;
+export type UpdateFailureCode = (typeof UPDATE_FAILURE_CODES)[number];
 
 export interface UpdatePreference {
   autoDownload: boolean;
+  allowRemoteUpdates: boolean;
+  autoInstall: boolean;
 }
+
+export type UpdatePreferenceChange = Partial<UpdatePreference>;
+
+export const UPDATE_RESTART_MODES = ["when-idle", "now"] as const;
+export type UpdateRestartMode = (typeof UPDATE_RESTART_MODES)[number];
+
+export interface ScheduledUpdateRestart {
+  requestedBy: string | null;
+  mode: UpdateRestartMode;
+  waitingFor: string[];
+}
+
+export const REMOTE_UPDATES_STATES = ["allowed", "disabled", "managed"] as const;
+export type RemoteUpdatesState = (typeof REMOTE_UPDATES_STATES)[number];
+
+export interface HostUpdateStatus {
+  phase: UpdatePhase;
+  currentVersion: string;
+  availableVersion: string | null;
+  progress: number | null;
+  errorCode: UpdateFailureCode | null;
+  remoteUpdates: RemoteUpdatesState;
+  autoDownload: boolean;
+  autoInstall: boolean;
+  restart: ScheduledUpdateRestart | null;
+}
+
+export type HostUpdateSettingsChange = Partial<Pick<UpdatePreference, "autoDownload" | "autoInstall">>;
 
 export type ProviderRuntimePhase = "not-downloaded" | "downloading" | "finishing" | "ready" | "download-error";
 
 export interface ProviderRuntimeStatus {
-  /** Transfer/extraction and post-install connection failures are different recovery steps. */
-  failureStage?: "download" | "connection";
-  /** Newer managed version pinned by this Dani-Dex release, when an older install exists. */
   availableVersion?: string | null;
   phase: ProviderRuntimePhase;
   progress: number | null;
@@ -99,21 +132,11 @@ export interface ProviderRuntimeStatus {
 
 export interface ProviderRuntimeSnapshot {
   revision: number;
-  /**
-   * Only the providers whose CLI Dani-Dex downloads and pins itself. A provider that ships without a
-   * managed runtime is absent from `ManagedProviderId`, so it needs no fake entry here, and every
-   * provider that is in the tuple has a real status.
-   */
-  providers: Record<ManagedProviderId, ProviderRuntimeStatus>;
-  /**
-   * The tool runtimes, in a field of their own rather than mixed in above.
-   *
-   * These are downloaded for the MCP servers, not for an agent: nothing signs in to one, nothing
-   * picks a model on one, and the provider cards must not grow an entry for one. Required, so a
-   * reader that needs the status of a managed tool cannot silently read `undefined` instead.
-   */
+  providers: Record<ManagedProviderId, ProviderRuntimeStatus> & InstallerRuntimeStatuses;
   toolRuntimes: Record<ManagedToolRuntimeId, ProviderRuntimeStatus>;
 }
+
+export type InstallerRuntimeStatuses = { [Provider in InstallerProviderId]?: ProviderRuntimeStatus };
 
 export interface ExportResult {
   saved: boolean;
@@ -122,39 +145,37 @@ export interface ExportResult {
 export interface AppSetupState {
   completed: boolean;
   preferredProvider: AgentProviderId | null;
-  /**
-   * The model setup chose beside the provider, and `null` when the user took the provider's own
-   * default. A new agent starts on it while that provider still lists it, which is how a custom
-   * endpoint becomes the default: the provider is the CLI that runs it, and only the model names it.
-   */
   preferredModel: AgentModelId | null;
-  /**
-   * Layer 1, stored apart from the provider and model. Absent means each provider's own CLI runs
-   * the turn; `hermes` uses Hermes for providers whose sign-in it supports, with the provider's
-   * own CLI as fallback; `automatic` records a sticky harness route for each bot. The stored route
-   * is not proof of which provider driver handled a turn.
-   */
-  harness?: AgentHarnessSetting | null;
-  /**
-   * The harness the running agent service was built with. It is chosen once at launch, so after a
-   * save this can differ from `harness` until Dani-Dex restarts. Absent in states that did not come
-   * from the main process, which read as "nothing pending".
-   */
-  activeHarness?: AgentHarnessSetting | null;
 }
 
 export interface SaveSetupInput {
   preferredProvider: AgentProviderId;
   preferredModel: AgentModelId | null;
-  harness?: AgentHarnessSetting | null;
 }
+
+export type HostDefaultProvider = Pick<AppSetupState, "preferredProvider" | "preferredModel">;
 
 export interface AnalyticsPreference {
   enabled: boolean;
 }
 
+export const RENDERER_TIMING_LIMITS = {
+  longTasks: 10_000,
+  inputs: 100_000,
+  inputDelays: 64,
+  inputDelayMs: 600_000,
+} as const;
+
+export interface RendererTimingReport {
+  workspaceReady?: true;
+  longTasks: number;
+  inputs: number;
+  inputDelaysMs: number[];
+}
+
 export interface SetAnalyticsPreferenceInput {
   enabled: boolean;
+  chosen?: boolean;
 }
 
 export interface CentralAuthUser {
@@ -162,83 +183,164 @@ export interface CentralAuthUser {
   email: string;
   name: string | null;
   avatarUrl: string | null;
+  analyticsEnabled?: boolean | null;
+  chatColor?: AvatarColor | null;
 }
 
 export interface CentralAuthIssue {
   code: string;
   message: string;
   retryAfterSeconds?: number;
+  reference?: string;
 }
 
-/** A browser sign-in the account service can offer, once its provider is switched on. */
-export type CentralAuthProvider = "github" | "google";
-
-export const CENTRAL_AUTH_PROVIDERS: readonly CentralAuthProvider[] = ["github", "google"];
-
-/**
- * What the sign-in screen may offer right now, read from the account service rather than assumed.
- *
- * `providers` lists only the browser sign-ins that are switched on, so a button appears the moment
- * one is enabled and never before. `onlineServices` says whether the features that need Dani-Dex's
- * own servers (mobile connect, remote hosts, shared teams, the marketplace) can work with this
- * account; while it is false those features are shown as unavailable instead of failing.
- */
-export interface CentralAuthSignInOptions {
-  providers: CentralAuthProvider[];
-  onlineServices: boolean;
-}
+export type CentralAuthSignedOutReason = "keyring_changed";
 
 export type CentralAuthState =
   | { status: "loading" }
-  | { status: "signed_out" }
-  | { status: "signing_in"; provider?: CentralAuthProvider }
+  | { status: "signed_out"; reason?: CentralAuthSignedOutReason }
+  | { status: "signing_in" }
   | {
       status: "code_sent";
       challengeId: string;
       email: string;
       expiresAt: number;
       resendAvailableAt: number;
-      /** Set when the emailed code is this many digits, rather than the 8-character account-service code. */
-      codeLength?: number;
       developmentCode?: string;
-      issue?: CentralAuthIssue;
+      issue?: CentralAuthIssue | undefined;
     }
+  | { status: "company_sign_in"; email: string; issue?: CentralAuthIssue | undefined }
   | { status: "signed_in"; user: CentralAuthUser }
   | { status: "error"; issue: CentralAuthIssue };
 
-export interface CentralAuthDesktopApi {
-  getState: () => Promise<CentralAuthState>;
-  retry: () => Promise<CentralAuthState>;
-  requestEmailCode: (email: string) => Promise<CentralAuthState>;
-  verifyEmailCode: (challengeId: string, code: string) => Promise<CentralAuthState>;
-  getSignInOptions: () => Promise<CentralAuthSignInOptions>;
-  signInWithProvider: (provider: CentralAuthProvider) => Promise<CentralAuthState>;
-  cancelProviderSignIn: () => Promise<CentralAuthState>;
-  updateName: (name: string) => Promise<CentralAuthState>;
-  updateAvatar: (image: AvatarImageInput | null) => Promise<CentralAuthState>;
-  createMobileConnect: () => Promise<MobileConnectTicket>;
-  listMobileConnectedDevices: () => Promise<MobileConnectedDevice[]>;
-  listAccountSessions: () => Promise<AccountSession[]>;
-  revokeAccountSession: (sessionId: string) => Promise<void>;
-  revokeMobileConnectedDevice: (sessionId: string) => Promise<void>;
-  logout: () => Promise<CentralAuthState>;
-  onEvent: (listener: (state: CentralAuthState) => void) => () => void;
+export interface CompanySignInConnection {
+  issuer: string;
+  clientId: string;
+  domains: string[];
+  enabled: boolean;
+  testedAt: number;
+  scimTokenCreatedAt: number | null;
+}
+
+export interface CompanySignInSettings {
+  redirectUri: string;
+  scimUrl: string;
+  domainRecord: { name: string; value: string };
+  domainCheck: boolean;
+  connection: CompanySignInConnection | null;
+}
+
+export interface TestCompanySignInInput {
+  serverId: string;
+  issuer: string;
+  clientId: string;
+  clientSecret: string;
+  domains: string[];
+}
+
+export interface TestCompanySignInResult {
+  email: string;
+}
+
+export interface SetCompanySignInEnabledInput {
+  serverId: string;
+  enabled: boolean;
+}
+
+export interface CompanySignInScimToken {
+  token: string;
+  createdAt: number;
+}
+
+export function decodeCompanySignInSettings(value: unknown): CompanySignInSettings {
+  const settings = decodeRecord(value, "company sign-in settings");
+  const record = decodeRecord(settings.domainRecord, "company sign-in domain record");
+  return {
+    redirectUri: requiredString(settings, "redirectUri"),
+    scimUrl: requiredString(settings, "scimUrl"),
+    domainRecord: { name: requiredString(record, "name"), value: requiredString(record, "value") },
+    domainCheck: requiredBoolean(settings, "domainCheck"),
+    connection: settings.connection === null ? null : decodeCompanySignInConnection(settings.connection),
+  };
+}
+
+function decodeCompanySignInConnection(value: unknown): CompanySignInConnection {
+  const connection = decodeRecord(value, "company sign-in connection");
+  const { domains } = connection;
+  if (!Array.isArray(domains) || !domains.every(isString)) throw new Error("Invalid company sign-in domains.");
+  return {
+    issuer: requiredString(connection, "issuer"),
+    clientId: requiredString(connection, "clientId"),
+    domains,
+    enabled: requiredBoolean(connection, "enabled"),
+    testedAt: requiredNumber(connection, "testedAt"),
+    scimTokenCreatedAt: nullableNumber(connection, "scimTokenCreatedAt"),
+  };
+}
+
+export function decodeCompanySignInScimToken(value: unknown): CompanySignInScimToken {
+  const token = decodeRecord(value, "SCIM token");
+  return { token: requiredString(token, "token"), createdAt: requiredNumber(token, "createdAt") };
+}
+
+export function decodeTestCompanySignInResult(value: unknown): TestCompanySignInResult {
+  return { email: requiredString(decodeRecord(value, "company sign-in test"), "email") };
+}
+
+export interface VerifyEmailCodeInput {
+  challengeId: string;
+  code: string;
+  referralCode?: string;
 }
 
 export type MacPermissionId = "screen-recording" | "accessibility";
 
-/**
- * How far Computer Use is from working, as one value the panel switches on.
- *
- * `permissions-required` is the only one the user can act on, by opening System Settings.
- * `driver-missing` says the build carries no driver, which every release does, and `error` says the
- * driver is there and answered with something else. Both are faults rather than steps, and they
- * stay apart because a report that only said "not ready" would hide which one happened.
- */
+export const MAC_AUTOMATION_TARGETS = [
+  "calendar",
+  "contacts",
+  "mail",
+  "notes",
+  "reminders",
+  "messages",
+  "safari",
+] as const;
+
+export type MacAutomationTarget = (typeof MAC_AUTOMATION_TARGETS)[number];
+
+export const MAC_AUTOMATION_STATUSES = ["granted", "denied", "failed"] as const;
+
+export interface MacAutomationResult {
+  target: MacAutomationTarget;
+  status: (typeof MAC_AUTOMATION_STATUSES)[number];
+}
+
+export interface BackgroundProcess {
+  id: string;
+  pid: number;
+  command: string;
+  startedAt: number;
+  ports: number[];
+  agentId: string | null;
+}
+
+export function isBackgroundProcess(value: unknown): value is BackgroundProcess {
+  return (
+    isDynamicRecord(value) &&
+    isIdentifier(value.id) &&
+    integerInRange(value.pid, 1, Number.MAX_SAFE_INTEGER) &&
+    isString(value.command) &&
+    isFiniteNumber(value.startedAt) &&
+    Array.isArray(value.ports) &&
+    value.ports.every((port) => integerInRange(port, 1, 65_535)) &&
+    (value.agentId === null || isIdentifier(value.agentId))
+  );
+}
+
 export const COMPUTER_USE_STATUSES = [
   "unsupported",
   "driver-missing",
   "permissions-required",
+  "restart-required",
   "ready",
   "error",
 ] as const;
@@ -250,69 +352,28 @@ export interface ComputerUsePermission {
   granted: boolean;
 }
 
-/**
- * What the Computer Use panel draws.
- *
- * The permissions are a list rather than two fields so the panel can render them in one loop, and
- * so a driver that gains a third grant needs no new shape here.
- */
 export interface ComputerUseState {
   status: ComputerUseStatus;
   permissions: readonly ComputerUsePermission[];
   message: string | null;
 }
 
-/**
- * The application the user drags into a System Settings list, as the help window draws it.
- *
- * macOS grants a permission to an application bundle, and the list in System Settings does not
- * always offer the one that asked. Dragging the bundle in is the way past that, so the window has
- * to show the user the same name and icon the list will show - which in a development build is
- * Electron, not Dani-Dex. `null` where there is no bundle to drag: every system that is not macOS,
- * and a build that runs from a directory rather than an application.
- */
 export interface ComputerUsePermissionApp {
   name: string;
   iconDataUrl: string | null;
 }
 
-/**
- * Where the rim is drawn inside the overlay window, and what it is drawn around.
- *
- * The overlay covers the whole desktop and never moves, so the rectangle here - in the overlay's
- * own pixels, from its top-left corner - is the only thing that follows the window an agent works
- * in. Sending it costs a repaint, where moving the overlay would cost a window move on every
- * frame the user drags the target.
- */
 export interface ComputerUseHighlightPlacement {
   x: number;
   y: number;
   width: number;
   height: number;
-  /** The corner radius of the window under the rim, so the rim follows that window's shape. */
   cornerRadius: number;
-  /** Which application window the agent works in, for the screen reader. Never logged. */
   windowTitle: string;
-  /**
-   * Where Dani-Dex draws the agent cursor, or `null` when it draws none.
-   *
-   * The driver draws a cursor of its own, and two cursors for one agent say two places. So this
-   * carries a point only while the driver draws nothing, and only while the agent's last action is
-   * recent enough to still say where it works.
-   */
   cursor: ComputerUseCursorPoint | null;
-  /**
-   * The parts of the rim that a window in front of the marked one covers, which are cut out of it.
-   *
-   * The overlay floats over every window, because macOS keeps no window of one application between
-   * two windows of another. Drawn as it is, the rim would lie over whatever covers the window it
-   * marks and read as a rim around that other window instead. These rectangles say where the rim
-   * has to give way, and they never overlap each other, so cutting them out takes one rule.
-   */
   covered: readonly ComputerUseCoveredArea[];
 }
 
-/** A rectangle of the rim another window covers, in the overlay's own pixels. */
 export interface ComputerUseCoveredArea {
   x: number;
   y: number;
@@ -320,10 +381,19 @@ export interface ComputerUseCoveredArea {
   height: number;
 }
 
-/** A point in the overlay's own pixels, from its top-left corner, like the rim above. */
 export interface ComputerUseCursorPoint {
   x: number;
   y: number;
+}
+
+export interface ChatWindowTarget {
+  serverId: string;
+  agentId: string;
+}
+
+export interface SentMessageStats {
+  firstSentAt: string | null;
+  sentCount: number;
 }
 
 export type ExternalDestination =
@@ -331,10 +401,29 @@ export type ExternalDestination =
   | "opencode-auth"
   | "agent-setup"
   | "claude-install"
+  | "hermes-install"
   | "feedback"
+  | "report-problem"
   | "message"
-  // Not a page: the macOS pane that grants Dani-Dex screen recording. It is here rather than behind
-  // its own endpoint because the destination is still a fixed address the renderer only names.
-  | "import-chatgpt"
-  | "import-claude"
+  | "changelog"
+  | "guides"
+  | "discord"
+  | "github"
+  | "x"
+  | "threads"
+  | "instagram"
+  | "tiktok"
+  | "facebook"
+  | "linkedin"
+  | "reddit"
+  | "x-post"
+  | "threads-post"
+  | "linkedin-post"
+  | "reddit-post"
+  | "facebook-post"
+  | "instagram-post"
+  | "tiktok-post"
+  | "grok-bot-export"
+  | "hosted-server-contact"
+  | "download"
   | "mac-screen-recording";

@@ -1,34 +1,42 @@
-/**
- * Runs every shutdown step in declared order, including services registered during startup.
- * Late steps join the remaining queue; steps registered after completion are best-effort.
- * Explicit order preserves browser state flushing and provider/service dependencies.
- */
-
 export interface TeardownRegistryOptions {
   reportError: (name: string, error: unknown) => void;
+  stepTimeoutMs?: number;
 }
+
+const DEFAULT_STEP_TIMEOUT_MS = 10_000;
 
 interface TeardownStep {
   order: number;
   name: string;
   run: () => PromiseLike<unknown> | unknown;
+  afterAbandonedSteps: boolean;
+}
+
+export interface TeardownStepOptions {
+  afterAbandonedSteps?: boolean;
 }
 
 export class TeardownRegistry {
   readonly #reportError: (name: string, error: unknown) => void;
+  readonly #stepTimeoutMs: number;
   #steps: TeardownStep[] = [];
-  /** The sorted steps a drain in progress has not reached yet. Late pushes are spliced into it. */
   #pending: TeardownStep[] | null = null;
   #closed = false;
   #tail: Promise<void> = Promise.resolve();
+  readonly #abandoned = new Set<Promise<unknown>>();
 
-  constructor({ reportError }: TeardownRegistryOptions) {
+  constructor({ reportError, stepTimeoutMs = DEFAULT_STEP_TIMEOUT_MS }: TeardownRegistryOptions) {
     this.#reportError = reportError;
+    this.#stepTimeoutMs = stepTimeoutMs;
   }
 
-  /** `order` is the position in the shutdown sequence, not the position in this call sequence. */
-  push(order: number, name: string, run: () => PromiseLike<unknown> | unknown): void {
-    const step = { order, name, run };
+  push(
+    order: number,
+    name: string,
+    run: () => PromiseLike<unknown> | unknown,
+    { afterAbandonedSteps = false }: TeardownStepOptions = {},
+  ): void {
+    const step = { order, name, run, afterAbandonedSteps };
     if (!this.#closed) {
       this.#steps.push(step);
       return;
@@ -42,15 +50,11 @@ export class TeardownRegistry {
     this.#tail = this.#tail.then(() => this.#runStep(step));
   }
 
-  /** Idempotent: a second call awaits the first run rather than starting another. */
   async runAll(): Promise<void> {
     if (!this.#closed) {
       this.#closed = true;
       this.#tail = this.#tail.then(() => this.#drain());
     }
-    // Construction that was already in flight when the quit arrived keeps registering steps while
-    // this runs, and each one extends the tail. Wait until awaiting it leaves nothing new behind;
-    // the loop terminates because only construction pushes, and construction is finite.
     let awaited: Promise<void> | null = null;
     while (awaited !== this.#tail) {
       awaited = this.#tail;
@@ -62,20 +66,41 @@ export class TeardownRegistry {
     const pending = [...this.#steps].sort((left, right) => left.order - right.order);
     this.#steps = [];
     this.#pending = pending;
-    // `shift` rather than iteration: `push` splices into this same array while the loop awaits.
     for (let step = pending.shift(); step; step = pending.shift()) await this.#runStep(step);
     this.#pending = null;
   }
 
   async #runStep(step: TeardownStep): Promise<void> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const running = (step.afterAbandonedSteps ? this.#abandonedSettled() : Promise.resolve()).then(() => step.run());
+    const timedOut = new Promise<void>((resolve) => {
+      timer = setTimeout(() => {
+        this.#reportError(step.name, new Error(`It did not stop within ${this.#stepTimeoutMs} ms.`));
+        const abandoned = running.then(
+          () => undefined,
+          (error) => this.#reportError(step.name, error),
+        );
+        this.#abandoned.add(abandoned);
+        void abandoned.finally(() => this.#abandoned.delete(abandoned));
+        resolve();
+      }, this.#stepTimeoutMs);
+    });
     try {
-      await step.run();
+      await Promise.race([running, timedOut]);
     } catch (error) {
-      try {
-        this.#reportError(step.name, error);
-      } catch {
-        // A failed log sink must not prevent the remaining services from stopping.
-      }
+      this.#reportError(step.name, error);
+    } finally {
+      clearTimeout(timer);
     }
+  }
+
+  async #abandonedSettled(): Promise<void> {
+    if (this.#abandoned.size === 0) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const waitEnded = new Promise<void>((resolve) => {
+      timer = setTimeout(resolve, this.#stepTimeoutMs / 2);
+    });
+    await Promise.race([Promise.allSettled([...this.#abandoned]), waitEnded]);
+    clearTimeout(timer);
   }
 }

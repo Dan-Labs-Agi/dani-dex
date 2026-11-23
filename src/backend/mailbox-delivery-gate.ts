@@ -1,4 +1,4 @@
-/** Prevents delivery insertion across asynchronous agent deletion and attachment preparation. */
+import { sourceText } from "@openbot/i18n/source";
 export class MailboxDeliveryGate {
   readonly #blockedAgents = new Set<string>();
   readonly #versions = new Map<string, number>();
@@ -15,7 +15,7 @@ export class MailboxDeliveryGate {
       if (
         agentIds.some((id, index) => this.#blockedAgents.has(id) || (this.#versions.get(id) ?? 0) !== versions[index])
       ) {
-        throw new Error("The recipient is being deleted. Retry after deletion finishes.");
+        throw new Error(sourceText("error.backend.recipientDeleting"));
       }
     };
     validate();

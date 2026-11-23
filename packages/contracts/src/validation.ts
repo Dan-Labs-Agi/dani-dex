@@ -1,12 +1,11 @@
 import { INPUT_LIMITS } from "./input-limits";
-import { DANI_DEX_TEAM_HOST_SUFFIX } from "./online-services";
 
 const DOMAIN_LABEL_PATTERN = /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/iu;
 const EMAIL_LOCAL_PART_PATTERN = /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+$/u;
 export const ONE_TIME_CODE_ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
 export const ONE_TIME_CODE_LENGTH = 8;
 const UUID_V4_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu;
-const TEAM_HOST_LABEL_PATTERN = /^([a-z0-9](?:[a-z0-9-]*[a-z0-9])?)-([a-z2-7]{8})-host$/u;
+const TEAM_HOST_PATTERN = /^([a-z0-9](?:[a-z0-9-]*[a-z0-9])?)-([a-z2-7]{8})-host\.openbot\.run$/u;
 const TEAM_HOST_SLUG_MIN_LENGTH = 6;
 const TEAM_HOST_SLUG_MAX_LENGTH = 44;
 const ACCOUNT_NAME_UNSAFE_CHARACTER_PATTERN = /[\p{Cc}\p{Cs}\p{Zl}\p{Zp}]/u;
@@ -98,10 +97,8 @@ export function isUuidV4(value: string): boolean {
   return UUID_V4_PATTERN.test(value);
 }
 
-/** A published team host's name. Always false while Dan Lab publishes no team hosts. */
-export function isDaniDexTeamApiHostname(value: string): boolean {
-  if (DANI_DEX_TEAM_HOST_SUFFIX === null || !value.endsWith(DANI_DEX_TEAM_HOST_SUFFIX)) return false;
-  const match = TEAM_HOST_LABEL_PATTERN.exec(value.slice(0, -DANI_DEX_TEAM_HOST_SUFFIX.length));
+export function isOpenBotTeamApiHostname(value: string): boolean {
+  const match = TEAM_HOST_PATTERN.exec(value);
   return Boolean(match && !value.startsWith("vnc-") && isValidTeamHostSlug(match[1]));
 }
 
@@ -127,22 +124,11 @@ function isValidTeamHostSlug(value: string | undefined): boolean {
   );
 }
 
-/**
- * The directory name a pre-rename build gave this agent, or the id unchanged when no pre-rename build could
- * have minted it.
- *
- * The UUID suffix is what makes this reversible, and it is the whole safety argument. Only the app mints
- * `agent-<uuid>`, so only such an id is guaranteed to have been `bot-<uuid>` before migration v13. An id a
- * user or an imported `bots.json` chose is an ordinary word: `agent-research` translated to `bot-research`
- * names a directory that may well belong to a *different* agent, and callers here delete directories
- * recursively.
- */
 export function legacyAgentId(agentId: string): string {
   if (!agentId.startsWith("agent-") || !isGeneratedAgentId(agentId)) return agentId;
   return `bot-${agentId.slice("agent-".length)}`;
 }
 
-/** Whether this id is one the app minted for itself, in either the pre- or post-rename spelling. */
 export function isGeneratedAgentId(agentId: string): boolean {
   const prefix = agentId.startsWith("agent-") ? "agent-" : agentId.startsWith("bot-") ? "bot-" : null;
   return prefix !== null && isUuidV4(agentId.slice(prefix.length));

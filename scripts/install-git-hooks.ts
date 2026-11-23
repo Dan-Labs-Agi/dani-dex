@@ -1,7 +1,7 @@
 import { spawnSync } from "node:child_process";
-import { createDaniDexLogger } from "@dani-dex/logging";
+import { createOpenBotLogger } from "@openbot/logging";
 
-const logger = createDaniDexLogger("install-git-hooks");
+const logger = createOpenBotLogger("install-git-hooks");
 
 const repositoryRoot = runGit(["rev-parse", "--show-toplevel"], false);
 if (repositoryRoot === undefined) {
@@ -9,7 +9,7 @@ if (repositoryRoot === undefined) {
   process.exit(0);
 }
 
-const result = spawnSync("git", ["config", "core.hooksPath", ".github"], {
+const result = spawnSync("git", ["config", "core.hooksPath", ".githooks"], {
   cwd: repositoryRoot,
   stdio: "inherit",
 });
@@ -18,7 +18,7 @@ if (result.status !== 0) {
   process.exit(result.status ?? 1);
 }
 
-logger.info("Git hooks enabled from .github.");
+logger.info("Git hooks enabled from .githooks.");
 
 function runGit(args: string[], inheritOutput: boolean): string | undefined {
   const result = spawnSync("git", args, {

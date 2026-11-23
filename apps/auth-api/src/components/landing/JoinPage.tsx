@@ -1,86 +1,91 @@
-import { AppLogo } from "@dani-dex/brand";
-import { DANI_DEX_INVITE_ORIGIN, toDaniDexInviteUrl } from "@dani-dex/contracts/invite-links";
-import { createSignal, onSettled, Show } from "solid-js";
+import { AppLogo } from "@openbot/brand";
+import { createWebAppInvitePath, OPENBOT_INVITE_ORIGIN, toOpenBotInviteUrl } from "@openbot/contracts/invite-links";
+import { createSignal, For, onSettled, Show } from "solid-js";
 import { landingAnalytics } from "../../lib/analytics";
 import { detectDownloadPlatform } from "../../lib/download-platforms";
-import { DANI_DEX_DOWNLOAD_LINKS } from "../../lib/landing-links";
+import { OPENBOT_DOWNLOAD_LINKS } from "../../lib/landing-links";
+import { createOpenAppFallback, OpenAppFallbackDialog } from "../transactional/OpenAppFallback";
+import type { JoinLink, JoinPageText } from "../transactional/page-text";
+import { TransactionalPage } from "../transactional/TransactionalPage";
 import { Button } from "../ui/button";
 
-export function JoinPage() {
+export function JoinPage(props: { lang: string; text: JoinPageText }) {
   const [openUrl, setOpenUrl] = createSignal("");
-  const [downloadUrl, setDownloadUrl] = createSignal<string>(DANI_DEX_DOWNLOAD_LINKS.macos);
+  const [browserUrl, setBrowserUrl] = createSignal("");
+  const [downloadUrl, setDownloadUrl] = createSignal<string>(OPENBOT_DOWNLOAD_LINKS.macos);
+  const [mobile, setMobile] = createSignal(false);
   const [invalid, setInvalid] = createSignal(false);
+  const fallback = createOpenAppFallback();
 
   onSettled(() => {
-    const platform = detectDownloadPlatform(globalThis.navigator) === "windows" ? "windows" : "macos";
+    setMobile(
+      /android|iphone|ipad|ipod/iu.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1),
+    );
+    const platform = detectDownloadPlatform(globalThis.navigator) ?? "macos";
     let validInvite = true;
     try {
       const pageUrl = new URL(window.location.href);
-      // No Dan Lab invite origin is set yet, so no web page is a canonical invitation.
-      if (DANI_DEX_INVITE_ORIGIN === null) throw new Error("No invitation origin is configured.");
-      const canonicalUrl = new URL(`${pageUrl.pathname}${pageUrl.search}`, DANI_DEX_INVITE_ORIGIN);
-      setOpenUrl(toDaniDexInviteUrl(canonicalUrl.toString()));
+      const canonicalUrl = new URL(`${pageUrl.pathname}${pageUrl.search}`, OPENBOT_INVITE_ORIGIN);
+      setOpenUrl(toOpenBotInviteUrl(canonicalUrl.toString()));
+      setBrowserUrl(createWebAppInvitePath(canonicalUrl.toString()));
     } catch {
       validInvite = false;
       setInvalid(true);
     }
-    if (platform === "windows") setDownloadUrl(DANI_DEX_DOWNLOAD_LINKS.windows);
+    setDownloadUrl(OPENBOT_DOWNLOAD_LINKS[platform]);
     const cleanup = landingAnalytics.startJoin(document, window.location.hostname, { validInvite, platform });
     return cleanup;
   });
 
+  const noApp = () => (mobile() ? props.text.noAppMobile : props.text.noApp);
+  const linkHref = (link: JoinLink) => (link === "browser" ? browserUrl() : downloadUrl());
+  const armFallback = () => {
+    if (!mobile()) fallback.arm();
+  };
+
   return (
-    <main class="join-page">
-      <a class="landing-brand join-page-brand" href="/" aria-label="Dani-Dex home">
-        <AppLogo variant="production" class="landing-brand-logo" />
-        <span>Dani-Dex</span>
-      </a>
+    <TransactionalPage titleId="join-title" lang={props.lang}>
+      <AppLogo variant="production" animation="blink" class="join-card-logo" />
+      <p class="join-card-eyebrow">{props.text.eyebrow}</p>
+      <h1 id="join-title">{props.text.title}</h1>
+      <p class="join-card-copy">{props.text.intro}</p>
 
-      <section class="join-card" aria-labelledby="join-title">
-        <div class="join-card-signal" aria-hidden="true">
-          <span />
-          <i />
-          <span />
+      <Show when={!invalid()} fallback={<p class="join-card-error">{props.text.invalid}</p>}>
+        <div class="join-card-actions join-card-actions-full">
+          <Show
+            when={openUrl()}
+            fallback={
+              <Button as="button" type="button" disabled variant="primary" size="lg" icon="open">
+                {props.text.open}
+              </Button>
+            }
+          >
+            {(href) => (
+              <Button href={href()} variant="primary" size="lg" icon="open" onClick={armFallback}>
+                {props.text.open}
+              </Button>
+            )}
+          </Show>
         </div>
-        <AppLogo variant="production" animation="blink" class="join-card-logo" />
-        <p class="join-card-eyebrow">Private invitation</p>
-        <h1 id="join-title">Connect to an Dani-Dex host</h1>
-        <p class="join-card-copy">
-          Open this one-time invitation in Dani-Dex. The app will verify the host and ask for confirmation before it
-          connects.
-        </p>
-
-        <Show
-          when={!invalid()}
-          fallback={
-            <p class="join-card-error">
-              This invitation link is invalid or incomplete. Ask the host for a new invitation.
-            </p>
-          }
-        >
-          <div class="join-card-actions">
-            <Show
-              when={openUrl()}
-              fallback={
-                <span class="landing-button landing-button-primary landing-button-lg join-card-disabled">
-                  Open Dani-Dex
-                </span>
-              }
-            >
-              {(href) => (
-                <Button href={href()} variant="primary" size="lg" icon="open">
-                  Open Dani-Dex
-                </Button>
+        <Show when={browserUrl()}>
+          <p class="join-card-alternatives">
+            <For each={noApp()}>
+              {(part) => (
+                <Show when={part.link} fallback={part.text}>
+                  {(link) => <a href={linkHref(link())}>{part.text}</a>}
+                </Show>
               )}
-            </Show>
-            <Button href={downloadUrl()} variant="secondary" size="lg" icon="download">
-              Download Dani-Dex
-            </Button>
-          </div>
+            </For>
+          </p>
         </Show>
+      </Show>
 
-        <p class="join-card-note">Do not forward this link. It can be used only once and expires after 24 hours.</p>
-      </section>
-    </main>
+      <Show when={mobile()}>
+        <p class="join-card-note">{props.text.mobile}</p>
+      </Show>
+      <p class="join-card-note">{props.text.email}</p>
+      <OpenAppFallbackDialog fallback={fallback} text={props.text.openAppFallback} />
+    </TransactionalPage>
   );
 }

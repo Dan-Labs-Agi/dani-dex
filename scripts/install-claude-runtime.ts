@@ -1,15 +1,22 @@
 import { execFileSync } from "node:child_process";
-import { chmod, copyFile, cp, mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { chmod, copyFile, mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
-import { createDaniDexLogger } from "@dani-dex/logging";
+import { join, resolve } from "node:path";
+import { createOpenBotLogger } from "@openbot/logging";
 import { z } from "zod";
 import { type AgentRuntimeLock, loadAgentRuntimeLock } from "./agent-runtime-lock";
 import { rejectNonRegularFiles, sha256 } from "./remote-desktop-runtime-release";
+import {
+  download,
+  escapeRegExp,
+  installValidatedTree,
+  isCurrentInstallation,
+  safeArchivePathParts,
+} from "./runtime-install";
 
-const logger = createDaniDexLogger("install-claude-runtime");
+const logger = createOpenBotLogger("install-claude-runtime");
 
-export type ClaudeRuntimeTarget = "darwin-arm64" | "linux-x64" | "win32-x64";
+export type ClaudeRuntimeTarget = "darwin-arm64" | "darwin-x64" | "linux-x64" | "linux-arm64" | "win32-x64";
 
 const packageManifestSchema = z.object({
   name: z.string(),
@@ -20,7 +27,7 @@ const installedManifestSchema = z.object({
   layoutVersion: z.literal(1),
   version: z.string(),
   sdkVersion: z.string(),
-  target: z.enum(["darwin-arm64", "linux-x64", "win32-x64"]),
+  target: z.enum(["darwin-arm64", "darwin-x64", "linux-x64", "linux-arm64", "win32-x64"]),
   executable: z.string(),
 });
 
@@ -41,24 +48,19 @@ export async function installClaudeRuntime(
   const artifact = lock.claude.artifacts[target];
   const targetRoot = claudeRuntimePath(outputRoot, target);
 
-  if (await isCurrentInstallation(targetRoot, target, lock)) {
+  if (await isCurrentInstallation(() => verifyClaudeRuntime(targetRoot, target, lock))) {
     await writeMetadata(outputRoot, targetRoot, lock);
     logger.info(`Using verified bundled Claude Code ${lock.claude.version} for ${target}.`);
     return "current";
   }
 
   const url = `${lock.claude.registry}/${artifact.package}/-/${artifact.asset}`;
-  const response = await fetchImpl(url, {
-    headers: { "User-Agent": "Dani-Dex-runtime-installer" },
-    redirect: "follow",
-  });
-  if (!response.ok) throw new Error(`Claude runtime download failed with HTTP ${response.status}.`);
-  const archiveBytes = Buffer.from(await response.arrayBuffer());
+  const archiveBytes = await download(fetchImpl, url, "Claude runtime");
   if (sha256(archiveBytes) !== artifact.assetSha256) {
     throw new Error(`The ${target} Claude runtime archive checksum is invalid.`);
   }
 
-  const temporaryRoot = await mkdtemp(join(tmpdir(), "dani-dex-claude-install-"));
+  const temporaryRoot = await mkdtemp(join(tmpdir(), "openbot-claude-install-"));
   try {
     const archive = join(temporaryRoot, artifact.asset);
     const extracted = join(temporaryRoot, "extracted");
@@ -86,13 +88,22 @@ export function claudeRuntimeTarget(
   architecture: string = process.arch,
 ): ClaudeRuntimeTarget {
   const target = `${platform}-${architecture}`;
-  if (target === "darwin-arm64" || target === "linux-x64" || target === "win32-x64") return target;
+  if (
+    target === "darwin-arm64" ||
+    target === "darwin-x64" ||
+    target === "linux-x64" ||
+    target === "linux-arm64" ||
+    target === "win32-x64"
+  )
+    return target;
   throw new Error(`Unsupported bundled Claude target: ${target}`);
 }
 
 export function claudeRuntimePath(root: string, target: ClaudeRuntimeTarget): string {
   if (target === "darwin-arm64") return join(root, "mac", "arm64");
+  if (target === "darwin-x64") return join(root, "mac", "x64");
   if (target === "linux-x64") return join(root, "linux", "x64");
+  if (target === "linux-arm64") return join(root, "linux", "arm64");
   return join(root, "win", "x64");
 }
 
@@ -176,37 +187,7 @@ async function stageClaudeRuntime(
 }
 
 function validateArchivePath(name: string): void {
-  if (name.includes("\0") || name.includes("\\")) throw new Error(`Unsafe Claude archive path: ${name}`);
-  const normalized = name.replace(/\/+$/u, "");
-  if (!normalized || normalized.startsWith("/") || /^[A-Za-z]:/u.test(normalized)) {
-    throw new Error(`Unsafe Claude archive path: ${name}`);
-  }
-  const parts = normalized.split("/");
-  if (parts.some((part) => !part || part === "." || part === "..") || parts[0] !== "package") {
-    throw new Error(`Unsafe Claude archive path: ${name}`);
-  }
-}
-
-async function isCurrentInstallation(
-  root: string,
-  target: ClaudeRuntimeTarget,
-  lock: AgentRuntimeLock,
-): Promise<boolean> {
-  try {
-    await verifyClaudeRuntime(root, target, lock);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function installValidatedTree(source: string, destination: string): Promise<void> {
-  const temporaryTarget = join(dirname(destination), `.${destination.split(/[\\/]/u).at(-1)}.installing`);
-  await mkdir(dirname(destination), { recursive: true });
-  await rm(temporaryTarget, { recursive: true, force: true });
-  await cp(source, temporaryTarget, { recursive: true });
-  await rm(destination, { recursive: true, force: true });
-  await rename(temporaryTarget, destination);
+  if (safeArchivePathParts(name, "Claude")[0] !== "package") throw new Error(`Unsafe Claude archive path: ${name}`);
 }
 
 async function writeMetadata(outputRoot: string, targetRoot: string, lock: AgentRuntimeLock): Promise<void> {
@@ -219,10 +200,6 @@ async function writeMetadata(outputRoot: string, targetRoot: string, lock: Agent
       `${JSON.stringify({ name: "claude-code", ...lock.claude }, null, 2)}\n`,
     ),
   ]);
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }
 
 if (import.meta.main) {

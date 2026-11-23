@@ -1,8 +1,36 @@
-import type { ConversationSnapshot } from "@dani-dex/contracts/ipc";
+import type { ConversationSnapshot } from "@openbot/contracts/ipc";
+import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
+import { SIDEBAR_FOLDERS_ROUTES } from "@openbot/contracts/team-protocol/sidebar-folders-v1";
+import { type SourceMessages, sourceText } from "@openbot/i18n/source";
+import { errorReference } from "@openbot/user-errors/reference";
+import { Effect, Result, Schema } from "effect";
+import { runTeamEffect } from "./effect-boundary";
 
-export const REMOTE_RETRY_INTERVAL_MS = 10_000;
+class RemoteRecoveryError extends Schema.TaggedError<RemoteRecoveryError>()("RemoteRecoveryError", {
+  message: Schema.String,
+  reference: Schema.optional(Schema.NullOr(Schema.String)),
+}) {}
+
+const recoveryCall = <A>(operation: () => Promise<A>) =>
+  Effect.tryPromise({
+    try: operation,
+    catch: (error) =>
+      new RemoteRecoveryError({
+        message: error instanceof Error ? error.message : sourceText("error.remote.operationFailed"),
+        reference: errorReference(error),
+      }),
+  });
+
+export const REMOTE_RETRY_INTERVAL_MS = 2_000;
 export const REMOTE_RETRY_LIMIT = 5;
-export const REMOTE_RETRY_COOLDOWN_MS = 120_000;
+export const REMOTE_RETRY_COOLDOWN_MS = 30_000;
+const REMOTE_RETRY_JITTER = 0.2;
+
+function remoteRetryDelay(attempt: number): number {
+  const delay =
+    attempt >= REMOTE_RETRY_LIMIT ? REMOTE_RETRY_COOLDOWN_MS : REMOTE_RETRY_INTERVAL_MS * 2 ** Math.max(0, attempt - 1);
+  return Math.round(delay * (1 + REMOTE_RETRY_JITTER * Math.random()));
+}
 
 export interface RemoteRecoveryStatus {
   phase: "connecting" | "waiting" | "cooldown" | "online" | "suspended";
@@ -10,85 +38,142 @@ export interface RemoteRecoveryStatus {
   remainingSeconds: number;
 }
 
-export type RemoteConnectionStage =
-  | "preferences"
-  | "connection"
-  | "compatibility"
-  | "agents"
-  | "reads"
-  | "conversations";
+export type RemoteConnectionStage = "preferences" | "connection" | "compatibility" | "agents" | "reads";
 
-const CONNECTION_STAGES: Record<RemoteConnectionStage, string> = {
-  preferences: "Loading local chat preferences",
-  connection: "Connecting to the desktop",
-  compatibility: "Checking desktop compatibility",
-  agents: "Loading agents",
-  reads: "Loading read status",
-  conversations: "Loading conversations",
-};
+const CONNECTION_STAGES = {
+  preferences: "status.remote.stagePreferences",
+  connection: "status.remote.stageConnection",
+  compatibility: "status.remote.stageCompatibility",
+  agents: "status.remote.stageAgents",
+  reads: "status.remote.stageReads",
+} as const satisfies Record<RemoteConnectionStage, keyof SourceMessages>;
 
-// Only fixed protocol messages may appear in diagnostics. Arbitrary server or
-// decoder errors can contain request bodies, credentials, or conversation text.
-const SAFE_CONNECTION_ERRORS = new Set([
-  "The app is in the background.",
-  "The connection was replaced.",
-  "The selected server is offline.",
-  "The server disconnected.",
-  "The desktop went offline.",
-  "The desktop did not connect.",
-  "The desktop connection needs to be restored.",
-  "The host already has an active remote session.",
-  "Too many active remote connections.",
-  "The server request failed.",
-  "The remote session is not active.",
-  "The account session has ended.",
-  "The host is offline.",
-  "The remote session ended.",
-  "Remote ticket is invalid or expired.",
-  "The desktop identity could not be verified.",
-  "The host sent data before authentication.",
-  "The host event stream has a gap.",
-  "The host returned a malformed event.",
-  "Signal returned an invalid message.",
-  "The saved chat preferences could not be read.",
-  "The desktop request timed out.",
-  "The remote session is invalid.",
-  "The connection ticket is invalid.",
-  "The WebRTC channel is not open.",
-  "Signal is offline.",
-  "Update Dani-Dex Mobile or the desktop app before connecting.",
-]);
+const SAFE_CONNECTION_ERRORS = new Set(
+  (
+    [
+      "error.remote.appInBackground",
+      "error.remote.connectionReplaced",
+      "error.remote.connectionDropped",
+      "error.remote.selectedServerOffline",
+      "error.remote.serverDisconnected",
+      "error.remote.desktopOffline",
+      "error.remote.desktopDidNotConnect",
+      "error.remote.desktopRestoreNeeded",
+      "error.remote.hostSessionActive",
+      "error.remote.tooManyConnections",
+      "error.remote.serverRequestFailed",
+      "error.remote.sessionNotActive",
+      "error.remote.accountSessionEnded",
+      "error.remote.hostOffline",
+      "error.remote.sessionEnded",
+      "error.remote.ticketInvalidOrExpired",
+      "error.remote.desktopIdentityNotVerified",
+      "error.remote.dataBeforeAuth",
+      "error.remote.eventStreamGap",
+      "error.remote.malformedEvent",
+      "error.remote.signalInvalidMessage",
+      "error.remote.preferencesUnreadable",
+      "error.remote.desktopRequestTimeout",
+      "error.remote.sessionInvalid",
+      "error.remote.ticketInvalid",
+      "error.remote.channelNotOpen",
+      "error.remote.signalOffline",
+      "error.remote.mobileUpdateRequired",
+      "error.team.hostUpdateRequired",
+      "error.remote.hostBusy",
+      "error.remote.signalPermissionDenied",
+      "error.remote.signalProtocolError",
+      "error.remote.signalRefused",
+      "error.remote.signalClosed",
+      "error.remote.relayUnavailable",
+      "error.remote.iceFailed",
+      "error.remote.connectionServiceUnreachable",
+      "error.remote.serverAnswerTimeout",
+      "error.remote.iceDisconnected",
+      "error.remote.directoryUnreachable",
+      "error.remote.directoryTimeout",
+      "error.remote.inviteAlreadyUsed",
+      "error.remote.inviteNotFound",
+      "error.remote.memberLimitReached",
+      "error.remote.licenseUsersFull",
+      "error.remote.hostNotRegistered",
+      "error.remote.membershipEnded",
+      "error.remote.accountSessionInactive",
+      "error.remote.hostOtherAccount",
+      "error.remote.remoteNotConfigured",
+      "error.remote.hostKeyMissing",
+      "error.remote.connectionNotStarted",
+    ] as const satisfies readonly (keyof SourceMessages)[]
+  ).map((key) => sourceText(key)),
+);
 
-export function remoteConnectionFailure(stage: RemoteConnectionStage, error: unknown): string {
+const NUMBER_MARK = "\u0000";
+function numberTemplate(text: string): RegExp {
+  const [before = "", after = ""] = text.split(NUMBER_MARK);
+  const literal = (part: string) => part.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
+  return new RegExp(`^${literal(before)}\\d{1,6}${literal(after)}$`, "u");
+}
+
+const SAFE_NUMBER_CONNECTION_ERRORS = [
+  numberTemplate(sourceText("error.remote.signalRateLimited", { seconds: NUMBER_MARK })),
+  numberTemplate(sourceText("error.remote.hostRefused", { status: NUMBER_MARK })),
+  numberTemplate(sourceText("error.remote.requestFailedStatus", { status: NUMBER_MARK })),
+];
+
+export function isSafeConnectionError(message: string): boolean {
+  return SAFE_CONNECTION_ERRORS.has(message) || SAFE_NUMBER_CONNECTION_ERRORS.some((pattern) => pattern.test(message));
+}
+
+export interface RemoteConnectionFailure {
+  message: string;
+  reference: string | null;
+}
+
+export function remoteConnectionFailureDetails(stage: RemoteConnectionStage, error: unknown): RemoteConnectionFailure {
   const reason =
-    error instanceof Error && SAFE_CONNECTION_ERRORS.has(error.message)
+    error instanceof Error && isSafeConnectionError(error.message)
       ? error.message
-      : "Could not complete this connection step.";
-  return `${CONNECTION_STAGES[stage]}: ${reason}`;
+      : sourceText("error.remote.connectionStepFailed");
+  return { message: sourceText(CONNECTION_STAGES[stage], { reason }), reference: errorReference(error) };
 }
 
 export function remoteRecoveryMessage(status: RemoteRecoveryStatus, failure?: string | null): string | null {
   if (status.phase === "online") return null;
-  const detail = failure ? `\n${failure}` : "";
-  // No countdown, because nothing is scheduled. Retrying is what this phase exists to stop.
-  if (status.phase === "suspended") return `Update Dani-Dex Mobile or the desktop app before connecting.${detail}`;
+  const detail = failure || null;
+  if (status.phase === "suspended") {
+    return detail
+      ? sourceText("status.remote.suspendedDetail", { detail })
+      : sourceText("error.remote.mobileUpdateRequired");
+  }
   if (status.phase === "cooldown") {
     const minutes = Math.floor(status.remainingSeconds / 60);
     const seconds = String(status.remainingSeconds % 60).padStart(2, "0");
-    return `Connection failed after ${REMOTE_RETRY_LIMIT} attempts. Retrying in ${minutes}:${seconds}.${detail}`;
+    const params = { limit: REMOTE_RETRY_LIMIT, minutes, seconds };
+    return detail
+      ? sourceText("status.remote.cooldownDetail", { ...params, detail })
+      : sourceText("status.remote.cooldown", params);
+  }
+  const count = status.remainingSeconds;
+  if (status.phase === "waiting" && status.attempt === 0) {
+    return detail
+      ? sourceText("status.remote.connectionLostDetail", { count, detail })
+      : sourceText("status.remote.connectionLost", { count });
   }
   if (status.phase === "waiting") {
-    const reason = status.attempt === 0 ? "Connection lost." : "Connection attempt failed.";
-    return `${reason} Retrying in ${status.remainingSeconds}s.${detail}`;
+    return detail
+      ? sourceText("status.remote.attemptFailedDetail", { count, detail })
+      : sourceText("status.remote.attemptFailed", { count });
   }
-  return `Reconnecting ${status.attempt}/${REMOTE_RETRY_LIMIT}${detail}`;
+  return detail
+    ? sourceText("status.remote.reconnectingDetail", { attempt: status.attempt, count: REMOTE_RETRY_LIMIT, detail })
+    : sourceText("status.remote.reconnecting", { attempt: status.attempt, count: REMOTE_RETRY_LIMIT });
 }
 
-/** One recovery attempt at a time. Background time never starts network work. */
 export function createRemoteConnectionRecovery(
-  connect: () => Promise<void>,
+  connect: (check: boolean) => Promise<void>,
   onError: (error: unknown) => void,
   onStatus: (status: RemoteRecoveryStatus) => void = () => {},
+  startingRetryDelay: () => number | null = () => null,
 ) {
   let active = false;
   let disposed = false;
@@ -98,8 +183,11 @@ export function createRemoteConnectionRecovery(
   let retryRequested = false;
   let refreshRequested = false;
   let interrupted = false;
+  let checking = false;
+  let checkOnReturn = false;
   let attempt = 0;
   let retryAt: number | null = null;
+  let retryDelay: number | null = null;
   let timer: ReturnType<typeof setTimeout> | null = null;
 
   function cancelTimer() {
@@ -107,15 +195,22 @@ export function createRemoteConnectionRecovery(
     timer = null;
   }
 
-  function scheduleRetry() {
+  function startRun() {
+    void runTeamEffect(run());
+  }
+
+  function scheduleRetry(start: () => void = startRun) {
     if (disposed || suspended) return;
-    retryAt ??= Date.now() + (attempt >= REMOTE_RETRY_LIMIT ? REMOTE_RETRY_COOLDOWN_MS : REMOTE_RETRY_INTERVAL_MS);
+    const startingDelay = startingRetryDelay();
+    retryAt ??= Date.now() + (startingDelay ?? retryDelay ?? remoteRetryDelay(attempt));
+    if (startingDelay !== null) retryAt = Math.min(retryAt, Date.now() + startingDelay);
+    retryDelay = null;
     if (!active) return;
     const remaining = Math.max(0, retryAt - Date.now());
     if (remaining === 0 && !running) {
       retryAt = null;
       if (attempt >= REMOTE_RETRY_LIMIT) attempt = 0;
-      void run();
+      start();
       return;
     }
     onStatus({
@@ -123,10 +218,7 @@ export function createRemoteConnectionRecovery(
       attempt,
       remainingSeconds: Math.ceil(remaining / 1000),
     });
-    // Offline can arrive before the bridge finishes its command. Show the failure
-    // immediately, but let run's finally start an overdue retry after cleanup.
     if (timer !== null || remaining === 0) return;
-    // The one-second tick only updates the UI; network work starts at the deadline.
     timer = setTimeout(
       () => {
         timer = null;
@@ -136,56 +228,71 @@ export function createRemoteConnectionRecovery(
     );
   }
 
-  async function run() {
-    if (!active || disposed || running || suspended) return;
+  const run = Effect.fn("RemoteRecovery.run")(function* () {
+    while (yield* attemptOnce()) {}
+  });
+
+  const attemptOnce = Effect.fn("RemoteRecovery.attempt")(function* () {
+    if (!active || disposed || running || suspended) return false;
+    let again = false;
     cancelTimer();
     running = true;
     const checkingConnection = online;
+    checking = checkingConnection;
+    const check = checkOnReturn && checkingConnection;
+    checkOnReturn = false;
     retryRequested = false;
     refreshRequested = false;
     interrupted = false;
     attempt += 1;
-    // A foreground read is not a lost connection. Keep the workspace usable
-    // until the transport reports a failure or the read fails.
-    if (!online) onStatus({ phase: "connecting", attempt, remainingSeconds: 0 });
-    try {
-      await connect();
-    } catch (error) {
-      if (error instanceof Error && error.message === "The app is in the background.") {
-        interrupted = true;
-        retryRequested = false;
-        retryAt = null;
-        return;
-      }
-      if (active) {
-        online = false;
-        if (!disposed) onError(error);
-      }
-      retryRequested = true;
-      // A read on a previously usable peer detected a dead connection. Its first
-      // replacement starts now; only a failed replacement earns a retry delay.
-      if (checkingConnection) {
-        attempt = 0;
-        retryAt = Date.now();
-      }
-      scheduleRetry();
-    } finally {
-      running = false;
-      if (!disposed && !suspended && active) {
-        if (refreshRequested) {
+    retryDelay = remoteRetryDelay(attempt);
+    if (!online) onStatus({ phase: "connecting", attempt, remainingSeconds: Math.ceil(retryDelay / 1000) });
+    yield* Effect.gen(function* () {
+      const result = yield* recoveryCall(() => connect(check)).pipe(Effect.result);
+      if (Result.isFailure(result)) {
+        const error = result.failure;
+        if (error instanceof Error && error.message === sourceText("error.remote.appInBackground")) {
+          interrupted = true;
+          retryRequested = false;
           retryAt = null;
-          void run();
-        } else if (retryRequested) scheduleRetry();
-        else if (interrupted) void run();
-        else {
-          online = true;
-          attempt = 0;
-          retryAt = null;
-          onStatus({ phase: "online", attempt: 0, remainingSeconds: 0 });
+          return;
         }
+        if (active) {
+          online = false;
+          if (!disposed) onError(error);
+        }
+        retryRequested = true;
+        if (checkingConnection) {
+          attempt = 0;
+          retryAt = Date.now();
+        }
+        scheduleRetry();
       }
-    }
-  }
+    }).pipe(
+      Effect.ensuring(
+        Effect.sync(() => {
+          running = false;
+          if (!disposed && !suspended && active) {
+            if (refreshRequested) {
+              retryAt = null;
+              again = true;
+            } else if (retryRequested)
+              scheduleRetry(() => {
+                again = true;
+              });
+            else if (interrupted) again = true;
+            else {
+              online = true;
+              attempt = 0;
+              retryAt = null;
+              onStatus({ phase: "online", attempt: 0, remainingSeconds: 0 });
+            }
+          }
+        }),
+      ),
+    );
+    return again;
+  });
 
   return {
     setActive(value: boolean) {
@@ -193,35 +300,37 @@ export function createRemoteConnectionRecovery(
       active = value;
       cancelTimer();
       if (!active && running) {
-        // Background entry invalidates the consumer's pending workspace reads.
         interrupted = true;
       }
       if (active) {
-        // Coming back to the app is this phone's version of the explicit refresh the desktop asks
-        // for after a protocol error, and it is the exit a user reaches without knowing there is
-        // one: the desktop they left to update is the reason the frame was unreadable. One attempt
-        // per return, not a loop.
         suspended = false;
         if (running) return;
         else if (retryAt !== null) scheduleRetry();
-        else void run();
+        else {
+          checkOnReturn = online && !refreshRequested;
+          startRun();
+        }
       }
     },
     offline(error?: unknown) {
       if (disposed) return;
       online = false;
+      checkOnReturn = false;
       if (error !== undefined) onError(error);
       retryRequested = true;
-      // Losing a connection is not a failed reconnection attempt.
-      if (!running && retryAt === null) retryAt = Date.now();
+      if (retryAt === null && (!running || checking)) {
+        if (running) attempt = 0;
+        retryAt = Date.now();
+      }
       scheduleRetry();
     },
-    /**
-     * A failure no retry can fix: the two ends disagree about the wire, so the next attempt is told
-     * the same thing. Stops the loop rather than joining it -- `offline` would schedule five
-     * attempts ten seconds apart and then one every two minutes, for as long as the app is open.
-     * Reversible: `refresh`, returning to the foreground, and switching servers each clear it.
-     */
+    networkRestored() {
+      if (disposed || suspended || online || running || retryAt === null) return;
+      retryAt = null;
+      attempt = 0;
+      cancelTimer();
+      if (active) startRun();
+    },
     suspend(error?: unknown) {
       if (disposed) return;
       online = false;
@@ -234,12 +343,13 @@ export function createRemoteConnectionRecovery(
     },
     refresh() {
       if (disposed) return;
+      checkOnReturn = false;
       suspended = false;
       retryAt = null;
       attempt = 0;
       cancelTimer();
       if (running || !active) refreshRequested = true;
-      else void run();
+      else startRun();
     },
     dispose() {
       disposed = true;
@@ -248,7 +358,6 @@ export function createRemoteConnectionRecovery(
   };
 }
 
-/** Order initial and event reads together, without invalidating another server's responses. */
 export function createRemoteReadRefresh() {
   const requests = new Map<string, number>();
   const cursors = new Map<string, number>();
@@ -258,44 +367,80 @@ export function createRemoteReadRefresh() {
       cursors.set(serverId, cursor);
       return () => cursors.get(serverId) === cursor;
     },
-    async refresh<T>(
+    refresh<T, E>(
       serverId: string,
-      load: () => Promise<T>,
+      load: () => Effect.Effect<T, E>,
       apply: (value: T) => void,
       isCurrent: () => boolean,
-    ): Promise<void> {
-      const request = (requests.get(serverId) ?? 0) + 1;
-      requests.set(serverId, request);
-      const cursor = cursors.get(serverId);
-      const value = await load();
-      if (requests.get(serverId) === request && cursors.get(serverId) === cursor && isCurrent()) apply(value);
+    ): Effect.Effect<void, E> {
+      return Effect.gen(function* () {
+        const request = (requests.get(serverId) ?? 0) + 1;
+        requests.set(serverId, request);
+        const cursor = cursors.get(serverId);
+        const value = yield* load();
+        if (requests.get(serverId) === request && cursors.get(serverId) === cursor && isCurrent()) apply(value);
+      });
     },
   };
 }
 
-/** Merge one server/page's read state without clearing unrelated cached unread IDs. */
 export function mergeRemoteUnreadIds(current: string[], reads: Record<string, { unreadCount: number }>): string[] {
-  return [
+  const next = [
     ...current.filter((id) => !(id in reads)),
     ...Object.entries(reads)
       .filter(([, state]) => state.unreadCount > 0)
       .map(([id]) => id),
   ];
+  return next.length === current.length && next.every((id, index) => id === current[index]) ? current : next;
 }
 
-/** Only conversations cached for agents in this server need recovery. */
-export async function resyncRemoteConversations(input: {
+export const resyncRemoteConversations = Effect.fn("RemoteRecovery.resyncConversations")(function* <E>(input: {
   agentIds: string[];
   cached: Record<string, ConversationSnapshot>;
-  load: (agentId: string) => Promise<ConversationSnapshot>;
+  load: (agentId: string) => Effect.Effect<ConversationSnapshot, E>;
   apply: (snapshot: ConversationSnapshot) => void;
   isCurrent: () => boolean;
-}): Promise<void> {
+}) {
   for (const agentId of input.agentIds) {
     if (!input.isCurrent()) return;
     if (!input.cached[agentId]) continue;
-    const snapshot = await input.load(agentId);
+    const snapshot = yield* input.load(agentId);
     if (!input.isCurrent()) return;
     input.apply(snapshot);
   }
+});
+
+export const REMOTE_REQUEST_MAX_WAIT_MILLISECONDS = 60_000;
+
+export function startRemoteRequestDeadline(
+  timeoutMs: number,
+  lastAnswerAt: () => number,
+  expire: () => void,
+  rearm: (timer: ReturnType<typeof setTimeout>) => void,
+): ReturnType<typeof setTimeout> {
+  const sentAt = performance.now();
+  const limitAt = sentAt + Math.max(timeoutMs, REMOTE_REQUEST_MAX_WAIT_MILLISECONDS);
+  const check = () => {
+    const now = performance.now();
+    const next = Math.min(Math.max(sentAt, lastAnswerAt()) + timeoutMs, limitAt);
+    if (now >= next) expire();
+    else rearm(setTimeout(check, next - now));
+  };
+  return setTimeout(check, timeoutMs);
+}
+
+export function remoteWorkspaceReadTimeout(method: string, path: string): number | undefined {
+  const route = path.split("?")[0];
+  if (method === "POST" && route === SIDEBAR_FOLDERS_ROUTES.read) return 15_000;
+  if (method !== "GET") return undefined;
+  return route === TEAM_API_ROUTES.compatibility ||
+    route === TEAM_API_ROUTES.agents.all ||
+    route === TEAM_API_ROUTES.agents.status ||
+    route === TEAM_API_ROUTES.agents.models ||
+    route === TEAM_API_ROUTES.sidebarLayout.state ||
+    route === TEAM_API_ROUTES.browser.tabs ||
+    route === TEAM_API_ROUTES.agents.conversationReads ||
+    /^\/v1\/agents\/[^/]+\/(?:conversation(?:-page)?|queue)$/.test(route ?? "")
+    ? 15_000
+    : undefined;
 }

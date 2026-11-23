@@ -1,0 +1,15 @@
+import type { PartialTranslation } from "../../../message";
+import type { messages as source } from "../../en/status/computerUse";
+
+export const messages = {
+  "status.computerUse.driverNotStarted": "Computer Use ドライバーが起動しませんでした。{reason}",
+  "status.computerUse.driverStoppedBeforeAnswer": "Computer Use ドライバーは応答する前に停止しました。",
+  "status.computerUse.driverNoAnswer": "Computer Use ドライバーが応答しませんでした。{reason}",
+  "status.computerUse.driverStopped": "Computer Use ドライバーが停止しました。",
+  "status.computerUse.unsupported": "Computer Use は macOS、Windows、Linux で使用できます。",
+  "status.computerUse.driverMissing": "この Dani Dex ビルドには Computer Use ドライバーが含まれていません。",
+  "status.computerUse.inputRefused":
+    "このデスクトップでは、Dani Dex は他のアプリで入力やクリックができません。Web サイトでの作業は、エージェントに Dani Dex ブラウザーを使うよう頼んでください。",
+  "status.computerUse.progressActing": "このコンピューターのアプリを操作しています…",
+  "status.computerUse.progressDeciding": "アプリでの次の操作を決めています…",
+} as const satisfies PartialTranslation<typeof source>;

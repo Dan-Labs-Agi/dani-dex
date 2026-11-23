@@ -1,14 +1,6 @@
-import type { ConversationMessage } from "@dani-dex/contracts/ipc";
-import { type DynamicRecord, isDynamicRecord, isNumber, isString } from "@dani-dex/contracts/runtime-values";
+import type { ConversationMessage } from "@openbot/contracts/ipc";
+import { type DynamicRecord, isDynamicRecord, isNumber, isOneOf, isString } from "@openbot/contracts/runtime-values";
 import { currentConversationMessage } from "./legacy-conversation-message";
-
-/**
- * Decoding for raw `node:sqlite` results, shared by every database controller.
- *
- * `DatabaseSync` hands back `unknown`, so each of these narrows one shape and throws naming the
- * column that failed rather than letting an undefined propagate into a projection. Pure functions
- * over a row: they hold no connection, open no transaction, and never import the facade.
- */
 
 export function databaseRow(value: unknown): DynamicRecord | null {
   return isDynamicRecord(value) ? value : null;
@@ -38,6 +30,18 @@ export function optionalStringColumn(row: DynamicRecord, key: string): string | 
   const value = row[key];
   if (value === null || isString(value)) return value;
   throw new Error(`Invalid SQLite column ${key}.`);
+}
+
+export function optionalNumberColumn(row: DynamicRecord, key: string): number | null {
+  const value = row[key];
+  if (value === null || isNumber(value)) return value;
+  throw new Error(`Invalid SQLite column ${key}.`);
+}
+
+export function checkedColumn<T extends string>(row: DynamicRecord, key: string, values: readonly T[]): T {
+  const value = row[key];
+  if (!isOneOf(values, value)) throw new Error(`Invalid SQLite column ${key}.`);
+  return value;
 }
 
 export function decodeConversationThreadRow(
@@ -82,4 +86,8 @@ export function errorCode(value: unknown): string | null {
 
 export function objectValue(value: unknown): DynamicRecord | null {
   return isDynamicRecord(value) ? value : null;
+}
+
+export function placeholders(values: readonly unknown[]): string {
+  return values.map(() => "?").join(", ");
 }

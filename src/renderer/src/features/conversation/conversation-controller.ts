@@ -3,42 +3,74 @@ import type {
   AgentProviderId,
   AgentReasoningEffort,
   BrowserBounds,
+  BrowserTab,
   MarketplaceSkillDetail,
-} from "@dani-dex/contracts/ipc";
-import { defaultProviderModel } from "@dani-dex/contracts/ipc";
-import { createEffect, createSignal, onCleanup } from "solid-js";
-import type { AgentActivityLabel } from "./AgentActivity";
+} from "@openbot/contracts/ipc";
+import type { AgentActivityLabel } from "@openbot/ui/features/conversation/AgentActivity";
+import { currentText } from "@openbot/ui/text";
+import type { UserErrorDetails } from "@openbot/user-errors";
+import { createEffect, createSignal, createStore, onCleanup, untrack } from "solid-js";
+import { actionToast } from "../../action-toast";
+import { readSidePanelWidth } from "../../components/side-panel-width";
+import {
+  BROWSER_PIP_STORAGE_KEY,
+  BROWSER_WINDOW_STORAGE_KEY,
+  readStoredBounds,
+  storeBounds,
+} from "./browser-bounds-storage";
 import type { ChatSearchMatch } from "./chat-search";
 import {
-  appendPluginPrompt,
+  appendDraftText,
   appendSkillCreationRequest,
   appendSkillExample,
   EMPTY_DRAFT,
   QUEUE_EDIT_STORAGE_KEY,
   readStoredQueueEdit,
+  readStoredThreadQueueEdit,
   type StoredQueueEdit,
+  type StoredThreadQueueEdit,
+  THREAD_QUEUE_EDIT_STORAGE_KEY,
 } from "./composer-draft";
+import { type StoredComposerDrafts, writeComposerDraftsOnChange } from "./composer-draft-storage";
 import { composerDraftKey } from "./conversation-keys";
-import type { ComposerDraft, ConversationProps, RightPanelMode, SidebarFilePreview } from "./conversation-types";
+import { conversationPort, releaseFilePreviewPage } from "./conversation-port";
+import type {
+  ComposerDraft,
+  ConversationProps,
+  ConversationTarget,
+  RightPanelMode,
+  SidebarFilePreview,
+  VoiceLiveTranscript,
+} from "./conversation-types";
+import { readStoredSidePanels, writeSidePanelsOnChange } from "./side-panel-storage";
+import type { TurnRuntime } from "./stores/activity-store";
+import { createAttachmentUploadStore } from "./stores/attachment-upload-store";
+import type { PastePreview } from "./stores/composer-actions";
+import type { SidePanelsState } from "./stores/panels-store";
+import { createPendingSendStore } from "./stores/pending-send-store";
+import type { SideQuestionState } from "./stores/side-question-store";
+import { createVoiceSessions } from "./stores/voice-session-store";
+import type { VoiceCloudStream } from "./stores/voice-store";
 
-const SETTINGS_PANEL_DEFAULT = 296;
-const BROWSER_PANEL_DEFAULT = 380;
-const BROWSER_PIP_STORAGE_KEY = "danidex:browser-pip-native-bounds";
+export interface FeedbackFix {
+  number: number;
+  before: string;
+  request: string;
+}
 
-function readBrowserPipBounds(): BrowserBounds | null {
-  const values = (window.localStorage.getItem(BROWSER_PIP_STORAGE_KEY) ?? "")
-    .split(",")
-    .map((value) => Number.parseFloat(value));
-  const [x, y, width, height] = values;
-  return values.length === 4 && values.every(Number.isFinite) ? { x, y, width, height } : null;
+function draftWithoutFix(text: string, fix: FeedbackFix): string {
+  if (text.startsWith(fix.before)) return fix.before;
+  const start = text.indexOf(fix.request);
+  return start === -1 ? text : text.slice(0, start).trimEnd();
 }
 
 interface ConversationResources {
   agentActivityLabels: Map<string, { activityId: string; label: AgentActivityLabel }>;
+  turnRuntimes: Map<string, TurnRuntime>;
   browserOpenRequests: Map<
     string,
     {
-      promise: Promise<void>;
+      promise: Promise<BrowserTab | undefined>;
       serverId: string;
       agentId: string | null;
       url: string;
@@ -54,8 +86,12 @@ interface ConversationResources {
   voiceRecordingTimer: ReturnType<typeof setTimeout> | undefined;
   voiceElapsedTimer: ReturnType<typeof setInterval> | undefined;
   voiceChunks: Blob[];
+  voiceLiveRequest: Promise<void> | undefined;
+  voiceCloudStream: VoiceCloudStream | undefined;
+  voiceMeterStop: (() => void) | undefined;
   voiceAgentId: string | undefined;
   voiceServerId: string | undefined;
+  voiceThreadSend: boolean;
   voiceSubmitRequest:
     | {
         agentId: string;
@@ -82,22 +118,24 @@ interface ConversationResources {
   >;
 }
 
-/**
- * The half of the conversation surface that outlives one server.
- *
- * Everything here is either work the user started and has not finished - a
- * composer draft, a queued-message edit, a pasted attachment - or an async call
- * already in flight against a named server. Discarding any of it on a server
- * switch would throw away typing the user still expects to find, so this owner
- * sits above the keyed scope in `app-providers.tsx` and lives as long as the app.
- *
- * Every signal here is keyed by `serverId:agentId` (`composerDraftKey`) or carries
- * its server in the value, which is what makes the shared lifetime safe.
- */
-export function createStableConversationState(props: Pick<ConversationProps, "onTypingChange">) {
-  const restoredEdit = readStoredQueueEdit();
-  const [drafts, setDrafts] = createSignal<Record<string, ComposerDraft>>(
-    restoredEdit ? { [composerDraftKey(restoredEdit)]: restoredEdit.draft } : {},
+export function createStableConversationState(
+  props: Pick<ConversationProps, "onTypingChange">,
+  persistDrafts = true,
+  storedDrafts: StoredComposerDrafts | null = null,
+) {
+  const restoredEdit = persistDrafts ? readStoredQueueEdit() : null;
+  const [drafts, setDrafts] = createSignal<Record<string, ComposerDraft>>({
+    ...storedDrafts?.agents,
+    ...(restoredEdit ? { [composerDraftKey(restoredEdit)]: restoredEdit.draft } : {}),
+  });
+  const [channelDrafts, setChannelDrafts] = createSignal<Record<string, ComposerDraft>>(storedDrafts?.channels ?? {});
+  const restoredThreadEdit = persistDrafts ? readStoredThreadQueueEdit() : null;
+  const [threadDrafts, setThreadDrafts] = createSignal<Record<string, ComposerDraft>>({
+    ...storedDrafts?.threads,
+    ...(restoredThreadEdit ? { [restoredThreadEdit.draftKey]: restoredThreadEdit.draft } : {}),
+  });
+  const [threadQueueEdit, setThreadQueueEdit] = createSignal<Omit<StoredThreadQueueEdit, "draft"> | null>(
+    restoredThreadEdit,
   );
   const [editingAgentId, setEditingAgentId] = createSignal<string | null>(restoredEdit?.agentId ?? null);
   const [editingServerId, setEditingServerId] = createSignal<string | null>(restoredEdit?.serverId ?? null);
@@ -111,7 +149,25 @@ export function createStableConversationState(props: Pick<ConversationProps, "on
     restoredEdit?.pendingSave ?? null,
   );
   const [composerFocusRequest, setComposerFocusRequest] = createSignal(0);
+  const [feedbackFixes, setFeedbackFixes] = createSignal<Record<string, FeedbackFix>>({});
+  createEffect(
+    () => {
+      const current = drafts();
+      return Object.keys(feedbackFixes()).filter((key) => !current[key]?.text.trim());
+    },
+    (ended) => {
+      if (ended.length === 0) return;
+      setFeedbackFixes((current) =>
+        Object.fromEntries(Object.entries(current).filter(([key]) => !ended.includes(key))),
+      );
+    },
+  );
+  const pendingSends = createPendingSendStore();
+  const attachmentUploads = createAttachmentUploadStore();
   const [conversationErrors, setConversationErrors] = createSignal<Record<string, string>>({});
+  const [conversationErrorRuns, setConversationErrorRuns] = createSignal<
+    Record<string, { message: string; run: string | null; link?: string; details?: string }>
+  >({});
   createEffect(
     () => {
       const agentId = editingAgentId();
@@ -132,10 +188,8 @@ export function createStableConversationState(props: Pick<ConversationProps, "on
         : null;
     },
     (edit) => {
-      if (!edit) return;
+      if (!edit || !persistDrafts) return;
       const persist = () => {
-        // Read fresh state: a pending Save set after this effect ran must not be
-        // overwritten by the previous snapshot without it.
         const agentId = editingAgentId();
         const serverId = editingServerId();
         const deliveryId = editingDeliveryId();
@@ -156,7 +210,7 @@ export function createStableConversationState(props: Pick<ConversationProps, "on
         } catch {
           setConversationErrors((currentErrors) => ({
             ...currentErrors,
-            [composerDraftKey(current)]: "Could not save this edit on this computer.",
+            [composerDraftKey(current)]: currentText().t("composer.error.saveEditLocally"),
           }));
         }
       };
@@ -167,17 +221,65 @@ export function createStableConversationState(props: Pick<ConversationProps, "on
       };
     },
   );
+  createEffect(
+    () => {
+      const edit = threadQueueEdit();
+      return edit ? { ...edit, draft: threadDrafts()[edit.draftKey] ?? EMPTY_DRAFT } : null;
+    },
+    (edit) => {
+      if (!edit || !persistDrafts) return;
+      const persist = () => {
+        const current = threadQueueEdit();
+        if (current?.editId !== edit.editId) return;
+        try {
+          window.localStorage.setItem(
+            THREAD_QUEUE_EDIT_STORAGE_KEY,
+            JSON.stringify({ ...current, draft: threadDrafts()[current.draftKey] ?? EMPTY_DRAFT }),
+          );
+        } catch {
+          actionToast.error(currentText().t("composer.error.saveEditLocally"));
+        }
+      };
+      const timer = setTimeout(persist, 300);
+      return () => {
+        clearTimeout(timer);
+        persist();
+      };
+    },
+  );
+  if (storedDrafts && persistDrafts)
+    writeComposerDraftsOnChange({
+      drafts,
+      channelDrafts,
+      threadDrafts,
+      editingAgentId,
+      editingServerId,
+      editingDraftBackup,
+      threadQueueEdit,
+      unsentTexts: pendingSends.unsentTexts,
+    });
   const [composerErrors, setComposerErrors] = createSignal<Record<string, string>>({});
+  const [composerErrorReferences, setComposerErrorReferences] = createSignal<Record<string, UserErrorDetails>>({});
   const [voicePhase, setVoicePhase] = createSignal<"idle" | "preparing" | "requesting" | "recording" | "transcribing">(
     "idle",
   );
   const [voiceModelProgress, setVoiceModelProgress] = createSignal<number | null>(null);
   const [voiceElapsedSeconds, setVoiceElapsedSeconds] = createSignal(0);
-  const [browserPipBounds, setBrowserPipBounds] = createSignal<BrowserBounds | null>(readBrowserPipBounds());
-  const [settingsPanelWidth, setSettingsPanelWidth] = createSignal(SETTINGS_PANEL_DEFAULT);
-  const [browserPanelWidth, setBrowserPanelWidth] = createSignal(BROWSER_PANEL_DEFAULT);
+  const [voiceLiveTranscript, setVoiceLiveTranscript] = createSignal<VoiceLiveTranscript | null>(null);
+  const [voiceThreadKey, setVoiceThreadKey] = createSignal<string | undefined>(undefined);
+  const [voiceLevels, setVoiceLevels] = createSignal<number[]>([]);
+  const [voiceLimitReached, setVoiceLimitReached] = createSignal<ConversationTarget | null>(null);
+  const [browserPipBounds, setBrowserPipBounds] = createSignal<BrowserBounds | null>(
+    readStoredBounds(BROWSER_PIP_STORAGE_KEY),
+  );
+  const [browserWindowOpen, setBrowserWindowOpen] = createSignal(false);
+  const [browserWindowBounds, setBrowserWindowBounds] = createSignal<BrowserBounds | null>(
+    readStoredBounds(BROWSER_WINDOW_STORAGE_KEY),
+  );
+  const [sidePanelWidth, setSidePanelWidth] = createSignal(readSidePanelWidth());
   const resources: ConversationResources = {
     agentActivityLabels: new Map(),
+    turnRuntimes: new Map(),
     browserOpenRequests: new Map(),
     importTargetAgents: new Map<string, { agentId: string; serverId: string }>(),
     seenMessageIds: new Set<string>(),
@@ -188,8 +290,12 @@ export function createStableConversationState(props: Pick<ConversationProps, "on
     voiceRecordingTimer: undefined,
     voiceElapsedTimer: undefined,
     voiceChunks: [],
+    voiceLiveRequest: undefined,
+    voiceCloudStream: undefined,
+    voiceMeterStop: undefined,
     voiceAgentId: undefined,
     voiceServerId: undefined,
+    voiceThreadSend: false,
     voiceSubmitRequest: undefined,
     voiceDisposed: false,
     voiceRequestGeneration: 0,
@@ -198,16 +304,6 @@ export function createStableConversationState(props: Pick<ConversationProps, "on
     runtimeSettingsAttempts: new Map(),
   };
 
-  /**
-   * "The user is not composing to that agent any more."
-   *
-   * It lives on the controller rather than in the view because three owners with
-   * three different lifetimes have to be able to say it: the view, on the
-   * transitions that unmount it; this controller, when the app goes away; and
-   * `server-selection.tsx`, which has to say it *before* `servers.select()` so
-   * the message reaches the server the user was typing on rather than the one
-   * they are arriving at.
-   */
   function stopComposerTyping(): void {
     if (resources.typingIdleTimer) clearTimeout(resources.typingIdleTimer);
     resources.typingIdleTimer = undefined;
@@ -222,6 +318,7 @@ export function createStableConversationState(props: Pick<ConversationProps, "on
     if (resources.voiceElapsedTimer) clearInterval(resources.voiceElapsedTimer);
     if (resources.voiceRecorder?.state === "recording") resources.voiceRecorder.stop();
     for (const track of resources.voiceStream?.getTracks() ?? []) track.stop();
+    resources.voiceMeterStop?.();
     stopComposerTyping();
   });
 
@@ -231,19 +328,56 @@ export function createStableConversationState(props: Pick<ConversationProps, "on
       setDrafts((current) => ({ ...current, [key]: appendSkillCreationRequest(current[key] ?? EMPTY_DRAFT) }));
       setComposerFocusRequest((value) => value + 1);
     },
-    appendSkillExample(target: { serverId: string; agentId: string }, skill: MarketplaceSkillDetail) {
+    appendSkillExample(
+      target: { serverId: string; agentId: string },
+      skill: Pick<MarketplaceSkillDetail, "id" | "name" | "examplePrompt">,
+    ) {
       const key = composerDraftKey(target);
       setDrafts((current) => ({ ...current, [key]: appendSkillExample(current[key] ?? EMPTY_DRAFT, skill) }));
       setComposerFocusRequest((value) => value + 1);
     },
     appendPluginPrompt(target: { serverId: string; agentId: string }, prompt: string) {
       const key = composerDraftKey(target);
-      setDrafts((current) => ({ ...current, [key]: appendPluginPrompt(current[key] ?? EMPTY_DRAFT, prompt) }));
+      setDrafts((current) => ({ ...current, [key]: appendDraftText(current[key] ?? EMPTY_DRAFT, prompt) }));
+      setComposerFocusRequest((value) => value + 1);
+    },
+    startFeedbackFix(target: { serverId: string; agentId: string }, number: number, prompt: string) {
+      const key = composerDraftKey(target);
+      const draft = drafts()[key] ?? EMPTY_DRAFT;
+      const next = appendDraftText(draft, prompt);
+      setDrafts((current) => ({ ...current, [key]: next }));
+      setFeedbackFixes((current) => ({
+        ...current,
+        [key]: { number, before: draft.text, request: prompt.trim() },
+      }));
+      setComposerFocusRequest((value) => value + 1);
+    },
+    cancelFeedbackFix(target: { serverId: string; agentId: string }) {
+      const key = composerDraftKey(target);
+      const fix = feedbackFixes()[key];
+      if (!fix) return;
+      setDrafts((current) => {
+        const draft = current[key] ?? EMPTY_DRAFT;
+        return { ...current, [key]: { ...draft, text: draftWithoutFix(draft.text, fix) } };
+      });
+      setFeedbackFixes(({ [key]: _cancelled, ...rest }) => rest);
+      setComposerFocusRequest((value) => value + 1);
+    },
+    feedbackFixes,
+    appendChannelText(target: { serverId: string; channelId: string }, text: string) {
+      const key = composerDraftKey({ serverId: target.serverId, agentId: target.channelId });
+      setChannelDrafts((current) => ({ ...current, [key]: appendDraftText(current[key] ?? EMPTY_DRAFT, text) }));
       setComposerFocusRequest((value) => value + 1);
     },
     stopComposerTyping,
     drafts,
     setDrafts,
+    channelDrafts,
+    setChannelDrafts,
+    threadDrafts,
+    setThreadDrafts,
+    threadQueueEdit,
+    setThreadQueueEdit,
     editingAgentId,
     setEditingAgentId,
     editingServerId,
@@ -258,66 +392,79 @@ export function createStableConversationState(props: Pick<ConversationProps, "on
     setEditingOriginalAttachmentIds,
     editingPendingSave,
     setEditingPendingSave,
+    persistDrafts,
     composerFocusRequest,
     setComposerFocusRequest,
+    pendingSends,
+    attachmentUploads,
     conversationErrors,
     setConversationErrors,
+    conversationErrorRuns,
+    setConversationErrorRuns,
     composerErrors,
     setComposerErrors,
+    composerErrorReferences,
+    setComposerErrorReferences,
     voicePhase,
     setVoicePhase,
     voiceModelProgress,
     setVoiceModelProgress,
     voiceElapsedSeconds,
     setVoiceElapsedSeconds,
+    voiceLiveTranscript,
+    setVoiceLiveTranscript,
+    voiceThreadKey,
+    setVoiceThreadKey,
+    voiceLevels,
+    setVoiceLevels,
+    voiceLimitReached,
+    setVoiceLimitReached,
     browserPipBounds,
     setBrowserPipBounds,
-    settingsPanelWidth,
-    setSettingsPanelWidth,
-    browserPanelWidth,
-    setBrowserPanelWidth,
+    browserWindowOpen,
+    setBrowserWindowOpen,
+    browserWindowBounds,
+    setBrowserWindowBounds,
+    sidePanelWidth,
+    setSidePanelWidth,
     resources,
   };
 }
 
-/**
- * The half of the conversation surface that belongs to one server.
- *
- * These describe the workspace the user is looking at - which right panel is
- * open, what the browser address bar says, which message has its reaction picker
- * out, what the in-chat search found. `rightPanels` is the reason the split
- * exists: it is keyed by agent id alone, and agent ids repeat across servers, so a
- * shared owner would carry "the computer panel is open for chief" from one
- * server to the next and open the wrong panel on arrival.
- *
- * `attachmentBusy`, `submitting` and `selectionSending` are
- * here for the same reason by a different route: they carry no key at all. Each
- * describes the composer on screen right now - "a send is in flight" - so a
- * shared owner would disable the arriving server's composer for the length of
- * the server it was left on. What has to outlive the conversation goes in
- * `conversationErrors` and `composerErrors` instead, which are keyed by
- * chat/conversation and sit in the stable half so one chat's banner never
- * leaks into another chat on the same server.
- *
- * Created inside the keyed scope in `app-providers.tsx`, so a server switch
- * discards all of it by unmounting rather than by a list of setters.
- */
-export function createServerConversationState() {
+export function createServerConversationState(keepSidePanelFiles = false) {
+  const storedSidePanels = keepSidePanelFiles ? readStoredSidePanels() : { shown: false, side: {} };
   const [showComposerActions, setShowComposerActions] = createSignal(false);
-  const [attachmentBusy, setAttachmentBusy] = createSignal(false);
+  const [importingDrafts, setImportingDrafts] = createSignal<ReadonlySet<string>>(new Set());
+  const [pastePreviews, setPastePreviews] = createSignal<readonly PastePreview[]>([]);
   const [submitting, setSubmitting] = createSignal(false);
-  const [selectionSending, setSelectionSending] = createSignal(false);
   const [markingRead, setMarkingRead] = createSignal(false);
   const [dropActive, setDropActive] = createSignal(false);
   const [rightPanels, setRightPanels] = createSignal<Record<string, RightPanelMode>>({});
-  const [settingsProvider, setSettingsProvider] = createSignal<AgentProviderId>("opencode");
-  const [settingsModel, setSettingsModel] = createSignal<AgentModelId>(defaultProviderModel("opencode"));
+  const [browserTakeoverPageRequest, setBrowserTakeoverPageRequest] = createSignal<{
+    agentId: string;
+    tabId: string;
+  } | null>(null);
+  const [sidePanels, setSidePanels] = createStore<SidePanelsState>({
+    side: storedSidePanels.side,
+    subagents: {},
+    threads: {},
+  });
+  const [sidePanelShown, setSidePanelShown] = createSignal(storedSidePanels.shown);
+  if (keepSidePanelFiles) writeSidePanelsOnChange(sidePanels, rightPanels);
+  const [settingsProvider, setSettingsProvider] = createSignal<AgentProviderId>("codex");
+  const [settingsModel, setSettingsModel] = createSignal<AgentModelId>("gpt-6-luna");
   const [settingsReasoning, setSettingsReasoning] = createSignal<AgentReasoningEffort>("medium");
   const [browserAddress, setBrowserAddress] = createSignal("https://www.google.com");
-  const [browserAddressEditing, setBrowserAddressEditing] = createSignal(false);
-  const [sidebarFilePreview, setSidebarFilePreview] = createSignal<SidebarFilePreview | null>(null);
+  const [sidebarFilePreview, writeSidebarFilePreview] = createSignal<SidebarFilePreview | null>(null);
+  let previewPageUrl: string | undefined;
+  const setSidebarFilePreview = (preview: SidebarFilePreview | null) => {
+    const nextPageUrl = preview?.preview?.pageUrl;
+    if (previewPageUrl !== nextPageUrl) releaseFilePreviewPage(previewPageUrl);
+    previewPageUrl = nextPageUrl;
+    writeSidebarFilePreview(preview);
+  };
+  onCleanup(() => releaseFilePreviewPage(previewPageUrl));
   const [openReactionMessageId, setOpenReactionMessageId] = createSignal<string | null>(null);
-  const [openMoreMessageId, setOpenMoreMessageId] = createSignal<string | null>(null);
   const [expandedEmojiMessageId, setExpandedEmojiMessageId] = createSignal<string | null>(null);
   const [copiedMessageId, setCopiedMessageId] = createSignal<string | null>(null);
   const [chatSearchOpen, setChatSearchOpen] = createSignal(false);
@@ -326,22 +473,32 @@ export function createServerConversationState() {
   const [activeChatSearchIndex, setActiveChatSearchIndex] = createSignal(-1);
   const [chatSearchMessageIds, setChatSearchMessageIds] = createSignal<string[]>([]);
   const [chatSearchTotal, setChatSearchTotal] = createSignal(0);
+  const [hiddenAwaitingReplyIds, setHiddenAwaitingReplyIds] = createSignal<ReadonlySet<string>>(new Set());
+  const [sideQuestions, setSideQuestions] = createStore<Record<string, SideQuestionState>>({});
+  const [chatBrowserWindowBridges, setChatBrowserWindowBridges] = createSignal(0);
+  const voiceSessions = createVoiceSessions();
 
   return {
     showComposerActions,
     setShowComposerActions,
-    attachmentBusy,
-    setAttachmentBusy,
+    importingDrafts,
+    setImportingDrafts,
+    pastePreviews,
+    setPastePreviews,
     submitting,
     setSubmitting,
-    selectionSending,
-    setSelectionSending,
     markingRead,
     setMarkingRead,
     dropActive,
     setDropActive,
     rightPanels,
     setRightPanels,
+    browserTakeoverPageRequest,
+    setBrowserTakeoverPageRequest,
+    sidePanels,
+    setSidePanels,
+    sidePanelShown,
+    setSidePanelShown,
     settingsProvider,
     setSettingsProvider,
     settingsModel,
@@ -350,14 +507,10 @@ export function createServerConversationState() {
     setSettingsReasoning,
     browserAddress,
     setBrowserAddress,
-    browserAddressEditing,
-    setBrowserAddressEditing,
     sidebarFilePreview,
     setSidebarFilePreview,
     openReactionMessageId,
     setOpenReactionMessageId,
-    openMoreMessageId,
-    setOpenMoreMessageId,
     expandedEmojiMessageId,
     setExpandedEmojiMessageId,
     copiedMessageId,
@@ -374,14 +527,44 @@ export function createServerConversationState() {
     setChatSearchMessageIds,
     chatSearchTotal,
     setChatSearchTotal,
+    hiddenAwaitingReplyIds,
+    setHiddenAwaitingReplyIds,
+    sideQuestions,
+    setSideQuestions,
+    chatBrowserWindowBridges,
+    setChatBrowserWindowBridges,
+    voiceSessions,
   };
 }
 
-/**
- * Both halves under one owner, which is what a single-server caller wants:
- * `Conversation.stories.tsx` and the HMR test have no scope boundary to split
- * across, and `ConversationView` reads one flat object either way.
- */
-export function createConversationController(props: Pick<ConversationProps, "onTypingChange">) {
-  return { ...createStableConversationState(props), ...createServerConversationState() };
+type StableConversationState = ReturnType<typeof createStableConversationState>;
+
+export function followBrowserWindowEvents(
+  state: Pick<StableConversationState, "setBrowserWindowOpen" | "setBrowserWindowBounds">,
+) {
+  onCleanup(
+    conversationPort().browser.onWindowEvent((event) => {
+      if (event.type === "action") return;
+      if (event.type === "bounds-changed") {
+        state.setBrowserWindowBounds(event.bounds);
+        storeBounds(BROWSER_WINDOW_STORAGE_KEY, event.bounds);
+        return;
+      }
+      state.setBrowserWindowOpen(false);
+    }),
+  );
+}
+
+export function closeBrowserWindowWithServerScope(
+  state: Pick<StableConversationState, "browserWindowOpen" | "setBrowserWindowOpen">,
+) {
+  onCleanup(() => {
+    if (!untrack(state.browserWindowOpen)) return;
+    state.setBrowserWindowOpen(false);
+    void conversationPort().browser.closeWindow();
+  });
+}
+
+export function createConversationController(props: Pick<ConversationProps, "onTypingChange">, persistDrafts = true) {
+  return { ...createStableConversationState(props, persistDrafts), ...createServerConversationState() };
 }

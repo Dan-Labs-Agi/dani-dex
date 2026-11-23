@@ -1,4 +1,4 @@
-import type { BrowserBounds } from "@dani-dex/contracts/ipc";
+import type { BrowserBounds } from "@openbot/contracts/ipc";
 
 export const BROWSER_PIP_MIN_WIDTH = 300;
 export const BROWSER_PIP_MIN_HEIGHT = 220;
@@ -39,7 +39,7 @@ export function constrainBrowserPictureInPictureBounds(
   };
 }
 
-function rectanglesIntersect(left: BrowserBounds, right: BrowserBounds): boolean {
+export function rectanglesIntersect(left: BrowserBounds, right: BrowserBounds): boolean {
   return (
     left.x < right.x + right.width &&
     left.x + left.width > right.x &&

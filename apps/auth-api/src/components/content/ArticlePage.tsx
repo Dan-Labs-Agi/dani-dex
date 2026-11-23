@@ -1,43 +1,35 @@
 import { Dynamic } from "@solidjs/web";
 import { Link } from "@tanstack/solid-router";
-import { createTrackedEffect, For, Show } from "solid-js";
+import { createTrackedEffect, Show } from "solid-js";
 import { ARTICLE_BODIES } from "../../content";
 import { type ArticleReference, landingAnalytics } from "../../lib/analytics";
 import {
   type CollectionArticle,
   type ContentCollection,
   formatArticleDate,
+  type ProseCollectionId,
   reportedArticlePath,
 } from "../../lib/content-collection";
-import { createLandingReveal } from "../landing/createLandingReveal";
 import { LandingFooter } from "../landing/LandingFooter";
-import { ArticleCard } from "./ArticleCard";
+import { SiteHeader } from "../landing/SiteHeader";
 import { ArticleGradient } from "./ArticleGradient";
 import { ContentCallToAction } from "./ContentCallToAction";
-import { ContentHeader } from "./ContentHeader";
 import { createArticleReadDepth } from "./createArticleReadDepth";
+import { MoreArticles } from "./MoreArticles";
+import { ReadingProgress } from "./ReadingProgress";
 
 export interface ArticlePageProps {
-  collection: ContentCollection;
+  collection: ContentCollection<ProseCollectionId>;
   article: CollectionArticle;
 }
 
 export function ArticlePage(props: ArticlePageProps) {
-  let more: HTMLElement | undefined;
   let articleBody: HTMLElement | undefined;
-  const revealed = createLandingReveal(() => more);
 
   const body = () => ARTICLE_BODIES[props.collection.id][props.article.slug];
-  const others = () => props.collection.articles.filter((article) => article.slug !== props.article.slug);
 
   const tracked = (): ArticleReference => ({ collection: props.collection.id, slug: props.article.slug });
 
-  // The article's own path, so one article can be told from another in the report. An unpublished
-  // slug falls back to the index inside `reportedArticlePath`.
-  //
-  // Tracked rather than mounted once: a related-article link stays on this route and only changes
-  // the parameter, so a mount hook would leave every later event under the first article's path.
-  // The effect disposes the previous article's listener before it starts the new one.
   createTrackedEffect(() => {
     const article = tracked();
     return landingAnalytics.start(
@@ -55,7 +47,7 @@ export function ArticlePage(props: ArticlePageProps) {
 
   return (
     <div class="landing-page post-article">
-      <ContentHeader />
+      <SiteHeader page="content" />
 
       <main class="post-main">
         <article ref={articleBody} class="post-container post-article-body">
@@ -80,12 +72,6 @@ export function ArticlePage(props: ArticlePageProps) {
             </p>
           </header>
 
-          {/*
-            Keyed, because a link to a related article stays on this route and
-            only changes the parameter. The gradient draws from the title it was
-            built with and keeps the frame it captured, so a reused one would
-            leave the reader looking at the previous article's artwork.
-          */}
           <div class="post-article-art" data-enter="post-art">
             <Show when={props.article.slug} keyed>
               {(slug) => (
@@ -103,23 +89,9 @@ export function ArticlePage(props: ArticlePageProps) {
           </div>
         </article>
 
-        <Show when={others().length > 0}>
-          <section
-            ref={more}
-            class="post-container post-more"
-            aria-labelledby="post-more-title"
-            data-revealed={revealed() ? "true" : "false"}
-          >
-            <h2 class="post-more-title" id="post-more-title">
-              {props.collection.moreTitle}
-            </h2>
-            <div class="post-grid">
-              <For each={others()}>
-                {(article, index) => <ArticleCard collection={props.collection} article={article} index={index()} />}
-              </For>
-            </div>
-          </section>
-        </Show>
+        <ReadingProgress article={() => articleBody} title={props.article.title} slug={props.article.slug} />
+
+        <MoreArticles collection={props.collection} article={props.article} />
 
         <ContentCallToAction />
       </main>

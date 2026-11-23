@@ -4,7 +4,7 @@ import type { ConversationMessage } from "./ipc-conversation-messages";
 
 export const SKILL_EVENT_ITEM_TYPE_PREFIX = "skill-event:";
 export interface SkillConversationEvent {
-  action: "created" | "revised" | "installed" | "selected" | "suggested";
+  action: "created" | "revised" | "installed";
   skillId: string;
   revision: number;
   skillName: string;
@@ -27,11 +27,7 @@ export function skillConversationEvent(message: ConversationMessage): SkillConve
   const skillName = message.text.trim();
   if (
     extra.length ||
-    (action !== "created" &&
-      action !== "revised" &&
-      action !== "installed" &&
-      action !== "selected" &&
-      action !== "suggested") ||
+    (action !== "created" && action !== "revised" && action !== "installed") ||
     !isIdentifier(skillId) ||
     !Number.isSafeInteger(revision) ||
     revision < 1 ||

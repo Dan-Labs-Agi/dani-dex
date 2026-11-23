@@ -13,6 +13,13 @@ export interface HostedSiteSummary {
   size: number;
   expiresAt: string | null;
   updatedAt: string;
+  serverId: string | null;
+}
+
+export interface HostedSiteList {
+  sites: HostedSiteSummary[];
+  limit: number;
+  used: number;
 }
 
 export interface PublishHostedSiteInput {

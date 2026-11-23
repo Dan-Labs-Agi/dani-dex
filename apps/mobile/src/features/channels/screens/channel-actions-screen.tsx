@@ -1,16 +1,19 @@
-import { userErrorMessage } from "@dani-dex/user-errors";
 import * as Crypto from "expo-crypto";
 import { useLocalSearchParams } from "expo-router";
 import { Button, Typography } from "heroui-native";
 import { useRef, useState } from "react";
 import { useMobileWorkspace } from "@/features/workspace/context/mobile-workspace-context";
+import { SaveError } from "@/shared/components/save-error";
 import { SheetScrollView } from "@/shared/components/sheet-scroll-view";
+import { haptics } from "@/shared/lib/haptics";
+import { useText } from "@/shared/lib/text";
 import { ChannelTaskActions } from "../components/channel-task-actions";
 import { useChannels } from "../components/use-channels";
 import { ChannelHistoryRefreshError } from "../model/channel-store";
 import { channelTasksNeedingAction } from "../model/channel-task-actions";
 
 export function ChannelActionsScreen() {
+  const { t, errorMessage } = useText();
   const { channelId, serverId } = useLocalSearchParams<{ channelId: string; serverId: string }>();
   const { agents, servers } = useMobileWorkspace();
   const state = useChannels(serverId, channelId);
@@ -32,20 +35,22 @@ export function ChannelActionsScreen() {
     setPending(true);
     setError(null);
     try {
-      await state.store.refreshHistory(
-        serverId,
-        channelId,
-        "The task was changed, but chat history could not refresh.",
-      );
+      await state.store.refreshHistory(serverId, channelId, t("mobile.channel.actions.historyStale"));
       setHistoryPending(false);
+      void haptics.notification("success");
     } catch (cause) {
-      setError(userErrorMessage(cause, "Could not refresh task history. Try again."));
+      void haptics.notification("error");
+      setError(errorMessage(cause, t("mobile.channel.actions.refreshFailed")));
     } finally {
       lock.current = false;
       setPending(false);
     }
   }
-  async function command(taskId: string, type: "resume" | "reassign", recipientAgentId: string | null = null) {
+  async function command(
+    taskId: string,
+    type: "resume" | "reassign" | "cancel",
+    recipientAgentId: string | null = null,
+  ) {
     if (
       lock.current ||
       historyPending ||
@@ -74,12 +79,14 @@ export function ChannelActionsScreen() {
         { waitForRefresh: true },
       );
       operations.current.delete(signature);
+      void haptics.notification("success");
     } catch (cause) {
+      void haptics.notification("error");
       if (cause instanceof ChannelHistoryRefreshError) {
         operations.current.delete(signature);
         setHistoryPending(true);
       }
-      setError(userErrorMessage(cause, "Could not change this task. Try again."));
+      setError(errorMessage(cause, t("mobile.channel.actions.changeFailed")));
     } finally {
       lock.current = false;
       setPending(false);
@@ -92,6 +99,7 @@ export function ChannelActionsScreen() {
         members={members}
         online={online}
         archived={channel?.archived ?? false}
+        canCancel={state.canCancelTasks}
         pending={pending || historyPending}
         onCommand={(...args) => {
           void command(...args);
@@ -99,19 +107,19 @@ export function ChannelActionsScreen() {
       />
       {historyPending ? (
         <Button variant="ghost" isDisabled={pending || !online} onPress={() => void refreshHistory()}>
-          <Button.Label>Refresh history</Button.Label>
+          <Button.Label>{t("mobile.channel.actions.refreshHistory")}</Button.Label>
         </Button>
       ) : null}
       {!tasks.length ? (
         <Typography.Paragraph>
-          {!page ? (state.error ?? "Loading actions…") : "No actions needed."}
+          {page
+            ? t("mobile.channel.actions.none")
+            : state.error
+              ? errorMessage(state.error.cause, t("mobile.channel.loadFailed"))
+              : t("mobile.channel.actions.loading")}
         </Typography.Paragraph>
       ) : null}
-      {error ? (
-        <Typography.Paragraph accessibilityRole="alert" className="text-danger-text">
-          {error}
-        </Typography.Paragraph>
-      ) : null}
+      <SaveError error={error} />
     </SheetScrollView>
   );
 }

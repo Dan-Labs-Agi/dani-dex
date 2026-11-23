@@ -1,22 +1,22 @@
-import type {
-  AccountUsage,
-  AvatarImageInput,
-  CentralAuthProvider,
-  CentralAuthSignInOptions,
-  CentralAuthState,
-} from "@dani-dex/contracts/ipc";
+import {
+  type AccountUsage,
+  type AccountUsageLimit,
+  type AvatarColor,
+  type AvatarImageInput,
+  type CentralAuthState,
+  keepUsageCredits,
+  withReadCredits,
+} from "@openbot/contracts/ipc";
+import { currentText } from "@openbot/ui/text";
 import { createMemo, createSignal, createStore, flush, onCleanup, onSettled } from "solid-js";
-import { desktopAnalytics } from "../../analytics";
+import { type DesktopAnalyticsProperties, desktopAnalytics } from "../../analytics";
 import { createSimpleContext } from "../../simple-context";
+import { accountPort } from "./account-port";
 
-/** How long the sign-in success animation holds the account out of the view. */
+type MobileConnectAction = DesktopAnalyticsProperties<"mobile_connect_action">["action"];
+
 const AUTH_SUCCESS_HOLD_MS = 600;
 
-/**
- * Analytics only carries codes the account service is known to send, so an
- * unrecognised one becomes `unknown` rather than leaking a new string into the
- * property vocabulary.
- */
 function authFailureCode(value: string | undefined): string {
   switch (value) {
     case "auth_api_error":
@@ -28,11 +28,6 @@ function authFailureCode(value: string | undefined): string {
     case "email_sign_in_start_failed":
     case "invalid_email":
     case "invalid_sign_in_code":
-    case "online_service_unavailable":
-    case "provider_disabled":
-    case "provider_sign_in_expired":
-    case "provider_sign_in_failed":
-    case "provider_sign_in_timed_out":
     case "rate_limited":
     case "sign_in_code_expired":
     case "too_many_code_attempts":
@@ -43,58 +38,28 @@ function authFailureCode(value: string | undefined): string {
   }
 }
 
-/**
- * The cloud account: sign-in state, the signed-in user, plan usage, and the
- * commands that change any of them.
- *
- * Ungated, against the plan's `centralAuth().status !== "loading"`. Two reasons,
- * and the second is decisive:
- *
- * - `"loading"` is not only a startup state. `retryCentralAccount` sets it
- *   deliberately, so a gate here would unmount the whole app - including the
- *   sign-in form whose Retry button was just pressed - and remount it when the
- *   retry resolved.
- * - `AccountLogin` is handed `centralAuth()` and renders the loading state
- *   itself, behind `AppAccessGate`'s own `<Show>`. A provider gate would
- *   withhold that placeholder too, leaving a blank window instead, and would
- *   serialize every bootstrap load that runs in parallel with `auth.getState()`
- *   today.
- *
- * The account is still a gate for the *view*; `visibleSignedInAccount` is what
- * `AppAccessGate` waits on, and it stays here.
- */
 const Auth = createSimpleContext({
   name: "Auth",
   init: () => {
     const [centralAuth, setCentralAuth] = createSignal<CentralAuthState>({ status: "loading" });
     const [authSuccessVisible, setAuthSuccessVisible] = createSignal(false);
-    // Online features stay offered until the account service says otherwise, so an older main
-    // process that cannot answer never hides anything.
-    const [signInOptions, setSignInOptions] = createSignal<CentralAuthSignInOptions>({
-      providers: [],
-      onlineServices: true,
-    });
     const [accountUsageState, setAccountUsageState] = createStore<{
       targetKey: string | null;
       data: AccountUsage | null;
       refreshRevision: number;
     }>({ targetKey: null, data: null, refreshRevision: 0 });
     let accountUsageRequestGeneration = 0;
+    let accountUsageEventIds = new Set<string>();
     let authSuccessTimer: ReturnType<typeof setTimeout> | undefined;
+    let knownMobileDevices: ReadonlySet<string> | null = null;
 
     onCleanup(() => {
       if (authSuccessTimer !== undefined) clearTimeout(authSuccessTimer);
     });
 
-    /**
-     * Every state change the account service reports, plus the two side effects
-     * that ride along: the analytics identity, and the hold that keeps the
-     * workspace out of view while the sign-in success animation plays. The hold
-     * only starts on a completed code challenge, so a restart into an already
-     * signed-in account goes straight to the workspace.
-     */
     function applyCentralAuthState(state: CentralAuthState): void {
       desktopAnalytics.setUser(state.status === "signed_in" ? state.user : null);
+      if (state.status !== "signed_in") knownMobileDevices = null;
       const completedCodeChallenge = centralAuth().status === "code_sent" && state.status === "signed_in";
       if (state.status !== "signed_in") {
         if (authSuccessTimer !== undefined) clearTimeout(authSuccessTimer);
@@ -109,35 +74,21 @@ const Auth = createSimpleContext({
         }, AUTH_SUCCESS_HOLD_MS);
       }
       setCentralAuth(state);
-      if (state.status === "signed_out" || state.status === "error") refreshSignInOptions();
-    }
-
-    /** Re-read on each return to the sign-in screen, so a provider switched on since shows up. */
-    function refreshSignInOptions(): void {
-      void window.danidex.auth
-        .getSignInOptions()
-        .then(setSignInOptions)
-        .catch(() => undefined);
     }
 
     onSettled(() => {
-      const unsubscribe = window.danidex.auth.onEvent((state) => {
+      const unsubscribe = accountPort().auth.onEvent((state) => {
         flush(() => applyCentralAuthState(state));
       });
-      // The bootstrap read sets the signal directly, not through
-      // `applyCentralAuthState`: there is no earlier state to have completed a
-      // code challenge against, so a restart into a signed-in account must not
-      // play the success hold.
-      refreshSignInOptions();
-      void window.danidex.auth
-        .getState()
+      void accountPort()
+        .auth.getState()
         .then(setCentralAuth)
         .catch(() =>
           setCentralAuth({
             status: "error",
             issue: {
               code: "auth_unavailable",
-              message: "Dani-Dex could not load the account service.",
+              message: currentText().t("account.login.loadFailed"),
             },
           }),
         );
@@ -147,9 +98,9 @@ const Auth = createSimpleContext({
     async function requestEmailCode(email: string): Promise<void> {
       const analytics = desktopAnalytics.anonymousScope();
       try {
-        const state = await window.danidex.auth.requestEmailCode(email);
+        const state = await accountPort().auth.requestEmailCode(email);
         analytics.track("account_sign_in_started", {
-          result: state.status === "code_sent" ? "code_sent" : "failed",
+          result: state.status === "code_sent" || state.status === "company_sign_in" ? state.status : "failed",
           ...(state.status === "error" ? { failure_code: authFailureCode(state.issue.code) } : {}),
         });
         applyCentralAuthState(state);
@@ -162,29 +113,23 @@ const Auth = createSimpleContext({
       }
     }
 
-    async function signInWithProvider(provider: CentralAuthProvider): Promise<void> {
-      const analytics = desktopAnalytics.anonymousScope();
-      const state = await window.danidex.auth.signInWithProvider(provider);
-      analytics.track("account_sign_in_started", {
-        result: state.status === "signing_in" ? "browser_opened" : "failed",
-        ...(state.status === "error" ? { failure_code: authFailureCode(state.issue.code) } : {}),
-      });
-      applyCentralAuthState(state);
-    }
-
-    async function cancelProviderSignIn(): Promise<void> {
-      applyCentralAuthState(await window.danidex.auth.cancelProviderSignIn());
+    async function openCompanySignIn(): Promise<void> {
+      applyCentralAuthState(await accountPort().auth.openCompanySignIn());
     }
 
     async function retryCentralAccount(): Promise<void> {
       applyCentralAuthState({ status: "loading" });
-      applyCentralAuthState(await window.danidex.auth.retry());
+      applyCentralAuthState(await accountPort().auth.retry());
     }
 
-    async function verifyEmailCode(challengeId: string, code: string): Promise<void> {
+    async function verifyEmailCode(challengeId: string, code: string, referralCode?: string): Promise<void> {
       const anonymousAnalytics = desktopAnalytics.anonymousScope();
       try {
-        const state = await window.danidex.auth.verifyEmailCode(challengeId, code);
+        const state = await accountPort().auth.verifyEmailCode({
+          challengeId,
+          code,
+          ...(referralCode ? { referralCode } : {}),
+        });
         applyCentralAuthState(state);
         desktopAnalytics.track("account_sign_in_completed", {
           result: state.status === "signed_in" ? "succeeded" : "failed",
@@ -202,7 +147,7 @@ const Auth = createSimpleContext({
     async function logoutCentralAccount(): Promise<void> {
       const analytics = desktopAnalytics.scope();
       try {
-        const state = await window.danidex.auth.logout();
+        const state = await accountPort().auth.logout();
         analytics.track("account_sign_out", { result: "succeeded" });
         applyCentralAuthState(state);
       } catch (error) {
@@ -215,22 +160,26 @@ const Auth = createSimpleContext({
     }
 
     async function updateAccountAvatar(image: AvatarImageInput | null): Promise<void> {
-      applyCentralAuthState(await window.danidex.auth.updateAvatar(image));
+      applyCentralAuthState(await accountPort().auth.updateAvatar(image));
     }
 
     async function updateAccountName(name: string): Promise<void> {
-      applyCentralAuthState(await window.danidex.auth.updateName(name));
+      applyCentralAuthState(await accountPort().auth.updateName(name));
+    }
+
+    async function setChatColor(color: AvatarColor | null): Promise<void> {
+      applyCentralAuthState(await accountPort().auth.updateChatColor(color));
     }
 
     const accountUsage = () => accountUsageState.data;
     const accountUsageRefreshRevision = () => accountUsageState.refreshRevision;
+    const accountUsageTargetKey = () => accountUsageState.targetKey;
 
     function selectAccountUsageTarget(targetKey: string | null): void {
       if (accountUsageState.targetKey === targetKey) return;
       accountUsageRequestGeneration += 1;
       setAccountUsageState((state) => {
         state.targetKey = targetKey;
-        state.data = null;
       });
     }
 
@@ -243,14 +192,20 @@ const Auth = createSimpleContext({
     }
 
     function applyAccountUsage(usage: AccountUsage): void {
-      accountUsageRequestGeneration += 1;
-      setAccountUsageState((state) => {
-        if (usage.limits.length === 0) {
+      if (usage.limits.length === 0) {
+        accountUsageRequestGeneration += 1;
+        setAccountUsageState((state) => {
           state.data = usage;
-          return;
+        });
+        return;
+      }
+      for (const limit of usage.limits) accountUsageEventIds.add(usageLimitKey(limit));
+      setAccountUsageState((state) => {
+        const byId = new Map((state.data?.limits ?? []).map((limit) => [usageLimitKey(limit), limit]));
+        for (const limit of usage.limits) {
+          const key = usageLimitKey(limit);
+          byId.set(key, keepUsageCredits(byId.get(key), limit));
         }
-        const byId = new Map((state.data?.limits ?? []).map((limit) => [limit.id, limit]));
-        for (const limit of usage.limits) byId.set(limit.id, limit);
         state.data = { limits: [...byId.values()] };
       });
     }
@@ -258,32 +213,60 @@ const Auth = createSimpleContext({
     async function refreshAccountUsage(targetKey: string): Promise<AccountUsage> {
       selectAccountUsageTarget(targetKey);
       const generation = ++accountUsageRequestGeneration;
-      const usage = await window.danidex.agent.getUsage();
+      accountUsageEventIds = new Set();
+      const usage = await accountPort().agent.getUsage();
       if (generation === accountUsageRequestGeneration && accountUsageState.targetKey === targetKey) {
         setAccountUsageState((state) => {
-          state.data = usage;
+          const byId = new Map(usage.limits.map((limit) => [usageLimitKey(limit), limit]));
+          for (const limit of state.data?.limits ?? []) {
+            const key = usageLimitKey(limit);
+            if (accountUsageEventIds.has(key)) byId.set(key, withReadCredits(byId.get(key), limit));
+          }
+          state.data = { limits: [...byId.values()] };
         });
       }
       return usage;
     }
 
-    function createMobileConnect() {
-      return window.danidex.auth.createMobileConnect();
+    function trackMobileConnect<Result>(action: MobileConnectAction, call: () => Promise<Result>): Promise<Result> {
+      return call().then(
+        (result) => {
+          desktopAnalytics.track("mobile_connect_action", { action, result: "succeeded" });
+          return result;
+        },
+        (error: unknown) => {
+          desktopAnalytics.track("mobile_connect_action", { action, result: "failed" });
+          throw error;
+        },
+      );
     }
 
-    function listMobileConnectedDevices() {
-      return window.danidex.auth.listMobileConnectedDevices();
+    function createMobileConnect() {
+      return trackMobileConnect("code_shown", () => accountPort().auth.createMobileConnect());
+    }
+
+    async function listMobileConnectedDevices() {
+      const devices = await accountPort().auth.listMobileConnectedDevices();
+      const ids = new Set(devices.map((device) => device.sessionId));
+      const known = knownMobileDevices;
+      if (known) {
+        for (const id of ids) {
+          if (!known.has(id))
+            desktopAnalytics.track("mobile_connect_action", { action: "connected", result: "succeeded" });
+        }
+      }
+      knownMobileDevices = ids;
+      return devices;
     }
 
     function revokeMobileConnectedDevice(sessionId: string) {
-      return window.danidex.auth.revokeMobileConnectedDevice(sessionId);
+      return trackMobileConnect("revoked", () => accountPort().auth.revokeMobileConnectedDevice(sessionId));
     }
 
     const signedInAccount = createMemo(() => {
       const state = centralAuth();
       return state.status === "signed_in" ? state.user : null;
     });
-    /** Null while the success animation holds, so the workspace mounts after it. */
     const visibleSignedInAccount = createMemo(() => (authSuccessVisible() ? null : signedInAccount()));
 
     return {
@@ -292,27 +275,37 @@ const Auth = createSimpleContext({
       visibleSignedInAccount,
       accountUsage,
       accountUsageRefreshRevision,
+      accountUsageTargetKey,
       selectAccountUsageTarget,
       invalidateAccountUsage,
       applyAccountUsage,
       refreshAccountUsage,
       requestEmailCode,
-      signInOptions,
-      signInWithProvider,
-      cancelProviderSignIn,
+      openCompanySignIn,
       retryCentralAccount,
       verifyEmailCode,
       logoutCentralAccount,
       updateAccountName,
       updateAccountAvatar,
+      setChatColor,
       createMobileConnect,
+      cancelMobileConnect: () => trackMobileConnect("cancelled", () => accountPort().auth.cancelMobileConnect()),
+      getMobileConnectLink: () => accountPort().auth.getMobileConnectLink(),
+      createMobileConnectLink: () =>
+        trackMobileConnect("link_created", () => accountPort().auth.createMobileConnectLink()),
+      revokeMobileConnectLink: () =>
+        trackMobileConnect("link_revoked", () => accountPort().auth.revokeMobileConnectLink()),
       listMobileConnectedDevices,
       revokeMobileConnectedDevice,
-      listAccountSessions: () => window.danidex.auth.listAccountSessions(),
-      revokeAccountSession: (sessionId: string) => window.danidex.auth.revokeAccountSession(sessionId),
+      listAccountSessions: () => accountPort().auth.listAccountSessions(),
+      revokeAccountSession: (sessionId: string) => accountPort().auth.revokeAccountSession(sessionId),
     };
   },
 });
 
 export const AuthProvider = Auth.provider;
 export const useAuth = Auth.use;
+
+function usageLimitKey(limit: AccountUsageLimit): string {
+  return `${limit.id}\n${limit.accountId ?? ""}`;
+}

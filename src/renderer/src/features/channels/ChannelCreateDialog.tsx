@@ -1,42 +1,33 @@
-import type { ChannelDraft } from "@dani-dex/contracts/ipc";
-import { createEffect, createSignal, createStore, For, onSettled, Show, snapshot } from "solid-js";
-import { createScrollFades } from "../../components/createScrollFades";
+import type { ChannelDraft } from "@openbot/contracts/ipc";
 import {
   Alert,
   AlertDescription,
   Button,
   Checkbox,
   Dialog,
+  ErrorReference,
   Field,
   IconButton,
   Input,
   Search,
   UsersRound,
   X,
-} from "../../components/ui";
-import { useAgents } from "../agents/agents-context";
-import { ChannelMemberRow } from "./ChannelMemberRow";
+} from "@openbot/ui";
+import { createScrollFades } from "@openbot/ui/components/createScrollFades";
+import { ChannelMemberRow } from "@openbot/ui/features/channels/ChannelMemberRow";
+import { useText } from "@openbot/ui/text";
+import { createEffect, createSignal, createStore, For, onSettled, Show, snapshot } from "solid-js";
 import { useChannels } from "./channels-context";
-import { emptyChannelDraft, toggleChannelMember } from "./channels-draft";
+import { emptyChannelDraft, matchesAgentSearch, toggleChannelMember } from "./channels-draft";
 
-/**
- * Creation asks for the two things that cannot be guessed - a name and the agents - and leaves the
- * purpose and the lead to Channel settings. The lead is the first selected member until settings
- * changes it. Create is the one button here: unlike settings, there is nothing to save into until
- * the channel exists.
- */
 export function ChannelCreateDialog() {
   const channels = useChannels();
-  const { agentList } = useAgents();
+  const { t, sourceText } = useText();
+  const agentList = channels.agents;
   const channelId = crypto.randomUUID();
   const [draft, setDraft] = createStore<ChannelDraft>(emptyChannelDraft());
   const [view, setView] = createStore({ search: "" });
-  const filtered = () =>
-    agentList().filter((agent) =>
-      `${agent.name} ${agent.description}`.toLowerCase().includes(view.search.toLowerCase()),
-    );
-  // `.t-resize` tweens between two explicit heights, so the list gets its measured content height
-  // after every filter change. The stylesheet's `max-height` still caps how tall it can grow.
+  const filtered = () => agentList().filter((agent) => matchesAgentSearch(agent, view.search));
   let listBody: HTMLDivElement | undefined;
   const [listHeight, setListHeight] = createSignal<string>();
   const listFades = createScrollFades();
@@ -46,8 +37,6 @@ export function ChannelCreateDialog() {
     () => {
       const height = listBody?.getBoundingClientRect().height;
       if (height) setListHeight(`${height}px`);
-      // A filter changes what overflows without always changing the element's own height, which
-      // is the one case the bound resize observer cannot see.
       listFades.remeasure();
     },
   );
@@ -66,8 +55,8 @@ export function ChannelCreateDialog() {
         <Dialog.Overlay class="channel-dialog-backdrop">
           <Dialog.Content class="channel-create-dialog">
             <header class="channel-dialog-header">
-              <Dialog.Title>New channel</Dialog.Title>
-              <IconButton label="Close new channel" variant="ghost" onClick={channels.closeEditor}>
+              <Dialog.Title>{t("sidebar.new.channel")}</Dialog.Title>
+              <IconButton label={t("channel.create.close")} variant="ghost" onClick={channels.closeEditor}>
                 <X />
               </IconButton>
             </header>
@@ -86,14 +75,17 @@ export function ChannelCreateDialog() {
               <Show when={channels.state.error}>
                 {(message) => (
                   <Alert tone="danger" role="alert">
-                    <AlertDescription>{message()}</AlertDescription>
+                    <AlertDescription>
+                      {sourceText(message())}
+                      <ErrorReference reference={channels.state.errorReference} />
+                    </AlertDescription>
                   </Alert>
                 )}
               </Show>
-              <Field label="Channel name">
+              <Field label={t("channel.form.name")}>
                 <Input
                   size="lg"
-                  placeholder="Ex: Project Falcon"
+                  placeholder={t("channel.form.namePlaceholder")}
                   required
                   value={draft.name}
                   onValueChange={(name) =>
@@ -104,14 +96,14 @@ export function ChannelCreateDialog() {
                 />
               </Field>
               <fieldset class="channel-picker">
-                <legend>Add agents</legend>
+                <legend>{t("channel.create.addAgents")}</legend>
                 <label class="search-field channel-member-search">
-                  <span class="sr-only">Search agents</span>
+                  <span class="sr-only">{t("channel.create.searchAgents")}</span>
                   <Search class="channel-search-icon" aria-hidden="true" />
                   <Input
                     type="search"
-                    aria-label="Search agents"
-                    placeholder="Search agents"
+                    aria-label={t("channel.create.searchAgents")}
+                    placeholder={t("channel.create.searchAgents")}
                     value={view.search}
                     onValueChange={(search) =>
                       setView((state) => {
@@ -129,8 +121,6 @@ export function ChannelCreateDialog() {
                   <div ref={listBody} class="channel-picker-body">
                     <For each={filtered()}>
                       {(agent) => (
-                        // The label stays the outer element, so pointing anywhere on the row
-                        // selects the agent, and the row still names the checkbox it holds.
                         <label class="channel-picker-entry" for={`channel-member-${agent.id}`}>
                           <ChannelMemberRow
                             agent={agent}
@@ -152,9 +142,9 @@ export function ChannelCreateDialog() {
                         <Show when={!agentList().length}>
                           <UsersRound aria-hidden="true" />
                         </Show>
-                        <p>{agentList().length ? "No agents match this search." : "No agents yet"}</p>
+                        <p>{agentList().length ? t("channel.create.noMatches") : t("sidebar.empty.noAgents")}</p>
                         <Show when={!agentList().length}>
-                          <span>Create an agent to add it to this channel.</span>
+                          <span>{t("channel.create.noAgentsHint")}</span>
                         </Show>
                       </div>
                     </Show>
@@ -163,7 +153,7 @@ export function ChannelCreateDialog() {
               </fieldset>
               <footer class="channel-editor-footer">
                 <Button type="submit" disabled={channels.state.pending || !draft.name.trim() || !draft.members.length}>
-                  Create
+                  {t("common.create")}
                 </Button>
               </footer>
             </form>

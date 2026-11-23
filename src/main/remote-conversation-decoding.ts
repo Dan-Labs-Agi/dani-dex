@@ -1,6 +1,3 @@
-// Agent conversations and member-to-member direct messages, as a host sends them.
-// See `remote-host-decoding.ts` for why the `FromHost` suffix exists and must not be merged away.
-
 import type {
   ConversationMessage,
   ConversationPage,
@@ -12,17 +9,18 @@ import type {
   DirectConversationSnapshot,
   DirectMessage,
   DirectThreadSummary,
-} from "@dani-dex/contracts/ipc";
-import { isConversationMessage, isConversationReadState, isConversationWithReadState } from "@dani-dex/contracts/ipc";
+} from "@openbot/contracts/ipc";
+import { isConversationMessage, isConversationReadState, isConversationWithReadState } from "@openbot/contracts/ipc";
 import {
   decodeRecord,
   guardedListDecoder,
   nullableString,
+  optionalHistoryExtent,
   requiredBoolean,
   requiredNumber,
   requiredString,
-} from "@dani-dex/contracts/ipc-decoding";
-import { isString } from "@dani-dex/contracts/runtime-values";
+} from "@openbot/contracts/ipc-decoding";
+import { isString } from "@openbot/contracts/runtime-values";
 
 export function decodeDirectMessage(value: unknown): DirectMessage {
   const record = decodeRecord(value, "direct message");
@@ -165,10 +163,11 @@ function decodeConversationMessage(value: unknown, label: string): ConversationM
   return value;
 }
 
-function decodePageInfo(value: unknown): { hasOlder: boolean; olderCursor: string | null } {
+function decodePageInfo(value: unknown): ConversationPage["pageInfo"] {
   const record = decodeRecord(value, "conversation page info");
   return {
     hasOlder: requiredBoolean(record, "hasOlder"),
     olderCursor: nullableString(record, "olderCursor"),
+    ...optionalHistoryExtent(record),
   };
 }

@@ -1,4 +1,5 @@
 import Constants from "expo-constants";
+import * as Updates from "expo-updates";
 import { Typography } from "heroui-native";
 import { useState } from "react";
 import { Linking, View } from "react-native";
@@ -9,29 +10,30 @@ import {
   SettingsRow,
   SettingsSection,
 } from "@/features/settings/components/settings-content";
-import { isAndroid, isIOS } from "@/shared/lib/platform";
+import { nativeBuildVersion } from "@/shared/lib/native-application";
+import { useText } from "@/shared/lib/text";
+
+const PRODUCT_NAME = "Dani Dex";
 
 export function AboutSettingsScreen() {
-  const version = Constants.expoConfig?.version ?? "Development";
-  const build = isIOS
-    ? Constants.platform?.ios?.buildNumber
-    : isAndroid
-      ? Constants.platform?.android?.versionCode
-      : undefined;
-  const versionLabel = build != null ? `${version} (${build})` : version;
+  const { t } = useText();
+  const version = Constants.expoConfig?.version ?? t("mobile.settings.about.development");
+  const build = nativeBuildVersion();
+  const update = Updates.isEmbeddedLaunch ? null : Updates.updateId?.slice(0, 8);
+  const versionLabel = [build ? `${version} (${build})` : version, ...(update ? [update] : [])].join(" · ");
   const [error, setError] = useState<string | null>(null);
   function open(url: string) {
     setError(null);
-    void Linking.openURL(url).catch(() => setError("Could not open the link. Try again."));
+    void Linking.openURL(url).catch(() => setError(t("mobile.settings.about.openFailed")));
   }
   return (
     <SettingsContent>
-      <SettingsSection title="Resources">
-        <SettingsRow onPress={() => open("https://www.danlab.dev")}>
-          <Typography.Paragraph type="body-sm">Website</Typography.Paragraph>
+      <SettingsSection title={t("mobile.settings.about.resources")}>
+        <SettingsRow onPress={() => open("https://openbot.run")}>
+          <Typography.Paragraph>{t("mobile.settings.about.website")}</Typography.Paragraph>
         </SettingsRow>
-        <SettingsRow onPress={() => open("https://github.com/somdipto/dani-dex/blob/main/PRIVACY.md")}>
-          <Typography.Paragraph type="body-sm">Privacy policy</Typography.Paragraph>
+        <SettingsRow onPress={() => open("https://openbot.run/privacy-policy")}>
+          <Typography.Paragraph>{t("mobile.settings.about.privacy")}</Typography.Paragraph>
         </SettingsRow>
         {error ? <SettingsNote>{error}</SettingsNote> : null}
       </SettingsSection>
@@ -39,7 +41,7 @@ export function AboutSettingsScreen() {
         <AppLogo size={56} interactive />
         <View className="items-center gap-1">
           <Typography.Heading type="h4" align="center">
-            Dani-Dex
+            {PRODUCT_NAME}
           </Typography.Heading>
           <Typography.Paragraph type="body-xs" align="center" className="text-grouped-secondary" selectable>
             {versionLabel}

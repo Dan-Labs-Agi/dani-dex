@@ -1,13 +1,15 @@
-import type { ChannelTask } from "@dani-dex/contracts/ipc";
-import { MenuView } from "@expo/ui/community/menu";
+import type { ChannelTask } from "@openbot/contracts/ipc";
 import { Button, Typography } from "heroui-native";
 import { View } from "react-native";
 import { BloubAvatarThumbnail } from "@/features/agents/components/bloub-avatar";
+import { channelTaskCancelCards } from "@/features/channels/model/channel-task-actions";
 import { ChatMarkdown } from "@/features/chat/components/chat-markdown";
 import { SettingsSection } from "@/features/settings/components/settings-content";
 import type { MobileAgent } from "@/features/workspace/model/workspace-types";
+import { CoveringMenuView } from "@/shared/components/covering-menu-view";
+import { useText } from "@/shared/lib/text";
 
-type TaskCommand = (taskId: string, type: "resume" | "reassign", recipientAgentId?: string | null) => void;
+type TaskCommand = (taskId: string, type: "resume" | "reassign" | "cancel", recipientAgentId?: string | null) => void;
 
 export function ChannelTaskActions({
   tasks,
@@ -15,6 +17,7 @@ export function ChannelTaskActions({
   online,
   pending,
   archived,
+  canCancel,
   onCommand,
 }: {
   tasks: ChannelTask[];
@@ -22,8 +25,10 @@ export function ChannelTaskActions({
   online: boolean;
   pending: boolean;
   archived: boolean;
+  canCancel: boolean;
   onCommand: TaskCommand;
 }) {
+  const cancelCards = channelTaskCancelCards(tasks);
   return (
     <>
       {tasks.map((task) => (
@@ -32,6 +37,7 @@ export function ChannelTaskActions({
           task={task}
           members={members}
           disabled={!online || pending || archived}
+          canCancel={canCancel && cancelCards.has(task.id)}
           onCommand={onCommand}
         />
       ))}
@@ -43,15 +49,18 @@ function TaskActionCard({
   task,
   members,
   disabled,
+  canCancel,
   onCommand,
 }: {
   task: ChannelTask;
   members: MobileAgent[];
   disabled: boolean;
+  canCancel: boolean;
   onCommand: TaskCommand;
 }) {
+  const { t, sourceText } = useText();
   const agent = members.find((member) => member.id === task.ownerAgentId);
-  const name = agent?.name ?? "Task";
+  const name = agent?.name ?? t("mobile.channel.task.task");
   return (
     <SettingsSection>
       <View className="gap-3 p-4">
@@ -62,6 +71,7 @@ function TaskActionCard({
               serverId={agent?.serverId}
               seed={agent?.avatarSeed ?? task.ownerAgentId}
               hue={agent?.avatarHue ?? null}
+              color={agent?.avatarColor ?? null}
               size={24}
             />
           ) : null}
@@ -69,7 +79,7 @@ function TaskActionCard({
             {name}
           </Typography.Paragraph>
           <Typography.Paragraph type="body-xs" className="text-grouped-secondary">
-            {task.state === "failed" ? "Failed" : "Paused"}
+            {t(task.state === "failed" ? "mobile.channel.task.failed" : "mobile.channel.task.paused")}
           </Typography.Paragraph>
         </View>
         {task.instruction ? (
@@ -77,7 +87,7 @@ function TaskActionCard({
         ) : null}
         {task.error ? (
           <Typography.Paragraph type="body-sm" className="text-grouped-secondary">
-            {task.error}
+            {sourceText(task.error)}
           </Typography.Paragraph>
         ) : null}
         <View className="flex-row items-center gap-3">
@@ -88,11 +98,11 @@ function TaskActionCard({
             isDisabled={disabled}
             onPress={() => onCommand(task.id, "resume")}
           >
-            <Button.Label>Resume</Button.Label>
+            <Button.Label>{t("mobile.channel.task.resume")}</Button.Label>
           </Button>
           <View className="flex-1" pointerEvents={disabled || !members.length ? "none" : "auto"}>
-            <MenuView
-              style={{ flex: 1 }}
+            <CoveringMenuView
+              accessibilityLabel={t("mobile.channel.task.reassign")}
               actions={members.map((member) => ({ id: member.id, title: member.name, attributes: { disabled } }))}
               onPressAction={({ nativeEvent }) => {
                 if (!disabled && members.some((member) => member.id === nativeEvent.event))
@@ -106,11 +116,22 @@ function TaskActionCard({
                 isDisabled={disabled || !members.length}
                 pointerEvents="none"
               >
-                <Button.Label>Reassign</Button.Label>
+                <Button.Label>{t("mobile.channel.task.reassign")}</Button.Label>
               </Button>
-            </MenuView>
+            </CoveringMenuView>
           </View>
         </View>
+        {canCancel ? (
+          <Button
+            className="min-h-11"
+            size="sm"
+            variant="ghost"
+            isDisabled={disabled}
+            onPress={() => onCommand(task.id, "cancel")}
+          >
+            <Button.Label>{t("mobile.channel.task.cancel")}</Button.Label>
+          </Button>
+        ) : null}
       </View>
     </SettingsSection>
   );

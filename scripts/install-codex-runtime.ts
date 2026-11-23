@@ -1,20 +1,33 @@
 import { execFileSync } from "node:child_process";
-import { cp, mkdir, mkdtemp, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { dirname, join, resolve } from "node:path";
-import { createDaniDexLogger } from "@dani-dex/logging";
+import { join, resolve } from "node:path";
+import { createOpenBotLogger } from "@openbot/logging";
 import { z } from "zod";
 import { type AgentRuntimeLock, loadAgentRuntimeLock } from "./agent-runtime-lock";
 import { rejectNonRegularFiles, sha256 } from "./remote-desktop-runtime-release";
+import {
+  download,
+  escapeRegExp,
+  installValidatedTree,
+  isCurrentInstallation,
+  safeArchivePathParts,
+} from "./runtime-install";
 
-const logger = createDaniDexLogger("install-codex-runtime");
+const logger = createOpenBotLogger("install-codex-runtime");
 
-export type CodexRuntimeTarget = "darwin-arm64" | "linux-x64" | "win32-x64";
+export type CodexRuntimeTarget = "darwin-arm64" | "darwin-x64" | "linux-x64" | "linux-arm64" | "win32-x64";
 
 const packageManifestSchema = z.object({
   layoutVersion: z.literal(1),
   version: z.string(),
-  target: z.enum(["aarch64-apple-darwin", "x86_64-pc-windows-msvc", "x86_64-unknown-linux-musl"]),
+  target: z.enum([
+    "aarch64-apple-darwin",
+    "x86_64-apple-darwin",
+    "x86_64-pc-windows-msvc",
+    "x86_64-unknown-linux-musl",
+    "aarch64-unknown-linux-musl",
+  ]),
   variant: z.literal("codex"),
   entrypoint: z.string(),
   resourcesDir: z.literal("codex-resources"),
@@ -38,23 +51,22 @@ export async function installCodexRuntime(
   const artifact = lock.codex.artifacts[target];
   const targetRoot = codexRuntimePath(outputRoot, target);
 
-  if (await isCurrentInstallation(targetRoot, target, lock)) {
+  if (await isCurrentInstallation(() => verifyCodexRuntime(targetRoot, target, lock))) {
     await writeMetadata(outputRoot, lock, fetchImpl);
     logger.info(`Using verified bundled Codex ${lock.codex.version} for ${target}.`);
     return "current";
   }
 
-  const response = await fetchImpl(
+  const archiveBytes = await download(
+    fetchImpl,
     `${lock.codex.repository}/releases/download/${encodeURIComponent(lock.codex.tag)}/${artifact.asset}`,
-    { headers: { "User-Agent": "Dani-Dex-runtime-installer" }, redirect: "follow" },
+    "Codex runtime",
   );
-  if (!response.ok) throw new Error(`Codex runtime download failed with HTTP ${response.status}.`);
-  const archiveBytes = Buffer.from(await response.arrayBuffer());
   if (sha256(archiveBytes) !== artifact.assetSha256) {
     throw new Error(`The ${target} Codex runtime archive checksum is invalid.`);
   }
 
-  const temporaryRoot = await mkdtemp(join(tmpdir(), "dani-dex-codex-install-"));
+  const temporaryRoot = await mkdtemp(join(tmpdir(), "openbot-codex-install-"));
   try {
     const archive = join(temporaryRoot, artifact.asset);
     const extracted = join(temporaryRoot, "extracted");
@@ -75,10 +87,11 @@ export async function installCodexRuntime(
   return "installed";
 }
 
-/** The `target` the Codex package manifest carries for each runtime target Dani-Dex ships. */
 const CODEX_MANIFEST_TARGETS = {
   "darwin-arm64": "aarch64-apple-darwin",
+  "darwin-x64": "x86_64-apple-darwin",
   "linux-x64": "x86_64-unknown-linux-musl",
+  "linux-arm64": "aarch64-unknown-linux-musl",
   "win32-x64": "x86_64-pc-windows-msvc",
 } as const satisfies Record<CodexRuntimeTarget, string>;
 
@@ -87,13 +100,22 @@ export function codexRuntimeTarget(
   architecture: string = process.arch,
 ): CodexRuntimeTarget {
   const target = `${platform}-${architecture}`;
-  if (target === "darwin-arm64" || target === "linux-x64" || target === "win32-x64") return target;
+  if (
+    target === "darwin-arm64" ||
+    target === "darwin-x64" ||
+    target === "linux-x64" ||
+    target === "linux-arm64" ||
+    target === "win32-x64"
+  )
+    return target;
   throw new Error(`Unsupported bundled Codex target: ${target}`);
 }
 
 export function codexRuntimePath(root: string, target: CodexRuntimeTarget): string {
   if (target === "darwin-arm64") return join(root, "mac", "arm64");
+  if (target === "darwin-x64") return join(root, "mac", "x64");
   if (target === "linux-x64") return join(root, "linux", "x64");
+  if (target === "linux-arm64") return join(root, "linux", "arm64");
   return join(root, "win", "x64");
 }
 
@@ -135,40 +157,10 @@ export function validateCodexArchive(archive: string): string[] {
 }
 
 function validateArchivePath(name: string): void {
-  if (name.includes("\0") || name.includes("\\")) throw new Error(`Unsafe Codex archive path: ${name}`);
-  const normalized = name.replace(/\/+$/u, "");
-  if (!normalized || normalized.startsWith("/") || /^[A-Za-z]:/u.test(normalized)) {
-    throw new Error(`Unsafe Codex archive path: ${name}`);
-  }
-  const parts = normalized.split("/");
-  if (parts.some((part) => !part || part === "." || part === "..")) {
-    throw new Error(`Unsafe Codex archive path: ${name}`);
-  }
+  const parts = safeArchivePathParts(name, "Codex");
   if (!["bin", "codex-package.json", "codex-path", "codex-resources"].includes(parts[0] ?? "")) {
     throw new Error(`Unexpected Codex archive path: ${name}`);
   }
-}
-
-async function isCurrentInstallation(
-  root: string,
-  target: CodexRuntimeTarget,
-  lock: AgentRuntimeLock,
-): Promise<boolean> {
-  try {
-    await verifyCodexRuntime(root, target, lock);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function installValidatedTree(source: string, destination: string): Promise<void> {
-  const temporaryTarget = join(dirname(destination), `.${destination.split(/[\\/]/u).at(-1)}.installing`);
-  await mkdir(dirname(destination), { recursive: true });
-  await rm(temporaryTarget, { recursive: true, force: true });
-  await cp(source, temporaryTarget, { recursive: true });
-  await rm(destination, { recursive: true, force: true });
-  await rename(temporaryTarget, destination);
 }
 
 async function writeMetadata(root: string, lock: AgentRuntimeLock, fetchImpl: typeof fetch): Promise<void> {
@@ -178,24 +170,17 @@ async function writeMetadata(root: string, lock: AgentRuntimeLock, fetchImpl: ty
   let currentLicense: string | null = null;
   try {
     currentLicense = sha256(await readFile(licensePath));
-  } catch {
-    // Download the pinned license below.
-  }
+  } catch {}
   if (currentLicense !== lock.codex.licenseSha256) {
-    const response = await fetchImpl(`${lock.codex.repository}/raw/${encodeURIComponent(lock.codex.tag)}/LICENSE`, {
-      headers: { "User-Agent": "Dani-Dex-runtime-installer" },
-      redirect: "follow",
-    });
-    if (!response.ok) throw new Error(`Codex license download failed with HTTP ${response.status}.`);
-    const bytes = Buffer.from(await response.arrayBuffer());
+    const bytes = await download(
+      fetchImpl,
+      `${lock.codex.repository}/raw/${encodeURIComponent(lock.codex.tag)}/LICENSE`,
+      "Codex license",
+    );
     if (sha256(bytes) !== lock.codex.licenseSha256) throw new Error("The Codex license checksum is invalid.");
     await writeFile(licensePath, bytes);
   }
   await writeFile(join(root, "source-manifest.json"), `${JSON.stringify({ name: "codex", ...lock.codex }, null, 2)}\n`);
-}
-
-function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
 }
 
 if (import.meta.main) {

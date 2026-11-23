@@ -10,12 +10,20 @@
     "enabled": true,
     "cross_version_cache": false
   },
+  "observability": {
+    "enabled": false
+  },
+  "upload_source_maps": false,
   "triggers": {
-    "crons": ["* * * * *"]
+    "crons": ["*/5 * * * *", "*/1 * * * *"]
   },
   "routes": [
     {
       "pattern": "openbot.run/*",
+      "zone_id": "bac5e044ba951c390229f0e93673ebd3"
+    },
+    {
+      "pattern": "www.openbot.run/*",
       "zone_id": "bac5e044ba951c390229f0e93673ebd3"
     },
     {
@@ -37,12 +45,40 @@
     "AUTH_EXPOSE_DEVELOPMENT_CODE": "false",
     "EMAIL_SMTP_HOST": "mail.privateemail.com",
     "EMAIL_SMTP_PORT": "465",
-    "EMAIL_SMTP_USERNAME": "hello@openbot.run",
-    "EMAIL_FROM": "hello@openbot.run",
-    "REMOTE_TICKET_KEY_ID": "dani-dex-remote-1",
+    "EMAIL_SMTP_USERNAME": "no_reply@openbot.run",
+    "EMAIL_FROM": "no_reply@openbot.run",
+    "EMAIL_REPLY_TO": "hello@openbot.run",
+    "EMAIL_LICENSE_REPLY_TO": "licenses@openbot.run",
+    "EMAIL_LICENSE_FROM": "",
+    "REMOTE_TICKET_KEY_ID": "openbot-remote-1",
     "REMOTE_SIGNAL_URL": "wss://signal.openbot.run/v1/signal",
-    "REMOTE_AUTH_WEBHOOK_URL": "https://signal.openbot.run/internal/auth-events"
+    "REMOTE_SIGNAL_HOMES": "a=wss://signal1.openbot.run/v1/signal,b=wss://signal2.openbot.run/v1/signal,us=wss://signal-us.openbot.run/v1/signal,au=wss://signal-au.openbot.run/v1/signal,sg=wss://signal-sg.openbot.run/v1/signal",
+    "REMOTE_SIGNAL_HOME_LOCATIONS": "a=60.17:24.94,b=60.17:24.94,us=37.34:-121.89,au=-33.87:151.21,sg=1.35:103.82",
+    "REMOTE_SIGNAL_HOME_COUNTRIES": "CN=us",
+    "REMOTE_AUTH_WEBHOOK_URL": "https://signal.openbot.run/internal/auth-events",
+    "REMOTE_AUTH_WEBHOOK_URLS": "https://signal1.openbot.run/internal/auth-events,https://signal2.openbot.run/internal/auth-events,https://signal-us.openbot.run/internal/auth-events,https://signal-au.openbot.run/internal/auth-events,https://signal-sg.openbot.run/internal/auth-events",
+    "SIGNAL_ENTRY_ZONE_ID": "bac5e044ba951c390229f0e93673ebd3",
+    "HOSTED_SERVERS_ENABLED": "true",
+    "HOSTED_SERVERS_ALLOWED_USER_IDS": "*",
+    "LICENSE_TRIAL_END": "2026-12-01T00:00:00Z",
+    "BILLING_COUNTRY_REQUIRED": "true",
+    "GITHUB_APP_CLIENT_ID": "Iv23lik5pzHz70cb0RUL",
+    "FEEDBACK_WITHDRAWN_REPOSITORY": "",
+    "APNS_TEAM_ID": "8A47NKRZSJ",
+    "APNS_TOPIC": "run.openbot.mobile"
   },
+  "services": [
+    {
+      "binding": "EMAIL_RELAY",
+      "service": "openbot-email-relay"
+    }
+  ],
+  "send_email": [
+    {
+      "name": "EMAIL_FALLBACK",
+      "allowed_sender_addresses": ["no_reply@openbot.run"]
+    }
+  ],
   "d1_databases": [
     {
       "binding": "DB",
@@ -88,6 +124,21 @@
       "name": "SITE_REPORT_RATE_LIMITER",
       "namespace_id": "2026083101",
       "simple": { "limit": 10, "period": 60 }
+    },
+    {
+      "name": "GITHUB_TOKEN_RATE_LIMITER",
+      "namespace_id": "2026092911",
+      "simple": { "limit": 30, "period": 60 }
+    },
+    {
+      "name": "LIVE_ACTIVITY_RATE_LIMITER",
+      "namespace_id": "2026092901",
+      "simple": { "limit": 300, "period": 60 }
+    },
+    {
+      "name": "FEEDBACK_RATE_LIMITER",
+      "namespace_id": "2026110801",
+      "simple": { "limit": 3, "period": 60 }
     }
   ],
   "env": {
@@ -106,13 +157,19 @@
         "AUTH_EXPOSE_DEVELOPMENT_CODE": "false",
         "EMAIL_SMTP_HOST": "mail.privateemail.com",
         "EMAIL_SMTP_PORT": "465",
-        "EMAIL_SMTP_USERNAME": "hello@openbot.run",
-        "EMAIL_FROM": "hello@openbot.run",
+        "EMAIL_SMTP_USERNAME": "no_reply@openbot.run",
+        "EMAIL_FROM": "no_reply@openbot.run",
+        "EMAIL_REPLY_TO": "hello@openbot.run",
+        "EMAIL_LICENSE_REPLY_TO": "licenses@openbot.run",
+        "EMAIL_LICENSE_FROM": "",
         "SITE_PUBLISH_ENABLED": "false",
         "SITE_COOKIE_ISOLATION_READY": "false",
-        "REMOTE_TICKET_KEY_ID": "dani-dex-remote-1",
+        "REMOTE_TICKET_KEY_ID": "openbot-remote-1",
         "REMOTE_SIGNAL_URL": "ws://127.0.0.1:8081/v1/signal",
-        "REMOTE_AUTH_WEBHOOK_URL": "http://127.0.0.1:8081/internal/auth-events"
+        "REMOTE_SIGNAL_HOMES": "",
+        "REMOTE_AUTH_WEBHOOK_URL": "http://127.0.0.1:8081/internal/auth-events",
+        "REMOTE_AUTH_WEBHOOK_URLS": "",
+        "SIGNAL_ENTRY_ZONE_ID": ""
       },
       "d1_databases": [
         {
@@ -156,6 +213,21 @@
           "name": "SITE_REPORT_RATE_LIMITER",
           "namespace_id": "2026083102",
           "simple": { "limit": 10, "period": 60 }
+        },
+        {
+          "name": "GITHUB_TOKEN_RATE_LIMITER",
+          "namespace_id": "2026092912",
+          "simple": { "limit": 30, "period": 60 }
+        },
+        {
+          "name": "LIVE_ACTIVITY_RATE_LIMITER",
+          "namespace_id": "2026092902",
+          "simple": { "limit": 300, "period": 60 }
+        },
+        {
+          "name": "FEEDBACK_RATE_LIMITER",
+          "namespace_id": "2026110802",
+          "simple": { "limit": 3, "period": 60 }
         }
       ]
     },
@@ -165,7 +237,7 @@
       "preview_urls": false,
       "routes": [],
       "triggers": {
-        "crons": []
+        "crons": ["* * * * *"]
       },
       "secrets": {
         "required": [
@@ -181,13 +253,23 @@
         "AUTH_EXPOSE_DEVELOPMENT_CODE": "false",
         "EMAIL_SMTP_HOST": "mail.privateemail.com",
         "EMAIL_SMTP_PORT": "465",
-        "EMAIL_SMTP_USERNAME": "hello@openbot.run",
-        "EMAIL_FROM": "hello@openbot.run",
+        "EMAIL_SMTP_USERNAME": "no_reply@openbot.run",
+        "EMAIL_FROM": "no_reply@openbot.run",
+        "EMAIL_REPLY_TO": "hello@openbot.run",
+        "EMAIL_LICENSE_REPLY_TO": "licenses@openbot.run",
+        "EMAIL_LICENSE_FROM": "",
         "SITE_PUBLISH_ENABLED": "false",
         "SITE_COOKIE_ISOLATION_READY": "false",
-        "REMOTE_TICKET_KEY_ID": "dani-dex-remote-1",
+        "REMOTE_TICKET_KEY_ID": "openbot-remote-1",
         "REMOTE_SIGNAL_URL": "wss://signal.openbot.run/v1/signal",
-        "REMOTE_AUTH_WEBHOOK_URL": "https://signal.openbot.run/internal/auth-events"
+        "REMOTE_SIGNAL_HOMES": "",
+        "REMOTE_AUTH_WEBHOOK_URL": "https://signal.openbot.run/internal/auth-events",
+        "REMOTE_AUTH_WEBHOOK_URLS": "",
+        "SIGNAL_ENTRY_ZONE_ID": "",
+        "HOSTED_SERVERS_ENABLED": "true",
+        "GITHUB_APP_CLIENT_ID": "Iv23lik5pzHz70cb0RUL",
+        "APNS_TEAM_ID": "8A47NKRZSJ",
+        "APNS_TOPIC": "run.openbot.mobile"
       },
       "d1_databases": [
         {
@@ -231,6 +313,21 @@
           "name": "SITE_REPORT_RATE_LIMITER",
           "namespace_id": "2026083103",
           "simple": { "limit": 10, "period": 60 }
+        },
+        {
+          "name": "GITHUB_TOKEN_RATE_LIMITER",
+          "namespace_id": "2026092913",
+          "simple": { "limit": 30, "period": 60 }
+        },
+        {
+          "name": "LIVE_ACTIVITY_RATE_LIMITER",
+          "namespace_id": "2026092903",
+          "simple": { "limit": 300, "period": 60 }
+        },
+        {
+          "name": "FEEDBACK_RATE_LIMITER",
+          "namespace_id": "2026110803",
+          "simple": { "limit": 3, "period": 60 }
         }
       ]
     }

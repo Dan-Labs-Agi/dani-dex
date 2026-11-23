@@ -1,50 +1,83 @@
-import { router, Stack, useLocalSearchParams, usePreventZoomTransitionDismissal } from "expo-router";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { Typography } from "heroui-native";
 import { useThemeColor } from "heroui-native/hooks";
-import { ArrowLeft } from "lucide-react-native";
+import ArrowLeft from "lucide-react-native/icons/arrow-left";
+import { useCallback } from "react";
 import { Pressable, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { MobileChatView } from "@/features/chat/components/agent-chat-view";
-import { useMobileWorkspace } from "@/features/workspace/context/mobile-workspace-context";
+import { firstParam } from "@/features/chat/components/use-conversation-message";
+import { useLeaveChat } from "@/features/chat/components/use-leave-chat";
+import { noteChatOpened } from "@/features/quick-actions/model/recent-agents";
+import { useMobileWorkspaceSelector } from "@/features/workspace/context/mobile-workspace-context";
+import { sameAgentApartFromMessage } from "@/features/workspace/model/directory-agents";
+import type { MobileAgent } from "@/features/workspace/model/workspace-types";
+import { haptics } from "@/shared/lib/haptics";
+import { useText } from "@/shared/lib/text";
+import { MIRROR_IN_RTL } from "@/shared/lib/text-direction";
 
 export function AgentChatScreen() {
-  usePreventZoomTransitionDismissal({
-    unstable_dismissalBoundsRect: { minX: 0, maxX: 24 },
-  });
+  const { t } = useText();
+  const leaveChat = useLeaveChat();
 
-  const { avatarTransition, agentId } = useLocalSearchParams<{ avatarTransition?: string; agentId: string }>();
-  const { agents } = useMobileWorkspace();
+  const { agentId, messageId, focusAt } = useLocalSearchParams<{
+    agentId: string;
+    messageId?: string;
+    focusAt?: string;
+  }>();
   const foreground = useThemeColor("foreground");
-  const resolvedAgentId = Array.isArray(agentId) ? agentId[0] : agentId;
-  const resolvedAvatarTransition = Array.isArray(avatarTransition) ? avatarTransition[0] : avatarTransition;
-  const animateAvatarOnExit = resolvedAvatarTransition === "search";
-  const agent = agents.find((candidate) => candidate.id === resolvedAgentId);
+  const insets = useSafeAreaInsets();
+  const resolvedAgentId = firstParam(agentId);
+  const resolvedMessageId = firstParam(messageId);
+  const agent = useMobileWorkspaceSelector(
+    (current) => current.agents.find((candidate) => candidate.id === resolvedAgentId),
+    sameChatAgent,
+  );
+  const openedAgentId = agent?.id;
+  useFocusEffect(
+    useCallback(() => {
+      if (openedAgentId) noteChatOpened(openedAgentId);
+    }, [openedAgentId]),
+  );
 
   if (agent) {
     return (
-      <>
-        <Stack.Screen options={{ animation: animateAvatarOnExit ? "fade" : "slide_from_right" }} />
-        <MobileChatView key={`${agent.serverId}:${agent.id}`} animateAvatarOnExit={animateAvatarOnExit} agent={agent} />
-      </>
+      <MobileChatView
+        key={`${agent.serverId}:${agent.id}:${resolvedMessageId ?? ""}:${focusAt ?? ""}`}
+        agent={agent}
+        focusMessageId={resolvedMessageId || undefined}
+        onLeave={leaveChat}
+      />
     );
   }
 
   return (
-    <View className="flex-1 items-center justify-center gap-5 bg-background px-8">
+    <View
+      className="flex-1 items-center justify-center gap-5 bg-background"
+      style={{ paddingLeft: insets.left + 32, paddingRight: insets.right + 32 }}
+    >
       <Typography.Heading type="h4" align="center">
-        Agent unavailable
+        {t("mobile.chat.agentUnavailable.title")}
       </Typography.Heading>
       <Typography.Paragraph align="center" className="text-text-secondary">
-        This agent is no longer available on the selected server.
+        {t("mobile.chat.agentUnavailable.body")}
       </Typography.Paragraph>
       <Pressable
         accessibilityRole="button"
         className="min-h-12 flex-row items-center gap-2 rounded-full bg-control px-5"
-        onPress={() => (router.canGoBack() ? router.back() : router.replace("/connected"))}
+        onPress={() => {
+          void haptics.impact("soft");
+          leaveChat();
+        }}
       >
-        <ArrowLeft color={String(foreground)} size={20} strokeWidth={2} />
-        <Typography.Paragraph weight="semibold">Go back</Typography.Paragraph>
+        <ArrowLeft color={String(foreground)} size={20} strokeWidth={2} style={MIRROR_IN_RTL} />
+        <Typography.Paragraph weight="semibold">{t("mobile.chat.agentUnavailable.goBack")}</Typography.Paragraph>
       </Pressable>
     </View>
   );
+}
+
+function sameChatAgent(previous: MobileAgent | undefined, next: MobileAgent | undefined): boolean {
+  return previous !== undefined && next !== undefined && sameAgentApartFromMessage(previous, next);
 }

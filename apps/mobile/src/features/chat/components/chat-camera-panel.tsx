@@ -1,33 +1,25 @@
 import { type CameraType, CameraView } from "expo-camera";
 import { Button, Typography } from "heroui-native";
-import { ChevronLeft, SwitchCamera } from "lucide-react-native";
+import ChevronLeft from "lucide-react-native/icons/chevron-left";
+import SwitchCamera from "lucide-react-native/icons/switch-camera";
 import { useEffect, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import Animated, { cubicBezier, useReducedMotion } from "react-native-reanimated";
+import Animated, { cubicBezier } from "react-native-reanimated";
+import { haptics } from "@/shared/lib/haptics";
+import { useReducedMotion } from "@/shared/lib/motion";
+import { useText } from "@/shared/lib/text";
+import { MIRROR_IN_RTL } from "@/shared/lib/text-direction";
 
-// The preview arrives when the hardware is ready, which is not when the panel
-// opens. It fades in over the surface it was given rather than popping in.
 const PREVIEW_FADE = 180;
 const PREVIEW_EASING = cubicBezier(0.23, 1, 0.32, 1);
 
-/**
- * The camera itself, with no surface of its own. `ChatAttachmentPanel` owns the
- * card this fills, so the same card can carry the options and the camera and
- * morph between them instead of swapping one view for another.
- */
 export function ChatCameraContent({
   onBusyChange,
   onCancel,
   onCaptured,
 }: {
-  /** True while a capture is in flight, when the panel must not be dismissed. */
   onBusyChange: (busy: boolean) => void;
   onCancel: () => void;
-  /**
-   * A photo exists at this uri. Holding it is the panel's business and waits
-   * for the card to leave: reading and encoding a full-size photo on the
-   * frames of that exit is what made it stutter.
-   */
   onCaptured: (uri: string) => void;
 }) {
   const camera = useRef<CameraView>(null);
@@ -38,6 +30,7 @@ export function ChatCameraContent({
   const [facing, setFacing] = useState<CameraType>("back");
   const [error, setError] = useState<string | null>(null);
   const reduceMotion = useReducedMotion();
+  const { t, sourceText } = useText();
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -53,15 +46,16 @@ export function ChatCameraContent({
     try {
       const photo = await camera.current.takePictureAsync({ quality: 1 });
       if (!mounted.current) return;
-      if (!photo?.uri) throw new Error("Could not take the photo. Try again.");
-      // Clear busy before handing the photo over: the panel refuses to leave
-      // while a capture is in flight, and this one has landed.
+      if (!photo?.uri) throw new Error(t("mobile.chat.camera.captureFailed"));
       busyRef.current = false;
       setBusy(false);
       onBusyChange(false);
+      void haptics.notification("success");
       onCaptured(photo.uri);
     } catch (cause) {
-      if (mounted.current) setError(cause instanceof Error ? cause.message : "Could not take the photo. Try again.");
+      void haptics.notification("error");
+      if (mounted.current)
+        setError(cause instanceof Error ? sourceText(cause.message) : t("mobile.chat.camera.captureFailed"));
     } finally {
       busyRef.current = false;
       if (mounted.current) setBusy(false);
@@ -90,7 +84,7 @@ export function ChatCameraContent({
           onCameraReady={() => setReady(true)}
           onMountError={() => {
             setReady(false);
-            setError("Could not start the camera. Close it and try again.");
+            setError(t("mobile.chat.camera.startFailed"));
           }}
         />
       </Animated.View>
@@ -106,17 +100,20 @@ export function ChatCameraContent({
           isIconOnly
           variant="secondary"
           className="size-12 rounded-full bg-black/60"
-          accessibilityLabel="Close camera"
+          accessibilityLabel={t("mobile.chat.camera.close")}
           isDisabled={busy}
-          onPress={onCancel}
+          onPress={() => {
+            void haptics.impact("soft");
+            onCancel();
+          }}
         >
-          <ChevronLeft color="white" size={25} />
+          <ChevronLeft color="white" size={25} style={MIRROR_IN_RTL} />
         </Button>
         <Button
           isIconOnly
           variant="secondary"
           className="size-16 rounded-full border-4 border-white/50 bg-white"
-          accessibilityLabel="Take photo"
+          accessibilityLabel={t("mobile.chat.camera.takePhoto")}
           isDisabled={!ready || busy}
           onPress={() => void capture()}
         />
@@ -124,9 +121,10 @@ export function ChatCameraContent({
           isIconOnly
           variant="secondary"
           className="size-12 rounded-full bg-black/60"
-          accessibilityLabel="Switch camera"
+          accessibilityLabel={t("mobile.chat.camera.switch")}
           isDisabled={busy}
           onPress={() => {
+            void haptics.selection();
             setReady(false);
             setError(null);
             setFacing((current) => (current === "back" ? "front" : "back"));

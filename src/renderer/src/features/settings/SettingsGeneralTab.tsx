@@ -1,16 +1,13 @@
-import type {
-  AgentProviderId,
-  AppInfo,
-  CustomProviderRestart,
-  CustomProviderSummary,
-  SaveCustomProviderInput,
-} from "@dani-dex/contracts/ipc";
-import type { AppTextKey } from "@dani-dex/i18n";
-import { createSignal, Show } from "solid-js";
-import { ProviderPicker } from "../../components/ProviderPicker";
 import {
-  AlertDialog,
-  Button,
+  APP_INTERFACE_SIZES,
+  type AppInterfaceSize,
+  type AppVariant,
+  type AvatarColor,
+  QUIT_GUARDS,
+  type QuitGuard,
+} from "@openbot/contracts/ipc";
+import type { AppTextKey } from "@openbot/i18n";
+import {
   Item,
   ItemActions,
   ItemContent,
@@ -24,196 +21,340 @@ import {
   SelectValue,
   SettingsSection,
   SwitchField,
-  Text,
-} from "../../components/ui";
+  toast,
+} from "@openbot/ui";
+import { documentColorScheme } from "@openbot/ui/document-color-scheme";
+import { AppearanceSelect } from "@openbot/ui/features/settings/AppearanceSelect";
+import type { GeneralSettingsValue } from "@openbot/ui/features/settings/app-settings";
+import { ChatBackgroundSetting } from "@openbot/ui/features/settings/ChatBackgroundSetting";
+import { ChatBubbleStyleSelect } from "@openbot/ui/features/settings/ChatBubbleStyleSelect";
+import { OwnChatColorTrigger } from "@openbot/ui/features/settings/ChatColorSetting";
+import { FontSelect } from "@openbot/ui/features/settings/FontSelect";
+import { LanguageSelect } from "@openbot/ui/features/settings/LanguageSelect";
+import { LogoColorPicker } from "@openbot/ui/features/settings/LogoColorPicker";
+import { SendShortcutSelect } from "@openbot/ui/features/settings/SendShortcutSelect";
+import { SidebarChatOrderSelect } from "@openbot/ui/features/settings/SidebarChatOrderSelect";
+import { useText } from "@openbot/ui/text";
+import { createUniqueId, Show } from "solid-js";
+import { useInstalledFonts } from "../../app-fonts";
+import { useAppearanceChoice } from "../../appearance-choice";
+import { setChatBubbleStyle, useChatBubbleStyle } from "../../chat-bubble-style-preference";
 import { useI18n } from "../../i18n-context";
-import { CustomProviderDialog } from "../custom-providers/CustomProviderDialog";
-import { CustomProviderListDialog } from "../custom-providers/CustomProviderListDialog";
-import { createCustomProviderHostState } from "../custom-providers/custom-provider-host-state";
-import type { GeneralSettingsValue } from "./app-settings";
-import type { HarnessSettingsApi } from "./HarnessSettings";
-import { LanguageSelect } from "./LanguageSelect";
-import type { SettingsGeneralStore } from "./stores/general-store";
-import { type VoiceKeyApi, VoiceKeySettings } from "./VoiceKeySettings";
+import { useInterfaceSizeChoice } from "../../interface-size";
+import { useLayout } from "../../layout";
+import { useLogoColorChoice } from "../../logo-color";
+import { ChatBackdropSetting } from "./ChatBackdropSetting";
+import { ExternalLinkSelect } from "./ExternalLinkSelect";
+import { MotionSwitches } from "./MotionSwitches";
 
-const linkTargetOptions: GeneralSettingsValue["externalLinkTarget"][] = ["Default browser", "Dani-Dex"];
-
-/**
- * The saved value is the English name, because it is what `app-settings.ts` persists and what the
- * main process compares against. Only the label a reader sees is translated.
- */
-const LINK_TARGET_KEYS = {
-  "Default browser": "settings.externalLinks.defaultBrowser",
-  "Dani-Dex": "settings.externalLinks.danidex",
-} as const satisfies Record<GeneralSettingsValue["externalLinkTarget"], AppTextKey>;
+const interfaceSizeOptions = [...APP_INTERFACE_SIZES];
+const quitGuardOptions = [...QUIT_GUARDS];
+const QUIT_GUARD_LABEL = {
+  working: "settings.quitGuard.working",
+  always: "settings.quitGuard.always",
+  never: "settings.quitGuard.never",
+} as const satisfies Record<QuitGuard, AppTextKey>;
 
 interface SettingsGeneralTabProps {
-  store: SettingsGeneralStore;
+  part: "general" | "appearance" | "app-behavior";
   value: GeneralSettingsValue;
-  onUpdateSetting: <Key extends keyof GeneralSettingsValue>(key: Key, value: GeneralSettingsValue[Key]) => void;
-  platform: AppInfo["platform"] | undefined;
-  /** The dialog element the Select popovers portal into, captured when this tab was created. */
+  platform?: "darwin" | "win32" | "linux" | undefined;
+  variant: AppVariant;
   selectMount: HTMLElement | undefined;
-  onDownloadProvider?: (provider: AgentProviderId) => void | Promise<void>;
-  onCancelProviderDownload?: (provider: AgentProviderId) => void | Promise<void>;
-  onUpdateProvider?: (provider: AgentProviderId) => void | Promise<void>;
-  onInstallProvider?: (provider: AgentProviderId) => void | Promise<void>;
-  onOptionalApiKey?: (provider: AgentProviderId) => void;
-  onConnectProvider?: (provider: AgentProviderId) => void | Promise<void>;
-  /**
-   * Accepts a described endpoint. Without it the section offers no custom provider at all, which is
-   * how a remote server hides the whole feature: these endpoints merge into the OpenCode process on
-   * this computer.
-   */
-  onAddCustomProvider?: (value: SaveCustomProviderInput) => Promise<CustomProviderRestart>;
-  /** The endpoints already saved, without their keys. Empty until the first list arrives. */
-  customProviders?: readonly CustomProviderSummary[];
-  /** Without it the rows are listed but not removable, which is what a story without the callback shows. */
-  onDeleteCustomProvider?: (id: string) => Promise<CustomProviderRestart>;
-  onSignInProvider?: (provider: AgentProviderId) => void | Promise<void>;
-  /** Opens the code sign-in. Absent in the stories, where there is no provider to answer it. */
-  onSignInWithCodeProvider?: (provider: AgentProviderId) => void | Promise<void>;
-  turboModePending?: boolean;
-  /** Dani's free models are the only model: the provider section shows the one Dani row instead. */
-  daniOnly?: boolean;
-  /** Kept for callers that still build it; the section is no longer shown (no harness names in the UI). */
-  harness?: HarnessSettingsApi;
-  voiceKey?: VoiceKeyApi;
+  onUpdateSetting: <Key extends keyof GeneralSettingsValue>(key: Key, value: GeneralSettingsValue[Key]) => void;
+  onUpdateSettings: (patch: Partial<GeneralSettingsValue>) => void;
+  chatColor: AvatarColor | null;
+  onSetChatColor: (color: AvatarColor | null) => Promise<void>;
 }
 
 export function SettingsGeneralTab(props: SettingsGeneralTabProps) {
   const i18n = useI18n();
-  const linkTargetLabel = (value: GeneralSettingsValue["externalLinkTarget"] | undefined) =>
-    value === undefined ? "" : i18n.t(LINK_TARGET_KEYS[value]);
-  const customProviders = () => props.customProviders ?? [];
-  /**
-   * Which row holds the check here. Nothing stores it: the whole Settings picker is local state
-   * today, so this row matches its neighbours and no more. Do not wire it to a saved default without
-   * first deciding what a saved default means for the four rows beside it.
-   */
-  const [customSelected, setCustomSelected] = createSignal(false);
-  const [confirmingTurbo, setConfirmingTurbo] = createSignal(false);
-  let cancelTurboButton: HTMLButtonElement | undefined;
-  const host = createCustomProviderHostState({
-    onAdd: (value) => props.onAddCustomProvider?.(value),
-    onDelete: (id) => props.onDeleteCustomProvider?.(id),
-    onRemoved: () => {
-      if (customProviders().length === 0) {
-        setCustomSelected(false);
-      }
-    },
-  });
-
+  const layout = useLayout();
+  const backgroundRow = () =>
+    props.platform === "darwin"
+      ? ({ title: "settings.menuBar.title", description: "settings.menuBar.description" } as const)
+      : ({ title: "settings.keepRunning.title", description: "settings.keepRunning.description" } as const);
   return (
     <>
-      <SettingsSection title={i18n.t("settings.providers.title")}>
-        <ProviderPicker
-          daniOnly={props.daniOnly}
-          value={props.store.selectedProvider()}
-          options={props.store.providerOptions()}
-          ariaLabel={i18n.t("settings.providers.title")}
-          embedded
-          allowUnavailableSelection
-          customProviders={customProviders()}
-          customSelected={customSelected()}
-          onChange={(provider) => {
-            setCustomSelected(false);
-            props.store.setSelectedProvider(provider);
-          }}
-          onDownloadProvider={props.onDownloadProvider}
-          onCancelProviderDownload={props.onCancelProviderDownload}
-          onUpdateProvider={props.onUpdateProvider}
-          onOptionalApiKey={props.onOptionalApiKey}
-          onConnectProvider={props.onConnectProvider}
-          onInstallProvider={props.onInstallProvider}
-          onAddCustomProvider={props.onAddCustomProvider ? host.openForm : undefined}
-          onSelectCustomProvider={props.onAddCustomProvider ? () => setCustomSelected(true) : undefined}
-          onManageCustomProviders={props.onAddCustomProvider ? host.openList : undefined}
-          onSignInProvider={props.onSignInProvider}
-          onSignInWithCodeProvider={props.onSignInWithCodeProvider}
-          menuMount={props.selectMount}
-        />
-        {/* The outcome is shown where the user is looking. While the list is open the section behind
-            it is hidden from assistive technology, so a status left here could not be read. */}
-        <Show when={host.state.manageOpen ? null : host.state.note}>
-          {(message) => (
-            <Text tone="muted" variant="caption" role="status">
-              {message()}
-            </Text>
-          )}
-        </Show>
-        <Show when={props.onAddCustomProvider}>
-          <CustomProviderDialog
-            open={host.state.open}
-            busy={host.state.saving}
-            submitError={host.state.submitError}
-            takenProviderIds={customProviders().map((provider) => provider.id)}
-            onSubmit={(value) => void host.submit(value)}
-            onCancel={host.closeForm}
-          />
-          <CustomProviderListDialog
-            open={host.state.manageOpen}
-            providers={customProviders()}
-            removing={host.state.removing}
-            note={host.state.note}
-            onDelete={props.onDeleteCustomProvider ? (provider) => void host.remove(provider) : undefined}
-            onClose={host.closeList}
-          />
-        </Show>
-      </SettingsSection>
+      <Show when={props.part === "appearance"}>
+        <AppearanceRows {...props} />
+      </Show>
 
-      {/* Paid OpenCode BYOK belongs in Settings, never on the Dani Free connection row. */}
-      <Show when={props.onSignInProvider}>
-        <SettingsSection title="Paid model keys">
+      <Show when={props.part === "general"}>
+        <SettingsSection title={i18n.t("settings.conversations.title")}>
           <ItemGroup class="settings-modal-card">
-            <Item class="settings-modal-row">
+            <Item data-settings-row="settings.sendShortcut.title" class="settings-modal-row">
               <ItemContent>
-                <ItemTitle>OpenCode paid models</ItemTitle>
-                <ItemDescription>Optional key for paid models. Dani Free needs no key.</ItemDescription>
+                <ItemTitle>{i18n.t("settings.sendShortcut.title")}</ItemTitle>
+                <ItemDescription>{i18n.t("settings.sendShortcut.description")}</ItemDescription>
               </ItemContent>
               <ItemActions>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="xs"
-                  onClick={() => void props.onSignInProvider?.("opencode")}
-                >
-                  Manage key
-                </Button>
+                <SendShortcutSelect
+                  value={props.value.sendShortcut}
+                  onChange={(mode) => props.onUpdateSetting("sendShortcut", mode)}
+                  devicePlatform={props.platform ?? "darwin"}
+                  mount={props.selectMount}
+                />
+              </ItemActions>
+            </Item>
+            <Item data-settings-row="sidebar.order.title" class="settings-modal-row">
+              <ItemContent>
+                <ItemTitle>{i18n.t("sidebar.order.title")}</ItemTitle>
+                <ItemDescription>{i18n.t("settings.chatOrder.description")}</ItemDescription>
+              </ItemContent>
+              <ItemActions>
+                <SidebarChatOrderSelect
+                  value={layout.sidebarChatOrder()}
+                  onChange={layout.setSidebarChatOrder}
+                  mount={props.selectMount}
+                />
+              </ItemActions>
+            </Item>
+            <SwitchField
+              data-settings-row="settings.showAgentSteps.title"
+              checked={props.value.showAgentSteps}
+              onChange={(checked) => props.onUpdateSetting("showAgentSteps", checked)}
+              label={i18n.t("settings.showAgentSteps.title")}
+              description={i18n.t("settings.showAgentSteps.description")}
+            />
+            <SwitchField
+              data-settings-row="settings.compactMessageActions.title"
+              checked={props.value.compactMessageActions}
+              onChange={(checked) => props.onUpdateSetting("compactMessageActions", checked)}
+              label={i18n.t("settings.compactMessageActions.title")}
+              description={i18n.t("settings.compactMessageActions.description")}
+            />
+            <Item data-settings-row="settings.externalLinks.title" class="settings-modal-row">
+              <ItemContent>
+                <ItemTitle>{i18n.t("settings.externalLinks.title")}</ItemTitle>
+                <ItemDescription>{i18n.t("settings.externalLinks.description")}</ItemDescription>
+              </ItemContent>
+              <ItemActions>
+                <ExternalLinkSelect
+                  target={props.value.externalLinkTarget}
+                  platform={props.platform}
+                  mount={props.selectMount}
+                  onChange={(target) => props.onUpdateSetting("externalLinkTarget", target)}
+                />
               </ItemActions>
             </Item>
           </ItemGroup>
         </SettingsSection>
+
+        <SettingsSection title={i18n.t("settings.permissions.title")}>
+          <ItemGroup class="settings-modal-card">
+            <SwitchField
+              data-settings-row="settings.analytics.title"
+              checked={props.value.productAnalytics}
+              onChange={(checked) => props.onUpdateSetting("productAnalytics", checked)}
+              label={i18n.t("settings.analytics.title")}
+              description={i18n.t("settings.analytics.description")}
+            />
+          </ItemGroup>
+        </SettingsSection>
       </Show>
 
-      <Show when={props.voiceKey}>{(voiceKey) => <VoiceKeySettings api={voiceKey()} />}</Show>
+      <Show when={props.part === "app-behavior"}>
+        <SettingsSection title={i18n.t("settings.appBehavior.startTitle")}>
+          <ItemGroup class="settings-modal-card">
+            <Show when={props.value.launchAtLogin !== null}>
+              <SwitchField
+                data-settings-row="settings.launchAtLogin.title"
+                checked={props.value.launchAtLogin === true}
+                onChange={(checked) => props.onUpdateSetting("launchAtLogin", checked)}
+                label={i18n.t("settings.launchAtLogin.title")}
+                description={i18n.t("settings.launchAtLogin.description")}
+              />
+            </Show>
+            <SwitchField
+              data-settings-row="settings.restoreWorkspace.title"
+              checked={props.value.restoreLastWorkspace}
+              onChange={(checked) => props.onUpdateSetting("restoreLastWorkspace", checked)}
+              label={i18n.t("settings.restoreWorkspace.title")}
+              description={i18n.t("settings.restoreWorkspace.description")}
+            />
+            <SwitchField
+              data-settings-row="settings.keepRemoteSessions.title"
+              checked={props.value.keepRemoteSessions}
+              onChange={(checked) => props.onUpdateSetting("keepRemoteSessions", checked)}
+              label={i18n.t("settings.keepRemoteSessions.title")}
+              description={i18n.t("settings.keepRemoteSessions.description")}
+            />
+            <Show when={props.value.quitGuard}>
+              {(quitGuard) => (
+                <Item data-settings-row="settings.quitGuard.title" class="settings-modal-row">
+                  <ItemContent>
+                    <ItemTitle>{i18n.t("settings.quitGuard.title")}</ItemTitle>
+                    <ItemDescription>{i18n.t("settings.quitGuard.description")}</ItemDescription>
+                  </ItemContent>
+                  <ItemActions>
+                    <Select<QuitGuard>
+                      class="settings-modal-select"
+                      options={quitGuardOptions}
+                      value={quitGuard()}
+                      onChange={(value) => value && value !== quitGuard() && props.onUpdateSetting("quitGuard", value)}
+                      placement="bottom-end"
+                      itemComponent={(selectProps) => (
+                        <SelectItem item={selectProps.item}>
+                          {i18n.t(QUIT_GUARD_LABEL[selectProps.item.rawValue])}
+                        </SelectItem>
+                      )}
+                    >
+                      <SelectTrigger size="sm" aria-label={i18n.t("settings.quitGuard.title")}>
+                        <SelectValue<QuitGuard>>
+                          {(state) => i18n.t(QUIT_GUARD_LABEL[state.selectedOption()])}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent mount={props.selectMount} />
+                    </Select>
+                  </ItemActions>
+                </Item>
+              )}
+            </Show>
+          </ItemGroup>
+        </SettingsSection>
+        <Show when={props.value.keepRunningInBackground !== null || props.value.keepAwake !== null}>
+          <SettingsSection title={i18n.t("settings.appBehavior.backgroundTitle")}>
+            <ItemGroup class="settings-modal-card">
+              <Show when={props.value.keepRunningInBackground !== null}>
+                <SwitchField
+                  data-settings-row={backgroundRow().title}
+                  checked={props.value.keepRunningInBackground === true}
+                  onChange={(checked) => props.onUpdateSetting("keepRunningInBackground", checked)}
+                  label={i18n.t(backgroundRow().title)}
+                  description={i18n.t(backgroundRow().description)}
+                />
+              </Show>
+              <Show when={props.value.keepAwake !== null}>
+                <SwitchField
+                  data-settings-row="settings.keepAwake.title"
+                  checked={props.value.keepAwake === true}
+                  onChange={(checked) => props.onUpdateSetting("keepAwake", checked)}
+                  label={i18n.t("settings.keepAwake.title")}
+                  description={i18n.t("settings.keepAwake.description")}
+                />
+                <SwitchField
+                  data-settings-row="settings.keepAwakeOnBattery.title"
+                  checked={props.value.keepAwakeOnBattery === true}
+                  disabled={props.value.keepAwake !== true}
+                  onChange={(checked) => props.onUpdateSetting("keepAwakeOnBattery", checked)}
+                  label={i18n.t("settings.keepAwakeOnBattery.title")}
+                  description={i18n.t("settings.keepAwakeOnBattery.description")}
+                />
+              </Show>
+            </ItemGroup>
+          </SettingsSection>
+        </Show>
+      </Show>
+    </>
+  );
+}
 
-      <SettingsSection title={i18n.t("settings.appBehavior.title")}>
+function AppearanceRows(props: SettingsGeneralTabProps) {
+  const i18n = useI18n();
+  const appearance = useAppearanceChoice();
+  const logoColor = useLogoColorChoice();
+  const bubbleStyle = useChatBubbleStyle();
+  const interfaceSize = useInterfaceSizeChoice();
+  const installedFonts = useInstalledFonts();
+  const interfaceFontTitleId = `settings-interface-font-${createUniqueId()}`;
+  const codeFontTitleId = `settings-code-font-${createUniqueId()}`;
+  const { format, errorMessage } = useText();
+  const saveChatColor = (color: AvatarColor | null) =>
+    void props
+      .onSetChatColor(color)
+      .catch((error: unknown) =>
+        toast.error(errorMessage(error, i18n.t("settings.preferences.saveFailed")), { error }),
+      );
+  const interfaceSizeLabel = (value: AppInterfaceSize | undefined) =>
+    value === undefined ? "" : format.percent(value / 100);
+  return (
+    <>
+      <SettingsSection title={i18n.t("settings.appearance.colorsTitle")}>
         <ItemGroup class="settings-modal-card">
-          <SwitchField
-            checked={props.value.launchAtLogin}
-            onChange={(checked) => props.onUpdateSetting("launchAtLogin", checked)}
-            label={i18n.t("settings.launchAtLogin.title")}
-            description={i18n.t("settings.launchAtLogin.description")}
-          />
-          <SwitchField
-            checked={props.value.keepRunningInBackground}
-            onChange={(checked) => props.onUpdateSetting("keepRunningInBackground", checked)}
-            label={i18n.t("settings.keepRunning.title")}
-            description={i18n.t("settings.keepRunning.description")}
-          />
+          <Item data-settings-row="settings.appearance.theme.title" class="settings-modal-row">
+            <ItemContent>
+              <ItemTitle>{i18n.t("settings.appearance.theme.title")}</ItemTitle>
+              <ItemDescription>{i18n.t("settings.appearance.theme.description")}</ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <AppearanceSelect
+                value={appearance.theme()}
+                onChange={appearance.changeTheme}
+                palettes={appearance.palettes()}
+                mount={props.selectMount}
+              />
+            </ItemActions>
+          </Item>
+          <Show when={props.platform === "darwin"}>
+            <SwitchField
+              data-settings-row="settings.appearance.transparentWindow.title"
+              checked={appearance.transparentWindow()}
+              onChange={appearance.changeTransparentWindow}
+              label={i18n.t("settings.appearance.transparentWindow.title")}
+              description={i18n.t("settings.appearance.transparentWindow.description")}
+            />
+          </Show>
+          <Item data-settings-row="settings.logoColor.title" class="settings-modal-row settings-logo-color-row">
+            <ItemContent>
+              <ItemTitle>{i18n.t("settings.logoColor.title")}</ItemTitle>
+              <ItemDescription>{i18n.t("settings.logoColor.description")}</ItemDescription>
+              <Show when={props.variant !== "production"}>
+                <ItemDescription>{i18n.t("settings.logoColor.buildNote")}</ItemDescription>
+              </Show>
+            </ItemContent>
+            <LogoColorPicker value={logoColor.color()} onChange={logoColor.changeColor} />
+          </Item>
+          <Item data-settings-row="settings.chatColor.title" class="settings-modal-row">
+            <ItemContent>
+              <ItemTitle>{i18n.t("settings.chatColor.title")}</ItemTitle>
+              <ItemDescription>{i18n.t("settings.chatColor.description")}</ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <OwnChatColorTrigger value={props.chatColor} onChange={saveChatColor} />
+            </ItemActions>
+          </Item>
+          <Item data-settings-row="settings.bubbleStyle.title" class="settings-modal-row">
+            <ItemContent>
+              <ItemTitle>{i18n.t("settings.bubbleStyle.title")}</ItemTitle>
+              <ItemDescription>{i18n.t("settings.bubbleStyle.description")}</ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <ChatBubbleStyleSelect value={bubbleStyle()} onChange={setChatBubbleStyle} mount={props.selectMount} />
+            </ItemActions>
+          </Item>
+          <Item data-settings-row="settings.chatBackground.title" class="settings-modal-row">
+            <ItemContent>
+              <ItemTitle>{i18n.t("settings.chatBackground.title")}</ItemTitle>
+              <ItemDescription>{i18n.t("settings.chatBackground.description")}</ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <ChatBackgroundSetting
+                scheme={documentColorScheme()}
+                light={appearance.chatBackgroundLight()}
+                dark={appearance.chatBackgroundDark()}
+                onChange={(scheme, value) =>
+                  scheme === "light"
+                    ? appearance.changeChatBackgroundLight(value)
+                    : appearance.changeChatBackgroundDark(value)
+                }
+              />
+            </ItemActions>
+          </Item>
+          <Item data-settings-row="settings.chatBackdrop.title" class="settings-modal-row">
+            <ItemContent>
+              <ItemTitle>{i18n.t("settings.chatBackdrop.title")}</ItemTitle>
+              <ItemDescription>{i18n.t("settings.chatBackdrop.description")}</ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <ChatBackdropSetting mount={props.selectMount} />
+            </ItemActions>
+          </Item>
         </ItemGroup>
       </SettingsSection>
-
-      <SettingsSection title={i18n.t("settings.workspace.title")}>
+      <SettingsSection title={i18n.t("settings.appearance.textTitle")}>
         <ItemGroup class="settings-modal-card">
-          <SwitchField
-            checked={props.value.restoreLastWorkspace}
-            onChange={(checked) => props.onUpdateSetting("restoreLastWorkspace", checked)}
-            label={i18n.t("settings.restoreWorkspace.title")}
-            description={i18n.t("settings.restoreWorkspace.description")}
-          />
-          <Item class="settings-modal-row">
+          <Item data-settings-row="settings.language.title" class="settings-modal-row">
             <ItemContent>
               <ItemTitle>{i18n.t("settings.language.title")}</ItemTitle>
               <ItemDescription>{i18n.t("settings.language.description")}</ItemDescription>
@@ -222,152 +363,67 @@ export function SettingsGeneralTab(props: SettingsGeneralTabProps) {
               <LanguageSelect value={i18n.language()} onChange={i18n.changeLanguage} mount={props.selectMount} />
             </ItemActions>
           </Item>
-          <Item class="settings-modal-row">
+          <Item data-settings-row="settings.interfaceSize.title" class="settings-modal-row">
             <ItemContent>
-              <ItemTitle>{i18n.t("settings.externalLinks.title")}</ItemTitle>
-              <ItemDescription>{i18n.t("settings.externalLinks.description")}</ItemDescription>
+              <ItemTitle>{i18n.t("settings.interfaceSize.title")}</ItemTitle>
+              <ItemDescription>{i18n.t("settings.interfaceSize.description")}</ItemDescription>
             </ItemContent>
             <ItemActions>
-              <Select<GeneralSettingsValue["externalLinkTarget"]>
+              <Select<AppInterfaceSize>
                 class="settings-modal-select"
-                options={linkTargetOptions}
-                value={props.value.externalLinkTarget}
-                onChange={(value) => value && props.onUpdateSetting("externalLinkTarget", value)}
+                options={interfaceSizeOptions}
+                value={interfaceSize.percent()}
+                onChange={(value) => value && interfaceSize.changePercent(value)}
                 placement="bottom-end"
                 itemComponent={(selectProps) => (
-                  <SelectItem item={selectProps.item}>{linkTargetLabel(selectProps.item.rawValue)}</SelectItem>
+                  <SelectItem item={selectProps.item}>{interfaceSizeLabel(selectProps.item.rawValue)}</SelectItem>
                 )}
               >
-                <SelectTrigger size="sm" aria-label={i18n.t("settings.externalLinks.title")}>
-                  <SelectValue<GeneralSettingsValue["externalLinkTarget"]>>
-                    {(state) => linkTargetLabel(state.selectedOption())}
-                  </SelectValue>
+                <SelectTrigger size="sm" aria-label={i18n.t("settings.interfaceSize.title")}>
+                  <SelectValue<AppInterfaceSize>>{(state) => interfaceSizeLabel(state.selectedOption())}</SelectValue>
                 </SelectTrigger>
                 <SelectContent mount={props.selectMount} />
               </Select>
             </ItemActions>
           </Item>
+          <Item data-settings-row="settings.interfaceFont.title" class="settings-modal-row">
+            <ItemContent>
+              <ItemTitle id={interfaceFontTitleId}>{i18n.t("settings.interfaceFont.title")}</ItemTitle>
+              <ItemDescription>{i18n.t("settings.interfaceFont.description")}</ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <FontSelect
+                kind="interface"
+                systemFontDefault={props.platform === "darwin"}
+                value={appearance.interfaceFont()}
+                onChange={appearance.changeInterfaceFont}
+                fonts={installedFonts()}
+                aria-labelledby={interfaceFontTitleId}
+                mount={props.selectMount}
+              />
+            </ItemActions>
+          </Item>
+          <Item data-settings-row="settings.codeFont.title" class="settings-modal-row">
+            <ItemContent>
+              <ItemTitle id={codeFontTitleId}>{i18n.t("settings.codeFont.title")}</ItemTitle>
+              <ItemDescription>{i18n.t("settings.codeFont.description")}</ItemDescription>
+            </ItemContent>
+            <ItemActions>
+              <FontSelect
+                kind="code"
+                value={appearance.codeFont()}
+                onChange={appearance.changeCodeFont}
+                fonts={installedFonts()}
+                aria-labelledby={codeFontTitleId}
+                mount={props.selectMount}
+              />
+            </ItemActions>
+          </Item>
         </ItemGroup>
       </SettingsSection>
-
-      <SettingsSection title={i18n.t("settings.autonomy.title")}>
+      <SettingsSection title={i18n.t("settings.motion.title")}>
         <ItemGroup class="settings-modal-card">
-          <SwitchField
-            checked={props.value.turboMode}
-            disabled={props.turboModePending}
-            onChange={(checked) => {
-              // Turning it on is the move that needs the warning. Turning it off restores asking and
-              // is never something a user needs protecting from, so it is written straight away.
-              if (checked) setConfirmingTurbo(true);
-              else props.onUpdateSetting("turboMode", false);
-            }}
-            label={i18n.t("settings.turbo.title")}
-            description={i18n.t("settings.turbo.description")}
-          />
-        </ItemGroup>
-      </SettingsSection>
-
-      <AlertDialog.Root
-        open={confirmingTurbo()}
-        onOpenChange={(open) => {
-          if (!open) setConfirmingTurbo(false);
-        }}
-      >
-        <AlertDialog.Portal>
-          <AlertDialog.Overlay class="approval-confirm-backdrop">
-            <AlertDialog.Content
-              class="approval-confirm-dialog"
-              onOpenAutoFocus={(event) => {
-                event.preventDefault();
-                cancelTurboButton?.focus({ preventScroll: true });
-              }}
-            >
-              <AlertDialog.Title>{i18n.t("settings.turbo.confirmTitle")}</AlertDialog.Title>
-              <AlertDialog.Description>{i18n.t("settings.turbo.confirmDescription")}</AlertDialog.Description>
-              <div class="approval-confirm-actions">
-                <Button
-                  ref={cancelTurboButton}
-                  variant="outline"
-                  type="button"
-                  onClick={() => setConfirmingTurbo(false)}
-                >
-                  {i18n.t("settings.turbo.confirmCancel")}
-                </Button>
-                <Button
-                  variant="default"
-                  type="button"
-                  onClick={() => {
-                    setConfirmingTurbo(false);
-                    props.onUpdateSetting("turboMode", true);
-                  }}
-                >
-                  {i18n.t("settings.turbo.confirmAccept")}
-                </Button>
-              </div>
-            </AlertDialog.Content>
-          </AlertDialog.Overlay>
-        </AlertDialog.Portal>
-      </AlertDialog.Root>
-
-      <SettingsSection title={i18n.t("settings.notifications.title")}>
-        <ItemGroup class="settings-modal-card">
-          <SwitchField
-            checked={props.value.desktopNotifications}
-            onChange={(checked) => props.onUpdateSetting("desktopNotifications", checked)}
-            label={i18n.t("settings.desktopNotifications.title")}
-            description={i18n.t("settings.desktopNotifications.description")}
-          />
-          <SwitchField
-            checked={props.value.taskCompletionSound}
-            onChange={(checked) => props.onUpdateSetting("taskCompletionSound", checked)}
-            label={i18n.t("settings.taskSound.title")}
-            description={i18n.t("settings.taskSound.description")}
-          />
-        </ItemGroup>
-      </SettingsSection>
-
-      <Show when={props.platform === "darwin"}>
-        <SettingsSection title={i18n.t("settings.notch.title")}>
-          <ItemGroup class="settings-modal-card">
-            <SwitchField
-              checked={props.value.macBookNotch}
-              onChange={(checked) => props.onUpdateSetting("macBookNotch", checked)}
-              label={i18n.t("settings.notch.show.title")}
-              description={i18n.t("settings.notch.show.description")}
-            />
-            <SwitchField
-              checked={props.value.macBookNotchIdle}
-              disabled={!props.value.macBookNotch}
-              onChange={(checked) => props.onUpdateSetting("macBookNotchIdle", checked)}
-              label={i18n.t("settings.notch.idle.title")}
-              description={i18n.t("settings.notch.idle.description")}
-            />
-            <SwitchField
-              checked={props.value.macBookNotchAdditionalDisplays}
-              disabled={!props.value.macBookNotch}
-              onChange={(checked) => props.onUpdateSetting("macBookNotchAdditionalDisplays", checked)}
-              label={i18n.t("settings.notch.displays.title")}
-              description={i18n.t("settings.notch.displays.description")}
-            />
-            <SwitchField
-              checked={props.value.macBookNotchHaptics}
-              disabled={!props.value.macBookNotch}
-              onChange={(checked) => props.onUpdateSetting("macBookNotchHaptics", checked)}
-              label={i18n.t("settings.notch.haptics.title")}
-              description={i18n.t("settings.notch.haptics.description")}
-            />
-          </ItemGroup>
-        </SettingsSection>
-      </Show>
-
-      <SettingsSection title={i18n.t("settings.privacy.title")}>
-        <ItemGroup class="settings-modal-card">
-          <SwitchField
-            checked={props.value.productAnalytics}
-            onChange={(checked) => props.onUpdateSetting("productAnalytics", checked)}
-            label={i18n.t("settings.analytics.title")}
-            description={i18n.t("settings.analytics.description")}
-          />
+          <MotionSwitches />
         </ItemGroup>
       </SettingsSection>
     </>

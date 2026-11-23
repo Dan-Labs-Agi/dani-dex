@@ -1,32 +1,15 @@
-import type { AppInfo } from "@dani-dex/contracts/ipc";
-import { createMemo, createSignal, flush, onSettled } from "solid-js";
+import type { AppInfo } from "@openbot/contracts/ipc";
+import { createSignal, flush, onSettled } from "solid-js";
+import { appPort } from "./app-port";
 import type { AppProps } from "./app-providers";
+import { setDrawsOnCpu } from "./motion-preference";
 import { createSimpleContext } from "./simple-context";
 
-/**
- * What the renderer is running inside: which build and OS, whether the window
- * has focus, and the two flags fixed by how the app was mounted.
- *
- * The outermost domain, and deliberately ungated. Gating it on `appInfo` would
- * read well - everything below could treat the build as known - but it would
- * also hold back every provider under it, and with them the bootstrap loads
- * that run in parallel with `getAppInfo` today. The view already gates on
- * `appInfo()` where the null actually matters, so the gate would buy a narrower
- * type nowhere and cost a serialized startup everywhere.
- *
- * `appFocused` is maintained here and read by anything that treats a focused
- * window as "the user is looking at this". Domains that need to *act* when
- * focus returns listen for the event themselves rather than reacting to this
- * signal: the listener registered here runs first, because this provider is
- * created first, so the flag is already true by the time theirs runs.
- */
 const Platform = createSimpleContext({
   name: "Platform",
-  init: (props: AppProps) => {
-    const [appInfo, setAppInfo] = createSignal<AppInfo | null>(null);
+  init: (props: AppProps & { appInfo?: AppInfo }) => {
+    const [appInfo, setAppInfo] = createSignal<AppInfo | null>(props.appInfo ?? null);
     const [appFocused, setAppFocused] = createSignal(document.hasFocus());
-    // Whether `appInfo` is what main reported, as opposed to the fallback below.
-    // Analytics attribution is only honest about the former.
     let infoFromHost = false;
     let appFrame: HTMLDivElement | undefined;
 
@@ -35,20 +18,22 @@ const Platform = createSimpleContext({
       const handleFocus = () => flush(() => setAppFocused(true));
       window.addEventListener("blur", handleBlur);
       window.addEventListener("focus", handleFocus);
-      void window.danidex
-        .getAppInfo()
-        .then((info) => {
-          infoFromHost = true;
-          setAppInfo(info);
-        })
-        .catch(() =>
-          setAppInfo({
-            name: "Dani-Dex",
-            version: "unavailable",
-            platform: "darwin",
-            variant: "production",
-          }),
-        );
+      if (!props.appInfo)
+        void appPort()
+          .getAppInfo()
+          .then((info) => {
+            infoFromHost = true;
+            if (info.softwareRendering) setDrawsOnCpu(true);
+            setAppInfo(info);
+          })
+          .catch(() =>
+            setAppInfo({
+              name: "Dani Dex",
+              version: "unavailable",
+              platform: "darwin",
+              variant: "production",
+            }),
+          );
       return () => {
         window.removeEventListener("blur", handleBlur);
         window.removeEventListener("focus", handleFocus);
@@ -58,18 +43,10 @@ const Platform = createSimpleContext({
     return {
       appInfo,
       appFocused,
-      /**
-       * Whether the window draws the vertical server rail. Every desktop
-       * platform does; the memo exists because three components need the answer
-       * once the view is split along context boundaries - the frame class, the
-       * rail itself and the account dock - and because `appInfo` is null until
-       * main answers, which is the state that actually has to be handled.
-       */
-      serverRailVisible: createMemo(() => appInfo() !== null),
       appInfoLoadedFromHost: () => infoFromHost,
       landingPreview: props.landingPreview === true,
       peopleEnabled: props.peopleEnabled === true,
-      /** The element the remote-desktop workspace makes inert while it is up. */
+      chatWindow: props.chatWindow ?? null,
       appFrame: () => appFrame,
       setAppFrameElement: (element: HTMLDivElement) => {
         appFrame = element;

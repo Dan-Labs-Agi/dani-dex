@@ -1,8 +1,8 @@
-import type { ComputerUseState, MacPermissionId } from "@dani-dex/contracts/ipc";
+import type { ComputerUseState, MacPermissionId } from "@openbot/contracts/ipc";
 import { onCleanup } from "solid-js";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { ComputerUseSetup } from "../src/features/computer-use/ComputerUseSetup";
-import { createMockDaniDex } from "./mock-dani-dex";
+import { createMockOpenBot } from "./mock-openbot";
 
 function permissions(granted: readonly MacPermissionId[]): ComputerUseState["permissions"] {
   return (["screen-recording", "accessibility"] as const).map((id) => ({ id, granted: granted.includes(id) }));
@@ -15,19 +15,19 @@ const permissionsRequired: ComputerUseState = {
 };
 
 function MockedSetup(props: { state?: ComputerUseState; error?: Error; loading?: boolean }) {
-  const previousApi = window.danidex;
-  const mock = createMockDaniDex();
-  mock.api.getComputerUseState = props.loading
+  const previousApi = window.openbot;
+  const mock = createMockOpenBot();
+  mock.api.computerUse.getState = props.loading
     ? () => new Promise(() => undefined)
     : props.error
       ? async () => {
           throw props.error;
         }
       : async () => props.state ?? permissionsRequired;
-  window.danidex = mock.api;
+  window.openbot = mock.api;
   onCleanup(() => {
     mock.dispose();
-    window.danidex = previousApi;
+    window.openbot = previousApi;
   });
   return (
     <main class="foundation-story foundation-interaction-stage">
@@ -61,28 +61,51 @@ export const Ready: Story = {
   ),
 };
 
+export const RestartRequired: Story = {
+  render: () => (
+    <MockedSetup
+      state={{
+        status: "restart-required",
+        permissions: permissions(["screen-recording", "accessibility"]),
+        message: null,
+      }}
+    />
+  ),
+};
+
 export const Loading: Story = {
   render: () => <MockedSetup loading />,
 };
 
-/** A build that carries no driver. A fault of that build, so the panel names no command to run. */
 export const DriverMissing: Story = {
   render: () => (
     <MockedSetup
       state={{
         status: "driver-missing",
         permissions: permissions([]),
-        message: "This build of Dani-Dex carries no Computer Use driver.",
+        message: "This build of Dani Dex carries no Computer Use driver.",
       }}
     />
   ),
 };
 
-/** Windows and Linux grant no permission, so a driver that answers is all the panel has to report. */
 export const ReadyWithoutPermissions: Story = {
   render: () => <MockedSetup state={{ status: "ready", permissions: [], message: null }} />,
 };
 
+export const ReadyWithoutInput: Story = {
+  render: () => (
+    <MockedSetup
+      state={{
+        status: "ready",
+        permissions: [],
+        message:
+          "On this desktop, Dani Dex cannot type or click in other apps. For tasks on websites, ask the agent to use the Dani Dex browser.",
+      }}
+    />
+  ),
+};
+
 export const Failure: Story = {
-  render: () => <MockedSetup error={new Error("Dani-Dex could not check Computer Use.")} />,
+  render: () => <MockedSetup error={new Error("Dani Dex could not check Computer Use.")} />,
 };

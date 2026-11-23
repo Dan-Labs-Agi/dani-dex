@@ -1,20 +1,24 @@
-// An agent's long-lived memories: the notes it carries between threads.
-
-import { INPUT_LIMITS } from "@dani-dex/contracts/input-limits";
-import { TEAM_API_ROUTES } from "@dani-dex/contracts/team-api-routes";
+import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
+import { AGENT_MEMORIES_CAPABILITY } from "@openbot/contracts/team-protocol/agent-memories-v1";
+import {
+  readAgentMemories,
+  readAgentMemorySelection,
+  setAgentMemoryInclusion,
+} from "@openbot/team-client/team-api-requests";
 import type { AgentService } from "../../backend/agent-service";
-import { decodeAgentMemories, decodeAgentMemory } from "../remote-agent-decoding";
+import { runCauseEffect } from "../../backend/effect-boundary";
+import { decodeAgentMemory } from "../remote-agent-decoding";
 import { decodeVoid } from "../remote-host-decoding";
 import type { RemoteServerManager } from "../remote-server-manager";
 import {
-  parseAgentRequest,
+  parseAgentId,
   parseCreateAgentMemory,
   parseDeleteAgentMemory,
+  parseSetAgentMemoryInclusion,
   parseUpdateAgentMemory,
 } from "./agent-inputs";
-import { type IpcGroupHandlers, payloadHandler } from "./define-ipc-group";
-import { routeToServer } from "./route-to-server";
-import { requireString } from "./validation";
+import type { IpcGroupHandlers } from "./define-ipc-group";
+import { scopedHandler } from "./scoped-handler";
 
 interface MemoryIpcDependencies {
   service: AgentService;
@@ -27,30 +31,52 @@ export function memoryIpcHandlers({
 }: MemoryIpcDependencies): Pick<IpcGroupHandlers, "agentMemories"> {
   return {
     agentMemories: {
-      listMemories: payloadHandler(parseAgentRequest, (scoped) => {
-        const agentId = requireString(scoped.payload, "agentId", INPUT_LIMITS.identifier);
-        return routeToServer(scoped.serverId, {
-          local: () => service.listMemories(agentId),
-          remote: (serverId) =>
-            remoteServers.request(serverId, TEAM_API_ROUTES.agent.memories(agentId), decodeAgentMemories),
-        });
+      getMemorySelection: scopedHandler(parseAgentId, {
+        local: (agentId) => service.getMemorySelection(agentId),
+        remote: (agentId, serverId) =>
+          runCauseEffect(
+            readAgentMemorySelection(
+              (method, path, decode, body) => remoteServers.request(serverId, path, decode, { method, body }),
+              agentId,
+              remoteServers.supportsCapability(serverId, AGENT_MEMORIES_CAPABILITY),
+            ),
+          ),
       }),
-      createMemory: payloadHandler(parseAgentRequest, (scoped) => {
-        const parsed = parseCreateAgentMemory(scoped.payload);
-        return routeToServer(scoped.serverId, {
-          local: () => service.createMemory(parsed),
-          remote: (serverId) =>
+      setMemoryInclusion: scopedHandler(parseSetAgentMemoryInclusion, {
+        local: (input) => service.setMemoryInclusion(input),
+        remote: (input, serverId) =>
+          runCauseEffect(
+            setAgentMemoryInclusion(
+              (method, path, decode, body) => remoteServers.request(serverId, path, decode, { method, body }),
+              input,
+            ),
+          ),
+      }),
+      listMemories: scopedHandler(parseAgentId, {
+        local: (agentId) => service.listMemories(agentId),
+        remote: (agentId, serverId) =>
+          runCauseEffect(
+            readAgentMemories(
+              (method, path, decode, body) => remoteServers.request(serverId, path, decode, { method, body }),
+              agentId,
+              remoteServers.supportsCapability(serverId, AGENT_MEMORIES_CAPABILITY),
+            ),
+          ),
+      }),
+      createMemory: scopedHandler(parseCreateAgentMemory, {
+        local: (parsed) => service.createMemory(parsed),
+        remote: (parsed, serverId) =>
+          runCauseEffect(
             remoteServers.request(serverId, TEAM_API_ROUTES.agent.memories(parsed.agentId), decodeAgentMemory, {
               method: "POST",
               body: { text: parsed.text },
             }),
-        });
+          ),
       }),
-      updateMemory: payloadHandler(parseAgentRequest, (scoped) => {
-        const parsed = parseUpdateAgentMemory(scoped.payload);
-        return routeToServer(scoped.serverId, {
-          local: () => service.updateMemory(parsed),
-          remote: (serverId) =>
+      updateMemory: scopedHandler(parseUpdateAgentMemory, {
+        local: (parsed) => service.updateMemory(parsed),
+        remote: (parsed, serverId) =>
+          runCauseEffect(
             remoteServers.request(
               serverId,
               TEAM_API_ROUTES.agent.memory(parsed.agentId, parsed.memoryId),
@@ -60,25 +86,23 @@ export function memoryIpcHandlers({
                 body: { text: parsed.text },
               },
             ),
-        });
+          ),
       }),
-      deleteMemory: payloadHandler(parseAgentRequest, (scoped) => {
-        const parsed = parseDeleteAgentMemory(scoped.payload);
-        return routeToServer(scoped.serverId, {
-          local: () => service.deleteMemory(parsed),
-          remote: (serverId) =>
+      deleteMemory: scopedHandler(parseDeleteAgentMemory, {
+        local: (parsed) => service.deleteMemory(parsed),
+        remote: (parsed, serverId) =>
+          runCauseEffect(
             remoteServers.request(serverId, TEAM_API_ROUTES.agent.memory(parsed.agentId, parsed.memoryId), decodeVoid, {
               method: "DELETE",
             }),
-        });
+          ),
       }),
-      clearMemories: payloadHandler(parseAgentRequest, (scoped) => {
-        const agentId = requireString(scoped.payload, "agentId", INPUT_LIMITS.identifier);
-        return routeToServer(scoped.serverId, {
-          local: () => service.clearMemories(agentId),
-          remote: (serverId) =>
+      clearMemories: scopedHandler(parseAgentId, {
+        local: (agentId) => service.clearMemories(agentId),
+        remote: (agentId, serverId) =>
+          runCauseEffect(
             remoteServers.request(serverId, TEAM_API_ROUTES.agent.memories(agentId), decodeVoid, { method: "DELETE" }),
-        });
+          ),
       }),
     },
   };

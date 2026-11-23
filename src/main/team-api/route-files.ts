@@ -1,93 +1,149 @@
-// Bytes leaving the machine: draft attachments, shared files and workspace files.
-//
-// These four routes are the only ones that write a body themselves instead of going through
-// `json`, so they are also the only ones that must return `"handled"` explicitly - a bare `return`
-// here would read as `"unmatched"` and let the router answer 404 over a response it had already
-// finished.
-//
-// None of them scopes anything to the caller: any authenticated member may fetch any attachment id
-// or any path. The containment check that makes that safe - the path being inside the shared or
-// workspace directory - lives in `AgentService`, so what is enforced here is the size ceiling and
-// the length limits, and it must stay enforced here because this is the only caller that reads a
-// path off the wire.
-
-import { readFile } from "node:fs/promises";
+import { open } from "node:fs/promises";
+import type { OutgoingHttpHeaders, ServerResponse } from "node:http";
 import { basename } from "node:path";
-import { ATTACHMENT_LIMITS, INPUT_LIMITS } from "@dani-dex/contracts/input-limits";
-import { TEAM_API_ROUTES } from "@dani-dex/contracts/team-api-routes";
-import type { TeamApiAgents, TeamApiMailbox } from "./dependencies";
+import { pipeline } from "node:stream/promises";
+import { ATTACHMENT_LIMITS, INPUT_LIMITS } from "@openbot/contracts/input-limits";
+import { canAdministerServer } from "@openbot/contracts/ipc";
+import { TEAM_API_ROUTES, WORKSPACE_FILE_EXACT_PATH_QUERY } from "@openbot/contracts/team-api-routes";
+import { sourceText } from "@openbot/i18n/source";
+import { Deferred, Effect } from "effect";
+import { runCauseEffect } from "../../backend/effect-boundary";
+import { remoteCall } from "../remote-service-effects";
+import type { TeamApiAgents, TeamApiAttachmentPreviews, TeamApiMailbox } from "./dependencies";
 import { HttpError } from "./http-error";
 import type { RouteOutcome, TeamApiRequestContext } from "./request-context";
 import { pathIdentifier, readBinary } from "./request-helpers";
+import { rethrowWorkspacePathError } from "./route-workspace-directory";
+
+const ATTACHMENT_UPLOAD_SLOTS = 2;
+
+class UploadSlots {
+  readonly #waiting: Deferred.Deferred<void>[] = [];
+  #free: number;
+
+  constructor(count: number) {
+    this.#free = count;
+  }
+
+  use<A, E>(run: Effect.Effect<A, E>): Effect.Effect<A, E> {
+    return Effect.acquireUseRelease(
+      this.#take(),
+      () => run,
+      () => Effect.sync(() => this.#release()),
+    );
+  }
+
+  #take(): Effect.Effect<void> {
+    return Effect.suspend(() => {
+      if (this.#free > 0) {
+        this.#free -= 1;
+        return Effect.void;
+      }
+      const slot = Deferred.makeUnsafe<void>();
+      this.#waiting.push(slot);
+      return Deferred.await(slot);
+    });
+  }
+
+  #release(): void {
+    const next = this.#waiting.shift();
+    if (next) Deferred.doneUnsafe(next, Effect.void);
+    else this.#free += 1;
+  }
+}
+
+const attachmentUploads = new UploadSlots(ATTACHMENT_UPLOAD_SLOTS);
 
 export interface FileRouteDependencies {
   agents: Pick<
     TeamApiAgents,
-    "prepareImportedAttachments" | "discardDraftAttachment" | "resolveSharedFile" | "resolveWorkspaceFile"
+    | "prepareImportedAttachments"
+    | "discardDraftAttachment"
+    | "resolveSharedFile"
+    | "resolveWorkspaceFile"
+    | "resolveLocalWorkspaceFile"
   >;
   mailbox: TeamApiMailbox;
+  attachmentPreviews?: TeamApiAttachmentPreviews | undefined;
 }
 
 export async function routeFiles(
   context: TeamApiRequestContext,
-  { agents, mailbox }: FileRouteDependencies,
+  { agents, mailbox, attachmentPreviews }: FileRouteDependencies,
 ): Promise<RouteOutcome> {
-  const { method, url, request, response, json, empty } = context;
+  const { method, url, request, response, member, json, empty } = context;
 
   if (method === "POST" && url.pathname === TEAM_API_ROUTES.attachments) {
     const name = url.searchParams.get("name")?.trim();
     const mimeType = url.searchParams.get("mime") ?? "application/octet-stream";
     if (!name || basename(name) !== name || name.length > INPUT_LIMITS.attachmentName) {
-      throw new HttpError(400, "A safe attachment name is required.");
+      throw new HttpError(400, sourceText("error.team.attachmentNameRequired"));
     }
     if (mimeType.length > INPUT_LIMITS.mimeType) {
       throw new HttpError(400, "The attachment MIME type is too long.");
     }
-    const bytes = await readBinary(request, ATTACHMENT_LIMITS.fileBytes);
-    const attachments = await agents.prepareImportedAttachments([], [{ name, mimeType, bytes }]);
-    return json(201, attachments[0]);
+    const [attachment] = await runCauseEffect(
+      attachmentUploads.use(
+        Effect.gen(function* () {
+          const bytes = yield* remoteCall(() => readBinary(request, ATTACHMENT_LIMITS.fileBytes));
+          return yield* agents.prepareImportedAttachments([], [{ name, mimeType, bytes }]);
+        }),
+      ),
+    );
+    if (!attachment) throw new Error("The attachment was not prepared.");
+    return json(201, attachment);
   }
   const attachmentMatch = url.pathname.match(/^\/v1\/attachments\/([^/]+)$/);
   if (attachmentMatch) {
     const attachmentId = pathIdentifier(attachmentMatch[1], "attachmentId");
     if (method === "DELETE") {
-      await agents.discardDraftAttachment(attachmentId);
+      await runCauseEffect(agents.discardDraftAttachment(attachmentId));
       return empty(204);
     }
     if (method === "GET") {
-      const attachment = await mailbox.resolveAttachment(attachmentId);
-      if (!attachment) throw new HttpError(404, "Attachment not found.");
-      const bytes = await readFile(attachment.path);
-      response.writeHead(200, {
+      const attachment = await runCauseEffect(mailbox.resolveAttachment(attachmentId));
+      if (!attachment) throw new HttpError(404, sourceText("error.team.attachmentNotFound"));
+      return sendFile(response, attachment.path, null, (size) => ({
         "Content-Type": attachment.mimeType || "application/octet-stream",
-        "Content-Length": String(bytes.length),
+        "Content-Length": String(size),
         "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(basename(attachment.path))}`,
-      });
-      response.end(bytes);
-      return "handled";
+      }));
     }
+  }
+  const previewMatch = url.pathname.match(/^\/v1\/attachments\/([^/]+)\/preview$/);
+  if (previewMatch && method === "GET" && attachmentPreviews) {
+    const attachmentId = pathIdentifier(previewMatch[1], "attachmentId");
+    const attachment = await runCauseEffect(mailbox.resolveAttachment(attachmentId));
+    if (!attachment) throw new HttpError(404, sourceText("error.team.attachmentNotFound"));
+    if (!attachment.mimeType.startsWith("image/")) throw new HttpError(415, "The attachment is not an image.");
+    const preview = await runCauseEffect(
+      attachmentPreviews.file(attachmentId, { path: attachment.path, mimeType: attachment.mimeType }),
+    );
+    if (!preview) throw new HttpError(415, "The attachment has no preview.");
+    return sendFile(response, preview.path, null, (size) => ({
+      "Content-Type": preview.mimeType,
+      "Content-Length": String(size),
+      "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(basename(preview.path))}`,
+      "X-Content-Type-Options": "nosniff",
+    }));
   }
   if (method === "GET" && url.pathname === TEAM_API_ROUTES.sharedFiles) {
     const sharedPath = url.searchParams.get("path");
     if (!sharedPath || sharedPath.length > INPUT_LIMITS.path) {
       throw new HttpError(400, "A valid shared file path is required.");
     }
-    const sharedFile = await agents.resolveSharedFile(sharedPath);
+    const sharedFile = await runCauseEffect(agents.resolveSharedFile(sharedPath));
     if (sharedFile.size > ATTACHMENT_LIMITS.fileBytes) {
-      throw new HttpError(413, "The shared file exceeds the 100 MB limit.");
+      throw new HttpError(413, sourceText("error.team.sharedFileTooLarge"));
     }
-    const bytes = await readFile(sharedFile.path);
-    response.writeHead(200, {
+    return sendFile(response, sharedFile.path, sourceText("error.team.sharedFileTooLarge"), (size) => ({
       "Content-Type": "application/octet-stream",
-      "Content-Length": String(bytes.length),
+      "Content-Length": String(size),
       "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(sharedFile.name)}`,
       "X-Content-Type-Options": "nosniff",
-    });
-    response.end(bytes);
-    return "handled";
+    }));
   }
   if (method === "GET" && url.pathname === TEAM_API_ROUTES.workspaceFiles) {
-    // The released URL spells this `botId`; only the local name follows the rename.
     const agentId = url.searchParams.get("botId");
     const workspacePath = url.searchParams.get("path");
     if (!agentId || agentId.length > INPUT_LIMITS.identifier) {
@@ -96,20 +152,61 @@ export async function routeFiles(
     if (!workspacePath || workspacePath.length > INPUT_LIMITS.path) {
       throw new HttpError(400, "A valid workspace file path is required.");
     }
-    const workspaceFile = await agents.resolveWorkspaceFile(agentId, workspacePath);
+    const exactPath = url.searchParams.get(WORKSPACE_FILE_EXACT_PATH_QUERY) === "1";
+    const workspaceFile = await runCauseEffect(
+      canAdministerServer(member.role)
+        ? agents.resolveLocalWorkspaceFile(agentId, workspacePath, { exactPath })
+        : agents.resolveWorkspaceFile(agentId, workspacePath),
+    ).catch(rethrowWorkspacePathError);
     if (workspaceFile.size > ATTACHMENT_LIMITS.fileBytes) {
-      throw new HttpError(413, "The workspace file exceeds the 100 MB limit.");
+      throw new HttpError(413, sourceText("error.team.workspaceFileTooLarge"));
     }
-    const bytes = await readFile(workspaceFile.path);
-    response.writeHead(200, {
+    return sendFile(response, workspaceFile.path, sourceText("error.team.workspaceFileTooLarge"), (size) => ({
       "Content-Type": "application/octet-stream",
-      "Content-Length": String(bytes.length),
+      "Content-Length": String(size),
       "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(workspaceFile.name)}`,
       "X-Content-Type-Options": "nosniff",
-    });
-    response.end(bytes);
-    return "handled";
+    }));
   }
 
   return "unmatched";
+}
+
+export async function sendFile(
+  response: ServerResponse,
+  path: string,
+  tooLarge: string | null,
+  headers: (size: number) => OutgoingHttpHeaders,
+  range: { start: number; length: number } | null = null,
+): Promise<"handled"> {
+  const file = await open(path, "r");
+  const start = range?.start ?? 0;
+  let size: number;
+  let head: OutgoingHttpHeaders;
+  try {
+    const metadata = await file.stat();
+    if (!metadata.isFile()) throw new Error("The requested path is not a file.");
+    if (tooLarge !== null && metadata.size > ATTACHMENT_LIMITS.fileBytes) throw new HttpError(413, tooLarge);
+    size = range ? Math.max(0, Math.min(range.length, metadata.size - start)) : metadata.size;
+    head = headers(size);
+  } catch (error) {
+    await file.close();
+    throw error;
+  }
+  response.writeHead(200, head);
+  if (size === 0) {
+    await file.close();
+    response.end();
+    return "handled";
+  }
+  const stream = file.createReadStream({ start, end: start + size - 1 });
+  try {
+    await pipeline(stream, response, { end: false });
+  } catch (error) {
+    if (error instanceof Error && "code" in error && error.code === "ERR_STREAM_PREMATURE_CLOSE") return "handled";
+    throw error;
+  }
+  if (stream.bytesRead !== size) response.destroy();
+  else response.end();
+  return "handled";
 }

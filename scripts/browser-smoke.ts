@@ -9,7 +9,7 @@ import { withoutElectronRuntimeFlags } from "./electron-spawn-env";
 
 const scriptsRoot = dirname(fileURLToPath(import.meta.url));
 const projectRoot = dirname(scriptsRoot);
-const outputRoot = await mkdtemp(join(tmpdir(), "dani-dex-browser-build-"));
+const outputRoot = await mkdtemp(join(tmpdir(), "openbot-browser-build-"));
 try {
   const outputPath = join(outputRoot, "browser-smoke.mjs");
   const smokeRoot = join(outputRoot, "single-process");
@@ -25,9 +25,6 @@ try {
   if (buildCode !== 0) throw new Error("Unable to build browser smoke test.");
 
   const electron = join(projectRoot, "node_modules", ".bin", "electron");
-  // Ubuntu CI runners block unprivileged user namespaces, so Chromium's
-  // sandbox cannot start there. The smoke test proves browser behavior, not
-  // sandboxing, so it disables the sandbox on Linux only.
   const electronFlags = process.platform === "linux" ? ["--no-sandbox"] : [];
   const exitCode = await run(
     electron,
@@ -47,19 +44,16 @@ try {
       if (phase === "write") {
         response.setHeader(
           "set-cookie",
-          "danidex_persistence=kept; Max-Age=31536000; Expires=Tue, 19 Jan 2038 03:14:07 GMT; Path=/; SameSite=Lax",
+          "openbot_persistence=kept; Max-Age=31536000; Expires=Tue, 19 Jan 2038 03:14:07 GMT; Path=/; SameSite=Lax",
         );
       } else if (phase === "clear") {
-        response.setHeader("set-cookie", "danidex_persistence=; Max-Age=0; Path=/; SameSite=Lax");
+        response.setHeader("set-cookie", "openbot_persistence=; Max-Age=0; Path=/; SameSite=Lax");
       }
       response.setHeader("content-type", "text/html; charset=utf-8");
       response.end(persistencePage());
     });
     try {
       const persistenceOrigin = await listen(persistenceServer);
-      // Three Electron boots prove cross-process persistence both ways: write
-      // in one process and read in the next, then clear and verify-cleared in
-      // a last process. Four boots cost one extra start on macOS for no cover.
       for (const phase of ["write", "read-clear", "verify-cleared"]) {
         const phaseExitCode = await run(
           electron,
@@ -88,7 +82,7 @@ try {
 function persistencePage(): string {
   return `<!doctype html><body>loading<script>
   const phase = new URL(location.href).searchParams.get("phase");
-  const databaseName = "dani-dex-persistence-smoke";
+  const databaseName = "openbot-persistence-smoke";
   function openDatabase() {
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(databaseName, 1);
@@ -129,17 +123,17 @@ function persistencePage(): string {
   }
   async function main() {
     if (phase === "write") {
-      localStorage.setItem("dani-dex-persistence", "kept");
+      localStorage.setItem("openbot-persistence", "kept");
       await writeDatabase();
     } else if (phase === "clear") {
-      localStorage.removeItem("dani-dex-persistence");
+      localStorage.removeItem("openbot-persistence");
       await deleteDatabase();
     }
     const indexedDbValue = phase === "clear" ? null : await readDatabase();
     document.body.textContent = JSON.stringify({
       ready: true,
       cookie: document.cookie,
-      localStorage: localStorage.getItem("dani-dex-persistence"),
+      localStorage: localStorage.getItem("openbot-persistence"),
       indexedDb: indexedDbValue,
     });
   }
@@ -168,9 +162,6 @@ function run(executable: string, arguments_: string[], filterExpectedElectronNoi
   return new Promise((resolve, reject) => {
     const child = spawn(executable, arguments_, {
       stdio: filterExpectedElectronNoise ? ["inherit", "inherit", "pipe"] : "inherit",
-      // The parent shell may run inside an Electron harness with
-      // ELECTRON_RUN_AS_NODE=1, which would make the spawned Electron run as
-      // plain Node instead of opening the smoke window.
       env: withoutElectronRuntimeFlags(process.env),
     });
     if (child.stderr) {

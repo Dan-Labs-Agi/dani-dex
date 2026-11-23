@@ -1,8 +1,8 @@
-import type { ConversationPage, QueuedMessageReceipt } from "@dani-dex/contracts/ipc";
-import { type ConversationMessage, type ConversationSnapshot, isConversationMessage } from "@dani-dex/contracts/ipc";
-import { isDynamicRecord, isNumber, isString } from "@dani-dex/contracts/runtime-values";
+import type { ConversationPage, ConversationSearchPage, QueuedMessageReceipt } from "@openbot/contracts/ipc";
+import { type ConversationMessage, type ConversationSnapshot, isConversationMessage } from "@openbot/contracts/ipc";
+import { isDynamicRecord, isNumber, isString } from "@openbot/contracts/runtime-values";
 
-export function decodeConversation(value: unknown): ConversationSnapshot {
+function decodeConversation(value: unknown): ConversationSnapshot {
   if (
     !isDynamicRecord(value) ||
     !isString(value.agentId) ||
@@ -50,7 +50,26 @@ export function decodeConversationPage(value: unknown): ConversationPage {
   };
 }
 
-/** Conversation projections identify user bubbles by recipient delivery, not mailbox message. */
+export function decodeConversationSearchPage(value: unknown): ConversationSearchPage {
+  if (
+    !isDynamicRecord(value) ||
+    !Array.isArray(value.results) ||
+    !isNumber(value.total) ||
+    (value.nextCursor !== null && !isString(value.nextCursor))
+  ) {
+    throw new Error("The server returned invalid search results.");
+  }
+  return {
+    results: value.results.map((result) => {
+      if (!isDynamicRecord(result) || !isString(result.agentId))
+        throw new Error("The server returned invalid search results.");
+      return { agentId: result.agentId, message: decodeConversationMessage(result.message) };
+    }),
+    total: value.total,
+    nextCursor: value.nextCursor,
+  };
+}
+
 export function conversationMessageId(receipt: QueuedMessageReceipt, agentId: string): string {
   const delivery = receipt.deliveries.find((item) => item.recipientAgentId === agentId);
   if (!delivery) throw new Error("The host returned no delivery for this agent.");

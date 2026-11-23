@@ -1,6 +1,3 @@
-// The devices a host exposes: its embedded browser, and its remote desktop.
-// See `remote-host-decoding.ts` for why the `FromHost` suffix exists and must not be merged away.
-
 import {
   type BrowserControlState,
   type BrowserDisplayState,
@@ -9,15 +6,15 @@ import {
   REMOTE_DESKTOP_ERROR_CODES,
   type RemoteDesktopCapabilities,
   type RemoteDesktopSession,
-} from "@dani-dex/contracts/ipc";
+} from "@openbot/contracts/ipc";
 import {
   decodeRecord,
   nullableString,
   requiredBoolean,
   requiredNumber,
   requiredString,
-} from "@dani-dex/contracts/ipc-decoding";
-import { isBoolean, isDynamicRecord, isNumber, isOneOf, isString } from "@dani-dex/contracts/runtime-values";
+} from "@openbot/contracts/ipc-decoding";
+import { isBoolean, isDynamicRecord, isNumber, isOneOf, isString } from "@openbot/contracts/runtime-values";
 
 export function decodeBrowserTabs(value: unknown): BrowserTab[] {
   if (!Array.isArray(value) || !value.every(isBrowserTabValue)) {

@@ -1,6 +1,6 @@
 import { createSignal, createUniqueId, For, onSettled, Show } from "solid-js";
 
-export interface LandingGlowStop {
+interface LandingGlowStop {
   offset: number;
   color: string;
   opacity?: number;
@@ -15,16 +15,16 @@ const VALLEY = 0.55;
 const RISE_MS = 1100;
 const RETURN_DELAY_MS = 450;
 
-export const landingGlowStops: readonly LandingGlowStop[] = [
-  { offset: 0, color: "var(--dani-dex-logo-production)" },
-  { offset: 0.22, color: "var(--dani-dex-logo-production)" },
-  { offset: 0.42, color: "var(--dani-dex-logo-dev)" },
-  { offset: 0.62, color: "var(--dani-dex-logo-preview)" },
-  { offset: 0.82, color: "var(--dani-dex-logo-production)" },
-  { offset: 1, color: "var(--dani-dex-logo-production)", opacity: 0 },
+const landingGlowStops: readonly LandingGlowStop[] = [
+  { offset: 0, color: "var(--openbot-logo-production)" },
+  { offset: 0.22, color: "var(--openbot-logo-production)" },
+  { offset: 0.42, color: "var(--openbot-logo-dev)" },
+  { offset: 0.62, color: "var(--openbot-logo-preview)" },
+  { offset: 0.82, color: "var(--openbot-logo-production)" },
+  { offset: 1, color: "var(--openbot-logo-production)", opacity: 0 },
 ];
 
-export function landingGlowHeights(): number[] {
+function landingGlowHeights(): number[] {
   const midpoint = (BAR_COUNT - 1) / 2;
   return Array.from({ length: BAR_COUNT }, (_, index) => {
     const distance = midpoint === 0 ? 0 : Math.abs(index - midpoint) / midpoint;
@@ -33,7 +33,7 @@ export function landingGlowHeights(): number[] {
   });
 }
 
-export function landingGlowProgress(top: number, height: number, viewportHeight: number): number {
+function landingGlowProgress(top: number, height: number, viewportHeight: number): number {
   return Math.max(0, Math.min(1, (viewportHeight - top) / (height || viewportHeight || 1)));
 }
 

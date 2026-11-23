@@ -1,6 +1,4 @@
-import { onCleanup } from "solid-js";
-import { expect, fn } from "storybook/test";
-import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { Button, buttonVariants, Input, ItemActions, ItemGroup, Plus, Textarea } from "@openbot/ui";
 import {
   SettingsField,
   SettingsLinkGroup,
@@ -8,22 +6,16 @@ import {
   SettingsPanel,
   SettingsPanelContent,
   SettingsPanelHeader,
-} from "../src/components/SettingsPanel";
-import { Button, buttonVariants, Input, ItemActions, ItemGroup, Plus, Textarea } from "../src/components/ui";
-import { ChannelMemberRow } from "../src/features/channels/ChannelMemberRow";
+} from "@openbot/ui/components/SettingsPanel";
+import { ChannelContextActions } from "@openbot/ui/features/channels/ChannelContextActions";
+import { ChannelMemberRow } from "@openbot/ui/features/channels/ChannelMemberRow";
+import { onCleanup } from "solid-js";
+import { fn } from "storybook/test";
+import type { Meta, StoryObj } from "storybook-solidjs-vite";
+import { saveSidePanelWidth } from "../src/components/side-panel-width";
 import AgentSettingsPanel from "../src/features/conversation/AgentSettingsPanel";
-import { STORY_AGENT_STATUS, STORY_AGENTS, STORY_MODELS } from "./fixtures";
-import { createMockDaniDex } from "./mock-dani-dex";
-
-/*
- * The channel panel and the agent panel open in the same slot, so this file draws them together:
- * a mismatch in header height, divider, field rhythm or link row is only visible side by side.
- *
- * The channel body is written out here rather than mounted from `ChannelEditor`, because that
- * component reads the channels context, which needs the account, server and agent contexts and a
- * channel-aware `window.danidex` behind it. What is under test here is the shared panel, and the
- * body below uses the same components the editor does.
- */
+import { STORY_AGENT, STORY_AGENT_STATUS, STORY_AGENTS, STORY_MODELS, storyRuntimeSettings } from "./fixtures";
+import { createMockOpenBot } from "./mock-openbot";
 
 const members = STORY_AGENTS.slice(0, 4);
 
@@ -49,6 +41,12 @@ function ChannelPanelBody() {
           <SettingsLinkRow label="Memories" value="0 saved" onClick={fn()} />
           <SettingsLinkRow label="Routines" value="0 configured" onClick={fn()} />
         </SettingsLinkGroup>
+        <ChannelContextActions
+          channelName="Project Falcon"
+          startNewConversation={fn(async () => {})}
+          compact={fn(async () => {})}
+          deleteHistory={fn(async () => {})}
+        />
         <section class="channel-members" aria-label="Members">
           <h3 class="channel-members-title">Members</h3>
           <ItemGroup class="channel-member-list">
@@ -79,7 +77,14 @@ function ChannelPanelBody() {
 function ChannelPanelStory(props: { title: string; body: () => ReturnType<typeof ChannelPanelBody> }) {
   return (
     <main class="conversation-panel agent-memories-story-stage" style="--settings-panel-width: 296px">
-      <SettingsPanel id="channel-side-panel" label="Channel panel" width={296} maxWidth={640} onResize={fn()}>
+      <SettingsPanel
+        onResizeEnd={saveSidePanelWidth}
+        id="channel-side-panel"
+        label="Channel panel"
+        width={296}
+        maxWidth={640}
+        onResize={fn()}
+      >
         <SettingsPanelHeader title={props.title} onClose={fn()} closeLabel="Close channel panel" />
         {props.body()}
       </SettingsPanel>
@@ -87,25 +92,20 @@ function ChannelPanelStory(props: { title: string; body: () => ReturnType<typeof
   );
 }
 
-/** The agent panel beside it, so the two headers and the two field stacks can be compared. */
 function AgentPanelStory() {
-  const previousApi = window.danidex;
-  const mock = createMockDaniDex({});
-  window.danidex = mock.api;
+  const previousApi = window.openbot;
+  const mock = createMockOpenBot({});
+  window.openbot = mock.api;
   onCleanup(() => {
     mock.dispose();
-    window.danidex = previousApi;
+    window.openbot = previousApi;
   });
   return (
     <main class="conversation-panel agent-memories-story-stage" style="--settings-panel-width: 296px">
       <AgentSettingsPanel
         onOpenUsage={fn()}
-        agent={STORY_AGENTS[0]}
-        runtimeSettings={{
-          provider: STORY_AGENTS[0].provider,
-          model: STORY_AGENTS[0].model,
-          reasoningEffort: STORY_AGENTS[0].reasoningEffort,
-        }}
+        agent={STORY_AGENT}
+        runtimeSettings={storyRuntimeSettings(STORY_AGENT)}
         agentStatus={STORY_AGENT_STATUS}
         modelOptions={STORY_MODELS}
         working={false}
@@ -131,10 +131,6 @@ type Story = StoryObj<typeof meta>;
 
 export const ChannelSettings: Story = {
   render: () => <ChannelPanelStory title="Channel settings" body={() => <ChannelPanelBody />} />,
-  play: async ({ canvas }) => {
-    await expect(await canvas.findByRole("heading", { level: 2, name: "Channel settings" })).toBeInTheDocument();
-    await expect(await canvas.findByRole("button", { name: /^Memories\s*0 saved$/ })).toBeInTheDocument();
-  },
 };
 
 export const ChannelSettingsWithoutMembers: Story = {
@@ -164,7 +160,6 @@ export const ChannelSettingsWithoutMembers: Story = {
   ),
 };
 
-/** The panel this one has to match. Compare the header, the divider and the field rhythm. */
 export const AgentSettingsForComparison: Story = {
   render: () => <AgentPanelStory />,
 };

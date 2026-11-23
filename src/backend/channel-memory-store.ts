@@ -1,19 +1,20 @@
-import { INPUT_LIMITS } from "@dani-dex/contracts/input-limits";
-import type { ChannelMemory } from "@dani-dex/contracts/ipc";
-import type { DaniDexDatabase } from "./dani-dex-database";
+import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
+import type { ChannelMemory } from "@openbot/contracts/ipc";
+import { sourceText } from "@openbot/i18n/source";
 import { MemoryStore, type MemoryTables } from "./memory-store";
+import type { OpenBotDatabase } from "./openbot-database";
 
 const CHANNEL_MEMORY_TABLES: MemoryTables = {
   table: "projection_channel_memories",
   ownerColumn: "channel_id",
+  ownerKey: "channelId",
   aggregateType: "channel-memory",
-  limit: INPUT_LIMITS.channelMemories,
-  limitMessage: `A channel can have up to ${INPUT_LIMITS.channelMemories} memories.`,
+  limit: () => INPUT_LIMITS.channelMemories,
+  limitMessage: (limit) => sourceText("error.backend.channelMemoryLimit", { limit }),
 };
 
-/** The channel twin of `AgentMemoryStore`: the same `MemoryStore`, with a channel for an owner. */
 export class ChannelMemoryStore extends MemoryStore {
-  constructor(database: DaniDexDatabase) {
+  constructor(database: OpenBotDatabase) {
     super(database, CHANNEL_MEMORY_TABLES);
   }
 
@@ -34,20 +35,35 @@ export class ChannelMemoryStore extends MemoryStore {
     return { ...super.updateManual(channelId, memoryId, text), channelId };
   }
 
-  /**
-   * A channel tool writes at call time, so there is no `expectedUpdatedAt` race to guard. `commandId`
-   * is the call's own receipt key: a retried tool call reads it and saves nothing more.
-   */
   saveFromTool(channelId: string, text: string, sourceTurnId: string, commandId: string): ChannelMemory {
     const memory = this.saveAutomaticEntry(channelId, { text, sourceTurnId, commandId });
-    if (!memory) throw new Error("This memory no longer exists.");
+    if (!memory) throw new Error(sourceText("error.backend.memoryGone"));
     return { ...memory, channelId };
   }
 
-  /** `channel_forget_memory` names the text, not an id: the model never sees a memory id. */
   deleteByText(channelId: string, text: string): boolean {
     const target = text.trim();
-    const memory = this.list(channelId).find((entry) => entry.text === target);
+    const entries = this.list(channelId);
+    const memory =
+      entries.find((entry) => entry.text === target) ??
+      entries.find((entry) => entry.text.toLowerCase() === target.toLowerCase()) ??
+      onlySimilar(entries, target);
     return memory ? this.delete(channelId, memory.id) : false;
   }
+}
+
+function onlySimilar(entries: ChannelMemory[], target: string): ChannelMemory | undefined {
+  const folded = foldMemoryText(target);
+  const similar = entries.filter((entry) => foldMemoryText(entry.text) === folded);
+  return similar.length === 1 ? similar[0] : undefined;
+}
+
+function foldMemoryText(text: string): string {
+  return text
+    .normalize("NFKC")
+    .replace(/[\u2018-\u201f"`]/gu, "'")
+    .replace(/[\u2010-\u2015\u2212]/gu, "-")
+    .replace(/\s+/gu, " ")
+    .trim()
+    .toLowerCase();
 }

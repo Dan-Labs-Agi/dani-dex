@@ -2,16 +2,18 @@ import { execFile } from "node:child_process";
 import { chmod, lstat, mkdir, readdir, readlink, rename, rm } from "node:fs/promises";
 import { dirname, join, resolve, sep } from "node:path";
 import { promisify } from "node:util";
+import { isNewerRelease as isNewerSharedRelease } from "@openbot/contracts/release-version";
 import { z } from "zod";
+import { runCauseEffect } from "../src/backend/effect-boundary";
 import type { HostManagerOperations } from "../src/main/host-manager";
 import { HOST_MANAGER_DIRECTORY, verifyHostDirectory } from "../src/main/host-update-files";
 
 const exec = promisify(execFile);
-export const SHARED_APP = "/Applications/Dani-Dex.app";
-const STAGING = "/Applications/.dani-dex-host-stage";
+export const SHARED_APP = "/Applications/OpenBot.app";
+const STAGING = "/Applications/.openbot-host-stage";
 const PRIVATE = join(HOST_MANAGER_DIRECTORY, "private");
 const SIGNING_REQUIREMENT =
-  '=anchor apple generic and identifier "dev.danlab.danidex.desktop" and certificate leaf[subject.OU] = "ZTRDTUL87R"';
+  '=anchor apple generic and identifier "app.openbot.desktop" and certificate leaf[subject.OU] = "ZTRDTUL87R"';
 const releaseSchema = z.object({
   tag_name: z.string().regex(/^v?\d+\.\d+\.\d+$/),
   draft: z.literal(false),
@@ -28,7 +30,6 @@ export async function hostCommand(file: string, args: string[], timeout = 60_000
 }
 const command = hostCommand;
 
-/** The system Applications directory normally permits administrators (group 80) to install apps. */
 export async function verifySharedAppParent(): Promise<void> {
   await verifyHostPath("/");
   const info = await lstat("/Applications");
@@ -67,7 +68,7 @@ export async function verifyHostPath(path: string): Promise<void> {
     await verifyNoWriteAcl(path);
     return;
   }
-  await verifyHostDirectory(path);
+  await runCauseEffect(verifyHostDirectory(path));
   for (let part = resolve(path); ; part = dirname(part)) {
     await verifyNoWriteAcl(part);
     if (dirname(part) === part) break;
@@ -85,7 +86,6 @@ export async function ensureHostDirectory(path: string, mode: number): Promise<v
   await chmod(path, mode);
 }
 
-/** Only visits the application bundle. Internal framework symlinks are valid; external links are not. */
 export async function verifyBundleTree(root: string, requireRootOwner: boolean): Promise<void> {
   const walk = async (path: string): Promise<void> => {
     const info = await lstat(path);
@@ -102,7 +102,6 @@ export async function verifyBundleTree(root: string, requireRootOwner: boolean):
   };
   if (!(await lstat(root)).isDirectory()) throw new Error("Application must be a real directory.");
   await walk(root);
-  // A single recursive listing checks bundle ACLs without launching a process for every file.
   const acl = await command("/bin/ls", ["-leR", root]);
   if (acl.split("\n").some((line) => /^\s*\d+:.*\ballow\b/.test(line)))
     throw new Error("Bundle has access-granting ACLs.");
@@ -121,31 +120,30 @@ export async function bundleVersion(app = SHARED_APP): Promise<string> {
   ]);
 }
 
-async function bundleProcesses(): Promise<Array<{ uid: number; pid: number; main: boolean }>> {
-  // comm reports executable paths, without workspace paths or prompts in command arguments.
+export async function bundleProcesses(): Promise<Array<{ uid: number; pid: number; main: boolean }>> {
   const output = await command("/bin/ps", ["-axo", "pid=,uid=,comm="]);
   if (!output) throw new Error("Process scan returned no processes.");
   const processes: Array<{ uid: number; pid: number; main: boolean }> = [];
   for (const line of output.split("\n")) {
-    const match = /^\s*(\d+)\s+(\d+)\s+(.+)$/.exec(line);
-    if (!match) throw new Error("Invalid process scan.");
-    if (match[3].startsWith(`${SHARED_APP}/`))
+    const [, pid, uid, executable] = /^\s*(\d+)\s+(\d+)\s+(.+)$/.exec(line) ?? [];
+    if (executable === undefined) throw new Error("Invalid process scan.");
+    if (executable.startsWith(`${SHARED_APP}/`))
       processes.push({
-        pid: Number(match[1]),
-        uid: Number(match[2]),
-        main: match[3] === `${SHARED_APP}/Contents/MacOS/Dani-Dex`,
+        pid: Number(pid),
+        uid: Number(uid),
+        main: executable === `${SHARED_APP}/Contents/MacOS/OpenBot`,
       });
   }
   return processes;
 }
 
-export async function runningDaniDexProcesses(): Promise<Array<{ uid: number; pid: number }>> {
+export async function runningOpenBotProcesses(): Promise<Array<{ uid: number; pid: number }>> {
   return (await bundleProcesses()).filter((process) => process.main).map(({ uid, pid }) => ({ uid, pid }));
 }
 
 export function macHostOperations(): HostManagerOperations {
   return {
-    runningTenants: runningDaniDexProcesses,
+    runningTenants: runningOpenBotProcesses,
     applicationInUse: async () => (await bundleProcesses()).length !== 0,
     installedVersion: async () => {
       await verifyBundleTree(SHARED_APP, true);
@@ -156,7 +154,7 @@ export function macHostOperations(): HostManagerOperations {
       await verifySharedAppParent();
       await verifyBundleTree(SHARED_APP, true);
       await verifySignature(SHARED_APP);
-      const response = await fetch("https://api.github.com/repos/somdipto/dani-dex/releases/latest", {
+      const response = await fetch("https://api.github.com/repos/nightly-labs/openbot/releases/latest", {
         signal: AbortSignal.timeout(30_000),
         headers: { Accept: "application/vnd.github+json" },
       });
@@ -169,8 +167,7 @@ export function macHostOperations(): HostManagerOperations {
       await ensureHostDirectory(STAGING, 0o700);
       const dmg = join(PRIVATE, "release.dmg");
       await rm(dmg, { force: true });
-      // Asset names and repository are fixed. No tenant supplies a network destination.
-      const url = `https://github.com/somdipto/dani-dex/releases/download/${release.tag_name}/Dani-Dex-${version}-arm64.dmg`;
+      const url = `https://github.com/nightly-labs/openbot/releases/download/${release.tag_name}/OpenBot-${version}-arm64.dmg`;
       await command(
         "/usr/bin/curl",
         [
@@ -194,11 +191,11 @@ export function macHostOperations(): HostManagerOperations {
       await ensureHostDirectory(mount, 0o700);
       await command("/usr/bin/hdiutil", ["attach", dmg, "-readonly", "-nobrowse", "-noautoopen", "-mountpoint", mount]);
       try {
-        const source = join(mount, "Dani-Dex.app");
+        const source = join(mount, "OpenBot.app");
         await verifyBundleTree(source, false);
         await verifySignature(source);
         if ((await bundleVersion(source)) !== version) throw new Error("Downloaded version mismatch.");
-        const staged = join(STAGING, "Dani-Dex.app");
+        const staged = join(STAGING, "OpenBot.app");
         await rm(staged, { recursive: true, force: true });
         await command("/usr/bin/ditto", ["--noqtn", source, staged], 180_000);
         await command("/usr/sbin/chown", ["-Rh", "root:wheel", staged]);
@@ -215,13 +212,12 @@ export function macHostOperations(): HostManagerOperations {
     install: async (version) => {
       await verifySharedAppParent();
       await verifyHostPath(STAGING);
-      const staged = join(STAGING, "Dani-Dex.app");
+      const staged = join(STAGING, "OpenBot.app");
       await verifyBundleTree(staged, true);
       await verifySignature(staged);
       if ((await bundleVersion(staged)) !== version) throw new Error("Staged version mismatch.");
-      if ((await bundleProcesses()).length !== 0) throw new Error("Dani-Dex restarted during maintenance.");
+      if ((await bundleProcesses()).length !== 0) throw new Error("OpenBot restarted during maintenance.");
       const retired = join(STAGING, "retired.app");
-      // Only application code moves here, never tenant content. No automatic downgrade.
       await rm(retired, { recursive: true, force: true });
       await rename(SHARED_APP, retired);
       await rename(staged, SHARED_APP);
@@ -235,12 +231,7 @@ export function macHostOperations(): HostManagerOperations {
 
 export function isNewerRelease(candidate: string, current: string): boolean {
   if (!/^\d+\.\d+\.\d+$/.test(current)) throw new Error("Installed version is not a stable release.");
-  const next = candidate.split(".").map(Number);
-  const previous = current.split(".").map(Number);
-  for (let index = 0; index < 3; index += 1) {
-    if (next[index] !== previous[index]) return next[index] > previous[index];
-  }
-  return false;
+  return isNewerSharedRelease(candidate, current);
 }
 
 export async function openSharedApplication(): Promise<void> {

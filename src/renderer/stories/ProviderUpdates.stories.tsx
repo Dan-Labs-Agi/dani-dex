@@ -1,40 +1,80 @@
-import { isManagedRuntimeProvider, type ManagedProviderId } from "@dani-dex/contracts/agent-providers";
-import type { AgentProviderId, ProviderRuntimeStatus } from "@dani-dex/contracts/ipc";
-import { createEffect, createSignal, createUniqueId, onCleanup, Show } from "solid-js";
-import { expect, waitFor, within } from "storybook/test";
+import { isManagedRuntimeProvider, type ManagedProviderId } from "@openbot/contracts/agent-providers";
+import type { AgentProviderId, ProviderRuntimeStatus } from "@openbot/contracts/ipc";
+import { sourceText } from "@openbot/i18n/source";
+import { Button, Checkbox, Heading, Text, Toaster, toast } from "@openbot/ui";
+import type { ProviderPickerOption } from "@openbot/ui/components/ProviderPicker";
+import { ProviderPicker } from "@openbot/ui/components/ProviderPicker";
+import { type ProviderUpdate, providerUpdatesToAnnounce } from "@openbot/ui/features/provider-updates/provider-update";
+import { createEffect, createSignal, createUniqueId, onCleanup, onSettled, Show, untrack } from "solid-js";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { ProviderPicker, type ProviderPickerOption } from "../src/components/ProviderPicker";
-import { Button, Checkbox, Heading, Text, Toaster } from "../src/components/ui";
-import { type ProviderUpdate, providerUpdatesToAnnounce } from "../src/features/provider-updates/provider-update";
 import {
   dismissProviderUpdateToast,
   reportProviderUpdateToast,
   showProviderUpdateToast,
 } from "../src/features/provider-updates/provider-update-toast";
 
-const PROVIDERS = ["codex", "claude", "grok", "opencode"] as const;
+const PROVIDERS = [
+  "codex",
+  "claude",
+  "grok",
+  "opencode",
+  "antigravity",
+  "cursor",
+  "cline",
+  "kimi",
+  "pi",
+  "muse",
+  "devin",
+  "copilot",
+  "mistral",
+] as const;
 const NAMES: Record<ManagedProviderId, string> = {
   codex: "ChatGPT",
   claude: "Claude",
   grok: "Grok",
   opencode: "OpenCode",
+  antigravity: "Gemini",
+  cursor: "Cursor",
+  cline: "Cline",
+  kimi: "Kimi",
+  pi: "Pi",
+  muse: "Muse",
+  devin: "Devin",
+  copilot: "GitHub Copilot",
+  mistral: "Mistral",
 };
 const INSTALLED: Record<ManagedProviderId, string> = {
   codex: "0.149.1",
   claude: "2.1.246",
   grok: "1.0.5",
   opencode: "1.18.30",
+  antigravity: "1.2.1",
+  cursor: "2026.09.28-64d2043",
+  cline: "3.0.68",
+  kimi: "1.52.0",
+  pi: "1.1.0",
+  muse: "1.4.4-R5419.1",
+  devin: "3000.11.234",
+  copilot: "1.0.105",
+  mistral: "3.1.0",
 };
 
-/** Only Claude has a newer runtime: the quiet rows are half of what the flow has to show. */
 const AVAILABLE: Record<ManagedProviderId, string | null> = {
   codex: "0.149.1",
   claude: "2.1.250",
   grok: null,
   opencode: null,
+  antigravity: null,
+  cursor: null,
+  cline: null,
+  kimi: null,
+  pi: null,
+  muse: null,
+  devin: null,
+  copilot: null,
+  mistral: null,
 };
 
-/** Fast enough that a play function settles in a couple of seconds, slow enough to read. */
 const PROGRESS_STEP = 8;
 const PROGRESS_INTERVAL = 120;
 const FINISHING_DELAY = 500;
@@ -45,21 +85,22 @@ function readyRuntimes(): Record<ManagedProviderId, ProviderRuntimeStatus> {
     claude: { phase: "ready", progress: 100, message: null, version: INSTALLED.claude },
     grok: { phase: "ready", progress: 100, message: null, version: INSTALLED.grok },
     opencode: { phase: "ready", progress: 100, message: null, version: INSTALLED.opencode },
+    antigravity: { phase: "ready", progress: 100, message: null, version: INSTALLED.antigravity },
+    cursor: { phase: "ready", progress: 100, message: null, version: INSTALLED.cursor },
+    cline: { phase: "ready", progress: 100, message: null, version: INSTALLED.cline },
+    kimi: { phase: "ready", progress: 100, message: null, version: INSTALLED.kimi },
+    pi: { phase: "ready", progress: 100, message: null, version: INSTALLED.pi },
+    muse: { phase: "ready", progress: 100, message: null, version: INSTALLED.muse },
+    devin: { phase: "ready", progress: 100, message: null, version: INSTALLED.devin },
+    copilot: { phase: "ready", progress: 100, message: null, version: INSTALLED.copilot },
+    mistral: { phase: "ready", progress: 100, message: null, version: INSTALLED.mistral },
   };
 }
 
-/**
- * The update flow with main simulated locally, the same way `OnboardingFlow.stories.tsx`
- * simulates a download: local signals, a `setInterval` progress tick and per-provider timer
- * cleanup. `mock-danidex.ts` still stubs `providerRuntimes` inert, and no contract carries
- * `availableVersion` yet, so props are the only honest source for these states today.
- */
-function ProviderUpdateFlow(props: { failOnce?: boolean; controls?: boolean }) {
+function ProviderUpdateFlow(props: { controls?: boolean; failure?: string; companions?: boolean; waitMs?: number }) {
   const [runtimes, setRuntimes] = createSignal(readyRuntimes());
   const [provider, setProvider] = createSignal<AgentProviderId>("claude");
-  // One update fails, and the flag is spent when it does, so the Retry after it succeeds. The
-  // `UpdateFails` story starts it armed; the playground puts the same switch under the reader.
-  const [failNext, setFailNext] = createSignal(Boolean(props.failOnce));
+  const [failNext, setFailNext] = createSignal(untrack(() => props.failure !== undefined));
   const failToggleId = createUniqueId();
   const timers = new Set<number>();
   const running = new Set<AgentProviderId>();
@@ -92,6 +133,10 @@ function ProviderUpdateFlow(props: { failOnce?: boolean; controls?: boolean }) {
     const update = updates().find((update) => update.provider === id);
     if (update) showProviderUpdateToast(update, () => startUpdate(id));
     running.add(id);
+    runDownload(id, props.waitMs);
+  }
+
+  function runDownload(id: ManagedProviderId, waitMs?: number): void {
     setRuntime(id, { phase: "downloading", progress: 0, message: null });
     let progress = 0;
     const interval = window.setInterval(() => {
@@ -99,23 +144,34 @@ function ProviderUpdateFlow(props: { failOnce?: boolean; controls?: boolean }) {
       if (failNext() && progress >= 56) {
         setFailNext(false);
         clearTimers();
-        setRuntime(id, { phase: "download-error", progress: 55, message: "The update was interrupted." });
+        setRuntime(id, {
+          phase: "download-error",
+          progress: 55,
+          message: props.failure ?? "The update was interrupted.",
+        });
         return;
       }
       setRuntime(id, { phase: "downloading", progress });
       if (progress < 100) return;
       clearTimers();
-      setRuntime(id, { phase: "finishing", progress: 100 });
-      timers.add(
-        window.setTimeout(() => {
-          setRuntime(id, { phase: "ready", progress: 100, version: AVAILABLE[id] ?? INSTALLED[id] });
-        }, FINISHING_DELAY),
-      );
+      const finish = () => {
+        setRuntime(id, { phase: "finishing", progress: 100, message: null });
+        timers.add(
+          window.setTimeout(() => {
+            setRuntime(id, { phase: "ready", progress: 100, version: AVAILABLE[id] ?? INSTALLED[id] });
+          }, FINISHING_DELAY),
+        );
+      };
+      if (waitMs === undefined) {
+        finish();
+        return;
+      }
+      setRuntime(id, { phase: "downloading", progress: 100, message: sourceText("status.provider.updateWaiting") });
+      timers.add(window.setTimeout(finish, waitMs));
     }, PROGRESS_INTERVAL);
     timers.add(interval);
   }
 
-  /** The reverse state: the runtime the user already had is still installed and still usable. */
   function cancelUpdate(id: AgentProviderId): void {
     if (!isManagedRuntimeProvider(id)) return;
     clearTimers();
@@ -124,11 +180,6 @@ function ProviderUpdateFlow(props: { failOnce?: boolean; controls?: boolean }) {
     dismissProviderUpdateToast(id);
   }
 
-  /**
-   * Put every runtime back on the version it started from, so the offer can be watched more than
-   * once without reloading the page. Clearing `announced` is what lets the toast fire again, and
-   * the offer replaces whatever holds the same toast id, so nothing has to be dismissed by hand.
-   */
   function replayFlow(): void {
     clearTimers();
     running.clear();
@@ -136,8 +187,6 @@ function ProviderUpdateFlow(props: { failOnce?: boolean; controls?: boolean }) {
     setRuntimes(readyRuntimes());
   }
 
-  // The snapshot is the trigger, so the announcement is an effect on it. In the app the same two
-  // calls sit in `applyProviderRuntimeSnapshot`, which main already drives.
   createEffect(
     () => updates(),
     (next) => {
@@ -155,9 +204,24 @@ function ProviderUpdateFlow(props: { failOnce?: boolean; controls?: boolean }) {
     },
   );
 
+  onSettled(() => {
+    if (!props.companions) return;
+    toast.info("New model available", {
+      id: "provider-update-companion-model",
+      description: "Open model settings to review its capabilities before you switch.",
+      duration: Number.POSITIVE_INFINITY,
+    });
+    toast.success("Workspace saved", {
+      id: "provider-update-companion-saved",
+      duration: Number.POSITIVE_INFINITY,
+    });
+  });
+
   onCleanup(() => {
     clearTimers();
     for (const id of PROVIDERS) dismissProviderUpdateToast(id);
+    toast.dismiss("provider-update-companion-model");
+    toast.dismiss("provider-update-companion-saved");
   });
 
   const options = (): ProviderPickerOption[] =>
@@ -209,55 +273,44 @@ function ProviderUpdateFlow(props: { failOnce?: boolean; controls?: boolean }) {
 const meta = {
   title: "Setup/ProviderUpdates",
   component: ProviderUpdateFlow,
-  parameters: { layout: "fullscreen" },
+  parameters: {
+    layout: "fullscreen",
+    viewport: {
+      options: {
+        toastNarrow: {
+          name: "Toast — 420 × 760",
+          styles: { width: "420px", height: "760px" },
+        },
+      },
+    },
+  },
 } satisfies Meta<typeof ProviderUpdateFlow>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/**
- * Drive it yourself. Nothing runs on its own here: the offer arrives on mount and the update starts
- * only when you press Update, on the notification or on the row. "Offer the update again" puts
- * Claude back on the version it started from, so the whole flow can be watched more than once, and
- * the switch beside it interrupts the next run to make the Retry path reachable.
- */
 export const Playground: Story = {
   render: () => <ProviderUpdateFlow controls />,
 };
 
-/** The offer, on both surfaces at once. */
-export const UpdateAvailable: Story = {
-  play: async ({ canvasElement }) => {
-    const body = within(canvasElement.ownerDocument.body);
-    await expect(body.findByRole("button", { name: "Update Claude to 2.1.250" })).resolves.toBeEnabled();
-    await expect(body.findByRole("button", { name: "Update" })).resolves.toBeEnabled();
-  },
+export const UpdateAvailable: Story = {};
+
+export const WaitsForTurn: Story = {
+  render: () => <ProviderUpdateFlow controls waitMs={3_000} />,
 };
 
-/** The toast is the whole point: one click starts the update, and the same toast reports it. */
-export const UpdateFromToast: Story = {
-  play: async ({ canvasElement, userEvent }) => {
-    const body = within(canvasElement.ownerDocument.body);
-    await userEvent.click(await body.findByRole("button", { name: "Update" }));
+const LONG_FAILURE =
+  "Dani Dex could not update the Claude CLI. The registry at https://registry.npmjs.org/@anthropic-ai/claude-code/-/claude-code-2.1.250.tgz answered with a checksum that does not match the published package, so the download stopped before it replaced the version you have.";
 
-    await waitFor(() => expect(body.getByRole("button", { name: "Cancel Claude" })).toBeEnabled());
-    await expect(body.findByText("Claude is up to date", undefined, { timeout: 8_000 })).resolves.toBeInTheDocument();
-    // Neither surface still offers an update the user already took. Sonner merges by toast id, so
-    // the settled notification keeps the offer's Update button unless the action is cleared by name.
-    await expect(body.queryByRole("button", { name: "Update Claude to 2.1.250" })).toBeNull();
-    await expect(body.queryByRole("button", { name: "Update" })).toBeNull();
-  },
+export const LongFailure: Story = {
+  render: () => <ProviderUpdateFlow controls failure={LONG_FAILURE} />,
 };
 
-/** A failed update is not a dead end either: Retry is on the notification that reported the failure. */
-export const UpdateFails: Story = {
-  render: () => <ProviderUpdateFlow failOnce />,
-  play: async ({ canvasElement, userEvent }) => {
-    const body = within(canvasElement.ownerDocument.body);
-    await userEvent.click(await body.findByRole("button", { name: "Update Claude to 2.1.250" }));
+export const LongFailureStacked: Story = {
+  render: () => <ProviderUpdateFlow controls companions failure={LONG_FAILURE} />,
+};
 
-    await expect(body.findByText("Claude update failed", undefined, { timeout: 8_000 })).resolves.toBeInTheDocument();
-    await userEvent.click(await body.findByRole("button", { name: "Retry" }));
-    await expect(body.findByText("Claude is up to date", undefined, { timeout: 8_000 })).resolves.toBeInTheDocument();
-  },
+export const LongFailureNarrow: Story = {
+  globals: { viewport: "toastNarrow" },
+  render: () => <ProviderUpdateFlow controls companions failure={LONG_FAILURE} />,
 };

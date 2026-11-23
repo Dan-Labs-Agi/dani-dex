@@ -1,31 +1,21 @@
-import { AppLogo } from "@dani-dex/brand";
+import { AppLogo } from "@openbot/brand";
 import type { JSX } from "@solidjs/web";
-import { For } from "solid-js";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-// The site's stylesheet, not the desktop app's. It is imported here rather than in
-// .storybook/preview.tsx because it carries `html`, `body` and `a` rules of its
-// own: loaded for every story it would restyle the whole of Storybook, and loaded
-// here it arrives only once this story is opened.
 import "../../styles.css";
 import "./ArticleMedia.stories.css";
 import aChannel from "../../content/guides/media/openbot-101/a-channel.webp";
 import aThread from "../../content/guides/media/openbot-101/a-thread.webp";
 import pickAModel from "../../content/guides/media/openbot-101/pick-a-model.webp";
-import { CONTENT_COLLECTIONS } from "../../lib/content";
 import { formatArticleDate } from "../../lib/content-collection";
 import { GUIDES_COLLECTION } from "../../lib/guides";
-import { DANI_DEX_LINKS, EXTERNAL_LINK_REL } from "../../lib/landing-links";
-import { PLUGIN_INDEX_ROUTE } from "../../lib/plugins";
+import { EXTERNAL_LINK_REL, OPENBOT_LINKS } from "../../lib/landing-links";
 import { Button } from "../ui/button";
 import { ArticleGradient } from "./ArticleGradient";
 import { ArticleImage } from "./ArticleMedia";
 
-// The string the mount's colours are drawn from. A real article passes its own
-// title, so a mounted picture matches the artwork on the card the reader arrived
-// from; here it is a control, so the colour families can be compared.
-const ARTICLE_TITLE = "Dani-Dex 101";
+const ARTICLE_TITLE = "How to Use Dani Dex: Set Up Your First AI Agent";
 const GUIDE = GUIDES_COLLECTION.articles.find((article) => article.slug === "openbot-101");
-if (!GUIDE) throw new Error("Dani-Dex 101 must be in the guides registry.");
+if (!GUIDE) throw new Error("The openbot-101 guide must be in the guides registry.");
 
 const meta = {
   title: "Site/Article media",
@@ -37,36 +27,26 @@ type Story = StoryObj<typeof meta>;
 function StoryHeader() {
   return (
     <header class="landing-header">
-      <a class="landing-brand" href="/" aria-label="Dani-Dex home">
+      <a class="landing-brand" href="/" aria-label="Dani Dex home">
         <AppLogo variant="production" class="landing-brand-logo" />
-        <span>Dani-Dex</span>
+        <span>Dani Dex</span>
       </a>
-      <nav class="landing-navigation" aria-label="Primary navigation">
-        <For each={CONTENT_COLLECTIONS}>
-          {(collection) => (
-            <a class="landing-header-link" href={collection.indexRoute}>
-              {collection.name}
-            </a>
-          )}
-        </For>
-        <a class="landing-header-link" href={PLUGIN_INDEX_ROUTE}>
-          Plugins
-        </a>
+      <div class="site-header-actions">
         <Button
-          href={DANI_DEX_LINKS.contact}
+          href={OPENBOT_LINKS.contact}
           target="_blank"
           rel={EXTERNAL_LINK_REL}
           variant="secondary"
           size="sm"
           icon="contact"
-          class="landing-header-contact"
+          class="site-header-secondary"
         >
           Contact
         </Button>
         <Button href="/" variant="primary" size="sm" icon="download">
           Download
         </Button>
-      </nav>
+      </div>
     </header>
   );
 }
@@ -81,11 +61,6 @@ function ProseColumn(props: { children: JSX.Element }) {
   );
 }
 
-/**
- * A screenshot on the article card's own gradient, the way a product shot sits on a
- * coloured field. The gradient is live here so the motion is the first thing you
- * see; rest is not required.
- */
 export const ProductShot: Story = {
   render: () => (
     <div class="story-product-shot">
@@ -101,11 +76,6 @@ export const ProductShot: Story = {
   ),
 };
 
-/**
- * How a mounted screenshot reads on a real article page: the same header, title,
- * hero artwork and column as /guides/openbot-101, with the article gradient moving
- * around the pictures.
- */
 export const InTheArticle: Story = {
   render: () => (
     <div class="landing-page post-article">
@@ -129,7 +99,7 @@ export const InTheArticle: Story = {
           </div>
           <div class="post-prose">
             <p>
-              I built Dani-Dex because I wanted teammates, not chats. A chat window forgets. A teammate keeps the folder
+              I built Dani Dex because I wanted teammates, not chats. A chat window forgets. A teammate keeps the folder
               it works in, the history of what it did, and a name you can call it by.
             </p>
             <p>
@@ -156,8 +126,8 @@ export const InTheArticle: Story = {
             <h2>Install it, then connect a provider</h2>
             <p>
               Take the installer from GitHub Releases. Then give it a provider. In onboarding, in Settings or in the
-              model picker, select a provider and press Download: Dani-Dex installs and pins its own managed copy of
-              that command-line tool.
+              model picker, select a provider and press Download: Dani Dex installs and pins its own managed copy of that
+              command-line tool.
             </p>
             <ArticleImage
               src={pickAModel}
@@ -188,10 +158,6 @@ export const InTheArticle: Story = {
   ),
 };
 
-/**
- * A tall picture on a mount. The padding is proportional to the column rather than
- * to the picture, so a portrait screenshot keeps the same border as a wide one.
- */
 export const TallPicture: Story = {
   render: () => (
     <ProseColumn>
@@ -207,10 +173,6 @@ export const TallPicture: Story = {
   ),
 };
 
-/**
- * The same wide screenshot with no mount, then both pads. Leave `mountOn` out for
- * a bare picture. Rest a pointer on a mount: the gradient is the article's own.
- */
 export const MountPad: Story = {
   render: () => (
     <ProseColumn>
@@ -243,25 +205,24 @@ export const MountPad: Story = {
   ),
 };
 
-/**
- * Four titles, four colour families. Every mount in one article agrees with every
- * other, and two articles rarely land on the same band.
- */
 export const ColourFamilies: Story = {
   render: () => (
     <ProseColumn>
-      {["Dani-Dex 101", "Write a guide for Dani-Dex", "One agent, many providers", "Run the team server yourself"].map(
-        (title) => (
-          <ArticleImage
-            src={pickAModel}
-            alt="The model picker open on the ChatGPT tab, showing the installed Codex CLI version and a list of GPT models."
-            width={1440}
-            height={1484}
-            mountOn={title}
-            caption={title}
-          />
-        ),
-      )}
+      {[
+        "How to Use Dani Dex: Set Up Your First AI Agent",
+        "What Is Dani Dex? Models, Providers and Agents Explained",
+        "One agent, many providers",
+        "Run the team server yourself",
+      ].map((title) => (
+        <ArticleImage
+          src={pickAModel}
+          alt="The model picker open on the ChatGPT tab, showing the installed Codex CLI version and a list of GPT models."
+          width={1440}
+          height={1484}
+          mountOn={title}
+          caption={title}
+        />
+      ))}
     </ProseColumn>
   ),
 };

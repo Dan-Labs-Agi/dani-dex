@@ -1,0 +1,43 @@
+name: Dani platform validation
+on:
+  push:
+    branches: [wip/dani-platform-unverified-20261123]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: dani-platform-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: ./.github/actions/setup-bun
+      - name: Lint
+        run: bun run lint
+      - name: Typecheck
+        if: always()
+        run: bun run typecheck
+      - name: Translation catalogs
+        if: always()
+        run: bun run i18n:check
+      - name: Desktop tests
+        if: always()
+        run: bun run test:desktop --maxWorkers=2
+      - name: API tests
+        if: always()
+        run: bun run test:api
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, windows-2025, macos-15, macos-15-intel]
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: ./.github/actions/setup-bun
+      - name: Compile desktop application without publishing
+        run: bun run build

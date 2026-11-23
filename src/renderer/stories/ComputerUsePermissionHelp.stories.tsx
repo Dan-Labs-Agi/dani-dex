@@ -1,8 +1,8 @@
-import type { ComputerUseState, MacPermissionId } from "@dani-dex/contracts/ipc";
+import type { ComputerUseState, MacPermissionId } from "@openbot/contracts/ipc";
 import { onCleanup } from "solid-js";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { ComputerUsePermissionHelp } from "../src/features/computer-use/ComputerUsePermissionHelp";
-import { createMockDaniDex } from "./mock-dani-dex";
+import { createMockOpenBot } from "./mock-openbot";
 
 function state(granted: readonly MacPermissionId[]): ComputerUseState {
   return {
@@ -18,18 +18,16 @@ function MockedHelp(props: {
   app?: string | null;
   sunshine?: boolean;
 }) {
-  const previousApi = window.danidex;
-  const mock = createMockDaniDex();
-  mock.api.getComputerUseState = async () => state(props.granted ?? []);
+  const previousApi = window.openbot;
+  const mock = createMockOpenBot();
+  mock.api.computerUse.getState = async () => state(props.granted ?? []);
   const name = props.app === undefined ? "Electron" : props.app;
-  mock.api.getComputerUsePermissionApp = async () => (name ? { name, iconDataUrl: null } : null);
-  window.danidex = mock.api;
+  mock.api.computerUse.getPermissionApp = async () => (name ? { name, iconDataUrl: null } : null);
+  window.openbot = mock.api;
   onCleanup(() => {
     mock.dispose();
-    window.danidex = previousApi;
+    window.openbot = previousApi;
   });
-  // The surface fills its own window, which is 340 by 322. Nothing wraps it here for the same
-  // reason nothing wraps it there.
   return <ComputerUsePermissionHelp permission={props.permission} sunshine={props.sunshine} />;
 }
 
@@ -50,12 +48,10 @@ export const Accessibility: Story = {
   render: () => <MockedHelp permission="accessibility" />,
 };
 
-/** The grant landed while the user was in System Settings, which puts the accent on Done. */
 export const Granted: Story = {
   render: () => <MockedHelp permission="accessibility" granted={["accessibility"]} />,
 };
 
-/** No bundle to drag, which is every build that does not run from an application. */
 export const WithoutApplication: Story = {
   render: () => <MockedHelp permission="screen-recording" app={null} />,
 };

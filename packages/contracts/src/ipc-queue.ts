@@ -1,7 +1,9 @@
+import { type AgentProviderRef, isAgentProviderRef } from "./agent-providers";
 import { INPUT_LIMITS } from "./input-limits";
 import { type AttachmentSummary, isAttachmentSummary } from "./ipc-attachments";
 import { isBoundedString, isIdentifier } from "./ipc-bounded-values";
 import { isBoolean, isDynamicRecord, isNumber, isOneOf } from "./runtime-values";
+import type { QueueEditRequest } from "./team-protocol/queue-edit-v1";
 
 export const QUEUE_DELIVERY_STATUSES = [
   "queued",
@@ -13,6 +15,21 @@ export const QUEUE_DELIVERY_STATUSES = [
   "cancelled",
 ] as const;
 export type QueueDeliveryStatus = (typeof QUEUE_DELIVERY_STATUSES)[number];
+
+export const BUSY_MESSAGE_MODES = ["queue", "steer"] as const;
+export type BusyMessageMode = (typeof BUSY_MESSAGE_MODES)[number];
+export const DEFAULT_BUSY_MESSAGE_MODE: BusyMessageMode = "steer";
+
+export function isBusyMessageMode(value: unknown): value is BusyMessageMode {
+  return isOneOf(BUSY_MESSAGE_MODES, value);
+}
+
+export interface BusyMessageModePreference {
+  mode: BusyMessageMode;
+}
+
+export const QUEUE_STEER_FALLBACKS = ["provider-unsupported", "steer-failed"] as const;
+export type QueueSteerFallback = (typeof QUEUE_STEER_FALLBACKS)[number];
 
 export interface QueueDelivery {
   id: string;
@@ -30,25 +47,34 @@ export interface QueueDelivery {
   turnId: string | null;
   error: string | null;
   createdAt: string;
-  /**
-   * Another editor holds this queued message. It keeps its place in the queue and the agent does
-   * not start it until the edit is saved or cancelled.
-   *
-   * Absent rather than false on a released Team API response: the shipped adapters project a fixed
-   * key list, so a remote server drops this field instead of reporting it.
-   */
   editing?: boolean;
-  /**
-   * Whether the sender waits for an answer. Only an agent sender sets it, and only to `false`:
-   * a message the sender marked as information the recipient may act on, but must not answer.
-   *
-   * Absent means an answer is expected: what every message stored before this field existed meant,
-   * and what a remote server too old to send it reports.
-   */
   expectsReply?: boolean;
+  steerFallback?: QueueSteerFallback;
 }
 
-function isQueueDelivery(value: unknown): value is QueueDelivery {
+export function isQueuedAgentReply(delivery: QueueDelivery): boolean {
+  return (
+    delivery.status === "queued" &&
+    delivery.sender.kind === "agent" &&
+    delivery.replyToMessageId !== null &&
+    delivery.expectsReply === false
+  );
+}
+
+export function routineRunsTurn(
+  deliveries: readonly QueueDelivery[] | undefined,
+  turnId: string | null | undefined,
+): boolean {
+  if (!turnId) return false;
+  return (deliveries ?? []).some(
+    (delivery) =>
+      delivery.sender.kind === "routine" &&
+      (delivery.status === "starting" || delivery.status === "running") &&
+      delivery.turnId === turnId,
+  );
+}
+
+export function isQueueDelivery(value: unknown): value is QueueDelivery {
   return (
     isDynamicRecord(value) &&
     isIdentifier(value.id) &&
@@ -67,7 +93,8 @@ function isQueueDelivery(value: unknown): value is QueueDelivery {
     (value.error === null || isBoundedString(value.error, INPUT_LIMITS.messageText)) &&
     isBoundedString(value.createdAt, 160) &&
     (value.editing === undefined || isBoolean(value.editing)) &&
-    (value.expectsReply === undefined || isBoolean(value.expectsReply))
+    (value.expectsReply === undefined || isBoolean(value.expectsReply)) &&
+    (value.steerFallback === undefined || isOneOf(QUEUE_STEER_FALLBACKS, value.steerFallback))
   );
 }
 
@@ -84,42 +111,38 @@ function isQueueSender(value: unknown): value is QueueDelivery["sender"] {
   );
 }
 
-export const QUEUE_HOLD_REASONS = ["channel-task"] as const;
+export const QUEUE_HOLD_REASONS = ["channel-task", "provider-restart", "sign-in"] as const;
 export type QueueHoldReason = (typeof QUEUE_HOLD_REASONS)[number];
 
-/**
- * Why a queue is waiting for something other than its own running turn.
- *
- * A channel assignment reserves the whole host, so an agent with nothing running of its own can
- * still be unable to start the message the user just sent it. Without this the wait has no visible
- * cause: the channel turn's events are not the agent's own, so the agent reads as idle.
- */
-export interface QueueHold {
-  reason: QueueHoldReason;
-  channelId: string;
-  channelName: string;
-  /** The agent the channel work belongs to. Equal to the snapshot's agent when it is its own work. */
-  agentId: string;
-}
+export type QueueHold =
+  | {
+      reason: "channel-task";
+      channelId: string;
+      channelName: string;
+      agentId: string;
+    }
+  | { reason: "provider-restart"; provider: AgentProviderRef }
+  | { reason: "sign-in"; provider: AgentProviderRef };
 
 export function isQueueHold(value: unknown): value is QueueHold {
+  if (!isDynamicRecord(value) || !isOneOf(QUEUE_HOLD_REASONS, value.reason)) return false;
+  if (value.reason !== "channel-task") return isAgentProviderRef(value.provider);
   return (
-    isDynamicRecord(value) &&
-    isOneOf(QUEUE_HOLD_REASONS, value.reason) &&
     isIdentifier(value.channelId) &&
     isBoundedString(value.channelName, INPUT_LIMITS.agentTitle) &&
     isIdentifier(value.agentId)
   );
 }
 
+export function queueHoldWorker(hold: QueueHold | null | undefined): string | null {
+  return hold?.reason === "channel-task" ? hold.agentId : null;
+}
+
 export interface QueueSnapshot {
   agentId: string;
   deliveries: QueueDelivery[];
-  /**
-   * Absent rather than null on a released Team API response: the shipped adapters project a fixed
-   * key list, so a remote server drops this field instead of reporting it.
-   */
   hold?: QueueHold | null;
+  welcome?: true;
 }
 
 export function isQueueSnapshot(value: unknown): value is QueueSnapshot {
@@ -128,7 +151,8 @@ export function isQueueSnapshot(value: unknown): value is QueueSnapshot {
     isIdentifier(value.agentId) &&
     Array.isArray(value.deliveries) &&
     value.deliveries.every(isQueueDelivery) &&
-    (value.hold === undefined || value.hold === null || isQueueHold(value.hold))
+    (value.hold === undefined || value.hold === null || isQueueHold(value.hold)) &&
+    (value.welcome === undefined || value.welcome === true)
   );
 }
 
@@ -186,9 +210,12 @@ export interface UpdateQueuedMessageInput {
 export interface ReorderQueueInput {
   agentId: string;
   deliveryIds: string[];
+  taskId?: string;
 }
 
 export interface InterruptTurnInput {
   agentId: string;
   turnId: string;
 }
+
+export type EditQueuedMessageInput = QueueEditRequest & { agentId: string };

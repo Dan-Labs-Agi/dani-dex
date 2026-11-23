@@ -1,4 +1,4 @@
-# Gate A — SQLite schema — `src/backend/dani-dex-database-schema.ts`
+# Gate A — SQLite schema — `src/backend/openbot-database-schema.ts`
 
 Triggered by any change to that file or to `src/backend/database/`.
 
@@ -6,7 +6,7 @@ Triggered by any change to that file or to `src/backend/database/`.
   tag**. Read that number, never remember it:
 
   ```bash
-  git show "<tag>:src/backend/dani-dex-database-schema.ts" | grep -E 'version: [0-9]+' | tail -1
+  git show "<tag>:src/backend/openbot-database-schema.ts" | grep -E 'version: [0-9]+' | tail -1
   ```
 
   A literal written into this file would go stale the first time a migration ships and would then
@@ -23,7 +23,7 @@ Triggered by any change to that file or to `src/backend/database/`.
   every other one. Derive the bodies from the registry instead:
 
   ```bash
-  git show "<tag>:src/backend/dani-dex-database-schema.ts" | grep -E '^\s+up: [a-zA-Z]' | sort -u
+  git show "<tag>:src/backend/openbot-database-schema.ts" | grep -E '^\s+up: [a-zA-Z]' | sort -u
   ```
 
   Read every hunk of the diff for each function it names, not the stat. A database that already
@@ -39,12 +39,11 @@ Triggered by any change to that file or to `src/backend/database/`.
   `compactConversationHistory`, `compactMailboxHistory`, `migrateProviderSessionsForGrok` and
   `migrateReactionsForActors`, and the first two run `DELETE FROM orchestration_events` and
   `DELETE FROM projection_thread_activities`. Editing one of those changes what an upgrading
-  database *deletes*, while new installs never execute it at all — they get `LATEST_SCHEMA_SQL` and
-  the entry stamped as applied. The wrapper's own diff stays clean, so the `up:` list alone reports
-  nothing. Two names against nine is the difference this makes; derive it rather than listing it:
+  database *deletes*; a new install runs it on an empty database, so it shows nothing there. The
+  wrapper's own diff stays clean, so the `up:` list alone reports nothing. Two names against nine is the difference this makes; derive it rather than listing it:
 
   ```bash
-  schema() { git show "${1}:src/backend/dani-dex-database-schema.ts"; }
+  schema() { git show "${1}:src/backend/openbot-database-schema.ts"; }
   frozen() {
     src=$(schema "$1")
     defs=$(printf '%s\n' "$src" | grep -oE '^function [a-zA-Z0-9_]+' | awk '{print $2}' | sort -u)
@@ -66,22 +65,22 @@ Triggered by any change to that file or to `src/backend/database/`.
   It iterates to a fixpoint, so a helper added one level deeper is still caught. `for f in $(...)`
   rather than `for f in $seen`: command substitution splits in both shells, bare parameter expansion
   splits only in bash. Run it against the tag, not `HEAD` — the question is what was already shipped.
-- **If the migration executes DDL, `LATEST_SCHEMA_SQL` must be extended in the same change.**
-  `createLatestDatabase` execs that SQL and then stamps every `MIGRATIONS` entry as applied
-  *without running it*, so a DDL migration missing from it ships new installs a database without
-  the column upgraded installs have. Today `LATEST_SCHEMA_SQL` is derived by `substituteOnce`,
-  which replaces exactly one table in the v8 baseline (the v12 reactions table) and throws on zero
-  or two matches. A second DDL migration must change that mechanism, not append to it.
+- **If the migration executes DDL, its entry goes in `openbot-database-schema-history.json` in the
+  same change.** A new database runs every `MIGRATIONS` entry from the v8 baseline, so there is no
+  second schema to update. Older releases built a new database from a separate
+  `LATEST_SCHEMA_SQL`; those databases are in `src/backend/released-schemas/releases.json`, and
+  `released-schema-upgrade-migration.test.ts` upgrades them.
 - Data-preservation fixtures for every shipped source schema, plus failure, rollback, retry,
   downgrade, missing-version, foreign-key and integrity coverage, per `src/backend/AGENTS.md`.
 - Confirm the downgrade guard still names the new `LATEST_SCHEMA_VERSION` — the test is
-  "rejects a database created by a newer application" in `src/backend/dani-dex-database.test.ts`.
+  "rejects a database created by a newer application" in `src/backend/openbot-database.test.ts`.
 
 ```bash
-bun run test:desktop -- src/backend/dani-dex-database-schema-parity.test.ts
-bun run test:desktop -- src/backend/dani-dex-database.test.ts
+bun run test:desktop -- src/backend/openbot-database-schema-parity.test.ts
+bun run test:desktop -- src/backend/openbot-database.test.ts
 ```
 
-The parity test builds a database both ways and compares normalised `sqlite_master` and
-`PRAGMA table_info`, so an unmirrored DDL migration is red rather than a support ticket. If it is
-green and you added DDL, check that you actually added it to `MIGRATIONS`.
+The parity test builds a new database from an empty file, compares its normalised `sqlite_master`
+with the schema that the history records, and checks each recorded entry, so a changed shipped
+migration is red rather than a support ticket. If it is green and you added DDL, check that you
+actually added it to `MIGRATIONS`.

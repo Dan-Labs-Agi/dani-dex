@@ -1,7 +1,7 @@
-import type { RemoteDesktopSession } from "@dani-dex/contracts/ipc";
+import type { RemoteDesktopSession } from "@openbot/contracts/ipc";
+import { RemoteDesktopWorkspace } from "@openbot/ui/features/remote-desktop/RemoteDesktopWorkspace";
 import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { RemoteDesktopWorkspace } from "../src/features/remote-desktop/RemoteDesktopWorkspace";
 import macDesktopMock from "./assets/remote-desktop-mac-mock.png";
 import { STORY_SERVERS } from "./fixtures";
 
@@ -48,7 +48,7 @@ const meta = {
   title: "Team/RemoteDesktopWorkspace",
   component: RemoteDesktopWorkspace,
   args,
-  decorators: [(Story) => <div style="height: 720px; background: var(--dani-dex-bg-canvas);">{Story()}</div>],
+  decorators: [(Story) => <div style="height: 720px; background: var(--openbot-bg-canvas);">{Story()}</div>],
   parameters: { layout: "fullscreen" },
 } satisfies Meta<typeof RemoteDesktopWorkspace>;
 
@@ -77,11 +77,10 @@ export const ConnectionError: Story = {
   },
 };
 
-// The one failure a retry alone never clears: the grant is on the other computer.
 export const ScreenRecordingBlocked: Story = {
   args: {
     session: undefined,
-    connectionError: "The host has not allowed Dani-Dex to record its screen.",
+    connectionError: "The host has not allowed Dani Dex to record its screen.",
     connectionErrorCode: "host_permissions_required",
   },
 };

@@ -1,7 +1,4 @@
 #!/bin/sh
-# Administrator setup. Build the standalone helper as an unprivileged developer first:
-# bun build scripts/host-manager.ts --compile --outfile /tmp/dani-dex-host-manager
-# sudo scripts/install-host-update-agent.sh --managed /tmp/dani-dex-host-manager client-acme client-bravo
 set -eu
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin
 export LC_ALL=C
@@ -13,7 +10,7 @@ shift
 HELPER=$1
 shift
 ASSETS=$(cd "$(dirname "$0")/../build/macos/host-updates" && pwd)
-ROOT='/Library/Application Support/Dani-Dex/HostManager'
+ROOT='/Library/Application Support/OpenBot/HostManager'
 
 check_dir() {
   [ ! -L "$1" ] && [ -d "$1" ] && [ "$(stat -f %u "$1")" = 0 ] || exit 1
@@ -25,7 +22,7 @@ check_dir() {
   fi
 }
 for path in / /Library '/Library/Application Support' /Library/LaunchAgents /Library/LaunchDaemons; do check_dir "$path"; done
-for path in '/Library/Application Support/Dani-Dex' "$ROOT"; do
+for path in '/Library/Application Support/OpenBot' "$ROOT"; do
   if [ ! -e "$path" ] && [ ! -L "$path" ]; then mkdir -m 755 "$path"; fi
   check_dir "$path"
 done
@@ -44,7 +41,6 @@ for tenant in "$@"; do
     echo "Could not verify that $tenant is a Standard user." >&2
     exit 1
   fi
-  # Metadata only. Never open, scan, copy or modify any tenant content.
   tenant_home="/Users/$tenant"
   [ "$(dscl . -read "/Users/$tenant" NFSHomeDirectory)" = "NFSHomeDirectory: $tenant_home" ] || exit 1
   [ ! -L "$tenant_home" ] && [ -d "$tenant_home" ] && [ "$(stat -f %u "$tenant_home")" = "$tenant_uid" ] || exit 1
@@ -56,23 +52,21 @@ for tenant in "$@"; do
   fi
   UIDS="$UIDS $tenant_uid"
 done
-# The operator supplies trusted compiled code. Never compile repository hooks as root.
 [ -f "$HELPER" ] && [ ! -L "$HELPER" ] || exit 1
-for destination in "$ROOT/host-manager" "$ROOT/dani-dex-relaunch.sh" /Library/LaunchAgents/dev.danlab.danidex.desktop.relaunch.plist /Library/LaunchDaemons/dev.danlab.danidex.host-manager.plist; do
+for destination in "$ROOT/host-manager" "$ROOT/openbot-relaunch.sh" /Library/LaunchAgents/app.openbot.desktop.relaunch.plist /Library/LaunchDaemons/app.openbot.host-manager.plist; do
   [ ! -e "$destination" ] && [ ! -L "$destination" ] || { echo "Existing installation asset: $destination" >&2; exit 1; }
 done
 install -o root -g wheel -m 755 "$HELPER" "$ROOT/host-manager"
-install -o root -g wheel -m 755 "$ASSETS/dani-dex-relaunch.sh" "$ROOT/dani-dex-relaunch.sh"
-# UIDS contains only numbers returned by id above.
+install -o root -g wheel -m 755 "$ASSETS/openbot-relaunch.sh" "$ROOT/openbot-relaunch.sh"
 # shellcheck disable=SC2086
 "$ROOT/host-manager" --setup $UIDS
-install -o root -g wheel -m 644 "$ASSETS/dev.danlab.danidex.desktop.relaunch.plist" /Library/LaunchAgents/dev.danlab.danidex.desktop.relaunch.plist
-install -o root -g wheel -m 644 "$ASSETS/dev.danlab.danidex.host-manager.plist" /Library/LaunchDaemons/dev.danlab.danidex.host-manager.plist
-launchctl bootstrap system /Library/LaunchDaemons/dev.danlab.danidex.host-manager.plist
+install -o root -g wheel -m 644 "$ASSETS/app.openbot.desktop.relaunch.plist" /Library/LaunchAgents/app.openbot.desktop.relaunch.plist
+install -o root -g wheel -m 644 "$ASSETS/app.openbot.host-manager.plist" /Library/LaunchDaemons/app.openbot.host-manager.plist
+launchctl bootstrap system /Library/LaunchDaemons/app.openbot.host-manager.plist
 for tenant in "$@"; do
   tenant_uid=$(id -u "$tenant")
-  if ! launchctl bootstrap "gui/$tenant_uid" /Library/LaunchAgents/dev.danlab.danidex.desktop.relaunch.plist; then
+  if ! launchctl bootstrap "gui/$tenant_uid" /Library/LaunchAgents/app.openbot.desktop.relaunch.plist; then
     echo "LaunchAgent for $tenant will load at the next GUI login."
   fi
 done
-ls -ld /Applications/Dani-Dex.app "$ROOT"
+ls -ld /Applications/OpenBot.app "$ROOT"
