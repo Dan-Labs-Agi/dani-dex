@@ -3,18 +3,18 @@ import type {
   DynamicIslandAgentIdentity,
   DynamicIslandPresentation,
   DynamicIslandPromptItem,
-} from "@dani-dex/contracts/ipc";
+} from "@openbot/contracts/ipc";
+import type { DynamicIslandViewState } from "@openbot/ui";
+import { OpenBotDynamicIsland } from "@openbot/ui/features/dynamic-island/OpenBotDynamicIsland";
 import type { JSX } from "@solidjs/web";
 import { createMemo, createSignal } from "solid-js";
 import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import type { DynamicIslandViewState } from "../src/components/ui";
-import { DaniDexDynamicIsland } from "../src/features/dynamic-island/DaniDexDynamicIsland";
 import { DynamicIslandDisplayComparison } from "./DynamicIslandDisplayComparison";
 import { STORY_AGENTS } from "./fixtures";
 
 type Scenario = "idle" | "working" | "chat" | "question" | "approval" | "takeover" | "failed";
-type QuestionVariant = "standard" | "short" | "long" | "multiple";
+type QuestionVariant = "standard" | "short" | "long" | "multiple" | "typed";
 type WorkingVariant = "single" | "multiple";
 
 interface DynamicIslandDemoProps {
@@ -22,10 +22,11 @@ interface DynamicIslandDemoProps {
   questionVariant?: QuestionVariant;
   workingVariant?: WorkingVariant;
   defaultState?: DynamicIslandViewState;
-  onAction: (action: DynamicIslandAction) => void;
+  inlineReply?: boolean;
+  onAction: (action: DynamicIslandAction) => Promise<boolean> | undefined;
 }
 
-const AGENT_IDENTITIES = STORY_AGENTS.slice(0, 3).map(toIslandAgent);
+const AGENT_IDENTITIES = storyIslandAgents();
 const SCENARIOS: Scenario[] = ["idle", "working", "chat", "question", "approval", "takeover", "failed"];
 
 function DynamicIslandDemo(props: DynamicIslandDemoProps): JSX.Element {
@@ -37,13 +38,14 @@ function DynamicIslandDemo(props: DynamicIslandDemoProps): JSX.Element {
     <DynamicIslandDisplayComparison
       defaultState={props.defaultState}
       renderIsland={(preview) => (
-        <DaniDexDynamicIsland
+        <OpenBotDynamicIsland
           presentation={presentation()}
           state={preview.state()}
           displayMode={preview.displayMode}
           suppressInitialHover
           onStateChange={preview.onStateChange}
           onAction={props.onAction}
+          inlineReply={props.inlineReply}
         />
       )}
     />
@@ -57,9 +59,9 @@ function presentationFor(
 ): DynamicIslandPresentation {
   if (scenario === "working") {
     const working = [
-      { agent: AGENT_IDENTITIES[0], task: "Planning the launch sequence" },
-      { agent: AGENT_IDENTITIES[1], task: "Checking primary sources" },
-      { agent: AGENT_IDENTITIES[2], task: "Drafting partner follow-ups" },
+      { agent: AGENT_IDENTITIES[0], task: "Planning the launch sequence", turnId: "turn-1" },
+      { agent: AGENT_IDENTITIES[1], task: "Checking primary sources", turnId: "turn-2" },
+      { agent: AGENT_IDENTITIES[2], task: "Drafting partner follow-ups", turnId: "turn-3" },
     ];
     return {
       serverId: "local",
@@ -97,7 +99,7 @@ function presentationFor(
         approval: {
           kind: "command",
           command: "bun install --frozen-lockfile",
-          cwd: "~/Projects/danidex",
+          cwd: "~/Projects/openbot",
           reason: "Install the locked dependencies before running the test suite.",
           grantRoot: null,
           permissions: null,
@@ -133,6 +135,24 @@ function presentationFor(
 }
 
 function questionFixture(variant: QuestionVariant): DynamicIslandPromptItem {
+  if (variant === "typed") {
+    return {
+      requestId: "research-typed-question",
+      agent: AGENT_IDENTITIES[1],
+      title: "Name the region",
+      detail: "Which region should the market-size estimate cover?",
+      questions: [
+        {
+          id: "region",
+          header: "Name the region",
+          question: "Which region should the market-size estimate cover?",
+          isSecret: false,
+          options: null,
+        },
+      ],
+    };
+  }
+
   if (variant === "short") {
     const options = [
       { label: "Send it", description: "Use this draft" },
@@ -148,6 +168,7 @@ function questionFixture(variant: QuestionVariant): DynamicIslandPromptItem {
           id: "send-version",
           header: "Send this version?",
           question: "The draft is ready. Which version should I use?",
+          detail: "1. Short version: 120 words\n2. Full version: 340 words",
           isSecret: false,
           options,
         },
@@ -250,23 +271,30 @@ function questionFixture(variant: QuestionVariant): DynamicIslandPromptItem {
   };
 }
 
+function storyIslandAgents(): [DynamicIslandAgentIdentity, DynamicIslandAgentIdentity, DynamicIslandAgentIdentity] {
+  const [first, second, third] = STORY_AGENTS;
+  if (!first || !second || !third) throw new Error("The story fixtures need three agents.");
+  return [toIslandAgent(first), toIslandAgent(second), toIslandAgent(third)];
+}
+
 function toIslandAgent(agent: (typeof STORY_AGENTS)[number]): DynamicIslandAgentIdentity {
   return {
     id: agent.id,
     name: agent.name,
     avatarSeed: agent.avatarSeed,
     avatarHue: agent.avatarHue,
+    avatarColor: agent.avatarColor ?? null,
     avatarUrl: agent.avatarUrl,
   };
 }
 
 const meta = {
-  title: "Experiments/macOS Dynamic Island",
+  title: "Window/Dynamic Island",
   component: DynamicIslandDemo,
   args: { scenario: "working", defaultState: "compact", onAction: fn() },
   argTypes: {
     scenario: { control: "select", options: SCENARIOS },
-    questionVariant: { control: "select", options: ["standard", "short", "long", "multiple"] },
+    questionVariant: { control: "select", options: ["standard", "short", "long", "multiple", "typed"] },
     workingVariant: { control: "select", options: ["single", "multiple"] },
     defaultState: { control: "select", options: ["compact", "expanded"] },
   },
@@ -285,7 +313,7 @@ export const OpenChatReturnsToIdle: Story = {
       renderIsland={(preview) => {
         const [presentation, setPresentation] = createSignal(presentationFor("chat", "standard", "single"));
         return (
-          <DaniDexDynamicIsland
+          <OpenBotDynamicIsland
             presentation={presentation()}
             state={preview.state()}
             displayMode={preview.displayMode}
@@ -308,4 +336,20 @@ export const OpenChatReturnsToIdle: Story = {
       },
     },
   },
+};
+
+export const InlineReplyMessage: Story = {
+  args: { scenario: "chat", defaultState: "expanded", inlineReply: true },
+};
+
+export const InlineReplyQuestion: Story = {
+  args: { scenario: "question", defaultState: "expanded", inlineReply: true },
+};
+
+export const InlineReplyTypedQuestion: Story = {
+  args: { scenario: "question", questionVariant: "typed", defaultState: "expanded", inlineReply: true },
+};
+
+export const InlineReplyWorking: Story = {
+  args: { scenario: "working", defaultState: "expanded", inlineReply: true },
 };

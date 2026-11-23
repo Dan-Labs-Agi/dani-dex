@@ -3,6 +3,7 @@ import { Typography } from "heroui-native";
 import { useState } from "react";
 import { View } from "react-native";
 import { useCSSVariable } from "uniwind";
+import { nameInitials } from "@/shared/lib/name-initials";
 
 interface ProfileAvatarProps {
   name: string;
@@ -13,19 +14,12 @@ interface ProfileAvatarProps {
 }
 
 export function ProfileAvatar({ name, imageUrl, accent, size = 48, neutral = false }: ProfileAvatarProps) {
-  const brandBackground = String(useCSSVariable("--dani-dex-logo-production"));
-  const brandForeground = String(useCSSVariable("--dani-dex-text-on-light"));
-  const neutralBackground = String(useCSSVariable("--dani-dex-border-grouped"));
-  const neutralForeground = String(useCSSVariable("--dani-dex-text-grouped-secondary"));
+  const brandBackground = String(useCSSVariable("--openbot-logo-production"));
+  const brandForeground = String(useCSSVariable("--openbot-text-on-light"));
+  const neutralBackground = String(useCSSVariable("--openbot-border-grouped"));
+  const neutralForeground = String(useCSSVariable("--openbot-text-grouped-secondary"));
   const [failedImageUrl, setFailedImageUrl] = useState<string | null>(null);
   const imageFailed = imageUrl === failedImageUrl;
-
-  const initials = name
-    .trim()
-    .split(/\s+/u)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
 
   return (
     <View
@@ -48,7 +42,7 @@ export function ProfileAvatar({ name, imageUrl, accent, size = 48, neutral = fal
           color: neutral ? neutralForeground : brandForeground,
         }}
       >
-        {initials || "O"}
+        {nameInitials(name)}
       </Typography>
       {imageUrl && !imageFailed ? (
         <Image

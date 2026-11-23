@@ -3,13 +3,13 @@ import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import BrowserPreviewSidebar from "../src/features/conversation/BrowserPreviewSidebar";
 import browserPreviewUrl from "./assets/browser-takeover-preview.svg";
-import { createMockDaniDex } from "./mock-dani-dex";
+import { createMockOpenBot } from "./mock-openbot";
 
 const tabs = [
   {
     id: "docs",
-    title: "Dani-Dex documentation",
-    url: "https://dani-dex.example/docs",
+    title: "OpenBot documentation",
+    url: "https://openbot.run/docs",
     loading: false,
     ownerThreadId: "chief",
     ownerAgentId: "chief",
@@ -32,25 +32,23 @@ const meta = {
     hidden: false,
     suspended: false,
     contextKey: "local:chief",
-    defaultWidth: () => 320,
     maxWidth: () => 640,
     onWidthChange: fn(),
     onOpenTab: fn(),
     onCloseTab: fn(),
     onNewTab: fn(),
-    onCollapse: fn(),
   },
   decorators: [
     (Story) => {
-      const previous = window.danidex;
-      window.danidex = createMockDaniDex({
+      const previous = window.openbot;
+      window.openbot = createMockOpenBot({
         browserPreviews: {
           docs: { dataUrl: browserPreviewUrl, width: 960, height: 600 },
           settings: null,
         },
       }).api;
       onSettled(() => () => {
-        window.danidex = previous;
+        window.openbot = previous;
       });
       return (
         <div style="--browser-panel-width: 320px">

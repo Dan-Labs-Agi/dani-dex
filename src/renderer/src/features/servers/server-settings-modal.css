@@ -1,28 +1,28 @@
 .server-settings-modal-shell .settings-modal-main {
-  background: var(--dani-dex-bg-canvas);
+  background: var(--openbot-bg-canvas);
 }
 
 .server-settings-modal-shell .settings-modal-scroll-frame::before {
   background: linear-gradient(
     to bottom,
-    var(--dani-dex-bg-canvas) 0%,
-    var(--dani-dex-bg-canvas) 28%,
-    var(--dani-dex-bg-canvas-clear) 100%
+    var(--openbot-bg-canvas) 0%,
+    var(--openbot-bg-canvas) 28%,
+    var(--openbot-bg-canvas-clear) 100%
   );
 }
 
 .server-settings-modal-shell .settings-modal-scroll-frame::after {
   background: linear-gradient(
     to top,
-    var(--dani-dex-bg-canvas) 0%,
-    var(--dani-dex-bg-canvas) 28%,
-    var(--dani-dex-bg-canvas-clear) 100%
+    var(--openbot-bg-canvas) 0%,
+    var(--openbot-bg-canvas) 28%,
+    var(--openbot-bg-canvas-clear) 100%
   );
 }
 
 .server-settings-panel {
   width: 100%;
-  gap: var(--dani-dex-space-6);
+  gap: var(--openbot-space-6);
   animation: none;
 }
 
@@ -33,13 +33,13 @@
   flex: 0 0 auto;
   place-items: center;
   overflow: hidden;
-  border: 1px solid var(--dani-dex-border-strong);
-  border-radius: var(--dani-dex-radius-md);
-  background: var(--dani-dex-bg-control-hover);
-  color: var(--dani-dex-text-secondary);
-  font-size: var(--dani-dex-text-sm);
-  font-weight: var(--dani-dex-weight-semibold);
-  letter-spacing: var(--dani-dex-tracking-wide);
+  border: 1px solid var(--openbot-border-strong);
+  border-radius: var(--openbot-radius-md);
+  background: var(--openbot-bg-control-hover);
+}
+
+.server-settings-plush {
+  --server-plush-logo-size: 40px;
 }
 
 .server-settings-logo img {
@@ -47,13 +47,13 @@
   height: 100%;
   display: block;
   object-fit: cover;
-  outline: 1px solid var(--dani-dex-image-outline);
+  outline: 1px solid var(--openbot-image-outline);
   outline-offset: -1px;
 }
 
 .server-settings-logo-trigger {
-  border-radius: var(--dani-dex-radius-md);
-  color: var(--dani-dex-text-muted);
+  border-radius: var(--openbot-radius-md);
+  color: var(--openbot-text-muted);
 }
 
 .server-settings-logo-trigger .server-settings-logo {
@@ -65,12 +65,12 @@
 }
 
 .server-settings-logo-placeholder {
-  width: var(--dani-dex-icon-md);
-  height: var(--dani-dex-icon-md);
+  width: var(--openbot-icon-md);
+  height: var(--openbot-icon-md);
 }
 
 .server-settings-item-error {
-  color: var(--dani-dex-danger);
+  color: var(--openbot-danger);
 }
 
 .server-settings-readonly-name.ui-item {
@@ -78,84 +78,43 @@
 }
 
 .server-settings-publish-setting.ui-switch-field,
-.server-settings-mute-setting.ui-switch-field {
-  min-height: 64px;
+.server-settings-publish-setting.ui-switch-field {
+  padding: var(--openbot-space-3) var(--openbot-space-4);
 }
 
-.server-settings-publish-setting.ui-switch-field,
-.server-settings-mute-setting.ui-switch-field {
-  padding: var(--dani-dex-space-3) var(--dani-dex-space-4);
-}
-
-.server-settings-publish-setting.ui-switch-field,
-.server-settings-mute-setting.ui-switch-field {
+.server-settings-publish-setting.ui-switch-field {
   width: 100%;
   justify-content: space-between;
-  gap: var(--dani-dex-space-6);
+  gap: var(--openbot-space-6);
 }
 
 .server-settings-readonly-value {
   min-width: 180px;
   max-width: 300px;
   overflow-wrap: anywhere;
-  color: var(--dani-dex-text-primary);
-  font-weight: var(--dani-dex-weight-medium);
-  text-align: right;
+  color: var(--openbot-text-primary);
+  font-weight: var(--openbot-weight-medium);
+  text-align: end;
   user-select: text;
-}
-
-.server-settings-address-control.ui-button {
-  width: 320px;
-  height: var(--dani-dex-control-md);
-  min-width: 0;
-  flex-direction: row-reverse;
-  justify-content: space-between;
-  overflow: visible;
-  border: 0;
-  border-radius: var(--dani-dex-radius-md);
-  background: var(--dani-dex-bg-control);
-  padding-inline: var(--dani-dex-space-3) var(--dani-dex-space-2);
-  color: var(--dani-dex-text-secondary);
-  box-shadow: inset 0 0 0 1px var(--dani-dex-border);
-}
-
-.server-settings-address-control > span {
-  min-width: 0;
-  flex: 1 1 auto;
-  overflow: hidden;
-  font-family: var(--dani-dex-font-mono);
-  font-weight: var(--dani-dex-weight-regular);
-  text-align: left;
-  text-overflow: ellipsis;
-}
-
-.server-settings-address-control > svg {
-  width: var(--dani-dex-icon-sm);
-  height: var(--dani-dex-icon-sm);
-  flex: 0 0 auto;
-  stroke-width: var(--dani-dex-icon-stroke);
-}
-
-.server-settings-address-control[data-copied] {
-  color: var(--dani-dex-success);
 }
 
 .server-settings-error-toast {
   position: absolute;
-  right: var(--dani-dex-space-6);
-  bottom: var(--dani-dex-space-6);
-  left: var(--dani-dex-space-6);
+  right: var(--openbot-space-6);
+  bottom: var(--openbot-space-6);
+  left: var(--openbot-space-6);
   z-index: 3;
-  box-shadow: 0 12px 32px var(--dani-dex-shadow-dialog);
+  box-shadow: 0 12px 32px var(--openbot-shadow-dialog);
 }
 
 .server-settings-error-toast[data-with-save-bar] {
-  bottom: calc(60px + var(--dani-dex-space-3));
+  bottom: calc(60px + var(--openbot-space-3));
 }
 
-.server-settings-members-alert {
-  border: 0;
-  background: var(--dani-dex-bg-control);
+.server-settings-members-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--openbot-space-2);
 }
 
 .server-settings-search {
@@ -167,23 +126,23 @@
 .server-settings-search > svg {
   position: absolute;
   top: 50%;
-  left: var(--dani-dex-space-3);
+  inset-inline-start: var(--openbot-space-3);
   z-index: 1;
-  width: var(--dani-dex-icon-sm);
-  height: var(--dani-dex-icon-sm);
-  color: var(--dani-dex-text-muted);
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
+  color: var(--openbot-text-muted);
   pointer-events: none;
   transform: translateY(-50%);
 }
 
 .server-settings-search .ui-input {
-  padding-left: var(--dani-dex-space-8);
+  padding-inline-start: var(--openbot-space-8);
 }
 
 .server-settings-invite-card.ui-card {
-  border: 0;
-  background: var(--dani-dex-bg-surface);
-  padding: var(--dani-dex-space-4);
+  border: 1px solid var(--openbot-border);
+  background: transparent;
+  padding: var(--openbot-space-4);
   box-shadow: none;
 }
 
@@ -191,11 +150,9 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 112px auto;
   align-items: start;
-  gap: var(--dani-dex-space-2);
+  gap: var(--openbot-space-2);
 }
 
-/* The hidden tab panels stay mounted for the slide animation, so without this the
-   slot sizes to the widest panel and the active one inherits its width as dead space. */
 .server-settings-invite-composer .ui-sliding-tabs-content-slot {
   position: relative;
   grid-template-columns: minmax(0, 1fr);
@@ -230,12 +187,12 @@
 }
 
 .server-settings-invite-link-input.ui-input {
-  font-family: var(--dani-dex-font-mono);
+  font-family: var(--openbot-font-mono);
   cursor: text;
 }
 
 .server-settings-invite-link-input.ui-input::placeholder {
-  font-family: var(--dani-dex-font-sans);
+  font-family: var(--openbot-font-sans);
 }
 
 .server-settings-invite-copy > span {
@@ -243,23 +200,19 @@
   text-align: center;
 }
 
-.server-settings-invite-copy > svg {
-  width: var(--dani-dex-icon-sm);
-  height: var(--dani-dex-icon-sm);
+.server-settings-invite-copy > svg,
+.server-settings-invite-new-link > svg,
+.server-settings-routine-feed-row .ui-button > svg,
+.server-settings-routine-feed-actions .ui-button > svg {
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
   flex: 0 0 auto;
-  stroke-width: var(--dani-dex-icon-stroke);
+  stroke-width: var(--openbot-icon-stroke);
 }
 
-.server-settings-invite-new-link > svg {
-  width: var(--dani-dex-icon-sm);
-  height: var(--dani-dex-icon-sm);
-  flex: 0 0 auto;
-  stroke-width: var(--dani-dex-icon-stroke);
-}
-
-.server-settings-perma-hint {
+.server-settings-invite-hint {
   display: block;
-  margin-top: var(--dani-dex-space-2);
+  margin-top: var(--openbot-space-2);
 }
 
 .server-settings-role-select {
@@ -268,12 +221,12 @@
 
 .server-settings-invite-result {
   border: 0;
-  background: var(--dani-dex-bg-surface-raised);
-  margin-top: var(--dani-dex-space-3);
+  background: var(--openbot-bg-surface-raised);
+  margin-top: var(--openbot-space-3);
 }
 
 .server-settings-member-row[data-disabled] {
-  background: var(--dani-dex-bg-control);
+  background: var(--openbot-bg-control);
 }
 
 .server-settings-member-meta {
@@ -303,8 +256,8 @@
 }
 
 .server-settings-member-menu-trigger svg {
-  width: var(--dani-dex-icon-sm);
-  height: var(--dani-dex-icon-sm);
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
 }
 
 .server-settings-empty-row .ui-item-content {
@@ -315,15 +268,15 @@
   width: 40px;
   height: 40px;
   justify-content: center;
-  border: 1px solid var(--dani-dex-border);
-  border-radius: var(--dani-dex-radius-md);
-  background: var(--dani-dex-bg-control);
-  color: var(--dani-dex-text-secondary);
+  border: 1px solid var(--openbot-border);
+  border-radius: var(--openbot-radius-md);
+  background: var(--openbot-bg-control);
+  color: var(--openbot-text-secondary);
 }
 
 .server-settings-desktop-icon svg {
-  width: var(--dani-dex-icon-lg);
-  height: var(--dani-dex-icon-lg);
+  width: var(--openbot-icon-lg);
+  height: var(--openbot-icon-lg);
 }
 
 .server-settings-desktop-description {
@@ -337,103 +290,25 @@
   max-width: 260px;
   display: grid;
   justify-items: end;
-  gap: var(--dani-dex-space-1);
-  text-align: right;
+  gap: var(--openbot-space-1);
+  text-align: end;
 }
 
 .server-settings-desktop-hint {
   max-width: 220px;
-  text-align: right;
+  text-align: end;
 }
 
 .server-settings-desktop-status {
-  margin-top: var(--dani-dex-space-1);
-}
-
-.server-settings-confirm-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: calc(var(--dani-dex-layer-dialog) + 2);
-  display: grid;
-  place-items: center;
-  padding: var(--dani-dex-space-6);
-  animation: server-settings-confirm-backdrop-in var(--dani-dex-duration-normal) var(--dani-dex-ease-out) both;
-}
-
-.server-settings-confirm-dialog {
-  width: min(400px, calc(100vw - 40px));
-  display: grid;
-  justify-items: center;
-  outline: 0;
-  background: var(--dani-dex-bg-surface-raised);
-  padding: var(--dani-dex-space-6);
-  text-align: center;
-  transform-origin: center;
-  animation: server-settings-confirm-in var(--dani-dex-duration-overlay) var(--dani-dex-ease-out) both;
-}
-
-.server-settings-confirm-icon {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  margin-bottom: var(--dani-dex-space-4);
-  border-radius: var(--dani-dex-radius-lg);
-  background: var(--dani-dex-danger-soft);
-  color: var(--dani-dex-danger);
-}
-
-.server-settings-confirm-icon svg {
-  width: var(--dani-dex-icon-lg);
-  height: var(--dani-dex-icon-lg);
-}
-
-.server-settings-confirm-dialog h2 {
-  margin: 0;
-  color: var(--dani-dex-text-primary);
-  font-size: var(--dani-dex-text-2xl);
-  font-weight: var(--dani-dex-weight-semibold);
-  line-height: var(--dani-dex-leading-2xl);
-  letter-spacing: var(--dani-dex-tracking-tight);
-}
-
-.server-settings-confirm-dialog > p {
-  max-width: 320px;
-  margin: var(--dani-dex-space-2) 0 0;
-  color: var(--dani-dex-text-muted);
-  font-size: var(--dani-dex-text-md);
-  line-height: var(--dani-dex-leading-md);
-}
-
-.server-settings-confirm-actions {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--dani-dex-space-2);
-  margin-top: var(--dani-dex-space-6);
-}
-
-@keyframes server-settings-confirm-backdrop-in {
-  from {
-    opacity: 0;
-  }
-}
-
-@keyframes server-settings-confirm-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px) scale(0.97);
-  }
+  margin-top: var(--openbot-space-1);
 }
 
 @media (max-width: 720px) {
-  .server-settings-address-setting,
   .server-settings-readonly-name {
     align-items: flex-start;
     flex-direction: column;
   }
 
-  .server-settings-address-control,
   .server-settings-readonly-name .ui-item-actions {
     width: 100%;
     max-width: none;
@@ -443,16 +318,12 @@
   .server-settings-readonly-value {
     min-width: 0;
     max-width: none;
-    text-align: left;
-  }
-
-  .server-settings-address-control {
-    width: 100%;
+    text-align: start;
   }
 
   .server-settings-error-toast {
-    right: var(--dani-dex-space-4);
-    left: var(--dani-dex-space-4);
+    right: var(--openbot-space-4);
+    left: var(--openbot-space-4);
   }
 
   .server-settings-invite-composer {
@@ -476,9 +347,9 @@
   .server-settings-desktop-meta,
   .server-settings-desktop-hint {
     max-width: none;
-    margin-left: 52px;
+    margin-inline-start: 52px;
     justify-items: start;
-    text-align: left;
+    text-align: start;
   }
 }
 
@@ -516,26 +387,19 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .server-settings-confirm-backdrop,
-  .server-settings-confirm-dialog {
-    animation: none;
-  }
-}
-
 .server-settings-invite-share {
   display: flex;
-  gap: var(--dani-dex-space-1);
+  gap: var(--openbot-space-1);
 }
 
 .server-settings-invite-share > .ui-button:last-child {
-  animation: server-settings-invite-qr-in var(--dani-dex-duration-normal) var(--dani-dex-ease-out);
+  animation: server-settings-invite-qr-in var(--openbot-duration-normal) var(--openbot-ease-out);
 }
 
 @keyframes server-settings-invite-qr-in {
   from {
     opacity: 0;
-    transform: translateX(calc(-1 * var(--dani-dex-space-4)));
+    transform: translateX(calc(-1 * var(--openbot-space-4)));
   }
   to {
     opacity: 1;
@@ -544,13 +408,13 @@
 }
 
 .server-settings-invite-qr {
-  animation: server-settings-invite-panel-in var(--dani-dex-duration-normal) var(--dani-dex-ease-out);
+  animation: server-settings-invite-panel-in var(--openbot-duration-normal) var(--openbot-ease-out);
   transform-origin: top;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--dani-dex-space-3);
-  padding: var(--dani-dex-space-4);
+  gap: var(--openbot-space-3);
+  padding: var(--openbot-space-4);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -562,7 +426,7 @@
 @keyframes server-settings-invite-panel-in {
   from {
     opacity: 0;
-    transform: translateY(calc(-1 * var(--dani-dex-space-3))) scale(0.96);
+    transform: translateY(calc(-1 * var(--openbot-space-3))) scale(0.96);
   }
   to {
     opacity: 1;
@@ -573,4 +437,177 @@
   .server-settings-invite-qr {
     animation: none;
   }
+}
+
+.server-settings-routine-feed-row {
+  display: flex;
+  align-items: center;
+  gap: var(--openbot-space-2);
+}
+
+.server-settings-routine-feed-agent {
+  flex: none;
+  width: auto;
+}
+
+.server-settings-routine-feed-row .ui-input {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--openbot-font-mono);
+  cursor: text;
+}
+
+.server-settings-routine-feed-text {
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.server-settings-routine-feed-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--openbot-space-1);
+}
+
+.server-settings-routine-feed-loading {
+  display: grid;
+  place-items: center;
+  padding: var(--openbot-space-6);
+  animation: server-settings-routine-feed-loading-in var(--openbot-duration-normal) var(--openbot-ease-out)
+    var(--openbot-loading-indicator-delay) both;
+}
+
+@keyframes server-settings-routine-feed-loading-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.server-settings-routine-feed-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--openbot-space-2);
+}
+
+.server-invites-empty {
+  display: grid;
+}
+
+.server-invites-empty > * {
+  grid-area: 1 / 1;
+}
+
+.server-invites-empty-board {
+  min-height: calc(4 * 3.75rem);
+  display: grid;
+  align-content: start;
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+  mask-image:
+    radial-gradient(ellipse 46% 72% at 50% 50%, var(--openbot-transparent) 58%, var(--openbot-text-primary) 100%),
+    linear-gradient(var(--openbot-text-primary) 70%, var(--openbot-transparent));
+  mask-composite: intersect;
+}
+
+.server-invites-empty-row {
+  animation: server-invites-empty-land 560ms var(--openbot-ease-out) both;
+}
+
+.server-invites-empty-row > .ui-item {
+  padding: var(--openbot-space-3) var(--openbot-space-4);
+}
+
+.server-invites-empty-row + .server-invites-empty-row {
+  position: relative;
+}
+
+.server-invites-empty-row + .server-invites-empty-row::before {
+  position: absolute;
+  top: 0;
+  right: var(--openbot-space-4);
+  left: var(--openbot-space-4);
+  height: 1px;
+  background: var(--openbot-border);
+  content: "";
+}
+
+.server-invites-empty-board[data-leaving] .server-invites-empty-row {
+  animation: server-invites-empty-leave 700ms var(--openbot-ease-out) both;
+}
+
+@keyframes server-invites-empty-land {
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(10px) scale(0.98);
+  }
+}
+
+@keyframes server-invites-empty-leave {
+  to {
+    opacity: 0;
+    filter: blur(3px);
+    transform: translateY(-4px);
+  }
+}
+
+.server-invites-empty-pitch {
+  z-index: 1;
+  width: 100%;
+  max-width: 30rem;
+  display: grid;
+  place-self: center;
+  justify-items: center;
+  gap: var(--openbot-space-3);
+  padding: var(--openbot-space-8) var(--openbot-space-6);
+  text-align: center;
+}
+
+.server-invites-empty-title {
+  display: grid;
+  font-size: var(--openbot-text-3xl);
+  font-weight: var(--openbot-weight-semibold);
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.server-invites-empty-quiet {
+  color: var(--openbot-text-muted);
+}
+
+.server-invites-empty-hand {
+  display: inline-block;
+  color: var(--openbot-accent-text);
+  font-family: "Bradley Hand", "Noteworthy", "Segoe Print", cursive;
+  line-height: 1;
+  clip-path: inset(-0.4em 100% -0.4em -0.2em);
+  animation: server-invites-empty-write 560ms linear 450ms forwards;
+}
+
+@keyframes server-invites-empty-write {
+  to {
+    clip-path: inset(-0.4em -0.2em -0.4em -0.2em);
+  }
+}
+
+.server-invites-empty-action {
+  width: 100%;
+  max-width: 20rem;
+  height: var(--openbot-control-lg);
+  margin-top: var(--openbot-space-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .server-invites-empty-row,
+  .server-invites-empty-hand {
+    animation: none;
+    clip-path: none;
+  }
+}
+
+.server-settings-timezone-pending {
+  width: 220px;
+  min-height: var(--openbot-control-sm);
 }

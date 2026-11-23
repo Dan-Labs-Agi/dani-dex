@@ -1,4 +1,4 @@
-import type { CentralAuthUser } from "@dani-dex/contracts/ipc";
+import type { CentralAuthUser } from "@openbot/contracts/ipc";
 
 export function mobileUserName(user: CentralAuthUser): string {
   if (user.name) return user.name;

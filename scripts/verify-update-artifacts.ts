@@ -2,21 +2,20 @@ import { createHash } from "node:crypto";
 import { createReadStream, existsSync } from "node:fs";
 import { readdir, readFile, stat } from "node:fs/promises";
 import { basename, join, resolve } from "node:path";
-import { isDynamicRecord, isNumber, isString } from "@dani-dex/contracts/runtime-values";
-import { createDaniDexLogger } from "@dani-dex/logging";
-import { parse } from "yaml";
+import { createOpenBotLogger } from "@openbot/logging";
+import { readUpdateManifest } from "./update-rollout";
 
-const logger = createDaniDexLogger("verify-update-artifacts");
+const logger = createOpenBotLogger("verify-update-artifacts");
 
 const MIB = 1024 * 1024;
 const platform = process.argv[2];
-if (platform !== "linux" && platform !== "macos" && platform !== "windows") {
-  throw new Error("Usage: bun scripts/verify-update-artifacts.ts <linux|macos|windows>");
+if (platform !== "linux" && platform !== "linux-arm64" && platform !== "macos" && platform !== "windows") {
+  throw new Error("Usage: bun scripts/verify-update-artifacts.ts <linux|linux-arm64|macos|windows>");
 }
 
-/** The artifact electron-updater downloads, and the manifest that names it, for each platform. */
 const UPDATE_ARTIFACTS = {
   linux: { extension: ".AppImage", manifest: "latest-linux.yml" },
+  "linux-arm64": { extension: ".AppImage", manifest: "latest-linux-arm64.yml" },
   macos: { extension: ".zip", manifest: "latest-mac.yml" },
   windows: { extension: ".exe", manifest: "latest.yml" },
 } as const;
@@ -24,20 +23,19 @@ const UPDATE_ARTIFACTS = {
 const distRoot = resolve("dist");
 const artifactExtension = UPDATE_ARTIFACTS[platform].extension;
 const manifestPath = join(distRoot, UPDATE_ARTIFACTS[platform].manifest);
-const artifacts = (await readdir(distRoot)).filter((name) => name.endsWith(artifactExtension));
-if (artifacts.length !== 1) throw new Error(`Expected one ${artifactExtension} update artifact.`);
+const [artifact, ...extraArtifacts] = (await readdir(distRoot)).filter((name) => name.endsWith(artifactExtension));
+if (artifact === undefined || extraArtifacts.length > 0)
+  throw new Error(`Expected one ${artifactExtension} update artifact.`);
 
-const artifactPath = join(distRoot, artifacts[0]);
+const artifactPath = join(distRoot, artifact);
 await verifyMaximumSize(artifactPath, 700 * MIB);
 if (platform === "macos") {
-  const dmgs = (await readdir(distRoot)).filter((name) => name.endsWith(".dmg"));
-  if (dmgs.length !== 1) throw new Error("Expected one DMG artifact.");
-  await verifyMaximumSize(join(distRoot, dmgs[0]), 750 * MIB);
+  const [dmg, ...extraDmgs] = (await readdir(distRoot)).filter((name) => name.endsWith(".dmg"));
+  if (dmg === undefined || extraDmgs.length > 0) throw new Error("Expected one DMG artifact.");
+  await verifyMaximumSize(join(distRoot, dmg), 750 * MIB);
 }
 const embeddedBlockMapBytes = await verifyManifest(manifestPath, artifactPath);
-// An AppImage carries its block map inside the file, so the size the manifest records is what proves
-// a differential update is possible. The other targets write the block map beside the artifact.
-if (platform === "linux") {
+if (platform === "linux" || platform === "linux-arm64") {
   if (embeddedBlockMapBytes === null) {
     throw new Error(`The manifest records no embedded block map for ${basename(artifactPath)}.`);
   }
@@ -47,10 +45,22 @@ if (platform === "linux") {
 
 const resourcesRoot =
   platform === "macos"
-    ? join(distRoot, macAppDirectory(), "Dani-Dex.app", "Contents", "Resources")
-    : join(distRoot, platform === "linux" ? "linux-unpacked" : "win-unpacked", "resources");
-if (existsSync(join(resourcesRoot, "whisper", "model"))) {
-  throw new Error("The packaged application contains the on-demand Whisper model.");
+    ? join(distRoot, process.arch === "arm64" ? "mac-arm64" : "mac", "OpenBot.app", "Contents", "Resources")
+    : join(distRoot, platform === "windows" ? "win-unpacked" : `${platform}-unpacked`, "resources");
+if (!existsSync(join(resourcesRoot, "voice", "runtime", "sherpa-onnx.node"))) {
+  throw new Error("The packaged application has no voice runtime.");
+}
+if (
+  existsSync(join(resourcesRoot, "voice", "model")) ||
+  existsSync(join(resourcesRoot, "voice", "parakeet-unified-en-0.6b-int8")) ||
+  existsSync(join(resourcesRoot, "voice", "bark-3.0-plus-int8")) ||
+  existsSync(join(resourcesRoot, "voice", "whisper-turbo-int8")) ||
+  existsSync(join(resourcesRoot, "voice", "cohere-transcribe-14-lang-int8")) ||
+  existsSync(join(resourcesRoot, "voice", "supertonic-3-int8")) ||
+  existsSync(join(resourcesRoot, "voice", "runtime", "encoder.int8.onnx")) ||
+  existsSync(join(resourcesRoot, "voice", "runtime", "turbo-encoder.int8.onnx"))
+) {
+  throw new Error("The packaged application contains an on-demand voice model.");
 }
 const unpackedRoot = join(resourcesRoot, "app.asar.unpacked", "node_modules", "@anthropic-ai");
 if (existsSync(unpackedRoot)) {
@@ -61,11 +71,6 @@ if (existsSync(unpackedRoot)) {
 }
 logger.info(`Verified ${platform} update artifact ${basename(artifactPath)}.`);
 
-/** The release ships the universal app; the arm64-only build is what `dist:mac` produces locally. */
-function macAppDirectory(): "mac-universal" | "mac-arm64" {
-  return existsSync(join(distRoot, "mac-universal")) ? "mac-universal" : "mac-arm64";
-}
-
 async function verifyMaximumSize(path: string, maximumBytes: number): Promise<void> {
   const size = (await stat(path)).size;
   if (size > maximumBytes) {
@@ -73,31 +78,21 @@ async function verifyMaximumSize(path: string, maximumBytes: number): Promise<vo
   }
 }
 
-/**
- * Checks the manifest describes the artifact on disk, and reports the size of the block map the
- * manifest records inside it, or `null` when it records none.
- */
 async function verifyManifest(path: string, artifact: string): Promise<number | null> {
-  const manifest = parse(await readFile(path, "utf8"));
-  if (!isDynamicRecord(manifest) || !Array.isArray(manifest.files)) {
-    throw new Error("The update manifest has no file list.");
-  }
+  const manifest = readUpdateManifest(await readFile(path, "utf8"));
   const artifactName = basename(artifact);
-  const entry = manifest.files?.find((candidate) => {
-    if (!isDynamicRecord(candidate) || !isString(candidate.url)) return false;
-    return basename(decodeURIComponent(candidate.url)) === artifactName;
-  });
-  if (!isDynamicRecord(entry)) throw new Error(`The update manifest does not contain ${artifactName}.`);
+  const entry = manifest.files.find((candidate) => basename(decodeURIComponent(candidate.url)) === artifactName);
+  if (entry === undefined) throw new Error(`The update manifest does not contain ${artifactName}.`);
   const size = (await stat(artifact)).size;
-  if (!isNumber(entry.size) || entry.size !== size) {
+  if (entry.size !== size) {
     throw new Error(`The manifest size does not match ${artifactName}.`);
   }
   const hash = createHash("sha512");
   for await (const chunk of createReadStream(artifact)) hash.update(chunk);
-  if (!isString(entry.sha512) || entry.sha512 !== hash.digest("base64")) {
+  if (entry.sha512 !== hash.digest("base64")) {
     throw new Error(`The manifest SHA-512 does not match ${artifactName}.`);
   }
-  return isNumber(entry.blockMapSize) && entry.blockMapSize > 0 ? entry.blockMapSize : null;
+  return entry.blockMapSize !== undefined && entry.blockMapSize > 0 ? entry.blockMapSize : null;
 }
 
 async function walk(root: string): Promise<string[]> {

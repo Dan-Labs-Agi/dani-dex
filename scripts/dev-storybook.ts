@@ -1,15 +1,9 @@
-// `storybook dev -p 6006` in a second worktree silently lands on 6007, prints
-// a URL nobody was watching, and leaves the developer looking at the first
-// worktree's stories - or, with `--exact-port`, fails outright. Neither is
-// useful when several worktrees are open, so this wrapper allocates through the
-// same registry `bun run dev` uses: the port it announces is one no sibling
-// will take, and `bun run dev:status` and `bun run dev:stop` can see it.
-
 import { type ChildProcess, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createDaniDexLogger, toLogValue } from "@dani-dex/logging";
+import { createOpenBotLogger, toLogValue } from "@openbot/logging";
+import { cliSpawnTarget } from "../src/backend/cli";
 import { withDevPortAllocation } from "./dev-automation/port-allocation";
 import {
   conflictingDevStacks,
@@ -20,8 +14,9 @@ import {
   writeDevStackRecord,
 } from "./dev-automation/stack-registry";
 import { findAvailablePort, stopOwnedProcesses } from "./dev-services";
+import { resolvePackageBin } from "./package-bin";
 
-const logger = createDaniDexLogger("dev-storybook");
+const logger = createOpenBotLogger("dev-storybook");
 
 const scriptsRoot = dirname(fileURLToPath(import.meta.url));
 const projectRoot = dirname(scriptsRoot);
@@ -33,10 +28,6 @@ export interface StorybookInvocation {
   passthrough: string[];
 }
 
-// `--force` is this script's own; everything else goes to Storybook untouched,
-// so `bun run storybook --no-open --quiet` still works. `-p`/`--port` is
-// refused rather than passed on: the registry is what chooses the port, and a
-// port it did not hand out is one a sibling worktree can be told to take.
 export function parseStorybookInvocation(args: string[]): StorybookInvocation {
   const conflicting = args.find(
     (argument) => argument === "-p" || argument === "--port" || argument.startsWith("--port="),
@@ -44,7 +35,7 @@ export function parseStorybookInvocation(args: string[]): StorybookInvocation {
   if (conflicting) {
     throw new Error(
       "Storybook's port is allocated per worktree, so --port cannot be passed through. " +
-        "Set DANI_DEX_STORYBOOK_PORT to change where the search starts.",
+        "Set OPENBOT_STORYBOOK_PORT to change where the search starts.",
     );
   }
   return {
@@ -54,7 +45,7 @@ export function parseStorybookInvocation(args: string[]): StorybookInvocation {
 }
 
 export function storybookExecutable(root = projectRoot): string {
-  return join(root, "node_modules", ".bin", process.platform === "win32" ? "storybook.cmd" : "storybook");
+  return resolvePackageBin(root, "storybook");
 }
 
 export function createStorybookStackRecord(port: number, supervisorPid: number, startedAt: number): DevStackRecord {
@@ -72,7 +63,7 @@ function readPreferredPort(value: string | undefined): number {
   if (value === undefined || value.trim() === "") return DEFAULT_STORYBOOK_PORT;
   const port = Number(value);
   if (!Number.isInteger(port) || port < 1_024 || port > 65_535) {
-    throw new Error("DANI_DEX_STORYBOOK_PORT must be an integer from 1024 to 65535.");
+    throw new Error("OPENBOT_STORYBOOK_PORT must be an integer from 1024 to 65535.");
   }
   return port;
 }
@@ -96,7 +87,7 @@ async function main(): Promise<void> {
       }
       logger.warn(`This worktree already runs Storybook:\n${detail}`);
     }
-    const preferred = readPreferredPort(process.env.DANI_DEX_STORYBOOK_PORT);
+    const preferred = readPreferredPort(process.env.OPENBOT_STORYBOOK_PORT);
     const allocated = await findAvailablePort(preferred, new Set(), heldDevStackPorts(records));
     if (allocated !== preferred) logger.info(`Storybook port ${preferred} is busy. Using ${allocated}.`);
     const record = createStorybookStackRecord(allocated, process.pid, Date.now());
@@ -105,14 +96,13 @@ async function main(): Promise<void> {
   });
 
   logger.info(`Storybook: http://localhost:${port}`);
-  // `--exact-port` because the port is already reserved and probed. Letting
-  // Storybook walk on its own would put it on a port the registry promised to
-  // another worktree, which is the collision this script exists to prevent.
-  const child: ChildProcess = spawn(executable, ["dev", "--port", String(port), "--exact-port", ...passthrough], {
+  const target = cliSpawnTarget(executable, ["dev", "--port", String(port), "--exact-port", ...passthrough]);
+  const child: ChildProcess = spawn(target.command, target.args, {
     cwd: projectRoot,
     stdio: "inherit",
     shell: false,
     detached: process.platform !== "win32",
+    windowsVerbatimArguments: target.windowsVerbatimArguments,
   });
   if (child.pid) {
     stack.processes.push({ name: "storybook", pid: child.pid, startedAt: Date.now() });

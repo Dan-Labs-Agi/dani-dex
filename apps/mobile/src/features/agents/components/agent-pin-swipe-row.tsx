@@ -1,12 +1,17 @@
 import { Typography } from "heroui-native";
 import { useThemeColor } from "heroui-native/hooks";
-import { Pin, PinOff } from "lucide-react-native";
+import Pin from "lucide-react-native/icons/pin";
+import PinOff from "lucide-react-native/icons/pin-off";
 import type { PropsWithChildren } from "react";
 import { Pressable, View } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
 import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
-import Animated, { type SharedValue, useAnimatedStyle, useReducedMotion } from "react-native-reanimated";
+import Animated, { type SharedValue, useAnimatedStyle } from "react-native-reanimated";
+import { ChatDragArea, type useChatDrag } from "@/features/agents/components/chat-drag";
 import { useAppDrawer } from "@/features/servers/components/app-drawer-shell";
+import { useReducedMotion } from "@/shared/lib/motion";
+import { useText } from "@/shared/lib/text";
+import { END_X } from "@/shared/lib/text-direction";
 
 import { PIN_COMMIT_DISTANCE, PIN_REVEAL_DISTANCE, useAgentPinSwipe } from "./use-agent-pin-swipe";
 
@@ -35,12 +40,17 @@ function PinAction({
   const reducedMotion = useReducedMotion();
   const circleStyle = useAnimatedStyle(() => ({
     transform: [
-      { scale: reducedMotion ? 1 : 0.65 + Math.min(1, Math.max(0, -translation.get() / PIN_COMMIT_DISTANCE)) * 0.55 },
+      {
+        scale: reducedMotion
+          ? 1
+          : 0.65 + Math.min(1, Math.max(0, (-translation.get() * END_X) / PIN_COMMIT_DISTANCE)) * 0.55,
+      },
     ],
   }));
 
+  const { t } = useText();
   const actionStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: Math.min(0, (translation.get() + PIN_REVEAL_DISTANCE) / 2) }],
+    transform: [{ translateX: END_X * Math.min(0, (translation.get() * END_X + PIN_REVEAL_DISTANCE) / 2) }],
   }));
 
   return (
@@ -51,9 +61,11 @@ function PinAction({
       importantForAccessibility={revealed ? "auto" : "no-hide-descendants"}
     >
       <Pressable
-        accessibilityLabel={`${pinned ? "Unpin" : "Pin"} ${agentName}`}
+        accessibilityLabel={t(pinned ? "mobile.agent.pin.unpinNamed" : "mobile.agent.pin.pinNamed", {
+          name: agentName,
+        })}
         accessibilityRole="button"
-        accessibilityHint={pinBlocked ? "Pin limit reached. Unpin a chat first." : undefined}
+        accessibilityHint={pinBlocked ? t("mobile.agent.pin.limitReached") : undefined}
         className="size-16 items-center justify-center"
         onPress={onPress}
         style={({ pressed }) => ({ opacity: pressed ? 0.72 : 1 })}
@@ -69,7 +81,7 @@ function PinAction({
           <Pin color={String(foreground)} fill={String(foreground)} size={22} strokeWidth={1.8} />
         )}
         <Typography.Paragraph type="body-xs" weight="semibold" style={{ color: foreground }}>
-          {pinned ? "Unpin" : "Pin"}
+          {t(pinned ? "mobile.agent.pin.unpin" : "mobile.agent.pin.pin")}
         </Typography.Paragraph>
       </Pressable>
     </Animated.View>
@@ -81,57 +93,63 @@ export function AgentPinSwipeRow({
   pinned = false,
   pinBlocked,
   onPin,
+  drag,
   children,
 }: PropsWithChildren<{
   agentName: string;
   pinned?: boolean;
   pinBlocked: boolean;
   onPin: (withHaptic: boolean) => void;
+  drag?: ReturnType<typeof useChatDrag>;
 }>) {
   const [background] = useThemeColor(["background"]);
   const { openingGesture } = useAppDrawer();
-  const swipe = useAgentPinSwipe(openingGesture, onPin, pinBlocked);
+  const swipe = useAgentPinSwipe(openingGesture, onPin, pinBlocked, drag?.gesture);
+  const { t } = useText();
+  const renderPin = (_progress: SharedValue<number>, translation: SharedValue<number>) => (
+    <PinAction
+      revealed={swipe.revealed}
+      agentName={agentName}
+      pinned={pinned}
+      pinBlocked={pinBlocked}
+      translation={translation}
+      onPress={() => swipe.pin()}
+    />
+  );
 
   return (
-    <GestureDetector gesture={swipe.gesture}>
+    <GestureDetector gesture={swipe.detectorGesture}>
       <ReanimatedSwipeable
         ref={swipe.swipeable}
         enabled={!swipe.pinPending}
         containerStyle={{ backgroundColor: background, overflow: "hidden" }}
         childrenContainerStyle={{ backgroundColor: background }}
         friction={1}
-        overshootRight
+        overshootRight={END_X === 1}
+        overshootLeft={END_X === -1}
         overshootFriction={1}
         rightThreshold={PIN_REVEAL_DISTANCE / 2}
-        enableTrackpadTwoFingerGesture
-        simultaneousWithExternalGesture={swipe.gesture}
-        requireExternalGestureToFail={openingGesture}
+        leftThreshold={PIN_REVEAL_DISTANCE / 2}
+        simultaneousWith={swipe.gesture}
+        requireToFail={swipe.swipeRequires}
         onSwipeableWillOpen={swipe.onWillOpen}
         onSwipeableWillClose={swipe.onWillClose}
         onSwipeableClose={swipe.onClose}
-        renderRightActions={(_progress, translation) => (
-          <PinAction
-            revealed={swipe.revealed}
-            agentName={agentName}
-            pinned={pinned}
-            pinBlocked={pinBlocked}
-            translation={translation}
-            onPress={() => swipe.pin()}
-          />
-        )}
+        renderRightActions={END_X === 1 ? renderPin : undefined}
+        renderLeftActions={END_X === -1 ? renderPin : undefined}
       >
         <View
           pointerEvents={swipe.revealed ? "none" : "auto"}
           accessibilityElementsHidden={swipe.revealed}
           importantForAccessibility={swipe.revealed ? "no-hide-descendants" : "auto"}
         >
-          {children}
+          {drag ? <ChatDragArea drag={drag}>{children}</ChatDragArea> : children}
         </View>
         {swipe.revealed ? (
           <Pressable
             className="absolute inset-0"
             accessibilityRole="button"
-            accessibilityLabel={`Close pin action for ${agentName}`}
+            accessibilityLabel={t("mobile.agent.pin.closeAction", { name: agentName })}
             onPress={swipe.close}
           />
         ) : null}

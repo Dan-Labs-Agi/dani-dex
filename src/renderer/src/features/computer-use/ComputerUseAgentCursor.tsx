@@ -1,38 +1,50 @@
+import { prefersReducedMotion } from "@openbot/ui/utils";
+import { createEffect } from "solid-js";
+import { agentCursorPointAt, type CursorMove, type CursorPoint, planAgentCursorMove } from "./agent-cursor-motion";
+
 export interface ComputerUseAgentCursorProps {
-  /** Where the tip points, in the overlay's own pixels. */
   x: number;
   y: number;
 }
 
-/**
- * The agent cursor Dani-Dex draws itself.
- *
- * The driver draws one of its own, over the main screen and at the desktop's coordinates inside it,
- * so on a desktop of more than one display it lands as far from the work as that screen's origin is
- * from the desktop's. Dani-Dex then asks the driver for no cursor and draws this one instead, in the
- * overlay that already covers every display, where one set of coordinates holds everywhere.
- *
- * It is the same dart the Dani-Dex driver theme draws: a shape no desktop pointer has, because the
- * one thing it has to say is that something other than the user is driving this computer.
- *
- * It is decoration for a screen reader. The rim around the window carries the announcement, and a
- * point that moves with every click would otherwise interrupt the user many times a second.
- */
+const translate = (point: CursorPoint) => `${point.x}px ${point.y}px`;
+
 export function ComputerUseAgentCursor(props: ComputerUseAgentCursorProps) {
+  let element: SVGSVGElement | undefined;
+  let target: CursorPoint | null = null;
+  let playing: { move: CursorMove; animation: Animation } | null = null;
+
+  createEffect(
+    () => ({ x: props.x, y: props.y }),
+    (next) => {
+      if (target && target.x === next.x && target.y === next.y) return;
+      const from = playing ? agentCursorPointAt(playing.move, Number(playing.animation.currentTime ?? 0)) : target;
+      playing?.animation.cancel();
+      playing = null;
+      target = next;
+      if (!element || !from || !("animate" in element) || prefersReducedMotion()) return;
+      const move = planAgentCursorMove(from, next);
+      const duration = move[move.length - 1]?.t ?? 0;
+      if (duration <= 0) return;
+      const animation = element.animate(
+        move.map((sample) => ({ translate: translate(sample), offset: sample.t / duration })),
+        { duration },
+      );
+      playing = { move, animation };
+      animation.onfinish = () => {
+        if (playing?.animation === animation) playing = null;
+      };
+    },
+  );
+
   return (
     <svg
+      ref={element}
       class="computer-use-agent-cursor"
-      style={{ translate: `${props.x}px ${props.y}px` }}
+      style={{ translate: translate(props) }}
       viewBox="0 0 45 49"
       aria-hidden="true"
     >
-      {/*
-       * The dart of the driver theme, corner for corner, with its tip on the origin: the tip is
-       * the point the agent asked for, so nothing here is offset from it.
-       *
-       * The white stroke is drawn under the fill, which is what keeps the shape readable on a dark
-       * window and on a light one without a second path.
-       */}
       <path d="M0 0 L45 20 L27 31 L14 49 Z" stroke-linejoin="round" stroke-linecap="round" />
     </svg>
   );

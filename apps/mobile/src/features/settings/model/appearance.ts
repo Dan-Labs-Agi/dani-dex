@@ -1,9 +1,10 @@
 import * as SecureStore from "expo-secure-store";
 import { Uniwind } from "uniwind";
 import { create } from "zustand";
+import { sweepTheme } from "@/features/settings/model/theme-sweep";
 
 export type Appearance = "system" | "light" | "dark";
-const key = "danidex.mobile.appearance.v1";
+const key = "openbot.mobile.appearance.v1";
 export const useAppearance = create<{ value: Appearance; ready: boolean; saving: boolean }>(() => ({
   value: "system",
   ready: false,
@@ -26,8 +27,12 @@ export async function saveAppearance(value: Appearance): Promise<void> {
   useAppearance.setState({ saving: true });
   try {
     await SecureStore.setItemAsync(key, value);
-    Uniwind.setTheme(value);
-    useAppearance.setState({ value });
+    const apply = () => {
+      Uniwind.setTheme(value);
+      useAppearance.setState({ value });
+    };
+    if (value !== "system" && value === Uniwind.currentTheme) apply();
+    else await sweepTheme(apply);
   } finally {
     useAppearance.setState({ saving: false });
   }

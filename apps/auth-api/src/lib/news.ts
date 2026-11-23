@@ -1,33 +1,29 @@
-// The one list of published news articles. The index page, the article pages, the
-// sitemap, the RSS feed and the build-time image generator all read it, so an
-// article is added in exactly one place and nothing can fall out of step.
-//
-// Everything that is not the list itself lives in content-collection.ts, which
-// /guides uses as well. Like that module, this one holds no JSX: article bodies
-// are in src/content/news and are wired up separately.
-
 import { type ContentCollection, publishedFirst } from "./content-collection";
 
 export const NEWS_AUTHOR = "Norbert Bodziony";
 
-export const NEWS_COLLECTION: ContentCollection = {
+export const NEWS_COLLECTION: ContentCollection<"news"> = {
   id: "news",
   indexRoute: "/news",
   articleRoute: "/news/$slug",
   name: "News",
-  indexTitle: "News — Dani-Dex",
+  indexTitle: "OpenBot News: Updates on the Local AI Agent App",
   indexDescription:
-    "Notes on building Dani-Dex: local-first storage, agents that outlive their provider, and how the pieces fit together.",
-  feedTitle: "Dani-Dex news",
+    "Notes on building OpenBot: local-first storage, agents that outlive their provider, and how the pieces fit together.",
+  indexSocialImage: {
+    path: "/social/news.jpg",
+    alt: "Good things in the making. OpenBot agents on a paper moon under the stars",
+  },
+  feedTitle: "OpenBot news",
   backLabel: "All news",
-  moreTitle: "More from Dani-Dex",
-  imageEyebrow: "DANI-DEX · NEWS",
+  moreTitle: "More from OpenBot",
+  imageEyebrow: "OPENBOT · NEWS",
   articles: publishedFirst([
     {
       slug: "introducing-openbot",
-      title: "Introducing Dani-Dex: A Shared Workspace for AI Agents",
+      title: "Introducing OpenBot: A Shared Workspace for AI Agents",
       description:
-        "Meet Dani-Dex, a local-first workspace where the AI models you already use can work as a team of agents, alongside you and your coworkers.",
+        "Meet OpenBot, a local-first workspace where the AI models you already use can work as a team of agents, alongside you and your coworkers.",
       publishedAt: "2026-09-14",
       author: NEWS_AUTHOR,
     },
@@ -75,8 +71,9 @@ export const NEWS_COLLECTION: ContentCollection = {
       slug: "run-the-team-server-yourself",
       title: "Run the team server yourself",
       description:
-        "Teams run on a computer you own. The hosted part holds accounts and memberships; it never holds your conversations, your files or your commands.",
+        "Learn how self-hosting an OpenBot team server works, where conversations and files live, what the account service handles, and who is responsible for uptime.",
       publishedAt: "2026-07-11",
+      updatedAt: "2026-10-07",
       author: NEWS_AUTHOR,
     },
     {

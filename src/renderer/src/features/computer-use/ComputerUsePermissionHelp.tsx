@@ -1,44 +1,34 @@
-import { type ComputerUsePermissionApp, LOCAL_SERVER_ID, type MacPermissionId } from "@dani-dex/contracts/ipc";
+import { type ComputerUsePermissionApp, LOCAL_SERVER_ID, type MacPermissionId } from "@openbot/contracts/ipc";
+import type { AppTextKey } from "@openbot/i18n";
+import { Button, FolderOpen, GripVertical, Monitor, MousePointer2 } from "@openbot/ui";
+import { useText } from "@openbot/ui/text";
 import { createSignal, onCleanup, onSettled, Show } from "solid-js";
-import { Button, FolderOpen, GripVertical, Monitor, MousePointer2 } from "../../components/ui";
-import { errorMessage } from "../../error-message";
+import { computerUsePort } from "./computer-use-port";
 
-/**
- * What the user has to do in the pane that just opened, and whether it worked.
- *
- * The list in System Settings has no way to browse for an application, so the way in is the one
- * macOS gives everybody: drag the bundle onto the list. The window carries that bundle as a card,
- * and it carries the name of the bundle the system holds responsible - in a development build that
- * is Electron, and a card that said "Dani-Dex" would send the user looking for a row that never
- * appears.
- */
-const PERMISSION_HELP: Record<MacPermissionId, { title: string; pane: string; icon: typeof Monitor }> = {
+const PERMISSION_HELP: Record<MacPermissionId, { title: AppTextKey; pane: AppTextKey; icon: typeof Monitor }> = {
   "screen-recording": {
-    title: "Screen Recording",
-    pane: "Screen & System Audio Recording",
+    title: "computerUse.permission.screenRecording.title",
+    pane: "computerUse.permission.screenRecording.pane",
     icon: Monitor,
   },
   accessibility: {
-    title: "Accessibility",
-    pane: "Accessibility",
+    title: "computerUse.permission.accessibility.title",
+    pane: "computerUse.permission.accessibility.pane",
     icon: MousePointer2,
   },
 };
 
-/** How often the driver is asked again while the user is in System Settings. */
+const SUNSHINE_APP_NAME = "Sunshine";
+const OPENBOT_APP_NAME = "OpenBot";
+
 const POLL_INTERVAL_MS = 1_000;
 
-/**
- * Which permission the window was opened for. The window carries it in its own address, and a
- * value the window does not know falls back to screen recording: the first grant Computer Use
- * needs, and the pane the panel sends the user to when it has no better answer.
- */
 export function permissionFromQuery(search: string): MacPermissionId {
   return new URLSearchParams(search).get("permission") === "accessibility" ? "accessibility" : "screen-recording";
 }
 
-export function ComputerUsePermissionHelp(props: { permission: MacPermissionId; sunshine?: boolean }) {
-  const desktopApi = window.danidex;
+export function ComputerUsePermissionHelp(props: { permission: MacPermissionId; sunshine?: boolean | undefined }) {
+  const { t, errorMessage } = useText();
   const permission = props.permission;
   const help = PERMISSION_HELP[permission];
   const PermissionIcon = help.icon;
@@ -50,26 +40,22 @@ export function ComputerUsePermissionHelp(props: { permission: MacPermissionId; 
   let reading = false;
 
   function close(): void {
-    void desktopApi.closeComputerUsePermissionHelp();
+    void computerUsePort().computerUse.closePermissionHelp();
   }
 
-  // Computer Use can poll its driver. Sunshine checks start the runtime when it is idle,
-  // so refresh those only on open and when the user returns from System Settings.
   async function read(): Promise<void> {
     if (reading || disposed) return;
     reading = true;
     try {
       if (props.sunshine) {
-        const state = await desktopApi.remoteDesktop.checkSetup(LOCAL_SERVER_ID);
+        const state = await computerUsePort().remoteDesktop.checkSetup(LOCAL_SERVER_ID);
         if (!disposed)
           setGranted(state[permission === "screen-recording" ? "screenRecording" : "accessibility"] === "allowed");
       } else {
-        const state = await desktopApi.getComputerUseState();
+        const state = await computerUsePort().computerUse.getState();
         if (!disposed) setGranted(state.permissions.some((entry) => entry.id === permission && entry.granted));
       }
     } catch {
-      // Left as it was. A read that failed says nothing about the grant, and an error in this window
-      // would only take the steps off the screen the user is working on.
       if (!disposed && props.sunshine) setGranted(false);
     } finally {
       reading = false;
@@ -78,20 +64,17 @@ export function ComputerUsePermissionHelp(props: { permission: MacPermissionId; 
 
   async function readApp(): Promise<void> {
     try {
-      const next = await desktopApi.getComputerUsePermissionApp();
+      const next = await computerUsePort().computerUse.getPermissionApp();
       if (!disposed) setApp(next);
-    } catch {
-      // No card. The steps still name the application, and the list still accepts a bundle dropped
-      // from Finder.
-    }
+    } catch {}
   }
 
   async function reveal(): Promise<void> {
     setError(null);
     try {
-      await desktopApi.revealComputerUsePermissionApp();
+      await computerUsePort().computerUse.revealPermissionApp();
     } catch (cause) {
-      setError(errorMessage(cause, "The application could not be shown in Finder."));
+      setError(errorMessage(cause, t("computerUse.help.revealFailed")));
     }
   }
 
@@ -122,8 +105,8 @@ export function ComputerUsePermissionHelp(props: { permission: MacPermissionId; 
           <PermissionIcon />
         </span>
         <div>
-          <h1 id="computer-use-help-title">Turn on {help.title}</h1>
-          <p>System Settings is open at {help.pane}.</p>
+          <h1 id="computer-use-help-title">{t("computerUse.help.title", { permission: t(help.title) })}</h1>
+          <p>{t("computerUse.help.paneOpen", { pane: t(help.pane) })}</p>
         </div>
       </header>
 
@@ -134,17 +117,15 @@ export function ComputerUsePermissionHelp(props: { permission: MacPermissionId; 
             variant="ghost"
             class={`computer-use-drag-card${dragging() ? " is-dragging" : ""}`}
             draggable="true"
-            aria-label={`Drag ${bundle().name} into System Settings, or press to show it in Finder`}
+            aria-label={t("computerUse.help.dragLabel", { name: bundle().name })}
             onClick={() => void reveal()}
             onDragStart={(event) => {
-              // The file leaves through the main process, which is the only side that has one. The
-              // browser's own drag would carry nothing, so it must not start.
               event.preventDefault();
               setDragging(true);
               setError(null);
-              void desktopApi
-                .startComputerUsePermissionAppDrag()
-                .catch((cause) => setError(errorMessage(cause, "The application could not be dragged.")))
+              void computerUsePort()
+                .computerUse.startPermissionAppDrag()
+                .catch((cause) => setError(errorMessage(cause, t("computerUse.help.dragFailed"))))
                 .finally(() => setDragging(false));
             }}
             onDragEnd={() => setDragging(false)}
@@ -157,19 +138,24 @@ export function ComputerUsePermissionHelp(props: { permission: MacPermissionId; 
                 {(source) => <img src={source()} alt="" />}
               </Show>
             </span>
-            <strong>{bundle().name}.app</strong>
-            <span>Drag to add</span>
+            <strong>{`${bundle().name}.app`}</strong>
+            <span>{t("computerUse.help.dragToAdd")}</span>
           </Button>
         )}
       </Show>
 
       <ol class="computer-use-help-steps">
         <li>
-          <Show when={app()} fallback={<>Find {props.sunshine ? "Sunshine" : "Dani-Dex"} in the list.</>}>
-            {(bundle) => <>Drag {bundle().name}.app into the list.</>}
+          <Show
+            when={app()}
+            fallback={t("computerUse.help.findInList", {
+              name: props.sunshine ? SUNSHINE_APP_NAME : OPENBOT_APP_NAME,
+            })}
+          >
+            {(bundle) => t("computerUse.help.dragIntoList", { name: bundle().name })}
           </Show>
         </li>
-        <li>Turn the switch on.</li>
+        <li>{t("computerUse.help.turnOn")}</li>
       </ol>
 
       <Show when={error()}>
@@ -184,11 +170,11 @@ export function ComputerUsePermissionHelp(props: { permission: MacPermissionId; 
         <Show when={app()}>
           <Button type="button" variant="outline" size="sm" onClick={() => void reveal()}>
             <FolderOpen aria-hidden="true" />
-            Show in Finder
+            {t("computerUse.help.showInFinder")}
           </Button>
         </Show>
         <Button type="button" variant={granted() ? "default" : "outline"} size="sm" onClick={close}>
-          Done
+          {t("common.done")}
         </Button>
       </footer>
     </main>

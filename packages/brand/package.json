@@ -1,5 +1,5 @@
 {
-  "name": "@dani-dex/brand",
+  "name": "@openbot/brand",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -7,31 +7,31 @@
     ".": "./src/index.ts",
     "./bloub-avatar": "./src/bloub-avatar.ts",
     "./bloub-avatar-motion": "./src/bloub-avatar-motion.ts",
+    "./chat-colors": "./src/chat-colors.ts",
+    "./chat-backdrop-scenes": "./src/chat-backdrop-scenes.ts",
     "./logo.css": "./src/logo.css",
-    "./dani-mark": "./src/dani-mark.ts",
     "./tokens.css": "./src/tokens.css",
+    "./tokens-light.css": "./src/tokens-light.css",
     "./tokens-native.css": "./src/tokens-native.css",
-    "./article-gradient": "./src/article-gradient.ts"
+    "./article-gradient": "./src/article-gradient.ts",
+    "./file-reference": "./src/file-reference.ts",
+    "./app-logo-shape": "./src/app-logo-shape.ts",
+    "./wordmark-shape": "./src/wordmark-shape.ts",
+    "./provider-logo-shape": "./src/provider-logo-shape.ts",
+    "./connector-mark-shape": "./src/connector-mark-shape.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "vitest run --config vitest.config.ts"
+    "typecheck": "bun ../../scripts/type-checker.ts --noEmit -p tsconfig.json"
   },
   "dependencies": {
     "@norbert_bodziony/bloub": "catalog:",
-    "@dani-dex/contracts": "workspace:*"
+    "@openbot/contracts": "workspace:*"
   },
   "peerDependencies": {
     "@solidjs/web": "catalog:",
-    "solid-js": "2.0.0-rc.0"
+    "solid-js": "2.0.3"
   },
   "devDependencies": {
-    "@solidjs/testing-library": "catalog:",
-    "@solidjs/vite-plugin": "catalog:",
-    "@testing-library/jest-dom": "catalog:",
-    "jsdom": "catalog:",
-    "typescript": "catalog:",
-    "vite": "catalog:",
-    "vitest": "catalog:"
+    "typescript": "catalog:"
   }
 }

@@ -1,13 +1,14 @@
 import {
-  type AgentSummary,
   analyticsRange,
+  type ClientAgentSummary,
   type HostAnalytics,
   type HostAnalyticsInput,
-} from "@dani-dex/contracts/ipc";
-import { createEffect, createStore, onSettled, Show } from "solid-js";
+  WORKFLOWS_USAGE_ID,
+} from "@openbot/contracts/ipc";
+import type { AppTextKey } from "@openbot/i18n";
 import {
-  ArrowLeft,
   Button,
+  ErrorReference,
   IconButton,
   RefreshCw,
   Select,
@@ -15,52 +16,66 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../../components/ui";
-import { AgentUsageReport } from "./AgentUsageReport";
+} from "@openbot/ui";
+import { AgentUsageReport } from "@openbot/ui/features/usage/AgentUsageReport";
 import {
   type UsageAgentLabel,
   type UsageMetric,
   type UsagePeriod,
+  usageMetricLabels,
   usageMetrics,
   usagePeriodDays,
+  usagePeriodLabels,
   usagePeriods,
-} from "./usage-format";
+} from "@openbot/ui/features/usage/usage-format";
+import { PageHeader } from "@openbot/ui/features/window/PageHeader";
+import { useText } from "@openbot/ui/text";
+import { errorReference } from "@openbot/user-errors";
+import type { JSX } from "@solidjs/web";
+import { createEffect, createStore, onSettled, Show } from "solid-js";
+import { desktopAnalytics } from "../../analytics";
+import { createPageHeaderFrame } from "../window/page-header-frame";
+import { type UsagePort, usagePort } from "./usage-port";
 
 interface AgentUsagePanelProps {
-  agentId?: string;
+  agentId?: string | undefined;
   agentName?: string;
   serverId: string;
   hostName: string;
   onBack: () => void;
+  port?: UsagePort;
+  machine?: JSX.Element;
 }
 interface UsageState {
   range: HostAnalyticsInput;
   result: HostAnalytics | null;
   phase: "loading" | "ready" | "unsupported" | "error";
-  agents: AgentSummary[];
+  errorReference: string | null;
+  agents: ClientAgentSummary[];
   metric: UsageMetric;
   period: UsagePeriod;
   serverId: string;
 }
 
+function usageRange(days: number, agentId: string | undefined): HostAnalyticsInput {
+  const { startDate, endDate, timeZone } = analyticsRange("", days);
+  return agentId === undefined ? { startDate, endDate, timeZone } : { startDate, endDate, timeZone, agentId };
+}
+
 export function AgentUsagePanel(props: AgentUsagePanelProps) {
+  const { t } = useText();
+  const port = () => props.port ?? usagePort();
   const [state, setState] = createStore<UsageState>({
-    range: { ...analyticsRange("range"), agentId: props.agentId },
+    range: usageRange(usagePeriodDays["30d"], props.agentId),
     agents: [],
     result: null,
     phase: "loading",
-    metric: "Cost",
-    period: "30 days",
+    errorReference: null,
+    metric: "cost",
+    period: "30d",
     serverId: props.serverId,
   });
   let generation = 0;
-  /**
-   * A refresh nobody asked for keeps the report on screen. Clearing `result` unmounts
-   * `AgentUsageReport`, which returns on the next response with its breakdown back to
-   * Agent and scrolled to the total - and a turn completes while the report is open
-   * often enough that this is the common case, not the rare one. Only a request the
-   * user made may blank the body: the first load, a filter change, Refresh.
-   */
   async function load(range = state.range, background = false): Promise<void> {
     const request = ++generation;
     const serverId = props.serverId;
@@ -72,9 +87,8 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
       });
     try {
       const [result, agents] = await Promise.all([
-        // Electron cannot clone the Solid store proxy across the context bridge.
-        window.danidex.agent.getHostAnalytics({ ...range }, serverId),
-        window.danidex.agent.listAgents(serverId),
+        port().agent.getHostAnalytics({ ...range }, serverId),
+        port().agent.listAgents(serverId),
       ]);
       if (request === generation && props.serverId === serverId && state.range.agentId === agentId)
         setState((draft) => {
@@ -83,17 +97,13 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
           draft.result = result;
           draft.phase = result ? "ready" : "unsupported";
         });
-    } catch {
-      // A background refresh that fails leaves the last good report where it is rather
-      // than replacing it with an error the user cannot act on; the next turn retries.
-      // Only while a report is on screen, though: a background request that overtakes the
-      // first load takes the generation with it, so the foreground response is discarded
-      // too, and a silent failure would leave the panel on Loading with no Retry.
+    } catch (error) {
       if (background && state.result) return;
       if (request === generation && props.serverId === serverId && state.range.agentId === agentId)
         setState((draft) => {
           draft.result = null;
           draft.phase = "error";
+          draft.errorReference = errorReference(error);
         });
     }
   }
@@ -101,8 +111,19 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
     () => [props.agentId, props.serverId],
     () => {
       setState((draft) => {
-        draft.range.agentId = props.agentId;
+        if (props.agentId === undefined) delete draft.range.agentId;
+        else draft.range.agentId = props.agentId;
         draft.agents = [];
+      });
+    },
+  );
+  createEffect(
+    () => [state.range.agentId, props.serverId, state.period] as const,
+    ([agentId, , range]) => {
+      desktopAnalytics.track("usage_viewed", {
+        scope: agentId ? "agent" : "server",
+        range,
+        filtered: agentId !== props.agentId,
       });
     },
   );
@@ -113,7 +134,7 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
     },
   );
   onSettled(() => {
-    const unsubscribe = window.danidex.agent.onScopedEvent(({ serverId, event }) => {
+    const unsubscribe = port().agent.onScopedEvent(({ serverId, event }) => {
       if (
         serverId === props.serverId &&
         event.type === "turn-completed" &&
@@ -121,7 +142,7 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
       )
         void load(state.range, true);
     });
-    const reconnect = window.danidex.servers.onEvent((servers) => {
+    const reconnect = port().servers.onEvent((servers) => {
       if (servers.some((server) => server.id === props.serverId && server.state === "online"))
         void load(state.range, true);
     });
@@ -131,9 +152,8 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
       reconnect();
     };
   });
-  // The filter and the per-agent table both name an agent by id, and props.agentName only
-  // names the panel's own agent, so it must not label another agent's row.
   const agentLabel = (id: string): UsageAgentLabel => {
+    if (id === WORKFLOWS_USAGE_ID) return { name: t("usage.panel.workflows"), provider: "" };
     const agent = state.agents.find((candidate) => candidate.id === id);
     return {
       name: agent?.name ?? (id === props.agentId ? props.agentName : undefined) ?? id,
@@ -141,26 +161,27 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
     };
   };
   let reportBody: HTMLDivElement | undefined;
-  let heading: HTMLHeadingElement | undefined;
-  onSettled(() => heading?.focus());
+  const headerFrame = createPageHeaderFrame();
   return (
-    <section class="agent-usage" aria-label="Agent usage">
-      <header class="agent-usage-header">
-        <div class="agent-usage-identity">
-          <IconButton variant="ghost" label="Back" onClick={props.onBack}>
-            <ArrowLeft />
-          </IconButton>
-          <h2 ref={heading} tabindex={-1}>
-            Usage <span aria-hidden="true">/</span> <span>{props.hostName}</span>
-          </h2>
-        </div>
+    <section class="agent-usage" aria-label={t("usage.panel.label")}>
+      <PageHeader
+        class="agent-usage-header"
+        title={t("usage.panel.title")}
+        hostName={props.hostName}
+        onBack={props.onBack}
+        frame={headerFrame()}
+      >
         <div class="agent-usage-controls">
+          {props.machine}
           <Select
             options={[
               "all",
               ...[
                 ...new Set([
                   ...state.agents.map((agent) => agent.id),
+                  ...(state.result?.agents.some((agent) => agent.agentId === WORKFLOWS_USAGE_ID)
+                    ? [WORKFLOWS_USAGE_ID]
+                    : []),
                   ...(state.range.agentId ? [state.range.agentId] : []),
                 ]),
               ].map((id) => `agent:${id}`),
@@ -169,20 +190,23 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
             onChange={(value) => {
               if (value)
                 setState((draft) => {
-                  draft.range.agentId = value === "all" ? undefined : value.slice(6);
+                  if (value === "all") delete draft.range.agentId;
+                  else draft.range.agentId = value.slice(6);
                 });
             }}
             itemComponent={(itemProps) => (
               <SelectItem item={itemProps.item}>
-                {itemProps.item.rawValue === "all" ? "All agents" : agentLabel(itemProps.item.rawValue.slice(6)).name}
+                {itemProps.item.rawValue === "all"
+                  ? t("usage.panel.allAgents")
+                  : agentLabel(itemProps.item.rawValue.slice(6)).name}
               </SelectItem>
             )}
           >
-            <SelectTrigger aria-label="Usage agents" size="sm">
+            <SelectTrigger aria-label={t("usage.panel.agents")} size="sm">
               <SelectValue<string>>
                 {(selection) =>
                   selection.selectedOption() === "all"
-                    ? "All agents"
+                    ? t("usage.panel.allAgents")
                     : agentLabel(selection.selectedOption().slice(6)).name
                 }
               </SelectValue>
@@ -190,8 +214,9 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
             <SelectContent />
           </Select>
           <UsageSelect
-            label="Usage metric"
+            label={t("usage.panel.metric")}
             options={usageMetrics}
+            optionLabels={usageMetricLabels}
             value={state.metric}
             onChange={(value) => {
               setState((draft) => {
@@ -200,46 +225,47 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
             }}
           />
           <UsageSelect
-            label="Usage period"
+            label={t("usage.panel.period")}
             options={usagePeriods}
+            optionLabels={usagePeriodLabels}
             value={state.period}
             onChange={(value) => {
               setState((draft) => {
                 draft.period = value;
-                draft.range = {
-                  ...analyticsRange("range", usagePeriodDays[value]),
-                  agentId: draft.range.agentId,
-                };
+                draft.range = usageRange(usagePeriodDays[value], draft.range.agentId);
               });
             }}
           />
           <IconButton
             variant="outline"
-            label="Refresh usage"
+            label={t("usage.panel.refresh")}
             disabled={state.phase === "loading"}
             onClick={() => void load()}
           >
             <RefreshCw />
           </IconButton>
         </div>
-      </header>
+      </PageHeader>
       <div ref={reportBody} class="agent-usage-body">
         <Show when={state.phase === "loading"}>
           <div class="agent-usage-loading" role="status">
-            <span>Loading usage…</span>
+            <span>{t("usage.panel.loading")}</span>
             <div class="agent-usage-placeholder" />
           </div>
         </Show>
         <Show when={state.phase === "unsupported"}>
           <p class="agent-usage-notice" role="status">
-            This host does not support agent analytics. Update the host to use this view.
+            {t("usage.panel.unsupported")}
           </p>
         </Show>
         <Show when={state.phase === "error"}>
           <div class="agent-usage-notice">
-            <p role="alert">Could not load usage. Check the connection and date range.</p>
+            <p role="alert">
+              {t("usage.panel.loadFailed")}
+              <ErrorReference reference={state.errorReference} />
+            </p>
             <Button variant="secondary" onClick={() => void load()}>
-              Retry
+              {t("common.retry")}
             </Button>
           </div>
         </Show>
@@ -259,7 +285,6 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
               metric={state.metric}
               agentLabel={agentLabel}
               onReady={() => {
-                // Start each loaded report at its total, after the tabs settle their initial selection.
                 if (reportBody) reportBody.scrollTop = 0;
               }}
             />
@@ -270,14 +295,15 @@ export function AgentUsagePanel(props: AgentUsagePanelProps) {
   );
 }
 
-// The header filters share one chip dropdown so the metric and period read as the
-// same kind of control as the agent picker beside them.
 function UsageSelect<Value extends string>(props: {
   label: string;
   options: readonly Value[];
+  optionLabels: Record<Value, AppTextKey>;
   value: Value;
   onChange: (value: Value) => void;
 }) {
+  const { t } = useText();
+  const optionLabel = (value: Value): AppTextKey => props.optionLabels[value];
   return (
     <Select<Value>
       options={[...props.options]}
@@ -285,10 +311,12 @@ function UsageSelect<Value extends string>(props: {
       onChange={(value) => {
         if (value) props.onChange(value);
       }}
-      itemComponent={(itemProps) => <SelectItem item={itemProps.item}>{itemProps.item.rawValue}</SelectItem>}
+      itemComponent={(itemProps) => (
+        <SelectItem item={itemProps.item}>{t(optionLabel(itemProps.item.rawValue))}</SelectItem>
+      )}
     >
       <SelectTrigger size="sm" aria-label={props.label}>
-        <SelectValue<Value>>{(selection) => selection.selectedOption()}</SelectValue>
+        <SelectValue<Value>>{(selection) => t(optionLabel(selection.selectedOption()))}</SelectValue>
       </SelectTrigger>
       <SelectContent />
     </Select>

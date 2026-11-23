@@ -1,6 +1,6 @@
+import { Button, Heading, Text, Toaster, toast } from "@openbot/ui";
 import { createSignal, onCleanup, type ParentProps } from "solid-js";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { Button, Heading, Text, Toaster, toast } from "../src/components/ui";
 
 const meta = {
   title: "Foundations/Toast",
@@ -92,6 +92,19 @@ export const Gallery: Story = {
         <Button
           variant="outline"
           onClick={() =>
+            toast.error("Could not connect to the server", {
+              error: Object.assign(new Error("The host is busy. Try again in a moment."), {
+                reference: "signal/host_busy",
+              }),
+              fallback: "The connection failed.",
+            })
+          }
+        >
+          Error with code
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() =>
             toast.loading("Connecting to server…", {
               description: "This can take a few seconds.",
             })
@@ -138,6 +151,19 @@ export const WithAction: Story = {
             }}
           >
             Archive message
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() =>
+              toast.success("OpenBot 0.71.0 is ready", {
+                description: "Restart to apply the update.",
+                duration: Number.POSITIVE_INFINITY,
+                action: { label: "Restart to update", onClick: () => setStatus("Restarting.") },
+                cancel: { label: "Later", onClick: () => setStatus("Update postponed.") },
+              })
+            }
+          >
+            Two actions
           </Button>
         </div>
       </ToastStory>

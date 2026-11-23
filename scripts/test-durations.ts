@@ -1,10 +1,3 @@
-/**
- * Rewrites the table `tools/vitest/balanced-sequencer.ts` splits CI shards by.
- *
- * Run it when the shards have drifted apart - the CI job prints each shard's wall time, so the
- * drift is visible without measuring anything. It runs the whole desktop suite once, so it is not
- * part of `bun run check`.
- */
 import { spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -14,13 +7,11 @@ import { fileURLToPath } from "node:url";
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const TABLE = join(ROOT, "tools/vitest/test-durations.json");
 
-const report = join(mkdtempSync(join(tmpdir(), "dani-dex-durations-")), "report.json");
+const report = join(mkdtempSync(join(tmpdir(), "openbot-durations-")), "report.json");
 const run = spawnSync("bun", ["run", "test:desktop", "--", "--reporter=json", `--outputFile=${report}`], {
   cwd: ROOT,
   stdio: "inherit",
 });
-// A failing test still reports its duration, and a suite is rarely all green on a laptop. Only a
-// crash that wrote no report is fatal.
 if (run.error) throw run.error;
 
 function fileDurations(report: unknown): [string, number][] {

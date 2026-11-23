@@ -1,7 +1,6 @@
-import type { BrowserTakeoverRequest } from "@dani-dex/contracts/ipc";
-import { userEvent, within } from "storybook/test";
+import type { BrowserTakeoverRequest } from "@openbot/contracts/ipc";
+import { BrowserSecretCard } from "@openbot/ui/features/conversation/BrowserSecretCard";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { BrowserSecretCard } from "../src/features/conversation/BrowserSecretCard";
 import browserTakeoverPreviewUrl from "./assets/browser-takeover-preview.svg";
 
 const request: BrowserTakeoverRequest = {
@@ -40,7 +39,29 @@ export const Authenticator: Story = {
   },
 };
 export const Password: Story = {
-  args: { request: { ...request, secret: { method: "password", origin: "https://accounts.example.com", digits: 6 } } },
+  args: {
+    request: { ...request, secret: { method: "password", origin: "https://accounts.example.com", digits: 6 } },
+    vault: { server: null },
+  },
+};
+export const PasswordJoinedServer: Story = {
+  args: { ...Password.args, vault: { server: "Studio Mac mini" } },
+};
+export const PasswordMember: Story = {
+  args: { ...Password.args, vault: { server: "Studio Mac mini", blocked: "role" } },
+};
+export const PasswordOlderHost: Story = {
+  args: { ...Password.args, vault: { server: "Studio Mac mini", blocked: "version" } },
+};
+export const PasswordVaultSkipped: Story = {
+  args: {
+    ...Password.args,
+    request: {
+      ...request,
+      secret: { method: "password", origin: "https://accounts.example.com", digits: 6 },
+      vaultSkip: "agent-script",
+    },
+  },
 };
 export const EightDigits: Story = {
   args: { request: { ...request, secret: { method: "otp", origin: "https://accounts.example.com", digits: 8 } } },
@@ -52,24 +73,17 @@ export const Failed: Story = {
     },
   },
 };
-export const Narrow: Story = {
-  render: (args) => (
-    <div style={{ width: "280px", "max-width": "100%" }}>
-      <BrowserSecretCard {...args} />
-    </div>
-  ),
-};
+const renderNarrow: NonNullable<Story["render"]> = (args) => (
+  <div style={{ width: "340px", "max-width": "100%" }}>
+    <BrowserSecretCard {...args} />
+  </div>
+);
 
-export const PartiallyFilled: Story = {
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.type(canvas.getByLabelText("6-digit code"), "123");
-  },
-};
+export const Narrow: Story = { render: renderNarrow };
 
 export const TwelveDigitsNarrow: Story = {
   args: { request: { ...request, secret: { method: "otp", origin: "https://accounts.example.com", digits: 12 } } },
-  render: Narrow.render,
+  render: renderNarrow,
 };
 
 export const PreviewUnavailable: Story = {
@@ -82,9 +96,45 @@ export const PreviewUnavailable: Story = {
 
 export const SubmittingPassword: Story = {
   args: { ...Password.args, onRespond: () => new Promise<void>(() => {}) },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.type(canvas.getByLabelText("Password"), "example-password");
-    await userEvent.click(canvas.getByRole("button", { name: "Submit" }));
-  },
+};
+
+export const SubmittingCode: Story = {
+  args: { onRespond: () => new Promise<void>(() => {}) },
+};
+
+export const Island: Story = {
+  args: { variant: "island" },
+};
+
+export const IslandAuthenticator: Story = {
+  args: { ...Authenticator.args, variant: "island" },
+};
+
+export const IslandPassword: Story = {
+  args: { ...Password.args, variant: "island" },
+};
+
+export const IslandPasswordJoinedServer: Story = {
+  args: { ...PasswordJoinedServer.args, variant: "island" },
+};
+
+export const IslandPasswordVaultSkipped: Story = {
+  args: { ...PasswordVaultSkipped.args, variant: "island" },
+};
+
+export const IslandEightDigits: Story = {
+  args: { ...EightDigits.args, variant: "island" },
+};
+
+export const IslandFailed: Story = {
+  args: { ...Failed.args, variant: "island" },
+};
+
+export const IslandSubmittingCode: Story = {
+  args: { ...SubmittingCode.args, variant: "island" },
+};
+
+export const IslandNarrow: Story = {
+  args: { variant: "island" },
+  render: renderNarrow,
 };

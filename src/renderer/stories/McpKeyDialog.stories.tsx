@@ -1,15 +1,8 @@
-/**
- * The connect step that stays here: a credential from the server's own settings page, pasted and
- * proved before an agent is given the tools.
- *
- * One story, with the server and its answer on controls. `good-key` is the credential the story
- * server accepts; anything else is refused, so a refusal is a state the dialog reached.
- */
-
+import type { McpKeyFlow } from "@openbot/contracts/mcp-connect-flows";
+import { McpKeyDialog } from "@openbot/ui/features/settings/McpKeyDialog";
 import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { McpKeyDialog } from "../src/features/settings/McpKeyDialog";
-import type { McpKeyFlow } from "../src/features/settings/mcp-connect-auth";
+import { MARKETPLACE_PLUGINS } from "../src/features/settings/marketplace-plugin-catalog";
 import {
   AAVE,
   CONNECT_GLOBALS,
@@ -19,13 +12,13 @@ import {
   ConnectStage,
   connectAs,
   createConnectStage,
-  FIGMA,
   keyFlowFor,
   LINEAR,
+  RESEND,
   subjectFor,
 } from "./mcp-connect-stage";
+import { SettledArgs } from "./settled-args";
 
-/** A local command instead of an address: the same flow, written to the environment. */
 const POSTGRES = {
   subject: {
     name: "Postgres",
@@ -61,22 +54,22 @@ const POSTGRES = {
   } satisfies McpKeyFlow,
 };
 
-/** A server that asks for nothing still comes through a connect step, so a dead one is found now. */
 const NOTHING_ASKED: McpKeyFlow = { id: "none", kind: "key", label: "Connect", fields: [] };
 
-/** One token, the key a server issues beside its sign-in, two values over a command, and none. */
+const COMPOSIO = MARKETPLACE_PLUGINS.find((plugin) => plugin.slug === "composio")?.apps[0];
+if (!COMPOSIO) throw new Error("The catalog must carry the Composio plugin with an app.");
+
 const SERVERS = {
-  figma: () => ({ subject: subjectFor(FIGMA), flow: keyFlowFor(FIGMA) }),
+  resend: () => ({ subject: subjectFor(RESEND), flow: keyFlowFor(RESEND) }),
   linear: () => ({ subject: subjectFor(LINEAR), flow: keyFlowFor(LINEAR) }),
   postgres: () => POSTGRES,
+  composio: () => ({ subject: subjectFor(COMPOSIO), flow: keyFlowFor(COMPOSIO) }),
   aave: () => ({ subject: subjectFor(AAVE), flow: NOTHING_ASKED }),
 };
 
 interface KeyPlaygroundProps {
   server: keyof typeof SERVERS;
-  /** What the server answers once the credential reaches it. */
   outcome: ConnectOutcome;
-  /** The listing names the page the key is made on, and the caller can open it. */
   showsTheKeyPage: boolean;
 }
 
@@ -101,7 +94,7 @@ function KeyPlayground(props: KeyPlaygroundProps) {
 const meta = {
   title: "Settings/McpKeyDialog",
   component: KeyPlayground,
-  args: { server: "figma", outcome: "connects", showsTheKeyPage: true },
+  args: { server: "resend", outcome: "connects", showsTheKeyPage: true },
   argTypes: {
     server: { control: "select", options: Object.keys(SERVERS) },
     outcome: { control: "select", options: CONNECT_OUTCOMES },
@@ -109,6 +102,7 @@ const meta = {
   },
   parameters: CONNECT_PARAMETERS,
   globals: CONNECT_GLOBALS,
+  render: (args) => <SettledArgs>{() => <KeyPlayground {...args} />}</SettledArgs>,
 } satisfies Meta<typeof KeyPlayground>;
 
 export default meta;

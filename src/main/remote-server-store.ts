@@ -1,30 +1,25 @@
-// The user's list of remote servers: what is on disk, which one is active, and every write that
-// changes either. Nothing outside this file may change persisted server state.
-//
-// That is a type, not a convention. `StoredRemoteServerView` is `Readonly`, so a caller that reaches
-// for `server.name = ...` gets a compile error. Until 2026-09 there was no such view: the manager's
-// `#requireServer` handed back a live element of the array this file writes, and six call sites
-// mutated through it. They worked only because whichever `#persist()` happened to run next
-// snapshotted the whole state -- so a mutation with no persist after it changed how the app behaved
-// until some later, unrelated write, and nothing except reading both call sites could see that.
-//
-// Every method here that changes state also writes the file, with one named exception:
-// `setActiveServerId` leaves the write to its caller, because selecting a server has to be able to
-// roll the selection back when the write fails. That is why `persist` is public. Do not add a second
-// exception -- a mutation whose write is somebody else's job is the hazard this module exists to end.
-
-import { randomUUID } from "node:crypto";
-import { readFile, rename, rm, writeFile } from "node:fs/promises";
-import type { TeamRole } from "@dani-dex/contracts/ipc";
-import { LOCAL_SERVER_ID } from "@dani-dex/contracts/ipc";
-import { isString } from "@dani-dex/contracts/runtime-values";
+import { readFile } from "node:fs/promises";
+import type { ServerNotificationLevel, TeamRole } from "@openbot/contracts/ipc";
+import { LOCAL_SERVER_ID } from "@openbot/contracts/ipc";
+import { isString } from "@openbot/contracts/runtime-values";
+import type { ServerAppearance } from "@openbot/contracts/team-protocol/host-appearance-v1";
+import { sourceText } from "@openbot/i18n/source";
+import { Effect, Result, Semaphore } from "effect";
+import {
+  isEmptyStoredFile,
+  parseStoredJson,
+  setAsideDamagedFile,
+  writeJsonFileAtomically,
+} from "../backend/atomic-json-file";
 import {
   emptyStoredRemoteServers,
   readStoredRemoteServers,
   type StoredRemoteServer,
   type StoredRemoteServers,
+  type StoredServerNotifications,
   serializeStoredRemoteServers,
 } from "./remote-server-stored-shape";
+import { RemoteWorkflowError, remoteCall, remoteDecode, toRemoteWorkflowError } from "./remote-service-effects";
 
 export interface TokenCipher {
   encrypt: (value: string) => Buffer;
@@ -33,36 +28,27 @@ export interface TokenCipher {
 
 export type StoredRemoteServerView = Readonly<StoredRemoteServer>;
 
-// What an entry this build cannot read still says about a host's identity. Empty strings and nulls
-// mean the entry did not carry that field, not that the host has none.
 export interface PreservedHostIdentity {
   readonly hostId: string;
   readonly publicKey: string | null;
   readonly fingerprint: string;
 }
 
-// Which server is selected -- both halves of it. `unreadableActiveServerId` is the id the file keeps
-// naming while this build runs somewhere else, so a caller putting a failed selection back has to
-// put that back too, and cannot do it by remembering an id.
 export interface ActiveSelection {
   readonly activeServerId: string;
   readonly unreadableActiveServerId: string | null;
 }
 
-// The fields a running app is allowed to change on a server it already has. `id`, `apiUrl`,
-// `fingerprint`, `publicKey` and `transport` are deliberately absent: those identify the host, and
-// changing one silently would repoint a pinned identity at a different machine.
 export interface RemoteServerPatch {
   name?: string;
   username?: string;
   role?: TeamRole;
   encryptedToken?: string;
   logoVersion?: string | null;
+  appearance?: ServerAppearance | null;
   remoteDesktopAvailable?: boolean;
 }
 
-// What a reader needs. Consumers that only look things up take this, not the class, so their tests
-// do not need a disk.
 export interface RemoteServerDirectory {
   readonly activeServerId: string;
   readonly servers: readonly StoredRemoteServerView[];
@@ -76,7 +62,7 @@ export class RemoteServerStore implements RemoteServerDirectory {
   readonly #path: string;
   readonly #cipher: TokenCipher;
   #state: StoredRemoteServers = emptyStoredRemoteServers();
-  #writeChain = Promise.resolve();
+  #writes = Semaphore.makeUnsafe(1);
   #activeServerRevision = 0;
 
   constructor(options: { path: string; cipher: TokenCipher }) {
@@ -84,38 +70,33 @@ export class RemoteServerStore implements RemoteServerDirectory {
     this.#cipher = options.cipher;
   }
 
-  // A missing file is a first run. Anything else -- a permission error, a truncated read, a file that
-  // is not JSON, a file this build cannot decode -- reaches the caller, because continuing would leave
-  // an empty list that the next write replaces the user's servers with.
-  async load(): Promise<void> {
-    let contents: string | null = null;
-    try {
-      contents = await readFile(this.#path, "utf8");
-    } catch (error) {
-      if (!(error instanceof Error && "code" in error && error.code === "ENOENT")) throw error;
+  readonly load = Effect.fn("RemoteStore.load")(function* (
+    this: RemoteServerStore,
+  ): Effect.fn.Return<void, RemoteWorkflowError> {
+    const attempt0 = yield* Effect.gen({ self: this }, function* () {
+      return yield* remoteCall(() => readFile(this.#path, "utf8"));
+    }).pipe(Effect.result);
+    if (Result.isFailure(attempt0)) {
+      const error = attempt0.failure.cause;
+      if (!(error instanceof Error && "code" in error && error.code === "ENOENT"))
+        return yield* new RemoteWorkflowError({ cause: error });
+      return;
     }
-    if (contents === null) return;
-    const stored = readStoredRemoteServers(JSON.parse(contents));
-    // Null means the *file* made no sense -- a `version` from a newer build, or no `servers` array at
-    // all. An unreadable entry is not this: the reader drops it and returns the rest. Keeping the
-    // empty default here would hand a file the newer build still reads to the next `persist()` to
-    // overwrite, which is how a downgrade loses every joined server. The message quotes nothing from
-    // the file; `encryptedToken` is in there.
-    if (!stored) throw new Error("The remote server list is not in a format this version can read.");
+    if (isEmptyStoredFile(attempt0.success)) return yield* setAsideDamagedFile(this.#path);
+    const stored = yield* remoteDecode(() => parseStoredJson(this.#path, attempt0.success, readStoredRemoteServers));
+    if (!stored)
+      return yield* new RemoteWorkflowError({ cause: new Error(sourceText("error.remote.serverListUnreadable")) });
     this.#state = stored;
-  }
+  });
 
   get activeServerId(): string {
     return this.#state.activeServerId;
   }
 
-  // Bumped by every selection. A selection that fails to persist only rolls back if no later
-  // selection has happened in the meantime, and this is how the caller tells.
   get activeServerRevision(): number {
     return this.#activeServerRevision;
   }
 
-  // Taken before a selection, restored with `restoreSelection` when its write fails.
   get selection(): ActiveSelection {
     return {
       activeServerId: this.#state.activeServerId,
@@ -123,10 +104,6 @@ export class RemoteServerStore implements RemoteServerDirectory {
     };
   }
 
-  // Identity from the entries the reader could not decode. Reconciliation needs these: a pin this
-  // build cannot use is still a pin, and without them a host whose entry is unreadable looks new, so
-  // the account service's advertised key would be accepted for a machine the user already trusts --
-  // exactly what `remote-server-host-directory.ts` exists to prevent.
   get preservedIdentities(): readonly PreservedHostIdentity[] {
     return this.#state.unreadableServers.flatMap((preserved) =>
       isString(preserved.entry.id)
@@ -147,7 +124,7 @@ export class RemoteServerStore implements RemoteServerDirectory {
 
   require(serverId: string): StoredRemoteServerView {
     const server = this.find(serverId);
-    if (!server) throw new Error("Remote server not found.");
+    if (!server) throw new Error(sourceText("error.remote.serverNotFound"));
     return server;
   }
 
@@ -159,8 +136,6 @@ export class RemoteServerStore implements RemoteServerDirectory {
     return this.#state.servers.some((candidate) => candidate.id === serverId);
   }
 
-  // A host the user removed while owning it. The account service keeps listing it, so without this
-  // the next directory sync would put it straight back.
   isHiddenHost(hostId: string): boolean {
     return this.#state.hiddenHostIds.includes(hostId);
   }
@@ -173,18 +148,13 @@ export class RemoteServerStore implements RemoteServerDirectory {
     return this.#cipher.encrypt(sessionToken).toString("base64");
   }
 
-  // The one mutation that does not write. See the file header.
   setActiveServerId(serverId: string): number {
-    // The user picking a server is the only thing that supersedes a selection this build could not
-    // read. Until then the file keeps naming it, so a build that can read it finds them still there.
     this.#state.unreadableActiveServerId = null;
     this.#state.activeServerId = serverId;
     this.#activeServerRevision += 1;
     return this.#activeServerRevision;
   }
 
-  // Puts back a selection whose write failed, both halves of it. Bumps the revision like any other
-  // selection, so a rollback that lost a race to a newer one is still detectable.
   restoreSelection(selection: ActiveSelection): number {
     this.#state.activeServerId = selection.activeServerId;
     this.#state.unreadableActiveServerId = selection.unreadableActiveServerId;
@@ -192,50 +162,59 @@ export class RemoteServerStore implements RemoteServerDirectory {
     return this.#activeServerRevision;
   }
 
-  // A join or sign-in that verified the host's identity supersedes an entry this build could not
-  // read, so this is the WebRTC join path's half of what `adopt` does for the HTTPS one -- that path
-  // writes its own entry, this one gets it from `replaceServers` and only has to retire the old.
-  // Reconciliation must not call it: an id recreated from a directory advertisement proves nothing
-  // about the machine holding the pinned key.
-  async retireUnreadable(serverId: string): Promise<void> {
+  readonly retireUnreadable = Effect.fn("RemoteStore.retireUnreadable")(function* (
+    this: RemoteServerStore,
+    serverId: string,
+  ): Effect.fn.Return<void, RemoteWorkflowError> {
     if (!this.#state.unreadableServers.some((preserved) => preserved.entry.id === serverId)) return;
     this.#forgetUnreadable(serverId);
-    await this.persist();
-  }
+    yield* this.persist();
+  });
 
-  // Adds a server the user just joined or signed in to, replacing any earlier entry with the same
-  // id, and selects it -- the two halves of "the user is now on this server", written once.
-  //
-  // This is also the one path allowed to retire an entry the reader could not decode. Joining or
-  // signing in verified the host's identity, so the new entry supersedes the old; a reconciliation
-  // that happens to mint the same id did not, and `replaceServers` deliberately leaves it alone.
-  async adopt(server: StoredRemoteServer): Promise<void> {
+  readonly adopt = Effect.fn("RemoteStore.adopt")(function* (
+    this: RemoteServerStore,
+    server: StoredRemoteServer,
+  ): Effect.fn.Return<void, RemoteWorkflowError> {
     this.#forgetUnreadable(server.id);
     this.#state.servers = [...this.#state.servers.filter((candidate) => candidate.id !== server.id), server];
     this.setActiveServerId(server.id);
-    await this.persist();
-  }
+    yield* this.persist();
+  });
 
-  // Returns the updated server so a caller that needs the new credentials for its next request does
-  // not have to look them up again -- and null when the server is gone, which a live event can race.
-  async update(serverId: string, patch: RemoteServerPatch): Promise<StoredRemoteServerView | null> {
+  readonly attachLocal = Effect.fn("RemoteStore.attachLocal")(function* (
+    this: RemoteServerStore,
+    server: StoredRemoteServer,
+  ): Effect.fn.Return<void, RemoteWorkflowError> {
+    this.#forgetUnreadable(server.id);
+    this.#state.servers = this.has(server.id)
+      ? this.#state.servers.map((candidate) => (candidate.id === server.id ? server : candidate))
+      : [...this.#state.servers, server];
+    yield* this.persist();
+  });
+
+  readonly update = Effect.fn("RemoteStore.update")(function* (
+    this: RemoteServerStore,
+    serverId: string,
+    patch: RemoteServerPatch,
+  ): Effect.fn.Return<StoredRemoteServerView | null, RemoteWorkflowError> {
     const current = this.find(serverId);
     if (!current) return null;
     const updated: StoredRemoteServer = { ...current, ...patch };
     this.#state.servers = this.#state.servers.map((candidate) => (candidate.id === serverId ? updated : candidate));
-    await this.persist();
+    yield* this.persist();
     return updated;
-  }
+  });
 
-  async remove(serverId: string, options: { hideHost?: boolean } = {}): Promise<void> {
-    if (options.hideHost && !this.#state.hiddenHostIds.includes(serverId)) this.#state.hiddenHostIds.push(serverId);
-    // The user asked for this server to be gone. That reaches an entry this build could not read as
-    // well -- leaving it would put the server back the next time a build that understands it runs.
+  readonly remove = Effect.fn("RemoteStore.remove")(function* (
+    this: RemoteServerStore,
+    serverId: string,
+  ): Effect.fn.Return<void, RemoteWorkflowError> {
     this.#forgetUnreadable(serverId);
     this.#state.servers = this.#state.servers.filter((server) => server.id !== serverId);
+    this.#state.browserEgressServerIds = this.#state.browserEgressServerIds.filter((id) => id !== serverId);
     if (this.#state.activeServerId === serverId) this.setActiveServerId(LOCAL_SERVER_ID);
-    await this.persist();
-  }
+    yield* this.persist();
+  });
 
   #forgetUnreadable(serverId: string): void {
     this.#state.unreadableServers = this.#state.unreadableServers.filter(
@@ -244,78 +223,183 @@ export class RemoteServerStore implements RemoteServerDirectory {
     if (this.#state.unreadableActiveServerId === serverId) this.#state.unreadableActiveServerId = null;
   }
 
-  async unhideHost(hostId: string): Promise<void> {
+  readonly unhideHost = Effect.fn("RemoteStore.unhideHost")(function* (
+    this: RemoteServerStore,
+    hostId: string,
+  ): Effect.fn.Return<void, RemoteWorkflowError> {
     if (!this.isHiddenHost(hostId)) return;
     this.#state.hiddenHostIds = this.#state.hiddenHostIds.filter((candidate) => candidate !== hostId);
-    await this.persist();
-  }
+    yield* this.persist();
+  });
 
-  // Throws rather than repairing: an order that does not name every server exactly once came from a
-  // renderer working off a stale list, and silently guessing at the rest would reorder the sidebar
-  // under the user. Returns false when the order already matches, so the caller can skip its event.
-  async reorder(serverIds: readonly string[]): Promise<boolean> {
-    if (serverIds.length !== this.#state.servers.length) throw new Error("The server order is incomplete.");
+  readonly reorder = Effect.fn("RemoteStore.reorder")(function* (
+    this: RemoteServerStore,
+    serverIds: readonly string[],
+  ): Effect.fn.Return<boolean, RemoteWorkflowError> {
+    if (serverIds.length !== this.#state.servers.length)
+      return yield* new RemoteWorkflowError({ cause: new Error("The server order is incomplete.") });
     const serversById = new Map(this.#state.servers.map((server) => [server.id, server]));
-    if (new Set(serverIds).size !== serverIds.length) throw new Error("The server order contains an unknown server.");
+    if (new Set(serverIds).size !== serverIds.length)
+      return yield* new RemoteWorkflowError({ cause: new Error("The server order contains an unknown server.") });
     const reordered: StoredRemoteServer[] = [];
     for (const serverId of serverIds) {
       const server = serversById.get(serverId);
-      if (!server) throw new Error("The server order contains an unknown server.");
+      if (!server)
+        return yield* new RemoteWorkflowError({ cause: new Error("The server order contains an unknown server.") });
       reordered.push(server);
     }
     if (serverIds.every((serverId, index) => this.#state.servers[index]?.id === serverId)) return false;
     this.#state.servers = reordered;
-    await this.persist();
+    yield* this.persist();
     return true;
-  }
+  });
 
-  // The host directory owns the whole WebRTC half of the list, so it replaces it wholesale. If the
-  // active server is not in the new list, selection falls back to the local server -- the same rule
-  // `readStoredRemoteServers` applies to a file that lost an entry.
-  async replaceServers(servers: readonly StoredRemoteServerView[]): Promise<void> {
+  readonly replaceServers = Effect.fn("RemoteStore.replaceServers")(function* (
+    this: RemoteServerStore,
+    servers: readonly StoredRemoteServerView[],
+  ): Effect.fn.Return<void, RemoteWorkflowError> {
     this.#state.servers = [...servers];
     if (this.#state.activeServerId !== LOCAL_SERVER_ID && !this.has(this.#state.activeServerId)) {
       this.setActiveServerId(LOCAL_SERVER_ID);
     }
-    await this.persist();
+    yield* this.persist();
+  });
+
+  muteState(serverId: string, now = Date.now()): { muted: boolean; mutedUntil: number | null } {
+    if (this.#state.mutedServerIds.includes(serverId)) return { muted: true, mutedUntil: null };
+    const mutedUntil = this.#state.serverNotifications[serverId]?.mutedUntil;
+    return mutedUntil !== undefined && mutedUntil > now
+      ? { muted: true, mutedUntil }
+      : { muted: false, mutedUntil: null };
   }
 
-  isMuted(serverId: string): boolean {
-    return this.#state.mutedServerIds.includes(serverId);
+  isMuted(serverId: string, now = Date.now()): boolean {
+    return this.muteState(serverId, now).muted;
   }
 
-  async setMuted(serverId: string, muted: boolean): Promise<void> {
-    const operation = this.#writeChain.then(async () => {
-      if (serverId !== LOCAL_SERVER_ID && !this.has(serverId)) throw new Error("Remote server not found.");
-      const mutedServerIds = this.#state.mutedServerIds.filter((id) => id !== serverId);
-      if (muted) mutedServerIds.push(serverId);
-      await this.#writeSnapshot({ ...structuredClone(this.#state), mutedServerIds });
-      this.#state.mutedServerIds = mutedServerIds;
+  notificationLevel(serverId: string): ServerNotificationLevel {
+    return this.#state.serverNotifications[serverId]?.level ?? "all";
+  }
+
+  nextMuteExpiry(now = Date.now()): number | null {
+    const ends = Object.values(this.#state.serverNotifications)
+      .map((entry) => entry.mutedUntil)
+      .filter((mutedUntil): mutedUntil is number => mutedUntil !== undefined && mutedUntil > now);
+    return ends.length ? Math.min(...ends) : null;
+  }
+
+  readonly setMuted = Effect.fn("RemoteStore.setMuted")(function* (
+    this: RemoteServerStore,
+    serverId: string,
+    muted: boolean,
+    until: number | null = null,
+  ): Effect.fn.Return<void, RemoteWorkflowError> {
+    yield* this.#writeNotificationsEffect(serverId, (state) => {
+      const mutedServerIds = state.mutedServerIds.filter((id) => id !== serverId);
+      if (muted && until === null) mutedServerIds.push(serverId);
+      const { mutedUntil: _previous, ...entry } = state.serverNotifications[serverId] ?? {};
+      return {
+        mutedServerIds,
+        serverNotifications: withServerEntry(
+          state.serverNotifications,
+          serverId,
+          muted && until !== null ? { ...entry, mutedUntil: until } : entry,
+        ),
+      };
     });
-    this.#writeChain = operation.catch(() => undefined);
-    await operation;
+  });
+
+  readonly setNotificationLevel = Effect.fn("RemoteStore.setNotificationLevel")(function* (
+    this: RemoteServerStore,
+    serverId: string,
+    level: ServerNotificationLevel,
+  ): Effect.fn.Return<void, RemoteWorkflowError> {
+    yield* this.#writeNotificationsEffect(serverId, (state) => {
+      const { level: _previous, ...entry } = state.serverNotifications[serverId] ?? {};
+      return {
+        mutedServerIds: state.mutedServerIds,
+        serverNotifications: withServerEntry(
+          state.serverNotifications,
+          serverId,
+          level === "all" ? entry : { ...entry, level },
+        ),
+      };
+    });
+  });
+
+  sharesBrowserEgress(serverId: string): boolean {
+    return this.#state.browserEgressServerIds.includes(serverId);
   }
 
-  // Capture server state now, but use the mute preference committed by preceding writes.
-  async persist(): Promise<void> {
-    const snapshot = structuredClone(this.#state);
-    const operation = this.#writeChain.then(() =>
-      this.#writeSnapshot({ ...snapshot, mutedServerIds: [...this.#state.mutedServerIds] }),
+  readonly setBrowserEgress = Effect.fn("RemoteStore.setBrowserEgress")(function* (
+    this: RemoteServerStore,
+    serverId: string,
+    sharing: boolean,
+  ): Effect.fn.Return<void, RemoteWorkflowError> {
+    yield* this.#writes.withPermit(
+      Effect.uninterruptible(
+        Effect.gen({ self: this }, function* () {
+          if (!this.has(serverId))
+            return yield* new RemoteWorkflowError({ cause: new Error(sourceText("error.remote.serverNotFound")) });
+          const browserEgressServerIds = this.#state.browserEgressServerIds.filter((id) => id !== serverId);
+          if (sharing) browserEgressServerIds.push(serverId);
+          yield* this.#writeSnapshot({ ...structuredClone(this.#state), browserEgressServerIds });
+          this.#state.browserEgressServerIds = browserEgressServerIds;
+        }),
+      ),
     );
-    this.#writeChain = operation.catch(() => undefined);
-    await operation;
-  }
+  });
 
-  async #writeSnapshot(snapshot: StoredRemoteServers): Promise<void> {
-    const temporary = `${this.#path}.${randomUUID()}.tmp`;
-    try {
-      await writeFile(temporary, `${JSON.stringify(serializeStoredRemoteServers(snapshot))}\n`, {
-        encoding: "utf8",
-        mode: 0o600,
-      });
-      await rename(temporary, this.#path);
-    } finally {
-      await rm(temporary, { force: true });
-    }
-  }
+  readonly #writeNotificationsEffect = Effect.fn("RemoteStore.writeNotifications")(function* (
+    this: RemoteServerStore,
+    serverId: string,
+    change: (state: StoredRemoteServers) => Pick<StoredRemoteServers, "mutedServerIds" | "serverNotifications">,
+  ): Effect.fn.Return<void, RemoteWorkflowError> {
+    yield* this.#writes.withPermit(
+      Effect.uninterruptible(
+        Effect.gen({ self: this }, function* () {
+          if (serverId !== LOCAL_SERVER_ID && !this.has(serverId))
+            return yield* new RemoteWorkflowError({ cause: new Error(sourceText("error.remote.serverNotFound")) });
+          const next = change(this.#state);
+          yield* this.#writeSnapshot({ ...structuredClone(this.#state), ...next });
+          this.#state.mutedServerIds = next.mutedServerIds;
+          this.#state.serverNotifications = next.serverNotifications;
+        }),
+      ),
+    );
+  });
+
+  readonly persist = Effect.fn("RemoteStore.persist")(function* (
+    this: RemoteServerStore,
+  ): Effect.fn.Return<void, RemoteWorkflowError> {
+    const snapshot = structuredClone(this.#state);
+    yield* this.#writes.withPermit(
+      Effect.uninterruptible(
+        Effect.suspend(() =>
+          this.#writeSnapshot({
+            ...snapshot,
+            mutedServerIds: [...this.#state.mutedServerIds],
+            serverNotifications: structuredClone(this.#state.serverNotifications),
+            browserEgressServerIds: [...this.#state.browserEgressServerIds],
+          }),
+        ),
+      ),
+    );
+  });
+
+  readonly #writeSnapshot = Effect.fn("RemoteStore.writeSnapshot")(function* (
+    this: RemoteServerStore,
+    snapshot: StoredRemoteServers,
+  ): Effect.fn.Return<void, RemoteWorkflowError> {
+    yield* writeJsonFileAtomically(this.#path, serializeStoredRemoteServers(snapshot)).pipe(toRemoteWorkflowError);
+  });
+}
+
+function withServerEntry(
+  entries: Record<string, StoredServerNotifications>,
+  serverId: string,
+  entry: StoredServerNotifications,
+): Record<string, StoredServerNotifications> {
+  const { [serverId]: _previous, ...rest } = entries;
+  return entry.level === undefined && entry.mutedUntil === undefined ? rest : { ...rest, [serverId]: entry };
 }

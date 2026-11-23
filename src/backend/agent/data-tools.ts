@@ -1,21 +1,23 @@
-import { INPUT_LIMITS } from "@dani-dex/contracts/input-limits";
+import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
+import { Effect } from "effect";
 import { z } from "zod";
 import { AGENT_DATABASE_LIMITS } from "../agent-data/agent-database-protocol";
 import { checkAgentParameters } from "../agent-data/agent-database-rules";
 import type { AgentDatabaseQueryResult, AgentTables } from "../agent-data/agent-tables";
-import { type DaniDexToolResponse, daniDexToolFailure, daniDexToolResult } from "./routine-tools";
+import { openBotToolFailure, openBotToolResult } from "./routine-tools";
+import { ToolOperationFailed, toolStep } from "./tool-operation";
 
 const sql = z.string().min(1).max(AGENT_DATABASE_LIMITS.maxSqlLength);
 const params = z.array(z.union([z.string(), z.number(), z.boolean(), z.null()])).optional();
 
-export const tableNameSchema = z.object({ name: z.string().min(1).max(INPUT_LIMITS.sharedTableName) }).strict();
-export const dataStatementSchema = z.object({ sql, params }).strict();
+const tableNameSchema = z.object({ name: z.string().min(1).max(INPUT_LIMITS.sharedTableName) }).strict();
+const dataStatementSchema = z.object({ sql, params }).strict();
 
 export const DATA_TOOL_DEFINITIONS = [
   {
     name: "list_tables",
     description:
-      "List the tables in the shared database with their CREATE statements, row counts, and the agent that created each one. Every Dani-Dex agent reads and writes the same tables. Call this first, so you add to a table that already holds this kind of record instead of making a near-duplicate.",
+      "List the tables in the shared database with their CREATE statements, row counts, and the agent that created each one. Every OpenBot agent reads and writes the same tables. Call this first, so you add to a table that already holds this kind of record instead of making a near-duplicate.",
     shape: {},
   },
   {
@@ -37,49 +39,45 @@ export const DATA_TOOL_DEFINITIONS = [
   },
 ];
 
-/**
- * Answers the four shared-data tools, and `null` for any other tool so the caller keeps walking its
- * chain.
- *
- * Every refusal comes back as a tool result rather than a thrown error. A SQL syntax error, a
- * statement the engine refused, a deadline, and "you did not create this table" are all things the
- * model can act on in its next call; a throw reaches it as an opaque JSON-RPC fault it can only give
- * up on.
- */
-export async function handleDataTool(
+export const handleDataTool = Effect.fn("DataTools.handle")(function* (
   tool: string,
   args: unknown,
   agentId: string,
   tables: AgentTables | null,
-): Promise<DaniDexToolResponse | null> {
+) {
   if (!DATA_TOOL_DEFINITIONS.some((definition) => definition.name === tool)) return null;
-  if (!tables) return daniDexToolFailure("Shared data is unavailable.");
+  if (!tables) return openBotToolFailure("Shared data is unavailable.");
 
   switch (tool) {
-    case "list_tables":
-      return daniDexToolResult({ tables: await tables.list() });
+    case "list_tables": {
+      const listed = yield* tables.list().pipe(Effect.mapError((cause) => new ToolOperationFailed({ cause })));
+      return listed.ok ? openBotToolResult({ tables: listed.value }) : openBotToolFailure(listed.message);
+    }
     case "delete_table": {
-      const removed = await tables.remove(agentId, tableNameSchema.parse(args).name);
-      return removed.ok ? daniDexToolResult({ deleted: removed.value }) : daniDexToolFailure(removed.message);
+      const input = yield* toolStep(() => tableNameSchema.parse(args));
+      const removed = yield* tables
+        .remove(agentId, input.name)
+        .pipe(Effect.mapError((cause) => new ToolOperationFailed({ cause })));
+      return removed.ok ? openBotToolResult({ deleted: removed.value }) : openBotToolFailure(removed.message);
     }
     default: {
-      const statement = dataStatementSchema.parse(args);
-      const parameters = checkAgentParameters(statement.params);
-      if (!parameters.ok) return daniDexToolFailure(parameters.message);
+      const statement = yield* toolStep(() => dataStatementSchema.parse(args));
+      const parameters = checkAgentParameters(statement.params, statement.sql);
+      if (!parameters.ok) return openBotToolFailure(parameters.message);
       if (tool === "execute_data") {
-        const written = await tables.execute(agentId, statement.sql, parameters.value);
-        return written.ok ? daniDexToolResult(written.value) : daniDexToolFailure(written.message);
+        const written = yield* tables
+          .execute(agentId, statement.sql, parameters.value)
+          .pipe(Effect.mapError((cause) => new ToolOperationFailed({ cause })));
+        return written.ok ? openBotToolResult(written.value) : openBotToolFailure(written.message);
       }
-      const rows = await tables.query(statement.sql, parameters.value);
-      return rows.ok ? daniDexToolResult(readResult(rows.value)) : daniDexToolFailure(rows.message);
+      const rows = yield* tables
+        .query(statement.sql, parameters.value)
+        .pipe(Effect.mapError((cause) => new ToolOperationFailed({ cause })));
+      return rows.ok ? openBotToolResult(readResult(rows.value)) : openBotToolFailure(rows.message);
     }
   }
-}
+});
 
-/**
- * `truncated` alone does not tell the model how much it is missing or what to do next, and a model
- * that cannot tell a capped result from a complete one reports the capped count as the answer.
- */
 function readResult(
   result: AgentDatabaseQueryResult,
 ): AgentDatabaseQueryResult | (AgentDatabaseQueryResult & { note: string }) {

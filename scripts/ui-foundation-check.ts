@@ -1,12 +1,10 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createDaniDexLogger } from "@dani-dex/logging";
+import { createOpenBotLogger } from "@openbot/logging";
 
 function filesUnder(directory: string): string[] {
   return readdirSync(directory).flatMap((entry) => {
-    // The reachable roots below are whole workspaces, and every one of them symlinks a
-    // node_modules that statSync follows straight into the hoisted install.
     if (entry === "node_modules") return [];
     const path = resolve(directory, entry);
     return statSync(path).isDirectory() ? filesUnder(path) : [path];
@@ -18,26 +16,10 @@ function matches(source: string, expression: RegExp): number {
 }
 
 export interface UiFoundationReport {
-  /** One human-readable line per violation, in the order the tree was walked. */
   readonly failures: readonly string[];
-  /** Composite ARIA roles hand-rolled outside `components/ui`. Ratchets down, never up. */
   readonly manualCompositeCount: number;
 }
 
-/**
- * Every stretch of source that builds a class string, matched by balancing the brace rather
- * than by reading a line, because the renderer's array form spans several:
- *
- *     class={[
- *       "remote-desktop-workspace",
- *       `remote-desktop-workspace-${props.platform}`,
- *     ]}
- *
- * One opener, because this renderer has one. `className` and the `classList={{…}}` prop are
- * React and Solid idioms it uses zero times, and the `cx()` helper it uses 78 times is inside
- * a `class={…}` on all 78 - an opener for it widens no region and no fixture can hold it to
- * account.
- */
 function classRegions(source: string): string[] {
   const regions: string[] = [];
   const opener = /class\s*=\s*\{/gu;
@@ -57,43 +39,18 @@ function classRegions(source: string): string[] {
   return regions;
 }
 
-// The prefix of a class family does not have to open the literal:
-// `agent-row-agent-status agent-row-agent-status-${kind}` puts it after a space, so this
-// anchors on the backtick or the whitespace that starts the class name instead.
 const CLASS_FAMILY_PREFIX = /[`\s]([a-zA-Z][a-zA-Z0-9_-]*-)\$\{/gu;
+const LUCIDE_ICON_IMPORT = /["']lucide-solid\/icons\/([a-z0-9-]+)["']/gu;
 
-/**
- * Reads a renderer tree and reports every design-system violation in it. Paths in
- * `failures` are relative to `labelRoot`, which the CLI sets to the repository root
- * so a message can be pasted straight into an editor.
- *
- * Takes its roots as arguments rather than resolving them, so the fixture trees in
- * `tools/ui-foundation/fixtures` can prove each check still matches something. Two
- * of these checks silently matched nothing for months.
- *
- * `reachableRoots` is where markup that can name a class lives, and it is wider than
- * `rendererRoot` in both directions. The renderer's four `.html` entry points and its
- * `stories/` tree sit beside `src/` rather than inside it, and a class can be named from
- * outside the renderer altogether: `src/main` injects one into a picture-in-picture window
- * and `apps/auth-api` renders the preview shell. So the CLI passes `src` and `apps` whole,
- * rather than a list of the three directories that happen to do it today.
- */
-/**
- * The class names a stylesheet declares, read from selector preludes alone. A bare `.name` scan
- * over the whole file cannot tell a selector from `url("sprite.svg")` or from a comment naming a
- * rule that was deleted, and either one fails the check for a class nothing ever declared.
- */
 function declaredClasses(source: string): Set<string> {
   const names = new Set<string>();
   const withoutComments = source.replaceAll(/\/\*.*?\*\//gsu, " ");
   let start = 0;
   for (let index = 0; index < withoutComments.length; index += 1) {
     const char = withoutComments[index];
-    // A prelude ends at its block. `;` and `}` end a declaration or a block instead, so
-    // whatever was collecting is a value or the tail of a rule and never a selector.
     if (char === "{") {
-      for (const match of withoutComments.slice(start, index).matchAll(/\.(-?[a-zA-Z][a-zA-Z0-9_-]*)/gu)) {
-        names.add(match[1]);
+      for (const [, name] of withoutComments.slice(start, index).matchAll(/\.(-?[a-zA-Z][a-zA-Z0-9_-]*)/gu)) {
+        if (name !== undefined) names.add(name);
       }
       start = index + 1;
     } else if (char === "}" || char === ";") {
@@ -107,14 +64,16 @@ export function checkUiFoundation(
   rendererRoot: string,
   labelRoot: string,
   reachableRoots: readonly string[] = [rendererRoot],
+  uiRoot = resolve(rendererRoot, "components/ui"),
 ): UiFoundationReport {
-  const uiRoot = resolve(rendererRoot, "components/ui");
-  // Compared with a separator appended, or components/ui-kit and components/uiLegacy read
-  // as being inside the design system and every check below skips them silently.
-  const insideUi = (path: string): boolean => path.startsWith(`${uiRoot}${sep}`);
+  const sourceFiles = [...new Set([...filesUnder(rendererRoot), ...filesUnder(uiRoot)])];
+  const insideUi = (path: string): boolean =>
+    path.startsWith(`${uiRoot}${sep}`) &&
+    !path.startsWith(`${uiRoot}${sep}features${sep}`) &&
+    !path.startsWith(`${uiRoot}${sep}components${sep}`);
   const failures: string[] = [];
 
-  for (const file of filesUnder(rendererRoot).filter((path) => /\.(?:ts|tsx)$/.test(path))) {
+  for (const file of sourceFiles.filter((path) => /\.(?:ts|tsx)$/.test(path))) {
     if (insideUi(file) || /\.test\.tsx?$/u.test(file)) continue;
     const source = readFileSync(file, "utf8");
     const label = relative(labelRoot, file);
@@ -129,9 +88,6 @@ export function checkUiFoundation(
       failures.push(`${label}: a hand-rolled switch is forbidden; use components/ui/Switch`);
     }
     if (file.endsWith(".tsx")) {
-      // The property may be quoted, and a hyphenated one has to be: `border-color` is not a
-      // bare JS key. Without the optional quote every hyphenated branch of this pattern was
-      // unreachable - dead from the day it was written, and green about it.
       const inlineColor =
         /(?:color|background(?:-color)?|border(?:-(?:top|right|bottom|left))?(?:-color)?|fill|stroke)["']?\s*:\s*["'](?:#[\da-f]{3,8}|rgba?\(|hsla?\(|(?:white|black|red|blue|green|yellow|purple|orange|gray|grey|pink)\b)/iu;
       if (inlineColor.test(source)) {
@@ -145,12 +101,7 @@ export function checkUiFoundation(
     }
   }
 
-  // Every non-test source in the renderer, the shared layer included. The composite-role
-  // scan below deliberately skips components/ui because a primitive there is allowed to
-  // hand-roll a role; a test hook is not, so this one has no exempt directory. Scoping it
-  // to the same join as that scan would leave components/ui free to grow hooks silently,
-  // which is the exact shape of the two blindnesses this file's history records.
-  const testHookSource = filesUnder(rendererRoot)
+  const testHookSource = sourceFiles
     .filter((path) => /\.tsx?$/u.test(path))
     .filter((path) => !/\.test\.tsx?$/u.test(path))
     .map((path) => readFileSync(path, "utf8"))
@@ -163,11 +114,7 @@ export function checkUiFoundation(
     );
   }
 
-  // Every renderer component outside the shared layer, wherever it lives. This
-  // used to walk `components/` alone, which stopped seeing a component the moment
-  // it moved into `features/` - the budget stayed at zero by going blind, not by
-  // being met.
-  const componentSource = filesUnder(rendererRoot)
+  const componentSource = sourceFiles
     .filter((path) => path.endsWith(".tsx") && !insideUi(path))
     .filter((path) => !path.endsWith(".test.tsx"))
     .map((path) => readFileSync(path, "utf8"))
@@ -177,31 +124,18 @@ export function checkUiFoundation(
     /role=["'](?:dialog|alertdialog|menu|tablist|tab|tabpanel|listbox|option)["']/gu,
   );
 
-  // The palette moved to @dani-dex/brand, which is now the only file allowed to hold
-  // a colour literal, so every stylesheet the renderer owns is scanned whole. This
-  // used to slice styles.css after its :root block to spare the palette, which also
-  // spared everything else declared in there. It then named styles.css and styles/
-  // explicitly, which spared a stylesheet placed anywhere else: preview/preview.css
-  // was outside the scan and nothing said so, and a feature stylesheet moving next
-  // to the components it dresses would have left the budget the same silent way.
-  // The whole renderer tree is the scope, so a new stylesheet is covered by
-  // existing there rather than by being listed.
-  const styleSheets = filesUnder(rendererRoot).filter((path) => path.endsWith(".css"));
+  const styleSheets = sourceFiles.filter((path) => path.endsWith(".css"));
   const legacyStyles = styleSheets.map((path) => readFileSync(path, "utf8")).join("\n");
 
-  // CSS is the one renderer surface no compiler reads, so a rule outlives the markup it
-  // dressed in silence. A class counts as reachable when its name appears as a word in any
-  // component, story or HTML entry point, or when a `prefix-${value}` family covers it. The
-  // family prefixes are taken from class-building regions alone: `id={`remote-${index}`}` has
-  // the same shape as a class family, and honouring it there would hide every `remote-*` rule.
   const markup = reachableRoots.flatMap(filesUnder).filter((path) => /\.(?:tsx?|html)$/u.test(path));
   const named = new Set<string>();
   const families: string[] = [];
   for (const path of markup) {
     const source = readFileSync(path, "utf8");
     for (const word of source.matchAll(/[a-zA-Z][a-zA-Z0-9_-]*/gu)) named.add(word[0]);
+    for (const [, icon] of source.matchAll(LUCIDE_ICON_IMPORT)) if (icon !== undefined) named.add(`lucide-${icon}`);
     for (const region of classRegions(source)) {
-      for (const prefix of region.matchAll(CLASS_FAMILY_PREFIX)) families.push(prefix[1]);
+      for (const [, prefix] of region.matchAll(CLASS_FAMILY_PREFIX)) if (prefix !== undefined) families.push(prefix);
     }
   }
   for (const path of styleSheets) {
@@ -217,13 +151,7 @@ export function checkUiFoundation(
     matches(legacyStyles, /(?<![-\w])(?:white|black|red|blue|green|yellow|purple|orange|gray|grey|pink)(?![-\w])/giu);
   const debtBudgets = [
     ["hand-rolled composite ARIA roles", manualCompositeCount, 0],
-    // Biome rejects the *ByTestId queries, but a GritQL rule cannot see a JSX attribute in
-    // the product tree, so root AGENTS.md rules this out in prose alone. The five that exist
-    // are not dead weight: three are read by play functions in src/renderer/stories, where
-    // the test rules relax by design. So this freezes the count rather than demanding zero -
-    // a new hook has to replace an old one, and the accessible-name route is the only way to
-    // reach an element the sixth time.
-    ["data-testid hooks in renderer markup", matches(testHookSource, /data-testid\s*=/gu), 5],
+    ["data-testid hooks in renderer markup", matches(testHookSource, /data-testid\s*=/gu), 0],
     ["colour literals outside the palette", colorLiteralCount, 0],
     ["untokenized font-size", matches(legacyStyles, /font-size:(?!\s*(?:var\(|inherit\b))\s*[^;]+/gu), 0],
     [
@@ -247,12 +175,14 @@ export function checkUiFoundation(
 }
 
 if (import.meta.main) {
-  const logger = createDaniDexLogger("ui-foundation-check");
+  const logger = createOpenBotLogger("ui-foundation-check");
   const projectRoot = fileURLToPath(new URL("..", import.meta.url));
-  const { failures, manualCompositeCount } = checkUiFoundation(resolve(projectRoot, "src/renderer/src"), projectRoot, [
-    resolve(projectRoot, "src"),
-    resolve(projectRoot, "apps"),
-  ]);
+  const { failures, manualCompositeCount } = checkUiFoundation(
+    resolve(projectRoot, "src/renderer/src"),
+    projectRoot,
+    [resolve(projectRoot, "src"), resolve(projectRoot, "apps"), resolve(projectRoot, "packages/ui/src")],
+    resolve(projectRoot, "packages/ui/src"),
+  );
 
   if (failures.length > 0) {
     logger.error(`UI foundation check failed:\n- ${failures.join("\n- ")}`);

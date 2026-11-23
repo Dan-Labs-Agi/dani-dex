@@ -1,16 +1,18 @@
 import type {
   AccountUsage,
-  AgentModelOption,
   AgentStatus,
   AgentSubmission,
-  AgentSummary,
   AttachmentSummary,
   BrowserControlState,
   BrowserTab,
+  ClientAgentModelOption,
+  ClientAgentSummary,
   ConversationMessage,
+  ConversationPlan,
   ConversationSnapshot,
   DirectConversationSnapshot,
   DirectThreadSummary,
+  ForeignProviderId,
   HostedSiteSummary,
   HostStatus,
   InstalledSkill,
@@ -20,7 +22,9 @@ import type {
   MarketplaceAgentSummary,
   MarketplaceSkillDetail,
   MarketplaceSkillSummary,
+  QueueDelivery,
   RemoteDesktopSession,
+  ServerAuditEntry,
   ServerSummary,
   SharedTable,
   SkillPackagePreview,
@@ -30,25 +34,34 @@ import type {
   TeamPresenceSnapshot,
   TeamSessionSummary,
   UpdateStatus,
-} from "@dani-dex/contracts/ipc";
-import type { AgentProfile } from "../data";
+} from "@openbot/contracts/ipc";
+import {
+  CONVERSATION_PLAN_ITEM_TYPE,
+  conversationPlanText,
+  isAgentStatus,
+  isForeignProviderId,
+  isKnownAgentProvider,
+} from "@openbot/contracts/ipc";
+import type { AgentProfile } from "@openbot/ui/data";
+import type { AgentRuntimeSettings } from "@openbot/ui/features/conversation/AgentSettingsPanel";
+import type { MarketplacePluginDetail } from "@openbot/ui/features/settings/marketplace-plugins";
 import type { McpServerConfig } from "../features/servers/mcp-servers";
-import type { MarketplacePluginDetail } from "../features/settings/marketplace-plugins";
 
-export const STORY_NOW = "2026-08-19T10:00:00.000Z";
+const STORY_NOW = "2026-08-19T10:00:00.000Z";
 
-export const STORY_AGENT_SUMMARIES: AgentSummary[] = [
+export const STORY_AGENT_SUMMARIES: ClientAgentSummary[] = [
   {
     id: "chief",
-    provider: "opencode",
+    provider: "codex",
     name: "Chief",
     title: "Chief of staff",
     description: "Coordinates projects, priorities, and next steps across the workspace.",
     notifications: true,
-    model: "dani/dani-free-auto",
+    model: "gpt-5.6-luna",
     reasoningEffort: "medium",
+    access: "full",
     threadId: "thread-chief",
-    workspacePath: "/mock/Dani-Dex/Agents/chief",
+    workspacePath: "/mock/OpenBot/Agents/chief",
     preview: "I pulled together the latest project notes and next steps.",
     updatedAt: STORY_NOW,
     avatarSeed: "chief",
@@ -57,15 +70,16 @@ export const STORY_AGENT_SUMMARIES: AgentSummary[] = [
   },
   {
     id: "research",
-    provider: "opencode",
+    provider: "claude",
     name: "Research",
     title: "Research partner",
     description: "Finds reliable sources and turns them into concise, useful briefs.",
     notifications: true,
-    model: "dani/dani-free-auto",
+    model: "claude-sonnet-5",
     reasoningEffort: "high",
+    access: "full",
     threadId: "thread-research",
-    workspacePath: "/mock/Dani-Dex/Agents/research",
+    workspacePath: "/mock/OpenBot/Agents/research",
     preview: "Three useful sources are ready for your review.",
     updatedAt: "2026-08-18T16:32:00.000Z",
     avatarSeed: "research",
@@ -74,15 +88,16 @@ export const STORY_AGENT_SUMMARIES: AgentSummary[] = [
   },
   {
     id: "sales",
-    provider: "opencode",
+    provider: "codex",
     name: "Sales Outbound",
     title: "Outbound specialist",
     description: "Prepares thoughtful prospect research and personalized outreach.",
     notifications: true,
-    model: "dani/dani-free-auto",
+    model: "gpt-5.6-terra",
     reasoningEffort: "medium",
+    access: "workspace",
     threadId: "thread-sales",
-    workspacePath: "/mock/Dani-Dex/Agents/sales",
+    workspacePath: "/mock/OpenBot/Agents/sales",
     preview: "The follow-up draft is ready to send.",
     updatedAt: "2026-08-17T09:20:00.000Z",
     avatarSeed: "sales-outbound",
@@ -100,6 +115,8 @@ export const STORY_AGENTS: AgentProfile[] = STORY_AGENT_SUMMARIES.map((agent, in
   notifications: agent.notifications,
   model: agent.model,
   reasoningEffort: agent.reasoningEffort,
+  ...(agent.access === undefined ? {} : { access: agent.access }),
+  ...(agent.computerUse === undefined ? {} : { computerUse: agent.computerUse }),
   threadId: agent.threadId,
   workspacePath: agent.workspacePath,
   avatarSeed: agent.avatarSeed,
@@ -108,6 +125,18 @@ export const STORY_AGENTS: AgentProfile[] = STORY_AGENT_SUMMARIES.map((agent, in
   time: index === 0 ? "10:00" : index === 1 ? "Yesterday" : "Mon",
   preview: agent.preview,
 }));
+
+export function requireFixture<T>(value: T | undefined, name: string): T {
+  if (value === undefined) throw new Error(`${name} is missing from the story fixtures.`);
+  return value;
+}
+
+export const STORY_AGENT: AgentProfile = requireFixture(STORY_AGENTS[0], "Story agent");
+
+export function storyRuntimeSettings(agent: AgentProfile): AgentRuntimeSettings {
+  if (!isKnownAgentProvider(agent.provider)) throw new Error(`Story agent ${agent.id} has an unknown provider.`);
+  return { provider: agent.provider, model: agent.model, reasoningEffort: agent.reasoningEffort };
+}
 
 export const STORY_SHARED_TABLES: SharedTable[] = [
   { name: "citations", ownerAgentId: "research", rowCount: null },
@@ -118,14 +147,15 @@ export const STORY_SHARED_TABLES: SharedTable[] = [
   { name: "touchpoints", ownerAgentId: "chief", rowCount: 1_902 },
 ];
 
-export const STORY_MODELS: AgentModelOption[] = [
+export const STORY_MODELS: ClientAgentModelOption[] = [
   {
-    provider: "opencode",
-    id: "dani/dani-free-auto",
-    name: "Dani Free Auto",
-    description: "Dani free model proxy, no account needed.",
-    defaultReasoningEffort: "low",
+    provider: "codex",
+    id: "gpt-6-luna",
+    name: "GPT-6 Luna",
+    description: "Fast and efficient for everyday agent work.",
+    defaultReasoningEffort: "medium",
     supportedReasoningEfforts: ["low", "medium", "high"],
+    fastServiceTier: "priority",
   },
   {
     provider: "codex",
@@ -150,6 +180,32 @@ export const STORY_MODELS: AgentModelOption[] = [
     description: "Most capable for complex, long-running work.",
     defaultReasoningEffort: "high",
     supportedReasoningEfforts: ["medium", "high", "xhigh"],
+    fastServiceTier: "priority",
+    ultrafastServiceTier: "ultrafast",
+  },
+  {
+    provider: "claude",
+    id: "claude-haiku-5-5",
+    name: "Claude Haiku 5.5",
+    description: "",
+    defaultReasoningEffort: "medium",
+    supportedReasoningEfforts: ["medium"],
+  },
+  {
+    provider: "claude",
+    id: "claude-opus-5-5",
+    name: "Claude Opus 5.5",
+    description: "Most capable Claude model for complex work.",
+    defaultReasoningEffort: "high",
+    supportedReasoningEfforts: ["low", "medium", "high"],
+  },
+  {
+    provider: "claude",
+    id: "claude-fable-5",
+    name: "Claude Fable 5",
+    description: "Fast Claude model for everyday agent work.",
+    defaultReasoningEffort: "high",
+    supportedReasoningEfforts: ["low", "medium", "high"],
   },
   {
     provider: "claude",
@@ -169,6 +225,14 @@ export const STORY_MODELS: AgentModelOption[] = [
   },
   {
     provider: "grok",
+    id: "grok-4.7",
+    name: "Grok 4.7",
+    description: "Discovered from Grok CLI over ACP.",
+    defaultReasoningEffort: "medium",
+    supportedReasoningEfforts: ["low", "medium", "high"],
+  },
+  {
+    provider: "grok",
     id: "grok-4.6",
     name: "Grok 4.6",
     description: "Discovered from Grok CLI over ACP.",
@@ -183,6 +247,14 @@ export const STORY_MODELS: AgentModelOption[] = [
     defaultReasoningEffort: "medium",
     supportedReasoningEfforts: ["low", "medium", "high"],
   },
+  {
+    provider: "antigravity",
+    id: "gemini-3.1-pro",
+    name: "Gemini 3.1 Pro",
+    description: "Discovered from the Antigravity CLI.",
+    defaultReasoningEffort: "high",
+    supportedReasoningEfforts: ["low", "high"],
+  },
 ];
 
 export const STORY_AGENT_STATUS: AgentStatus = {
@@ -190,7 +262,6 @@ export const STORY_AGENT_STATUS: AgentStatus = {
   cliVersion: "0.144.1",
   auth: { kind: "chatgpt", email: "person@example.com" },
   providers: [
-    { id: "opencode", state: "available", version: "1.18.27", message: null, email: null },
     {
       id: "codex",
       state: "available",
@@ -218,6 +289,45 @@ export const STORY_AGENT_STATUS: AgentStatus = {
   fullAccess: true,
 };
 
+export const STORY_FOREIGN_SERVER_ID = "team";
+
+function requireForeignProvider(id: string): ForeignProviderId {
+  if (!isForeignProviderId(id)) throw new Error(`${id} is a provider that this build knows.`);
+  return id;
+}
+
+const STORY_FOREIGN_PROVIDER = requireForeignProvider("omp");
+
+export const STORY_FOREIGN_AGENT: ClientAgentSummary = {
+  ...requireFixture(STORY_AGENT_SUMMARIES[0], "Story agent summary"),
+  id: "omp-helper",
+  name: "Oh My Pi helper",
+  title: "Coding agent",
+  provider: STORY_FOREIGN_PROVIDER,
+  model: "omp/default",
+};
+
+export const STORY_FOREIGN_MODEL: ClientAgentModelOption = {
+  provider: STORY_FOREIGN_PROVIDER,
+  id: "omp/default",
+  name: "Default",
+  description: "Served by the host's Oh My Pi.",
+  defaultReasoningEffort: "medium",
+  supportedReasoningEfforts: ["medium"],
+};
+
+export function withStoryForeignProvider(status: AgentStatus): AgentStatus {
+  const value = {
+    ...status,
+    providers: [
+      ...(status.providers ?? []),
+      { id: "omp", displayName: "Oh My Pi", state: "available", version: "18.8.4", message: null, email: null },
+    ],
+  };
+  if (!isAgentStatus(value)) throw new Error("The foreign story status is not valid.");
+  return value;
+}
+
 export const STORY_USAGE: AccountUsage = {
   limits: [
     {
@@ -234,6 +344,11 @@ export const STORY_USAGE: AccountUsage = {
       id: "grok",
       primary: null,
       secondary: { usedPercent: 22, windowDurationMins: 10_080, resetsAt: 1_787_040_000 },
+    },
+    {
+      id: "cursor",
+      primary: { usedPercent: 37, windowDurationMins: 43_200, resetsAt: 1_788_220_800 },
+      secondary: { usedPercent: 82, windowDurationMins: 43_200, resetsAt: 1_788_220_800 },
     },
   ],
 };
@@ -259,6 +374,16 @@ export const STORY_ATTACHMENTS: AttachmentSummary[] = [
   },
 ];
 
+const STORY_PLAN: ConversationPlan = {
+  explanation: null,
+  steps: [
+    { id: "0", text: "Read the latest release notes", status: "completed" },
+    { id: "1", text: "Group the changes by launch milestone", status: "completed" },
+    { id: "2", text: "Ask Research to check the sources", status: "completed" },
+    { id: "3", text: "Write the draft plan", status: "completed" },
+  ],
+};
+
 export const STORY_CONVERSATION_MESSAGES: ConversationMessage[] = [
   {
     id: "message-user-1",
@@ -269,10 +394,20 @@ export const STORY_CONVERSATION_MESSAGES: ConversationMessage[] = [
     status: "completed",
   },
   {
+    id: "message-plan",
+    author: "assistant",
+    source: "assistant",
+    itemType: CONVERSATION_PLAN_ITEM_TYPE,
+    text: conversationPlanText(STORY_PLAN),
+    plan: STORY_PLAN,
+    createdAt: "2026-08-19T09:42:30.000Z",
+    status: "completed",
+  },
+  {
     id: "message-agent-1",
     author: "assistant",
     source: "assistant",
-    text: "Absolutely. I’ll structure the plan around the launch milestones and ask @Research to verify the supporting sources.\n\nThe first draft is ready here: https://dani-dex.example/docs",
+    text: "Absolutely. I’ll structure the plan around the launch milestones and ask @Research to verify the supporting sources.\n\nThe first draft is ready here: https://openbot.run/docs",
     createdAt: "2026-08-19T09:43:00.000Z",
     status: "completed",
     attachments: STORY_ATTACHMENTS,
@@ -319,6 +454,65 @@ export const STORY_CONVERSATION_MESSAGES: ConversationMessage[] = [
   },
 ];
 
+export const STORY_QUEUES: Record<string, QueueDelivery[]> = {
+  chief: [
+    {
+      id: "delivery-research-reply",
+      messageId: "message-research-reply",
+      recipientAgentId: "chief",
+      sender: { kind: "agent", agentId: "research" },
+      text: "All four sources check out. The pricing link now points to the new page.",
+      attachments: [],
+      replyToMessageId: "message-exchange",
+      status: "queued",
+      position: 1,
+      turnId: null,
+      error: null,
+      createdAt: "2026-08-19T09:46:00.000Z",
+      expectsReply: false,
+    },
+  ],
+};
+
+const STORY_TEAM_CONVERSATION_MESSAGES: ConversationMessage[] = [
+  {
+    id: "team-message-self",
+    author: "user",
+    source: "user",
+    text: "Can you check the sources for the launch notes?",
+    createdAt: "2026-08-19T10:00:00.000Z",
+    status: "completed",
+    senderMember: { id: "member-self", name: "Norbert" },
+  },
+  {
+    id: "team-message-alice",
+    author: "user",
+    source: "user",
+    text: "Please start with the pricing claims.",
+    createdAt: "2026-08-19T10:01:00.000Z",
+    status: "completed",
+    senderMember: { id: "member-alice", name: "Alice Chen" },
+  },
+  {
+    id: "team-message-jon",
+    author: "user",
+    source: "user",
+    text: "And the benchmark table.",
+    createdAt: "2026-08-19T10:02:00.000Z",
+    status: "completed",
+    senderMember: { id: "member-jon", name: "Jon Bell" },
+  },
+  {
+    id: "team-message-agent",
+    author: "assistant",
+    source: "assistant",
+    text: "I will check the pricing claims first, then the benchmark table.",
+    createdAt: "2026-08-19T10:03:00.000Z",
+    status: "completed",
+    replyToMessageId: "team-message-alice",
+  },
+];
+
 export const STORY_SNAPSHOTS: Record<string, ConversationSnapshot> = Object.fromEntries(
   STORY_AGENT_SUMMARIES.map((agent) => [
     agent.id,
@@ -327,7 +521,12 @@ export const STORY_SNAPSHOTS: Record<string, ConversationSnapshot> = Object.from
       threadId: agent.threadId,
       activeTurnId: null,
       revision: 1,
-      messages: agent.id === "chief" ? STORY_CONVERSATION_MESSAGES : [],
+      messages:
+        agent.id === "chief"
+          ? STORY_CONVERSATION_MESSAGES
+          : agent.id === "research"
+            ? STORY_TEAM_CONVERSATION_MESSAGES
+            : [],
     },
   ]),
 );
@@ -383,23 +582,23 @@ export const STORY_PRESENCE: TeamPresenceSnapshot = {
   ],
 };
 
-export const STORY_DIRECT_THREADS: DirectThreadSummary[] = [
-  {
+const STORY_DIRECT_ALICE_THREAD: DirectThreadSummary = {
+  threadId: "direct-alice",
+  otherMemberId: "member-alice",
+  lastMessage: {
+    id: "direct-message-alice",
     threadId: "direct-alice",
-    otherMemberId: "member-alice",
-    lastMessage: {
-      id: "direct-message-alice",
-      threadId: "direct-alice",
-      senderMemberId: "member-alice",
-      recipientMemberId: "member-self",
-      text: "The launch notes look good — can you review the last section?",
-      createdAt: "2026-08-19T09:30:00.000Z",
-      sequence: 2,
-    },
-    unreadCount: 2,
-    updatedAt: "2026-08-19T09:30:00.000Z",
+    senderMemberId: "member-alice",
+    recipientMemberId: "member-self",
+    text: "The launch notes look good — can you review the last section?",
+    createdAt: "2026-08-19T09:30:00.000Z",
+    sequence: 2,
   },
-];
+  unreadCount: 2,
+  updatedAt: "2026-08-19T09:30:00.000Z",
+};
+
+export const STORY_DIRECT_THREADS: DirectThreadSummary[] = [STORY_DIRECT_ALICE_THREAD];
 
 export const STORY_DIRECT_SNAPSHOTS: Record<string, DirectConversationSnapshot> = {
   "member-alice": {
@@ -421,17 +620,19 @@ export const STORY_DIRECT_SNAPSHOTS: Record<string, DirectConversationSnapshot> 
         createdAt: "2026-08-19T09:21:00.000Z",
         sequence: 1,
       },
-      STORY_DIRECT_THREADS[0].lastMessage,
+      STORY_DIRECT_ALICE_THREAD.lastMessage,
     ],
   },
 };
 
-export const STORY_SERVERS: ServerSummary[] = [
+export const STORY_SERVERS: [ServerSummary, ...ServerSummary[]] = [
   {
     id: "local",
     name: "Local",
     logoUrl: null,
     notificationsMuted: false,
+    notificationsMutedUntil: null,
+    notificationLevel: "all",
     kind: "local",
     state: "online",
     apiUrl: null,
@@ -441,9 +642,11 @@ export const STORY_SERVERS: ServerSummary[] = [
   },
   {
     id: "team",
-    name: "Dani-Dex team",
+    name: "OpenBot team",
     logoUrl: null,
     notificationsMuted: false,
+    notificationsMutedUntil: null,
+    notificationLevel: "all",
     kind: "remote",
     state: "online",
     apiUrl: "https://team.example.com",
@@ -451,19 +654,33 @@ export const STORY_SERVERS: ServerSummary[] = [
     role: "owner",
     active: false,
   },
+  {
+    id: "6f1c2d3e-4b5a-4c6d-8e7f-9a0b1c2d3e4f",
+    name: "Research server",
+    logoUrl: null,
+    notificationsMuted: false,
+    notificationsMutedUntil: null,
+    notificationLevel: "all",
+    kind: "remote",
+    state: "offline",
+    apiUrl: null,
+    remoteDesktopAvailable: false,
+    role: "owner",
+    active: false,
+    hostedSleep: "sleeping",
+    hostedIssue: null,
+    hostedStart: null,
+  },
 ];
 
 export const STORY_BROWSER_TABS: BrowserTab[] = [
   {
     id: "browser-tab-docs",
-    title: "Dani-Dex documentation",
-    url: "https://dani-dex.example/docs",
+    title: "OpenBot documentation",
+    url: "https://openbot.run/docs",
     loading: false,
     ownerThreadId: "thread-chief",
     ownerAgentId: "chief",
-    // The three toolbar chips each read one of these. Left unset, the preview and every story render a
-    // toolbar with no chips at all, which is the one arrangement the product never shows for a tab an
-    // agent is actually driving.
     environment: {
       viewport: { mode: "custom", width: 390, height: 844, deviceScaleFactor: 3, preset: "mobile" },
       colorScheme: "dark",
@@ -483,8 +700,6 @@ export const STORY_BROWSER_CONTROL: BrowserControlState = {
       callId: "call-1",
       tabId: "browser-tab-docs",
       action: "snapshot",
-      // `snapshot` is the coarse action the Team API v1 wire carries; the detail is what the tooltip
-      // shows, and it is the field the v1 projection strips.
       detailAction: "select-option",
       phase: "waiting",
       startedAt: STORY_NOW,
@@ -497,12 +712,14 @@ export const STORY_HOST_STATUS: HostStatus = {
   configured: true,
   enabledOnLaunch: true,
   serverId: "team",
-  serverName: "Dani-Dex team",
+  serverName: "OpenBot team",
   logoUrl: null,
+  appearance: null,
   apiUrl: "https://team.example.com",
   apiOnline: true,
   remoteDesktopReady: true,
   remoteDesktopScreenRecordingDenied: false,
+  remoteDesktopNeedsX11Session: false,
   remoteDesktopUnattended: true,
   remoteDesktopActiveSessions: 1,
   remoteDesktopMaxSessions: 4,
@@ -518,6 +735,102 @@ export const STORY_TEAM_MEMBERS: TeamMemberSummary[] = STORY_PRESENCE.members.ma
   createdAt: member.createdAt,
   disabled: member.disabled,
 }));
+
+const ALICE = { id: "member-alice", name: "Alice Chen" };
+const NORBERT = { id: "member-self", name: "Norbert" };
+const JON = { id: "member-jon", name: "Jon Bell" };
+const MAYA = { id: "member-maya", name: "Maya Singh" };
+const LEGAL = { id: "role-legal", name: "Legal team" };
+const FINANCE = { id: "role-finance", name: "Finance" };
+const RESEARCH = { id: "research", name: "Research" };
+const SALES = { id: "sales", name: "Sales Outbound" };
+
+export const STORY_SERVER_AUDIT_ENTRIES: ServerAuditEntry[] = [
+  {
+    id: "audit-14",
+    at: "2026-11-02T14:05:00.000Z",
+    actor: NORBERT,
+    change: { kind: "role-renamed", roleId: LEGAL.id, from: "Legal team", to: "Legal" },
+  },
+  {
+    id: "audit-13",
+    at: "2026-11-02T10:16:00.000Z",
+    actor: ALICE,
+    change: { kind: "agent-level", role: null, agent: SALES, from: "manage", to: "view" },
+  },
+  {
+    id: "audit-12",
+    at: "2026-11-02T10:15:00.000Z",
+    actor: ALICE,
+    change: { kind: "agent-level", role: null, agent: RESEARCH, from: "manage", to: "none" },
+  },
+  {
+    id: "audit-11",
+    at: "2026-11-02T10:02:00.000Z",
+    actor: NORBERT,
+    change: { kind: "member-role", member: ALICE, from: "member", to: "admin" },
+  },
+  {
+    id: "audit-10",
+    at: "2026-10-31T16:40:00.000Z",
+    actor: NORBERT,
+    change: { kind: "role-deleted", role: { id: "role-contractors", name: "Contractors" } },
+  },
+  {
+    id: "audit-09",
+    at: "2026-10-31T16:20:00.000Z",
+    actor: NORBERT,
+    change: { kind: "member-removed", member: { id: "member-sam", name: "Sam Ortiz" } },
+  },
+  {
+    id: "audit-08",
+    at: "2026-10-31T11:07:00.000Z",
+    actor: ALICE,
+    change: { kind: "role-member", role: FINANCE, member: MAYA, added: true },
+  },
+  {
+    id: "audit-07",
+    at: "2026-10-31T11:07:00.000Z",
+    actor: ALICE,
+    change: { kind: "role-member", role: FINANCE, member: JON, added: true },
+  },
+  {
+    id: "audit-06",
+    at: "2026-10-31T11:06:00.000Z",
+    actor: ALICE,
+    change: { kind: "agent-level", role: FINANCE, agent: SALES, from: "none", to: "manage" },
+  },
+  {
+    id: "audit-05",
+    at: "2026-10-31T11:05:00.000Z",
+    actor: ALICE,
+    change: { kind: "role-created", role: FINANCE },
+  },
+  {
+    id: "audit-04",
+    at: "2026-10-30T09:42:00.000Z",
+    actor: NORBERT,
+    change: { kind: "role-member", role: LEGAL, member: JON, added: true },
+  },
+  {
+    id: "audit-03",
+    at: "2026-10-30T09:41:00.000Z",
+    actor: NORBERT,
+    change: { kind: "agent-level", role: LEGAL, agent: RESEARCH, from: "none", to: "chat" },
+  },
+  {
+    id: "audit-02",
+    at: "2026-10-30T09:40:00.000Z",
+    actor: NORBERT,
+    change: { kind: "role-created", role: LEGAL },
+  },
+  {
+    id: "audit-01",
+    at: "2026-10-30T09:12:00.000Z",
+    actor: null,
+    change: { kind: "member-joined", member: MAYA, role: "member" },
+  },
+];
 
 export const STORY_INVITES: TeamInviteSummary[] = [
   {
@@ -567,18 +880,12 @@ export const STORY_UPDATE_STATUS: UpdateStatus = {
 };
 
 export const STORY_APP_INFO = {
-  name: "Dani-Dex",
+  name: "OpenBot",
   version: "0.1.11",
   platform: "darwin" as const,
   variant: "production" as const,
 };
 
-/**
- * The marketplace surfaces. Storybook and the preview both reach the modal through
- * `mock-danidex.ts`, so an empty list here reads as "the marketplace is empty" rather than "the
- * preview never wired this up" — which is what the three stubs it replaced looked like.
- */
-// Self-contained sample artwork keeps preview icons available without network requests.
 function skillPreviewIcon(symbol: string, background: string): string {
   return `data:image/svg+xml,${encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect width="80" height="80" rx="18" fill="${background}"/><text x="40" y="43" text-anchor="middle" dominant-baseline="middle" font-size="42">${symbol}</text></svg>`,
@@ -592,10 +899,11 @@ export const STORY_MARKETPLACE_SKILLS: MarketplaceSkillSummary[] = [
     name: "Release notes",
     description: "Turns a range of commits into a changelog a reader outside the team can follow.",
     category: "documents",
-    creatorName: "Dani-Dex",
+    creatorName: "OpenBot",
     version: 4,
     installs: 1_284,
     featured: true,
+    verified: true,
     iconUrl: skillPreviewIcon("📝", "#7255ce"),
     updatedAt: "2026-08-17T09:12:00.000Z",
   },
@@ -609,6 +917,7 @@ export const STORY_MARKETPLACE_SKILLS: MarketplaceSkillSummary[] = [
     version: 2,
     installs: 862,
     featured: true,
+    verified: false,
     iconUrl: skillPreviewIcon("🗄️", "#2463a6"),
     updatedAt: "2026-08-15T14:40:00.000Z",
   },
@@ -622,6 +931,7 @@ export const STORY_MARKETPLACE_SKILLS: MarketplaceSkillSummary[] = [
     version: 7,
     installs: 517,
     featured: false,
+    verified: false,
     iconUrl: skillPreviewIcon("🎨", "#be4d86"),
     updatedAt: "2026-08-11T11:05:00.000Z",
   },
@@ -635,6 +945,7 @@ export const STORY_MARKETPLACE_SKILLS: MarketplaceSkillSummary[] = [
     version: 1,
     installs: 344,
     featured: false,
+    verified: false,
     iconUrl: skillPreviewIcon("📬", "#e88124"),
     updatedAt: "2026-08-09T07:30:00.000Z",
   },
@@ -644,12 +955,13 @@ export const STORY_MARKETPLACE_SKILLS: MarketplaceSkillSummary[] = [
     name: "Source check",
     description: "Follows every citation in a draft and flags the ones that do not say what is claimed.",
     category: "research",
-    creatorName: "Dani-Dex",
+    creatorName: "OpenBot",
     version: 3,
     installs: 209,
     featured: false,
+    verified: true,
     iconUrl: skillPreviewIcon("🔎", "#268477"),
-    updatedAt: "2026-08-04T16:20:00.000Z",
+    updatedAt: "2026-08-19T16:20:00.000Z",
   },
   {
     id: "skill-nightly-backup",
@@ -661,6 +973,7 @@ export const STORY_MARKETPLACE_SKILLS: MarketplaceSkillSummary[] = [
     version: 5,
     installs: 156,
     featured: false,
+    verified: false,
     iconUrl: skillPreviewIcon("💾", "#526178"),
     updatedAt: "2026-07-28T22:00:00.000Z",
   },
@@ -706,10 +1019,10 @@ export const STORY_MARKETPLACE_SKILL_DETAILS: Record<string, MarketplaceSkillDet
 export const STORY_INSTALLED_SKILLS: Record<string, InstalledSkill[]> = {
   chief: [
     {
-      skillId: "dani-dex-skill-creator",
-      slug: "dani-dex-skill-creator",
-      name: "dani-dex-skill-creator",
-      description: "Create or revise a reusable local Dani-Dex skill.",
+      skillId: "openbot-skill-creator",
+      slug: "openbot-skill-creator",
+      name: "openbot-skill-creator",
+      description: "Create or revise a reusable local OpenBot skill.",
       installedVersion: 1,
       availableVersion: 1,
       state: "installed",
@@ -717,9 +1030,9 @@ export const STORY_INSTALLED_SKILLS: Record<string, InstalledSkill[]> = {
       origin: "managed",
     },
     {
-      skillId: "dani-dex-site-hosting",
-      slug: "dani-dex-site-hosting",
-      name: "dani-dex-site-hosting",
+      skillId: "openbot-site-hosting",
+      slug: "openbot-site-hosting",
+      name: "openbot-site-hosting",
       installedVersion: 1,
       availableVersion: 1,
       state: "installed",
@@ -780,7 +1093,7 @@ export const STORY_MCP_SERVERS: McpServerConfig[] = [
     transport: "stdio",
     enabled: true,
     command: "openai-dev-mcp",
-    args: ["serve-sqlite", "--database", "./danidex.db"],
+    args: ["serve-sqlite", "--database", "./openbot.db"],
     env: [{ key: "SQLITE_READONLY", value: "1" }],
     envPassthrough: ["HOME"],
     workingDirectory: "~/code",
@@ -886,7 +1199,7 @@ export const STORY_MARKETPLACE_AGENTS: MarketplaceAgentSummary[] = [
     name: "Release Manager",
     title: "Ships the release",
     description: "Cuts the tag, writes the notes, and watches the rollout until it is green.",
-    creatorName: "Dani-Dex",
+    creatorName: "OpenBot",
     version: 6,
     installs: 731,
     featured: true,
@@ -1084,7 +1397,7 @@ export const STORY_MARKETPLACE_AGENTS: MarketplaceAgentSummary[] = [
     name: "Contract Reader",
     title: "Finds the clause that matters",
     description: "Reads a long agreement and reports the dates, the duties, and the ways out.",
-    creatorName: "Dani-Dex",
+    creatorName: "OpenBot",
     version: 3,
     installs: 245,
     featured: false,
@@ -1302,13 +1615,7 @@ export const STORY_MARKETPLACE_AGENT_DETAILS: Record<string, MarketplaceAgentDet
   ]),
 );
 
-/**
- * The plugin listing, while plugins are still being designed. A plugin is one developer's bundle:
- * the MCP server it publishes, shown as an app, and the skills that drive it. The example follows a
- * real server (`mcp.aave.com`) so the page is reviewed against the lengths a published listing
- * really has, rather than against text written to fit the layout.
- */
-export const STORY_MARKETPLACE_PLUGIN_AAVE: MarketplacePluginDetail = {
+const STORY_MARKETPLACE_PLUGIN_AAVE: MarketplacePluginDetail = {
   id: "plugin-aave",
   slug: "aave",
   name: "Aave",
@@ -1318,14 +1625,14 @@ export const STORY_MARKETPLACE_PLUGIN_AAVE: MarketplacePluginDetail = {
     "simulate lending actions, and prepare non-custodial transactions. Every transaction is returned " +
     "unsigned: the plugin reads the markets and writes the call, and the wallet stays with the user.",
   category: "data-analytics",
-  creatorName: "avara.xyz",
+  creatorName: "Avara",
   creatorAvatarUrl: null,
   iconUrl: skillPreviewIcon("👻", "#6b5ce7"),
   version: "1.0.0",
   installs: 2_410,
   featured: true,
   updatedAt: "2026-09-02T11:30:00.000Z",
-  shareUrl: "dani-dex://plugins/aave",
+  shareUrl: "https://openbot.run/plugins/aave",
   prompts: [
     { id: "prompt-stablecoin-yield", text: "Where can I earn the most on stablecoins across Aave right now?" },
     { id: "prompt-usdc-rates", text: "Which pays more for USDC right now, Aave V3 or V4 on Ethereum?" },
@@ -1386,10 +1693,6 @@ export const STORY_MARKETPLACE_PLUGIN_AAVE: MarketplacePluginDetail = {
   termsUrl: "https://aave.com/terms",
 };
 
-/**
- * The rest of the listing, so the catalog is reviewed as a list: several categories, publishers of
- * different name lengths, and a plugin that publishes no app.
- */
 export const STORY_MARKETPLACE_PLUGINS: MarketplacePluginDetail[] = [
   STORY_MARKETPLACE_PLUGIN_AAVE,
   {
@@ -1401,14 +1704,14 @@ export const STORY_MARKETPLACE_PLUGINS: MarketplacePluginDetail[] = [
       "Read and write Linear from a conversation: find the issues assigned to a team, open one with the " +
       "right labels and estimate, move it through a cycle, and answer what is left before a project ships.",
     category: "productivity",
-    creatorName: "linear.app",
+    creatorName: "Linear",
     creatorAvatarUrl: null,
     iconUrl: skillPreviewIcon("📐", "#2f2f46"),
     version: "2.3.1",
     installs: 5_180,
     featured: true,
     updatedAt: "2026-08-28T09:10:00.000Z",
-    shareUrl: "dani-dex://plugins/linear",
+    shareUrl: "https://openbot.run/plugins/linear",
     prompts: [
       { id: "prompt-linear-cycle", text: "What is still open in the current cycle, and who is it on?" },
       { id: "prompt-linear-file", text: "File a bug for the crash I just described, on the Desktop team." },
@@ -1474,14 +1777,14 @@ export const STORY_MARKETPLACE_PLUGINS: MarketplacePluginDetail[] = [
       "Read a Figma file the way a developer reads it: the frames in a page, the variables a component " +
       "binds to, and the comments still waiting for an answer. Nothing in the file is changed.",
     category: "design",
-    creatorName: "figma.com",
+    creatorName: "Figma",
     creatorAvatarUrl: null,
     iconUrl: skillPreviewIcon("🎨", "#d4452c"),
     version: "0.9.4",
     installs: 3_060,
     featured: false,
     updatedAt: "2026-09-08T16:45:00.000Z",
-    shareUrl: "dani-dex://plugins/figma",
+    shareUrl: "https://openbot.run/plugins/figma",
     prompts: [
       { id: "prompt-figma-frames", text: "What frames are on the Settings page of this file?" },
       { id: "prompt-figma-tokens", text: "Which colour variables does the button component bind to?" },
@@ -1490,28 +1793,29 @@ export const STORY_MARKETPLACE_PLUGINS: MarketplacePluginDetail[] = [
       {
         id: "app-figma-mcp",
         name: "Figma",
-        description: "Files, pages, frames, variables and comments, read-only, over the Figma MCP server.",
+        description:
+          "Design context, metadata, variables and screenshots, over the MCP server in the Figma desktop app. " +
+          "Read-only for now.",
         iconUrl: skillPreviewIcon("🎨", "#d4452c"),
         server: {
-          name: "figma",
+          name: "figma-desktop",
           transport: "http",
-          url: "https://mcp.figma.com/mcp",
+          url: "http://127.0.0.1:3845/mcp",
           auth: [
             {
-              id: "token",
-              kind: "key",
-              label: "Personal access token",
-              fields: [
-                {
-                  id: "token",
-                  label: "Personal access token",
-                  header: "X-Figma-Token",
-                  placeholder: "figd_…",
-                  hint: "Settings · Security · Personal access tokens.",
-                },
+              id: "figma-desktop",
+              kind: "local",
+              label: "Figma desktop app",
+              steps: [
+                "Open the Figma desktop app and sign in. The server needs a Dev or Full seat on a paid plan.",
+                "Open a design file from a team project, not from Drafts.",
+                'Press ⌘K (Ctrl+K on Windows), search for "MCP", and turn on "Enable desktop MCP server".',
+                "Keep Figma open while agents use it.",
               ],
-              docsUrl: "https://www.figma.com/developers/api#access-tokens",
-              docsLabel: "Get a token",
+              note:
+                "The local server can only read designs: layout, code context, variables and screenshots. " +
+                "It cannot draw or edit yet. We are working on write support.",
+              docsUrl: "https://developers.figma.com/docs/figma-mcp-server/local-server-installation/",
             },
           ],
         },
@@ -1530,6 +1834,105 @@ export const STORY_MARKETPLACE_PLUGINS: MarketplacePluginDetail[] = [
     termsUrl: null,
   },
   {
+    id: "plugin-resend",
+    slug: "resend",
+    name: "Resend",
+    tagline: "Transactional email",
+    description:
+      "Resend lets agents send transactional email and check delivery through one API. An API key from " +
+      "the Resend dashboard is passed to the local server as one environment variable.",
+    category: "automation",
+    creatorName: "Resend",
+    creatorAvatarUrl: null,
+    iconUrl: skillPreviewIcon("✉️", "#1f1f1f"),
+    version: "1.0.0",
+    installs: 1_420,
+    featured: false,
+    updatedAt: "2026-09-30T10:20:00.000Z",
+    shareUrl: "https://openbot.run/plugins/resend",
+    prompts: [
+      { id: "prompt-resend-send", text: "Send the launch announcement draft to the beta list." },
+      { id: "prompt-resend-status", text: "Did the invoice email reach the customer?" },
+    ],
+    apps: [
+      {
+        id: "app-resend-mcp",
+        name: "Resend",
+        description: "Email sending and delivery checks, over a local MCP server with a Resend API key.",
+        iconUrl: skillPreviewIcon("✉️", "#1f1f1f"),
+        server: {
+          name: "resend",
+          transport: "stdio",
+          command: "npx",
+          args: ["-y", "resend-mcp"],
+          auth: [
+            {
+              id: "resend-key",
+              kind: "key",
+              label: "API key",
+              fields: [
+                {
+                  id: "token",
+                  label: "API key",
+                  env: "RESEND_API_KEY",
+                  prefix: "",
+                  hint: "Resend dashboard → API keys",
+                },
+              ],
+              docsUrl: "https://resend.com/docs/dashboard/api-keys/introduction",
+              docsLabel: "Get a key",
+            },
+          ],
+        },
+      },
+    ],
+    skills: [],
+    websiteUrl: "https://resend.com",
+    privacyPolicyUrl: "https://resend.com/legal/privacy-policy",
+    termsUrl: "https://resend.com/legal/terms",
+  },
+  {
+    id: "plugin-notion",
+    slug: "notion",
+    name: "Notion",
+    tagline: "Docs and knowledge base",
+    description:
+      "Notion lets agents read and write pages, search the workspace, and keep meeting notes and specs " +
+      "where the team already works. Each user signs in to their own Notion account through the browser.",
+    category: "productivity",
+    creatorName: "Notion",
+    creatorAvatarUrl: null,
+    iconUrl: skillPreviewIcon("📓", "#3a3a3a"),
+    version: "1.0.0",
+    installs: 4_270,
+    featured: false,
+    updatedAt: "2026-10-02T13:05:00.000Z",
+    shareUrl: "https://openbot.run/plugins/notion",
+    prompts: [
+      { id: "prompt-notion-spec", text: "Find the current launch spec and summarize the open questions." },
+      { id: "prompt-notion-notes", text: "Turn these bullets into a structured meeting note in my team space." },
+    ],
+    apps: [
+      {
+        id: "app-notion-mcp",
+        name: "Notion",
+        description:
+          "Page search, reading, writing, and workspace navigation, over Notion's MCP server with browser sign-in.",
+        iconUrl: skillPreviewIcon("📓", "#3a3a3a"),
+        server: {
+          name: "notion",
+          transport: "http",
+          url: "https://mcp.notion.com/mcp",
+          auth: [{ id: "notion-oauth", kind: "link", label: "Sign in" }],
+        },
+      },
+    ],
+    skills: [],
+    websiteUrl: "https://www.notion.so",
+    privacyPolicyUrl: "https://www.notion.so/privacy",
+    termsUrl: "https://www.notion.so/terms",
+  },
+  {
     id: "plugin-changelog-writer",
     slug: "changelog-writer",
     name: "Changelog writer",
@@ -1545,7 +1948,7 @@ export const STORY_MARKETPLACE_PLUGINS: MarketplacePluginDetail[] = [
     installs: 640,
     featured: false,
     updatedAt: "2026-07-19T08:00:00.000Z",
-    shareUrl: "dani-dex://plugins/changelog-writer",
+    shareUrl: "https://openbot.run/plugins/changelog-writer",
     prompts: [{ id: "prompt-changelog", text: "Write the release notes for everything merged since the last tag." }],
     apps: [],
     skills: [
@@ -1608,8 +2011,8 @@ export const STORY_AGENT_SUBMISSIONS: AgentSubmission[] = [
 export const STORY_HOSTED_SITES: HostedSiteSummary[] = [
   {
     id: "site-launch-notes",
-    hostname: "launch-notes.sites.dani-dex.example",
-    url: "https://launch-notes.sites.dani-dex.example",
+    hostname: "launch-notes.openbot.site",
+    url: "https://launch-notes.openbot.site",
     title: "Launch notes",
     description: "The public changelog for the 0.2 release.",
     framework: "astro",
@@ -1618,11 +2021,12 @@ export const STORY_HOSTED_SITES: HostedSiteSummary[] = [
     size: 3_145_728,
     expiresAt: null,
     updatedAt: "2026-08-18T18:30:00.000Z",
+    serverId: "host-preview",
   },
   {
     id: "site-design-review",
-    hostname: "design-review.sites.dani-dex.example",
-    url: "https://design-review.sites.dani-dex.example",
+    hostname: "design-review.openbot.site",
+    url: "https://design-review.openbot.site",
     title: "Design review",
     description: "A one-page mockup shared with the design studio.",
     framework: "vanilla",
@@ -1631,5 +2035,6 @@ export const STORY_HOSTED_SITES: HostedSiteSummary[] = [
     size: 512_000,
     expiresAt: "2026-09-18T18:30:00.000Z",
     updatedAt: "2026-08-14T12:00:00.000Z",
+    serverId: null,
   },
 ];

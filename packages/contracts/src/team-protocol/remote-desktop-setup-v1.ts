@@ -1,10 +1,8 @@
-// Frozen payloads for the remote-desktop-setup capability. Keep these fields and
-// bounds independent of the current IPC model.
 import { isDynamicRecord, isOneOf } from "../runtime-values";
 import type { TeamProtocolV4BaseJsonObject } from "./v4-base";
 
 export function isRemoteDesktopSetupRoute(method: string, path: string): boolean {
-  const pathname = new URL(path, "http://danidex.invalid").pathname;
+  const pathname = new URL(path, "http://openbot.invalid").pathname;
   return (
     (method === "POST" && pathname === "/v1/remote-screen/setup") ||
     (method === "POST" && pathname === "/v1/remote-screen/test")
@@ -13,7 +11,7 @@ export function isRemoteDesktopSetupRoute(method: string, path: string): boolean
 
 export function decodeRemoteDesktopSetupRequest(path: string, value: unknown): TeamProtocolV4BaseJsonObject {
   if (!isDynamicRecord(value)) throw new Error("Invalid remote desktop setup request.");
-  if (new URL(path, "http://danidex.invalid").pathname.endsWith("/setup")) {
+  if (new URL(path, "http://openbot.invalid").pathname.endsWith("/setup")) {
     if (Object.keys(value).length !== 0) throw new Error("Invalid remote desktop setup request.");
     return {};
   }
@@ -33,7 +31,7 @@ function checkState(value: unknown) {
 }
 
 export function decodeRemoteDesktopSetupResponse(path: string, value: unknown): TeamProtocolV4BaseJsonObject {
-  if (new URL(path, "http://danidex.invalid").pathname.endsWith("/setup")) {
+  if (new URL(path, "http://openbot.invalid").pathname.endsWith("/setup")) {
     if (
       !isDynamicRecord(value) ||
       !isOneOf(["darwin", "win32", "linux"] as const, value.platform) ||

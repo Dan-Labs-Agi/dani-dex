@@ -1,39 +1,61 @@
-import { randomUUID } from "node:crypto";
-import { readFile, rename, rm, writeFile } from "node:fs/promises";
-import type { AnalyticsPreference } from "@dani-dex/contracts/ipc";
-import { isBoolean, isDynamicRecord } from "@dani-dex/contracts/runtime-values";
+import type { AnalyticsPreference } from "@openbot/contracts/ipc";
+import { isBoolean, isDynamicRecord, isNumber } from "@openbot/contracts/runtime-values";
+import { Effect } from "effect";
+import { isMissingFileError } from "../backend/file-errors";
+import { type PreferenceFileFailure, readPreferenceFile, writePreferenceFile } from "./preference-file";
 
-const DEFAULT_PREFERENCE: AnalyticsPreference = { enabled: true };
+export interface SavedAnalyticsPreference {
+  enabled: boolean;
+  unsentAt: number | null;
+  keepOff: boolean;
+}
 
-export async function readAnalyticsPreference(path: string): Promise<AnalyticsPreference> {
-  try {
-    const parsed = JSON.parse(await readFile(path, "utf8"));
+export const readSavedAnalyticsPreference = Effect.fn("readSavedAnalyticsPreference")((path: string) =>
+  readPreferenceFile(path, (parsed): SavedAnalyticsPreference => {
     if (!isDynamicRecord(parsed) || parsed.version !== 1 || !isBoolean(parsed.enabled)) {
-      return { enabled: false };
+      return { enabled: false, unsentAt: null, keepOff: true };
     }
-    return { enabled: parsed.enabled };
-  } catch (error) {
-    if (isMissing(error)) return { ...DEFAULT_PREFERENCE };
-    if (error instanceof SyntaxError) return { enabled: false };
-    throw error;
-  }
-}
+    return {
+      enabled: parsed.enabled,
+      unsentAt: isNumber(parsed.unsentAt) ? parsed.unsentAt : null,
+      keepOff: !parsed.enabled && parsed.keepOff !== false,
+    };
+  }).pipe(
+    Effect.catch((failure) => {
+      const error = failure.cause;
+      if (isMissingFileError(error)) return Effect.succeed(null);
+      if (error instanceof SyntaxError) return Effect.succeed({ enabled: false, unsentAt: null, keepOff: true });
+      return Effect.fail(failure);
+    }),
+  ),
+);
 
-export async function writeAnalyticsPreference(path: string, enabled: boolean): Promise<AnalyticsPreference> {
-  const preference = { enabled };
-  const temporaryPath = `${path}.${randomUUID()}.tmp`;
-  try {
-    await writeFile(temporaryPath, `${JSON.stringify({ version: 1, enabled })}\n`, {
-      encoding: "utf8",
-      mode: 0o600,
-    });
-    await rename(temporaryPath, path);
-    return preference;
-  } finally {
-    await rm(temporaryPath, { force: true }).catch(() => undefined);
-  }
-}
+export const readAnalyticsPreference = Effect.fn("readAnalyticsPreference")((path: string, setupCompleted: boolean) =>
+  readSavedAnalyticsPreference(path).pipe(
+    Effect.map((saved): AnalyticsPreference => ({ enabled: saved?.enabled ?? setupCompleted })),
+  ),
+);
 
-function isMissing(error: unknown): error is NodeJS.ErrnoException {
-  return error instanceof Error && "code" in error && error.code === "ENOENT";
+export const saveAnalyticsDefault = Effect.fn("saveAnalyticsDefault")(function* (
+  path: string,
+  setupCompleted: boolean,
+) {
+  const saved = yield* readPreferenceFile(path, () => true).pipe(
+    Effect.catch((failure) => Effect.succeed(!isMissingFileError(failure.cause))),
+  );
+  if (!saved) yield* writeAnalyticsPreference(path, setupCompleted, false);
+});
+
+export function writeAnalyticsPreference(
+  path: string,
+  enabled: boolean,
+  keepOff: boolean,
+  unsentAt: number | null = null,
+): Effect.Effect<AnalyticsPreference, PreferenceFileFailure> {
+  return writePreferenceFile(path, {
+    version: 1,
+    enabled,
+    keepOff: !enabled && keepOff,
+    ...(unsentAt === null ? {} : { unsentAt }),
+  }).pipe(Effect.as({ enabled }));
 }

@@ -1,12 +1,16 @@
 import { Stack } from "expo-router";
-import { isIOS } from "@/shared/lib/platform";
+import Check from "lucide-react-native/icons/check";
+import { AndroidHeaderButton } from "@/shared/components/android-header-button";
+import { haptics } from "@/shared/lib/haptics";
+import { isAndroid, isIOS } from "@/shared/lib/platform";
+import { useText } from "@/shared/lib/text";
 
 export function SheetSaveAction({
   dirty,
   canSave,
   pending,
-  label = "Save changes",
-  pendingLabel = "Saving…",
+  label: labelProp,
+  pendingLabel: pendingLabelProp,
   onSave,
 }: {
   dirty: boolean;
@@ -16,6 +20,24 @@ export function SheetSaveAction({
   pendingLabel?: string;
   onSave: () => void;
 }) {
+  const { t } = useText();
+  const label = labelProp ?? t("mobile.shared.save.changes");
+  const pendingLabel = pendingLabelProp ?? t("common.saving");
+  if (isAndroid)
+    return (
+      <AndroidHeaderButton
+        placement="right"
+        icon={Check}
+        hidden={!dirty && !pending}
+        disabled={!dirty || !canSave || pending}
+        accessibilityLabel={pending ? pendingLabel : label}
+        onPress={() => {
+          if (!dirty || !canSave || pending) return;
+          void haptics.impact("light");
+          onSave();
+        }}
+      />
+    );
   return (
     <Stack.Toolbar placement="right">
       <Stack.Toolbar.Button
@@ -24,7 +46,9 @@ export function SheetSaveAction({
         icon={isIOS ? "checkmark" : undefined}
         accessibilityLabel={pending ? pendingLabel : label}
         onPress={() => {
-          if (dirty && canSave && !pending) onSave();
+          if (!dirty || !canSave || pending) return;
+          void haptics.impact("light");
+          onSave();
         }}
       >
         {isIOS ? label : "✓"}

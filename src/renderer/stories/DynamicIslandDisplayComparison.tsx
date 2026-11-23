@@ -1,16 +1,16 @@
+import type { DynamicIslandStateChangeReason, DynamicIslandViewState } from "@openbot/ui";
 import type { JSX } from "@solidjs/web";
 import { BatteryFull, Bot, Wifi } from "lucide-solid";
 import { type Accessor, createSignal, untrack } from "solid-js";
-import type { DynamicIslandStateChangeReason, DynamicIslandViewState } from "../src/components/ui";
 
-export interface DynamicIslandStoryPreviewContext {
+interface DynamicIslandStoryPreviewContext {
   displayMode: "notch" | "island";
   state: Accessor<DynamicIslandViewState>;
   onStateChange: (state: DynamicIslandViewState, reason: DynamicIslandStateChangeReason) => void;
 }
 
 interface DynamicIslandDisplayComparisonProps {
-  defaultState?: DynamicIslandViewState;
+  defaultState?: DynamicIslandViewState | undefined;
   state?: Accessor<DynamicIslandViewState>;
   onStateChange?: (state: DynamicIslandViewState) => void;
   controls?: JSX.Element;
@@ -90,7 +90,7 @@ function StoryMenuBar(): JSX.Element {
     <div class="dynamic-island-story-menubar" aria-hidden="true">
       <span class="dynamic-island-story-menu-left">
         <Bot />
-        <strong>Dani-Dex</strong>
+        <strong>OpenBot</strong>
         <span>File</span>
         <span>Edit</span>
         <span>View</span>

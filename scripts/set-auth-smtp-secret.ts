@@ -1,16 +1,13 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createDaniDexLogger, toLogValue } from "@dani-dex/logging";
 import { set } from "@dotenvx/dotenvx";
+import { createOpenBotLogger, toLogValue } from "@openbot/logging";
 
-const logger = createDaniDexLogger("set-auth-smtp-secret");
+const logger = createOpenBotLogger("set-auth-smtp-secret");
 
 const scriptsRoot = dirname(fileURLToPath(import.meta.url));
 const projectRoot = join(scriptsRoot, "..");
 const envKeysFile = join(projectRoot, ".env.keys");
-// Production only. Local development runs with email delivery off, so nothing there needs the
-// mailbox credential, and writing it to a development file put a live production secret in a file
-// every contributor checkout carries.
 const environmentFiles = [join(projectRoot, "apps", "auth-api", ".env.production")];
 
 async function main(): Promise<void> {

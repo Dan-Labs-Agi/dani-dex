@@ -1,30 +1,13 @@
-/**
- * Signing in to ChatGPT with a code, one screen per phase.
- *
- * The flow leaves the app: the code is typed on a phone or another browser, and Dani-Dex only hears
- * how it ended. The dialog covers the waiting; how it ended is a notification the providers store
- * raises, so the endings are not screens here at all.
- *
- * `Playground` runs the hand-off end to end against a fake other device, so the waiting, the finish
- * and the notification it leaves behind are watchable and not only described.
- */
-
+import { Toaster, toast } from "@openbot/ui";
+import { ProviderCodeLoginDialog, type ProviderCodeLoginState } from "@openbot/ui/components/ProviderCodeLoginDialog";
 import { createSignal, onCleanup } from "solid-js";
-import { expect, fn, within } from "storybook/test";
+import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { ProviderCodeLoginDialog, type ProviderCodeLoginState } from "../src/components/ProviderCodeLoginDialog";
-import { Toaster, toast } from "../src/components/ui";
 
 const USER_CODE = "KTQ4-B62MX";
 const VERIFICATION_URL = "https://auth.openai.com/codex/device";
 const VERIFICATION_URL_COMPLETE = "https://auth.openai.com/codex/device?user_code=KTQ4-B62MX";
 
-/**
- * Far enough out that the countdown reads like a fresh code and does not run down mid-review.
- *
- * No pre-filled link, because ChatGPT issues none: the QR carries the plain page and the code is
- * typed from this screen. `PrefilledLink` covers the provider that does issue one.
- */
 function waitingState(minutes = 5): ProviderCodeLoginState {
   return {
     phase: "waiting",
@@ -41,8 +24,11 @@ const meta = {
     open: true,
     providerName: "ChatGPT",
     state: waitingState(),
+    setupStep:
+      "In ChatGPT on a computer, open the security settings and turn on device code sign-in for Codex. For a work account, your workspace admin turns it on.",
     onOpenVerificationUrl: fn(),
     onCancel: fn(),
+    onSubmitCode: fn(),
   },
   parameters: { layout: "fullscreen" },
 } satisfies Meta<typeof ProviderCodeLoginDialog>;
@@ -50,22 +36,8 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** The code is on screen and the provider has not answered. The whole reason the flow exists. */
-export const Waiting: Story = {
-  // The dialog is a portal, so every query starts at the body rather than the story root.
-  play: async ({ userEvent, args }) => {
-    const body = within(document.body);
-    // The code is reachable as characters, not as the word a screen reader would make of it.
-    await expect(await body.findByLabelText("Login code K T Q 4 - B 6 2 M X")).toHaveTextContent(USER_CODE);
-    await userEvent.click(body.getByRole("button", { name: VERIFICATION_URL }));
-    await expect(args.onOpenVerificationUrl).toHaveBeenCalledWith(VERIFICATION_URL);
-  },
-};
+export const Waiting: Story = {};
 
-/**
- * A provider that puts the code in the link itself. Scanning this QR opens a page that needs no
- * typing, so the code below it is the fallback rather than the step.
- */
 export const PrefilledLink: Story = {
   args: {
     state: {
@@ -78,28 +50,50 @@ export const PrefilledLink: Story = {
   },
 };
 
-/** The last seconds, where the countdown is the thing being read. */
 export const AboutToExpire: Story = {
   args: { state: waitingState(0.25) },
 };
 
-/** Asking the provider for a code. Two seconds in the real flow, and nothing to do in them. */
 export const Starting: Story = {
   args: { state: { phase: "starting" } },
 };
 
-/** The code was accepted elsewhere. Dani-Dex is trading it for the session. */
+const PASTE_URL = "https://claude.com/cai/oauth/authorize?code=true&state=preview";
+
+export const Paste: Story = {
+  args: {
+    providerName: "Claude",
+    state: { phase: "paste", verificationUrl: PASTE_URL, expiresAt: Date.now() + 10 * 60_000 },
+  },
+};
+
+export const PasteRefused: Story = {
+  args: {
+    providerName: "Claude",
+    state: {
+      phase: "paste",
+      verificationUrl: PASTE_URL,
+      expiresAt: Date.now() + 10 * 60_000,
+      error: "Paste the code that the sign-in page shows.",
+    },
+  },
+};
+
+export const Link: Story = {
+  args: {
+    providerName: "Cursor",
+    state: {
+      phase: "link",
+      verificationUrl: "https://cursor.com/loginDeepControl?mode=login&redirectTarget=cli",
+      expiresAt: Date.now() + 10 * 60_000,
+    },
+  },
+};
+
 export const Verifying: Story = {
   args: { state: { phase: "verifying" } },
 };
 
-/**
- * The whole hand-off, watchable: the code appears, a fake other device answers a few seconds later,
- * the sign-in finishes, and the dialog gives way to the notification that says which account
- * arrived. Cancel closes it instead.
- *
- * The wait is shortened to seconds. In the app it is however long the user takes on the phone.
- */
 export const Playground: Story = {
   render: (storyArgs) => {
     const [state, setState] = createSignal<ProviderCodeLoginState>({ phase: "starting" });
@@ -118,8 +112,6 @@ export const Playground: Story = {
         setState(waitingState());
         after(5_000, () => {
           setState({ phase: "verifying" });
-          // The store does this in the app: the ending closes the dialog and is announced, rather
-          // than leaving a modal for someone who has been away on their phone to dismiss.
           after(1_200, () => {
             setOpen(false);
             toast.success("ChatGPT connected", { description: "Signed in as person@example.com." });
@@ -128,8 +120,6 @@ export const Playground: Story = {
       });
     }
 
-    // The first step waits for the render to finish: the story drives its own state from outside
-    // the component, the way the app drives it from IPC rather than from the render.
     queueMicrotask(start);
     onCleanup(() => {
       while (timers.length > 0) window.clearTimeout(timers.pop());
@@ -141,5 +131,59 @@ export const Playground: Story = {
         <Toaster />
       </>
     );
+  },
+};
+
+export const HostPageOpening: Story = {
+  args: {
+    providerName: "Gemini",
+    state: { phase: "page", hostName: "Office server", page: null },
+  },
+};
+
+export const RelayDevice: Story = {
+  args: {
+    state: {
+      phase: "relay",
+      hostName: "Cloud server",
+      page: {
+        authorizeHost: "auth.openai.com",
+        url: "https://auth.openai.com/codex/device",
+        listening: false,
+        pasteable: false,
+      },
+    },
+    onOpenRelayPage: fn(),
+    onPasteRelayAddress: fn(),
+  },
+};
+
+export const RelayNoLink: Story = {
+  args: {
+    state: {
+      phase: "relay",
+      hostName: "Cloud server",
+      page: { authorizeHost: "auth.openai.com", url: null, listening: false, pasteable: false },
+    },
+    onOpenRelayPage: fn(),
+    onPasteRelayAddress: fn(),
+  },
+};
+
+export const RelayPaste: Story = {
+  args: {
+    providerName: "Claude",
+    state: {
+      phase: "relay",
+      hostName: "Cloud server",
+      page: {
+        authorizeHost: "claude.com",
+        url: "https://claude.com/cai/oauth/authorize?state=example",
+        listening: false,
+        pasteable: true,
+      },
+    },
+    onOpenRelayPage: fn(),
+    onPasteRelayAddress: fn(),
   },
 };

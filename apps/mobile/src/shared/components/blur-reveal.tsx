@@ -1,19 +1,19 @@
 import { BlurTargetView, BlurView } from "expo-blur";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { StyleSheet, type View } from "react-native";
+import { StyleSheet, type ViewInstance } from "react-native";
 import Animated, {
   Easing,
   ReduceMotion,
   useAnimatedStyle,
-  useReducedMotion,
   useSharedValue,
+  withDelay,
   withTiming,
 } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
+import { useReducedMotion } from "@/shared/lib/motion";
 
 const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
 
-/** Retain outgoing content until its exit animation finishes. */
 export function BlurReveal<T>({
   value,
   children,
@@ -21,6 +21,7 @@ export function BlurReveal<T>({
   interactive = false,
   enterDuration = 240,
   exitDuration = 180,
+  enterDelay = 0,
 }: {
   value: T | null;
   children: (value: T) => ReactNode;
@@ -28,9 +29,10 @@ export function BlurReveal<T>({
   interactive?: boolean;
   enterDuration?: number;
   exitDuration?: number;
+  enterDelay?: number;
 }) {
   const [retained, setRetained] = useState(value);
-  const target = useRef<View | null>(null);
+  const target = useRef<ViewInstance | null>(null);
   const reduceMotion = useReducedMotion();
   const progress = useSharedValue(0);
   const visible = value !== null;
@@ -45,22 +47,26 @@ export function BlurReveal<T>({
       if (!cancelled) setRetained(null);
     };
     progress.set(
-      withTiming(
-        visible ? 1 : 0,
-        {
-          duration: visible ? enterDuration : exitDuration,
-          easing: EASE_OUT,
-          reduceMotion: ReduceMotion.System,
-        },
-        (finished) => {
-          if (finished && !visible && collapseOnHide) scheduleOnRN(clearRetained);
-        },
+      withDelay(
+        visible ? enterDelay : 0,
+        withTiming(
+          visible ? 1 : 0,
+          {
+            duration: visible ? enterDuration : exitDuration,
+            easing: EASE_OUT,
+            reduceMotion: ReduceMotion.System,
+          },
+          (finished) => {
+            if (finished && !visible && collapseOnHide) scheduleOnRN(clearRetained);
+          },
+        ),
+        ReduceMotion.System,
       ),
     );
     return () => {
       cancelled = true;
     };
-  }, [collapseOnHide, enterDuration, exitDuration, progress, visible]);
+  }, [collapseOnHide, enterDelay, enterDuration, exitDuration, progress, visible]);
 
   const contentStyle = useAnimatedStyle(() => ({
     opacity: progress.get(),

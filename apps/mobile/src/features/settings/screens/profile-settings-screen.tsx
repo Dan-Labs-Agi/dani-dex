@@ -1,264 +1,208 @@
-import { isAvatarMimeType } from "@dani-dex/contracts/avatar-images";
-import { AVATAR_IMAGE_LIMITS } from "@dani-dex/contracts/input-limits";
-import { validateProfileName } from "@dani-dex/contracts/validation";
-import { userErrorMessage as errorMessage } from "@dani-dex/user-errors";
-import { Host, Text as NativeText, TextInput, type TextInputRef, useNativeState } from "@expo/ui";
-import { File } from "expo-file-system";
-import * as ImagePicker from "expo-image-picker";
+import { validateProfileName } from "@openbot/contracts/validation";
+import { useFonts } from "@shopify/react-native-skia";
 import { router } from "expo-router";
+import * as Sharing from "expo-sharing";
 import { Typography } from "heroui-native";
-import { useThemeColor } from "heroui-native/hooks";
-import { Pencil } from "lucide-react-native";
-import { useEffect, useRef, useState } from "react";
-import { Alert, Keyboard, Pressable, View } from "react-native";
-import { useResolveClassNames, useUniwind } from "uniwind";
+import MonitorSmartphone from "lucide-react-native/icons/monitor-smartphone";
+import { useRef, useState } from "react";
+import { Alert, Keyboard } from "react-native";
+import { useCSSVariable } from "uniwind";
+import interMedium from "@/assets/fonts/inter/Inter-Medium.ttf";
+import interSemiBold from "@/assets/fonts/inter/Inter-SemiBold.ttf";
 import { mobileUserName } from "@/features/auth/api/mobile-user-name";
 import { useMobileSession } from "@/features/auth/context/mobile-session-context";
+import { ProfileActivity } from "@/features/settings/components/profile-activity";
+import { ProfileHeaderActions } from "@/features/settings/components/profile-header-actions";
 import { SettingsContent, SettingsRow, SettingsSection } from "@/features/settings/components/settings-content";
+import { IDENTITY_PICTURE_SIZE, SettingsIdentityHeader } from "@/features/settings/components/settings-identity-header";
+import { RowIcon } from "@/features/settings/components/settings-row-icon";
+import { renderProfileShareImage } from "@/features/settings/model/profile-share-image";
+import { useProfileActivity } from "@/features/settings/model/use-profile-activity";
 import { ProfileAvatar } from "@/shared/components/profile-avatar";
-import { SheetSaveAction } from "@/shared/components/sheet-save-action";
+import { APP_FONT } from "@/shared/lib/app-font";
+import { haptics } from "@/shared/lib/haptics";
+import { pickAvatarPhoto } from "@/shared/lib/pick-avatar-photo";
+import { useText } from "@/shared/lib/text";
+
+type ProfileAction = "name" | "photo" | "share" | "sign-out";
 
 export function ProfileSettingsScreen() {
   const { session, updateProfile, signOut } = useMobileSession();
+  const { t, errorMessage } = useText();
   const savedName = session ? mobileUserName(session.user) : "";
-  const [name, setName] = useState(savedName);
-  const [editingName, setEditingName] = useState(false);
-  const nativeName = useNativeState(name);
-  const nameInput = useRef<TextInputRef>(null);
-  const [nameWidth, setNameWidth] = useState(160);
-  const [nameRowWidth, setNameRowWidth] = useState(320);
-  const { theme } = useUniwind();
-  const foreground = useThemeColor("foreground");
-  const muted = useThemeColor("muted");
-  const nameTextStyle = useResolveClassNames("text-title font-semibold");
-  useEffect(() => {
-    if (!editingName) {
-      nativeName.value = savedName;
-      setName(savedName);
-    }
-  }, [editingName, nativeName, savedName]);
-  const [busy, setBusy] = useState(false);
+  const [draftName, setDraftName] = useState<string | null>(null);
+  const [pendingAction, setPendingAction] = useState<ProfileAction | null>(null);
   const locked = useRef(false);
-  const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const activity = useProfileActivity();
+  const shareColors = {
+    surface: String(useCSSVariable("--openbot-paper")),
+    text: String(useCSSVariable("--openbot-paper-text")),
+    muted: String(useCSSVariable("--openbot-paper-text-muted")),
+    border: String(useCSSVariable("--openbot-paper-border")),
+    accent: String(useCSSVariable("--openbot-accent")),
+    logo: String(useCSSVariable("--openbot-logo-production")),
+    logoEye: String(useCSSVariable("--openbot-logo-eye")),
+  };
+  const shareFonts = useFonts({ [APP_FONT]: [interMedium, interSemiBold] });
   if (!session) return null;
+  const busy = pendingAction !== null;
+  const name = draftName ?? savedName;
   const validatedName = validateProfileName(name);
   const nameChanged = name.trim() !== savedName;
-  const profileError =
-    error ||
-    (editingName && nameChanged && validatedName.error
+  const nameError =
+    nameChanged && validatedName.error
       ? validatedName.error === "unsafe"
-        ? "Remove line breaks and control characters from your name."
-        : "Use 3–20 characters for your display name."
-      : null);
+        ? t("mobile.settings.profile.nameUnsafe")
+        : t("mobile.settings.profile.nameLength")
+      : null;
   const avatarUrl = session.user.avatarUrl ? new URL(session.user.avatarUrl, session.apiUrl).toString() : null;
 
-  async function perform(operation: () => Promise<void>, success: string): Promise<void> {
+  async function perform(
+    action: ProfileAction,
+    operation: () => Promise<void>,
+    fallback = t("mobile.settings.profile.saveFailed"),
+  ): Promise<void> {
     if (locked.current) return;
     locked.current = true;
-    setBusy(true);
+    setPendingAction(action);
     setError(null);
-    setMessage(null);
     try {
       await operation();
-      setMessage(success);
     } catch (cause) {
-      setError(errorMessage(cause, "Could not save changes. Try again."));
+      setError(errorMessage(cause, fallback));
+      void haptics.notification("error");
     } finally {
       locked.current = false;
-      setBusy(false);
+      setPendingAction(null);
     }
   }
 
   async function saveName(): Promise<void> {
     if (!nameChanged || validatedName.error) return;
-    await perform(async () => {
+    await perform("name", async () => {
       await updateProfile({ name: validatedName.name });
-      setName(validatedName.name);
-      setEditingName(false);
+      setDraftName(null);
       Keyboard.dismiss();
-    }, "Name saved.");
+      void haptics.notification("success");
+    });
   }
 
   async function choosePhoto(): Promise<void> {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.3,
-    });
-    if (result.canceled) return;
-    const asset = result.assets[0];
-    const file = new File(asset.uri);
-    const mime = isAvatarMimeType(file.type) ? file.type : asset.mimeType || "";
-    if (!isAvatarMimeType(mime)) throw new Error("Choose a JPEG, PNG, or WebP photo.");
-    if (file.size > AVATAR_IMAGE_LIMITS.storedBytes) throw new Error("Choose a photo smaller than 512 KB.");
-    const avatar = { bytes: await file.bytes(), mimeType: mime };
+    const photo = await pickAvatarPhoto("/settings/crop-photo");
+    if (!photo) return;
+    const avatar = { bytes: photo.bytes, mimeType: photo.mimeType };
     await updateProfile({ avatar });
+    void haptics.notification("success");
+  }
+
+  async function removePhoto(): Promise<void> {
+    await updateProfile({ avatar: null });
+    void haptics.notification("success");
+  }
+
+  const stats = activity.stats;
+  const shareStats = stats && stats.tokens > 0 ? stats : null;
+
+  async function share(current: NonNullable<typeof shareStats>): Promise<void> {
+    if (!(await Sharing.isAvailableAsync())) throw new Error(t("mobile.settings.support.sharingUnavailable"));
+    const file = await renderProfileShareImage({ name: savedName, avatarUrl }, current, shareColors, shareFonts);
+    try {
+      await Sharing.shareAsync(file.uri, {
+        mimeType: "image/png",
+        UTI: "public.png",
+        dialogTitle: t("mobile.settings.profile.shareTitle"),
+      });
+    } finally {
+      if (file.exists) file.delete();
+    }
+  }
+
+  function confirmSignOut(): void {
+    Alert.alert(t("mobile.settings.profile.signOutTitle"), t("mobile.settings.profile.signOutBody"), [
+      { text: t("common.cancel"), style: "cancel" },
+      {
+        text: t("mobile.settings.profile.signOut"),
+        style: "destructive",
+        onPress: () => void perform("sign-out", signOut),
+      },
+    ]);
+  }
+
+  function editPhoto(): void {
+    Keyboard.dismiss();
+    void haptics.impact("soft");
+    if (!avatarUrl) {
+      void perform("photo", choosePhoto);
+      return;
+    }
+    Alert.alert(t("mobile.settings.profile.photo"), undefined, [
+      { text: t("mobile.settings.profile.changePhoto"), onPress: () => void perform("photo", choosePhoto) },
+      {
+        text: t("mobile.settings.profile.removePhoto"),
+        style: "destructive",
+        onPress: () => void perform("photo", removePhoto),
+      },
+      { text: t("common.cancel"), style: "cancel" },
+    ]);
   }
 
   return (
     <SettingsContent>
-      <SheetSaveAction
-        dirty={editingName && nameChanged}
-        canSave={!busy && !validatedName.error}
-        pending={busy && editingName && nameChanged}
-        label="Save name"
-        onSave={() => void saveName()}
+      <ProfileHeaderActions
+        save={{
+          dirty: nameChanged,
+          canSave: !busy && !validatedName.error,
+          pending: pendingAction === "name",
+          label: t("mobile.settings.profile.saveName"),
+          onSave: () => void saveName(),
+        }}
+        onShare={
+          shareStats
+            ? () => void perform("share", () => share(shareStats), t("mobile.settings.profile.share.createFailed"))
+            : null
+        }
+        onSignOut={confirmSignOut}
+        disabled={busy}
       />
-      <View>
-        <View className="items-center gap-3 py-3">
-          <ProfileAvatar neutral name={savedName} imageUrl={avatarUrl} size={72} />
-          <View className="w-full items-center gap-0">
-            <View
-              className="w-full flex-row items-center justify-center"
-              onLayout={(event) => setNameRowWidth(event.nativeEvent.layout.width)}
-            >
-              {/* Measure with the input's native text engine so its font metrics match. */}
-              <Host
-                matchContents
-                ignoreSafeArea="all"
-                accessibilityElementsHidden
-                importantForAccessibility="no-hide-descendants"
-                pointerEvents="none"
-                style={{ position: "absolute", opacity: 0, maxWidth: Math.max(44, nameRowWidth - 56) }}
-                onLayoutContent={(event) => setNameWidth(Math.ceil(event.nativeEvent.width))}
-              >
-                <NativeText
-                  numberOfLines={1}
-                  textStyle={{
-                    fontSize: nameTextStyle.fontSize,
-                    lineHeight: nameTextStyle.lineHeight,
-                    fontWeight: "600",
-                  }}
-                >
-                  {name || "Add your name"}
-                </NativeText>
-              </Host>
-              <View className="w-7" />
-              <Host
-                colorScheme={theme === "dark" ? "dark" : "light"}
-                ignoreSafeArea="all"
-                style={{
-                  height: 44,
-                  width: editingName
-                    ? Math.max(44, nameRowWidth - 56)
-                    : Math.min(nameWidth + 12, Math.max(44, nameRowWidth - 56)),
-                }}
-              >
-                <TextInput
-                  ref={nameInput}
-                  value={nativeName}
-                  placeholder="Add your name"
-                  editable={!busy}
-                  textAlign="center"
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                  selectTextOnFocus
-                  returnKeyType="done"
-                  onFocus={() => {
-                    setEditingName(true);
-                    setMessage(null);
-                    setError(null);
-                  }}
-                  onChangeText={setName}
-                  onSubmitEditing={() => {
-                    if (nameChanged) void saveName();
-                    else {
-                      setEditingName(false);
-                      Keyboard.dismiss();
-                    }
-                  }}
-                  style={{ height: 44, paddingHorizontal: 6 }}
-                  textStyle={{
-                    color: foreground,
-                    fontSize: nameTextStyle.fontSize,
-                    lineHeight: nameTextStyle.lineHeight,
-                    fontWeight: "600",
-                  }}
-                />
-              </Host>
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Edit display name"
-                accessibilityState={{ disabled: busy }}
-                disabled={busy}
-                onPress={() => nameInput.current?.focus()}
-                hitSlop={8}
-                className="h-11 w-7 items-center justify-center"
-              >
-                <Pencil size={16} strokeWidth={1.5} color={muted} />
-              </Pressable>
-            </View>
-            <Typography.Paragraph type="body-xs" align="center" className="text-grouped-secondary" selectable>
-              {session.user.email}
-            </Typography.Paragraph>
-          </View>
-        </View>
-        <View className="h-12 flex-row items-center justify-center gap-6">
-          {editingName ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Cancel name edit"
-              disabled={busy}
-              onPress={() => {
-                setName(savedName);
-                nativeName.value = savedName;
-                setEditingName(false);
-                setError(null);
-                Keyboard.dismiss();
-              }}
-              className="min-h-11 justify-center px-3"
-            >
-              <Typography.Paragraph className="text-grouped-secondary">Cancel</Typography.Paragraph>
-            </Pressable>
-          ) : null}
-        </View>
-        <SettingsSection title="Profile photo">
-          <SettingsRow disclosure={false} disabled={busy} onPress={() => void perform(choosePhoto, "")}>
-            <Typography.Paragraph type="body-sm">{avatarUrl ? "Change photo" : "Add photo"}</Typography.Paragraph>
-          </SettingsRow>
-          {avatarUrl ? (
-            <SettingsRow
-              disclosure={false}
-              disabled={busy}
-              onPress={() => void perform(() => updateProfile({ avatar: null }), "Photo removed.")}
-            >
-              <Typography.Paragraph type="body-sm" className="text-danger-text">
-                Remove photo
-              </Typography.Paragraph>
-            </SettingsRow>
-          ) : null}
-        </SettingsSection>
-      </View>
-      <SettingsSection title="Security">
-        <SettingsRow disabled={busy} onPress={() => router.push("/settings/sessions")}>
-          <Typography.Paragraph type="body-sm">Account sessions</Typography.Paragraph>
+      <SettingsIdentityHeader
+        picture={<ProfileAvatar neutral name={savedName} imageUrl={avatarUrl} size={IDENTITY_PICTURE_SIZE} />}
+        pictureLabel={avatarUrl ? t("mobile.settings.profile.editPhoto") : t("mobile.settings.profile.addPhoto")}
+        onPicturePress={editPhoto}
+        name={name}
+        nameLabel={t("mobile.settings.profile.name")}
+        namePlaceholder={t("mobile.settings.profile.namePlaceholder")}
+        disabled={busy}
+        onNameChange={(value) => {
+          setDraftName(value);
+          setError(null);
+        }}
+        onNameSubmit={() => void saveName()}
+        subtitle={
+          <Typography.Paragraph
+            selectable
+            accessibilityLabel={`${t("mobile.settings.profile.email")}: ${session.user.email}`}
+            className="text-grouped-secondary"
+          >
+            {session.user.email}
+          </Typography.Paragraph>
+        }
+      />
+      {nameError || error ? (
+        <Typography.Paragraph accessibilityRole="alert" className="px-1 text-danger-text">
+          {nameError ?? error}
+        </Typography.Paragraph>
+      ) : null}
+      <ProfileActivity activity={activity} />
+      <SettingsSection title={t("mobile.settings.profile.security")}>
+        <SettingsRow
+          leading={<RowIcon icon={MonitorSmartphone} />}
+          disabled={busy}
+          onPress={() => router.push("/settings/sessions")}
+        >
+          <Typography.Paragraph>{t("mobile.settings.profile.accountSessions")}</Typography.Paragraph>
         </SettingsRow>
       </SettingsSection>
-
-      <View className="gap-3">
-        {profileError ? (
-          <Typography.Paragraph accessibilityRole="alert" className="text-danger-text">
-            {profileError}
-          </Typography.Paragraph>
-        ) : null}
-        {message ? <Typography.Paragraph accessibilityLiveRegion="polite">{message}</Typography.Paragraph> : null}
-        <SettingsSection>
-          <SettingsRow
-            disclosure={false}
-            disabled={busy}
-            onPress={() =>
-              Alert.alert("Sign out?", "Reconnect by scanning a new code from Dani-Dex on your desktop.", [
-                { text: "Cancel", style: "cancel" },
-                { text: "Sign out", style: "destructive", onPress: () => void perform(signOut, "") },
-              ])
-            }
-          >
-            <Typography.Paragraph className="text-danger-text">Sign out</Typography.Paragraph>
-          </SettingsRow>
-        </SettingsSection>
-      </View>
     </SettingsContent>
   );
 }

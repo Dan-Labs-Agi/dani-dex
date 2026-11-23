@@ -1,20 +1,34 @@
-import { REMOTE_RETRY_LIMIT } from "@dani-dex/team-client";
+import { REMOTE_RETRY_LIMIT } from "@openbot/team-client";
 import { Typography } from "heroui-native";
-import { View } from "react-native";
+import { useWindowDimensions, View } from "react-native";
 
 import { ConnectionCountdown } from "@/features/workspace/components/connection-countdown";
 import { AnimatedCounter } from "@/features/workspace/components/connection-counter";
 import { ConnectionStatusReveal } from "@/features/workspace/components/connection-status-reveal";
-import { serverStatusLabel } from "@/features/workspace/model/server-status";
+import { useLiveServerRecovery } from "@/features/workspace/context/server-recovery-countdown";
+import {
+  recoveryAttempt,
+  recoveryCountdown,
+  serverStatusLabel,
+  showsOnline,
+} from "@/features/workspace/model/server-status";
 import type { MobileServer } from "@/features/workspace/model/workspace-types";
+import { ErrorReference } from "@/shared/components/error-reference";
+import { isIOS } from "@/shared/lib/platform";
+import { useText } from "@/shared/lib/text";
 
-function StatusText({ server }: { server: MobileServer }) {
+function StatusText({ server: shown }: { server: MobileServer }) {
+  const { t, sourceText } = useText();
+  const server = useLiveServerRecovery(shown);
   const recovery = server.recoveryStatus;
   const reconnecting = recovery && recovery.phase !== "online" && recovery.phase !== "suspended";
-  const title = reconnecting ? "Reconnecting" : serverStatusLabel(server);
-  const detail = reconnecting ? `Attempt ${recovery.attempt}/${REMOTE_RETRY_LIMIT}` : server.connectionMessage;
-  // Connecting reports zero; keep the countdown mounted through the next retry interval.
-  const remainingSeconds = reconnecting ? recovery.remainingSeconds : null;
+  const title = reconnecting ? t("mobile.workspace.status.reconnecting") : serverStatusLabel(server, t);
+  const detail = reconnecting
+    ? t("mobile.workspace.status.attempt", { attempt: recoveryAttempt(recovery), limit: REMOTE_RETRY_LIMIT })
+    : server.connectionMessage && sourceText(server.connectionMessage);
+  const remainingSeconds = reconnecting ? recoveryCountdown(recovery) : null;
+  const failure = server.connectionFailure;
+  const reference = failure?.reference ?? null;
 
   return (
     <View
@@ -22,7 +36,11 @@ function StatusText({ server }: { server: MobileServer }) {
       accessibilityLabel={[
         title,
         detail,
-        remainingSeconds !== null && remainingSeconds > 0 ? `Retry in ${remainingSeconds} seconds` : null,
+        remainingSeconds !== null && remainingSeconds > 0
+          ? t("mobile.workspace.status.retryIn", { seconds: remainingSeconds })
+          : null,
+        reconnecting && failure ? sourceText(failure.message) : null,
+        reference ? t("error.reference.label", { code: reference }) : null,
       ]
         .filter(Boolean)
         .join(". ")}
@@ -34,13 +52,15 @@ function StatusText({ server }: { server: MobileServer }) {
         {reconnecting ? (
           <>
             <Typography.Paragraph type="body-xs" className="text-text-secondary" maxFontSizeMultiplier={1.2}>
-              {"Attempt "}
+              {t("mobile.workspace.status.attemptPrefix")}
             </Typography.Paragraph>
-            <AnimatedCounter value={String(recovery.attempt)} />
+            <AnimatedCounter value={String(recoveryAttempt(recovery))} />
             <Typography.Paragraph type="body-xs" className="text-text-secondary" maxFontSizeMultiplier={1.2}>
               /{REMOTE_RETRY_LIMIT}
             </Typography.Paragraph>
           </>
+        ) : reference ? (
+          <ErrorReference reference={reference} numberOfLines={1} />
         ) : detail ? (
           <Typography.Paragraph
             type="body-xs"
@@ -58,12 +78,24 @@ function StatusText({ server }: { server: MobileServer }) {
   );
 }
 
-export function ConnectionHeaderStatus({ server }: { server: MobileServer | undefined }) {
+const STATUS_MAX_WIDTH = 164;
+const STATUS_MIN_WIDTH = 96;
+const HEADER_CHROME_WIDTH = 270;
+
+function headerStatusWidth(windowWidth: number): number {
+  if (!isIOS) return STATUS_MAX_WIDTH;
+  return Math.max(STATUS_MIN_WIDTH, Math.min(STATUS_MAX_WIDTH, windowWidth - HEADER_CHROME_WIDTH));
+}
+
+export function ConnectionHeaderStatus({ server, fill = false }: { server: MobileServer | undefined; fill?: boolean }) {
+  const { width: windowWidth } = useWindowDimensions();
   return (
-    // Keep this native toolbar slot mounted: removing it would cut off the exit animation.
-    <View className="justify-center" style={{ width: 164, height: 44 }}>
+    <View
+      className="justify-center"
+      style={fill ? { flex: 1, minWidth: 0, height: 44 } : { width: headerStatusWidth(windowWidth), height: 44 }}
+    >
       <ConnectionStatusReveal
-        value={server && !server.initialConnectionPending && server.state !== "online" ? server : null}
+        value={server && !server.initialConnectionPending && !showsOnline(server) ? server : null}
       >
         {(displayed) => <StatusText server={displayed} />}
       </ConnectionStatusReveal>

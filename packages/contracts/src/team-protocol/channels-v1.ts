@@ -1,15 +1,12 @@
-// Frozen optional channel-chats-v1 wire contract. Keep IPC types and limits out of this file.
 import { isDynamicRecord, isString } from "../runtime-values";
 import { decodeTeamProtocolV1HttpRequest, decodeTeamProtocolV1HttpResponse } from "./v1";
-import { decodeTeamProtocolV2Json, type TeamProtocolV2Json } from "./v2";
+import { decodeTeamProtocolV2Json, type TeamProtocolV2Json } from "./webrtc-framing";
 
 export const CHANNEL_ROUTES = {
   list: "/v1/channels",
   read: "/v1/channels/read",
   command: "/v1/channels/commands",
   delete: "/v1/channels/delete",
-  // Every settings route is a POST with the channel in the body. A channel id in the path would
-  // need a matcher here, and this file compares `url.pathname` for equality by design.
   memories: "/v1/channels/memories",
   memoryCreate: "/v1/channels/memories/create",
   memoryUpdate: "/v1/channels/memories/update",
@@ -80,10 +77,6 @@ const draftFields = {
 };
 
 const draft: Decoder = (value) => {
-  // `record` is strict by omission: a key absent from `draftFields` is dropped without an error. A
-  // peer that still sends the older `purpose` would therefore lose the text silently, so map it
-  // here, before the allow-list runs, which also drops `purpose` itself. The IPC guard holds the
-  // same fallback; this file keeps its own copy because it must not import IPC types.
   const source =
     isDynamicRecord(value) && "purpose" in value
       ? { title: "", instructions: isString(value.purpose) ? value.purpose : "", ...value }
@@ -96,9 +89,6 @@ const draft: Decoder = (value) => {
     throw new Error("Invalid channel membership.");
   return result;
 };
-// 120 is the account-name bound: the author of a channel message can be a person, and their name
-// is longer than an agent name is allowed to be. The number is written out because this file keeps
-// the IPC limits out, so that a change there cannot move a frozen wire contract.
 const preview: Decoder = nullable((value) =>
   record(value, { authorName: string(120), text: string(200), at: string(80) }),
 );
@@ -126,8 +116,6 @@ const task: Decoder = (value) =>
     error: nullable(string(100000)),
   });
 
-// Channel messages share the already frozen V1 message fields. Provider-session internals and
-// direct-delivery metadata have no place in a channel transcript and are not projected here.
 const conversationMessage: Decoder = (value) => {
   if (!isDynamicRecord(value)) throw new Error("Invalid channel message.");
   const fields = [
@@ -187,9 +175,6 @@ const memory: Decoder = (value) =>
     updatedAt: string(80),
   });
 
-// A routine schedule is a union of eight shapes, and the frozen v1 codec already decodes it for
-// agent routines. Lending that codec a placeholder routine is what keeps one description of the
-// union in the repository: a channel schedule that v1 rejects is rejected here too.
 const schedule: Decoder = (value) => {
   const projected = decodeTeamProtocolV1HttpRequest("POST", "/v1/agents/channel/routines", {
     botId: "channel",
@@ -246,17 +231,16 @@ const CHANNEL_CHAT_PATHS: ReadonlySet<string> = new Set([
   CHANNEL_ROUTES.command,
 ]);
 
-/** The memory and routine routes: every channel route that is not one of the three chat routes. */
 export function isChannelSettingsRoute(pathname: string): boolean {
   return CHANNEL_ROUTE_PATHS.has(pathname) && !CHANNEL_CHAT_PATHS.has(pathname);
 }
 
 export function isChannelRoute(path: string): boolean {
-  return CHANNEL_ROUTE_PATHS.has(new URL(path, "http://danidex.invalid").pathname);
+  return CHANNEL_ROUTE_PATHS.has(new URL(path, "http://openbot.invalid").pathname);
 }
 
 export function channelRequest(path: string, value: unknown): TeamProtocolV2Json {
-  const pathname = new URL(path, "http://danidex.invalid").pathname;
+  const pathname = new URL(path, "http://openbot.invalid").pathname;
   if (pathname === CHANNEL_ROUTES.list) return {};
   if (pathname === CHANNEL_ROUTES.delete) return record(value, { channelId: identifier });
   if (isChannelSettingsRoute(pathname)) return channelSettingsRequest(pathname, value);
@@ -269,12 +253,10 @@ export function channelRequest(path: string, value: unknown): TeamProtocolV2Json
   }
   if (pathname !== CHANNEL_ROUTES.command || !isDynamicRecord(value)) throw new Error("Invalid channel command.");
   const common = record(value, {
-    type: oneOf("save", "archive", "restore", "read", "send", "stop", "resume", "reassign"),
+    type: oneOf("save", "archive", "restore", "read", "send", "stop", "resume", "reassign", "cancel"),
     operationId: identifier,
     channelId: identifier,
   });
-  // `update` marks a save of the settings of a channel the sender has open. A save without it
-  // creates the channel when it is missing, which is what the create dialog sends.
   if (value.type === "save")
     return { ...common, draft: draft(value.draft), ...(value.update === true ? { update: true } : {}) };
   if (value.type === "archive" || value.type === "restore") return common;
@@ -296,7 +278,6 @@ export function channelRequest(path: string, value: unknown): TeamProtocolV2Json
   return { ...common, ...record(value, { taskId: identifier, recipientAgentId: nullable(identifier) }) };
 }
 
-/** The memory and routine routes, all of which carry a channel id in the body. */
 function channelSettingsRequest(pathname: string, value: unknown): TeamProtocolV2Json {
   const owner = () => record(value, { channelId: identifier });
   const named = () => record(value, { channelId: identifier, routineId: identifier });
@@ -367,7 +348,7 @@ function channelSettingsResponse(pathname: string, value: unknown): TeamProtocol
 
 export function channelResponse(path: string, status: number, value: unknown): TeamProtocolV2Json {
   if (status >= 400) return record(value, { error: string(100000) });
-  const pathname = new URL(path, "http://danidex.invalid").pathname;
+  const pathname = new URL(path, "http://openbot.invalid").pathname;
   if (pathname === CHANNEL_ROUTES.delete) return null;
   if (isChannelSettingsRoute(pathname)) return channelSettingsResponse(pathname, value);
   if (pathname === CHANNEL_ROUTES.list)

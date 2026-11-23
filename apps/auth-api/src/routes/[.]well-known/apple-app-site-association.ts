@@ -1,18 +1,26 @@
 import { createFileRoute } from "@tanstack/solid-router";
 
-export const APPLE_APP_SITE_ASSOCIATION = {
+const APPLE_APP_SITE_ASSOCIATION = {
   applinks: {
     apps: [],
     details: [
       {
-        appID: "ZTRDTUL87R.dev.danlab.danidex.desktop",
+        appID: "ZTRDTUL87R.app.openbot.desktop",
         paths: ["/join"],
+      },
+      {
+        appID: "ZTRDTUL87R.run.openbot.mobile",
+        paths: ["/join", "/agents/*"],
+      },
+      {
+        appID: "8A47NKRZSJ.run.openbot.mobile",
+        paths: ["/join", "/agents/*"],
       },
     ],
   },
 };
 
-export function createAppleAppSiteAssociationResponse(): Response {
+function createAppleAppSiteAssociationResponse(): Response {
   return new Response(JSON.stringify(APPLE_APP_SITE_ASSOCIATION), {
     headers: {
       "Cache-Control": "public, max-age=3600",

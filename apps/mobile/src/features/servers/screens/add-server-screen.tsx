@@ -1,189 +1,370 @@
-import { parseInviteUrl } from "@dani-dex/contracts/invite-links";
-import { userErrorMessage as errorMessage } from "@dani-dex/user-errors";
-import { router } from "expo-router";
-import { Button, Typography } from "heroui-native";
+import { type InviteLinkOptions, parseInviteUrl, selfHostedApiOrigin } from "@openbot/contracts/invite-links";
+import type { AppFormat, MobileTranslate } from "@openbot/i18n/mobile";
+import { runTeamEffect } from "@openbot/team-client";
+import type { RemoteInvitePreview } from "@openbot/team-client/remote-directory";
+import type { UserErrorDetails } from "@openbot/user-errors";
+import * as Clipboard from "expo-clipboard";
+import { type Href, router } from "expo-router";
+import { usePreventRemove } from "expo-router/react-navigation";
+import { Button, Spinner, Typography } from "heroui-native";
 import { useThemeColor } from "heroui-native/hooks";
-import { ScanLine, Server } from "lucide-react-native";
-import { useRef, useState } from "react";
-import { Keyboard, Pressable, View } from "react-native";
+import CircleCheck from "lucide-react-native/icons/circle-check";
+import ClipboardPaste from "lucide-react-native/icons/clipboard-paste";
+import ScanLine from "lucide-react-native/icons/scan-line";
+import Server from "lucide-react-native/icons/server";
+import { type ReactNode, useEffect, useRef, useState } from "react";
+import { AppState, Keyboard, Pressable, View } from "react-native";
 
-import { AppLogo } from "@/features/auth/components/app-logo";
+import { useMobileSession } from "@/features/auth/context/mobile-session-context";
+import { LocalServerOptions, type LocalServerPathname } from "@/features/servers/components/local-server-options";
+import { SERVER_ROLE_KEYS } from "@/features/servers/model/server-role";
 import { useMobileWorkspace } from "@/features/workspace/context/mobile-workspace-context";
+import { useLiveServerRecovery } from "@/features/workspace/context/server-recovery-countdown";
+import { ErrorReference } from "@/shared/components/error-reference";
 import { SheetFormField } from "@/shared/components/sheet-form-field";
 import { SheetScrollView } from "@/shared/components/sheet-scroll-view";
+import { readClipboardText } from "@/shared/lib/clipboard";
+import { haptics } from "@/shared/lib/haptics";
+import { isIOS } from "@/shared/lib/platform";
+import { currentText, useText } from "@/shared/lib/text";
 
-function normalizeInviteUrl(value: string): string | null {
+const INVITE_PLACEHOLDER = "https://openbot.run/join?…";
+
+function normalizeInviteUrl(value: string, options: InviteLinkOptions): string | null {
+  const invite = value.trim();
+  if (!invite) return null;
   try {
-    parseInviteUrl(value.trim());
-    return value.trim();
+    parseInviteUrl(invite, options);
+    return invite;
   } catch {
     return null;
   }
 }
 
+function describeInvite(preview: RemoteInvitePreview, t: MobileTranslate, format: AppFormat): string {
+  if (preview.permanent) return t("mobile.server.invite.noExpiry", { role: t(SERVER_ROLE_KEYS[preview.role]) });
+  const expires = format.date(new Date(preview.expiresAt), {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+  return t("mobile.server.invite.expires", { role: t(SERVER_ROLE_KEYS[preview.role]), date: expires });
+}
+
 export function AddServerScreen({
   initialInvite = "",
   onJoined,
+  scanHref = "/add-server/scan",
+  underHeader = false,
+  localServerPathname,
 }: {
   initialInvite?: string;
   onJoined?: () => void;
+  scanHref?: Href;
+  underHeader?: boolean;
+  localServerPathname?: LocalServerPathname;
 } = {}) {
-  const [foreground, accentForeground] = useThemeColor(["foreground", "accent-foreground"]);
-  const { addRemoteServer, servers } = useMobileWorkspace();
+  const { t, format, errorDetails, sourceText } = useText();
+  const [foreground, accentForeground, success] = useThemeColor(["foreground", "accent-foreground", "success"]);
+  const { addRemoteServer, servers, teamDirectory } = useMobileWorkspace();
+  const { session } = useMobileSession();
+  const inviteLinks = { selfHostedApiOrigin: selfHostedApiOrigin(session?.apiUrl) };
   const [joinedId, setJoinedId] = useState<string | null>(null);
-  const joinedServer = servers.find((server) => server.id === joinedId);
+  const joinedServer = useLiveServerRecovery(servers.find((server) => server.id === joinedId));
   const [inviteLink, setInviteLink] = useState(initialInvite);
-  const [reviewedInvite, setReviewedInvite] = useState<string | null>(initialInvite || null);
-  const [error, setError] = useState<string | null>(null);
+  const [request, setRequest] = useState(() => {
+    const url = normalizeInviteUrl(initialInvite, inviteLinks);
+    return url ? { url } : null;
+  });
+  const reviewedInvite = request?.url ?? null;
+  const [preview, setPreview] = useState<RemoteInvitePreview | null>(null);
+  const [previewing, setPreviewing] = useState(false);
+  const [error, setError] = useState<UserErrorDetails | null>(null);
   const [joining, setJoining] = useState(false);
   const joinInFlight = useRef(false);
-  const canReview = inviteLink.trim().length > 0;
+  usePreventRemove(joining, () => {});
 
-  function reviewInvite(): void {
-    const normalizedInvite = normalizeInviteUrl(inviteLink);
-    if (!normalizedInvite) {
-      setError("Paste a valid invitation link.");
+  useEffect(() => {
+    let active = true;
+    setPreview(null);
+    setError(null);
+    if (!request) {
+      setPreviewing(false);
       return;
     }
-    Keyboard.dismiss();
-    setError(null);
-    setReviewedInvite(normalizedInvite);
+    setPreviewing(true);
+    void runTeamEffect(teamDirectory.previewInvite(request.url)).then(
+      (value) => {
+        if (!active) return;
+        setPreview(value);
+        setPreviewing(false);
+      },
+      (cause) => {
+        if (!active) return;
+        const text = currentText();
+        setError(text.errorDetails(cause, text.t("mobile.server.invite.loadFailed")));
+        setPreviewing(false);
+      },
+    );
+    return () => {
+      active = false;
+    };
+  }, [request, teamDirectory]);
+
+  function changeLink(value: string): void {
+    setInviteLink(value);
+    const url = normalizeInviteUrl(value, inviteLinks);
+    setRequest((current) => (url === null ? null : current?.url === url ? current : { url }));
+    if (url === null) setError(null);
   }
 
   async function joinServer(): Promise<void> {
-    if (!reviewedInvite || joinInFlight.current) return;
+    if (!reviewedInvite || !preview || previewing || joinInFlight.current) return;
     joinInFlight.current = true;
+    Keyboard.dismiss();
     setJoining(true);
     setError(null);
     try {
       const serverId = await addRemoteServer({ inviteUrl: reviewedInvite });
       setJoinedId(serverId);
-      setJoining(false);
+      void haptics.notification("success");
     } catch (cause) {
-      setError(errorMessage(cause, "Dani-Dex could not join this server."));
+      setError(errorDetails(cause, t("mobile.server.invite.joinFailed")));
+      void haptics.notification("error");
       joinInFlight.current = false;
-      setJoining(false);
     }
+    setJoining(false);
   }
 
-  const invitationHost = reviewedInvite ? new URL(reviewedInvite).hostname : null;
+  const connected = joinedServer?.state === "online";
+  const joinStatus = joinedServer?.connectionMessage
+    ? sourceText(joinedServer.connectionMessage)
+    : t("common.connecting");
+  const joinedStatus = (name: string | undefined, status: string) =>
+    name ? t("mobile.server.join.joinedNamed", { name, status }) : t("mobile.server.join.joined", { status });
 
   return (
     <SheetScrollView
       scrollEdgeEffect={false}
       className="bg-sheet"
-      contentContainerClassName="gap-7 px-5 pb-safe-offset-5 pt-14"
-      contentInsetAdjustmentBehavior="automatic"
+      contentContainerClassName={`gap-6 px-5 pb-safe-offset-5 ${underHeader ? "pt-4" : "pt-12"}`}
       keyboardDismissMode="on-drag"
       keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
     >
-      <View className="items-center gap-3 px-4">
-        <AppLogo animation="blink" followDeviceOrientation interactive size={72} />
-        <Typography.Heading type="h3" align="center" className="pt-1">
-          {joinedId ? (joinedServer?.state === "online" ? "Connected" : "Invitation accepted") : "Join a server"}
-        </Typography.Heading>
-        <Typography.Paragraph align="center" className="max-w-80 text-text-secondary">
+      <View className="items-center gap-2 px-4">
+        {joinedId ? (
+          <View className="mb-2 size-16 items-center justify-center rounded-full bg-control">
+            {connected ? (
+              <CircleCheck size={34} strokeWidth={1.8} color={success} />
+            ) : (
+              <Spinner size="md" color={String(foreground)} />
+            )}
+          </View>
+        ) : null}
+        <Typography.Heading type="h3" align="center">
           {joinedId
-            ? joinedServer?.state === "online"
-              ? `You are connected to ${joinedServer.name}.`
-              : `You joined ${joinedServer?.name ?? "the server"}. ${joinedServer?.connectionMessage ?? "Connecting…"}`
-            : "Paste or scan the invitation you received from a server owner."}
+            ? connected
+              ? t("mobile.server.join.connected")
+              : t("mobile.server.join.accepted")
+            : t("mobile.server.join.title")}
+        </Typography.Heading>
+        <Typography.Paragraph type="body-sm" align="center" className="max-w-80 text-text-secondary">
+          {joinedId
+            ? connected && joinedServer
+              ? t("mobile.server.join.connectedTo", { name: joinedServer.name })
+              : joinedStatus(joinedServer?.name, joinStatus)
+            : t("mobile.server.join.description")}
         </Typography.Paragraph>
+        {joinedId && !connected ? (
+          <ErrorReference reference={joinedServer?.connectionFailure?.reference} align="center" />
+        ) : null}
       </View>
 
       {joinedId ? (
         <Button
           size="lg"
           onPress={() => {
+            void haptics.impact("soft");
             if (onJoined) onJoined();
             else router.back();
           }}
         >
-          <Button.Label>Done</Button.Label>
+          <Button.Label className="font-sans font-semibold">{t("common.done")}</Button.Label>
         </Button>
-      ) : reviewedInvite ? (
-        <View className="gap-5">
-          <View className="flex-row items-center gap-3 rounded-3xl bg-control px-4 py-4">
-            <View className="size-12 items-center justify-center rounded-2xl bg-accent">
-              <Server color={accentForeground} size={23} strokeWidth={1.8} />
-            </View>
-            <View className="min-w-0 flex-1 gap-0.5">
-              <Typography.Paragraph weight="semibold">Invitation ready</Typography.Paragraph>
-              <Typography.Paragraph type="body-xs" className="text-text-secondary" numberOfLines={1} selectable>
-                {invitationHost}
-              </Typography.Paragraph>
+      ) : (
+        <View className="gap-4">
+          <View className="gap-3">
+            <SheetFormField
+              autoCapitalize="none"
+              autoCorrect={false}
+              editable={!joining}
+              hideLabel
+              inputMode="url"
+              label={t("mobile.server.join.inviteLink")}
+              maxLength={500}
+              placeholder={INVITE_PLACEHOLDER}
+              returnKeyType="go"
+              value={inviteLink}
+              onChangeText={changeLink}
+              onSubmitEditing={() => void joinServer()}
+            />
+            <View className="flex-row gap-3">
+              <PasteInviteButton disabled={joining} onPaste={changeLink} />
+              <QuickAction
+                accessibilityLabel={t("mobile.server.join.scan")}
+                disabled={joining}
+                icon={<ScanLine size={18} strokeWidth={1.8} color={foreground} />}
+                label={t("mobile.server.join.scanShort")}
+                onPress={() => {
+                  Keyboard.dismiss();
+                  router.push(scanHref);
+                }}
+              />
             </View>
           </View>
 
-          {error ? (
-            <Typography.Paragraph align="center" className="text-danger-text">
-              {error}
-            </Typography.Paragraph>
+          {reviewedInvite ? (
+            <View className="flex-row items-center gap-3 rounded-grouped bg-grouped px-4 py-3.5">
+              <View className="size-11 items-center justify-center rounded-xl bg-accent">
+                <Server color={accentForeground} size={21} strokeWidth={1.8} />
+              </View>
+              <View className="min-w-0 flex-1 gap-0.5">
+                <Typography.Paragraph weight="semibold" numberOfLines={1}>
+                  {preview?.hostName ??
+                    (previewing ? t("mobile.server.invite.checking") : t("mobile.server.invite.unavailable"))}
+                </Typography.Paragraph>
+                <Typography.Paragraph type="body-xs" className="text-text-secondary" numberOfLines={1}>
+                  {preview
+                    ? describeInvite(preview, t, format)
+                    : previewing
+                      ? t("mobile.server.invite.verifying")
+                      : t("mobile.server.invite.verifyRequired")}
+                </Typography.Paragraph>
+              </View>
+              {previewing ? <Spinner size="sm" color={String(foreground)} /> : null}
+            </View>
           ) : null}
 
-          <Button size="lg" isDisabled={joining} onPress={() => void joinServer()}>
-            <Button.Label className="font-sans font-semibold">{joining ? "Joining…" : "Join server"}</Button.Label>
-          </Button>
+          {error ? (
+            <View className="items-center gap-1">
+              <Typography.Paragraph accessibilityRole="alert" align="center" className="text-danger-text">
+                {error.message}
+              </Typography.Paragraph>
+              <ErrorReference reference={error.reference} align="center" />
+            </View>
+          ) : null}
 
-          <Pressable
-            accessibilityRole="button"
-            className="min-h-11 items-center justify-center"
-            onPress={() => setReviewedInvite(null)}
-          >
-            <Typography.Paragraph weight="semibold" className="text-text-secondary">
-              Use another invitation
-            </Typography.Paragraph>
-          </Pressable>
-        </View>
-      ) : (
-        <View className="gap-5">
-          <SheetFormField
-            autoCapitalize="none"
-            autoCorrect={false}
-            autoFocus={!initialInvite}
-            trailing={
-              <Button
-                isIconOnly
-                variant="ghost"
-                accessibilityLabel="Scan invitation QR code"
-                onPress={() => {
-                  Keyboard.dismiss();
-                  router.push("/scan-invite");
-                }}
-              >
-                <ScanLine size={22} color={foreground} />
-              </Button>
-            }
-            hint={error ?? undefined}
-            inputMode="url"
-            label="Invite link"
-            maxLength={500}
-            placeholder="dani-dex://join?…"
-            returnKeyType="go"
-            value={inviteLink}
-            onChangeText={(value) => {
-              setInviteLink(value);
-              if (error) setError(null);
-            }}
-            onSubmitEditing={reviewInvite}
-          />
+          {!inviteLink.trim() ? null : preview || !reviewedInvite || previewing ? (
+            <Button size="lg" isDisabled={!preview || joining || previewing} onPress={() => void joinServer()}>
+              <Button.Label className="font-sans font-semibold">
+                {joining ? t("mobile.server.join.joining") : t("mobile.server.join.submit")}
+              </Button.Label>
+            </Button>
+          ) : (
+            <Button size="lg" onPress={() => setRequest({ url: reviewedInvite })}>
+              <Button.Label className="font-sans font-semibold">{t("common.tryAgain")}</Button.Label>
+            </Button>
+          )}
 
-          <Button size="lg" isDisabled={!canReview} onPress={reviewInvite}>
-            <Button.Label className="font-sans font-semibold">Review invite</Button.Label>
-          </Button>
+          {localServerPathname && !inviteLink.trim() ? <LocalServerOptions pathname={localServerPathname} /> : null}
 
-          <Pressable
-            accessibilityRole="button"
-            className="min-h-11 items-center justify-center"
-            onPress={() => router.back()}
-          >
-            <Typography.Paragraph weight="semibold" className="text-text-secondary">
-              Cancel
-            </Typography.Paragraph>
-          </Pressable>
+          {underHeader ? null : (
+            <Pressable
+              accessibilityRole="button"
+              className="min-h-11 items-center justify-center"
+              disabled={joining}
+              onPress={() => {
+                void haptics.impact("soft");
+                router.back();
+              }}
+            >
+              <Typography.Paragraph weight="semibold" className="text-text-secondary">
+                {t("common.cancel")}
+              </Typography.Paragraph>
+            </Pressable>
+          )}
         </View>
       )}
     </SheetScrollView>
   );
+}
+
+const QUICK_ACTION_CLASS = `h-12 flex-1 overflow-hidden bg-control ${isIOS ? "" : "rounded-2xl"}`;
+const QUICK_ACTION_SHAPE = isIOS ? ({ borderCurve: "continuous", borderRadius: 16 } as const) : null;
+
+function QuickAction({
+  accessibilityLabel,
+  disabled,
+  icon,
+  label,
+  onPress,
+}: {
+  accessibilityLabel?: string;
+  disabled: boolean;
+  icon: ReactNode;
+  label: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ disabled }}
+      className={`${QUICK_ACTION_CLASS} flex-row items-center justify-center gap-2`}
+      disabled={disabled}
+      style={({ pressed }) => [QUICK_ACTION_SHAPE, { opacity: disabled ? 0.5 : pressed ? 0.6 : 1 }]}
+      onPress={() => {
+        void haptics.impact("soft");
+        onPress();
+      }}
+    >
+      {icon}
+      <Typography.Paragraph weight="medium">{label}</Typography.Paragraph>
+    </Pressable>
+  );
+}
+
+function PasteInviteButton({ disabled, onPaste }: { disabled: boolean; onPaste: (value: string) => void }) {
+  const { t } = useText();
+  const [foreground] = useThemeColor(["foreground"]);
+  const pasteable = useClipboardHasLink();
+  return (
+    <QuickAction
+      disabled={disabled || !pasteable}
+      icon={<ClipboardPaste size={18} strokeWidth={1.8} color={foreground} />}
+      label={t("mobile.server.join.paste")}
+      onPress={() => {
+        void readClipboardText().then(
+          (value) => {
+            if (value) onPaste(value);
+          },
+          () => undefined,
+        );
+      }}
+    />
+  );
+}
+
+function useClipboardHasLink(): boolean {
+  const [pasteable, setPasteable] = useState(false);
+  useEffect(() => {
+    let active = true;
+    const check = () => {
+      void Promise.all([Clipboard.hasStringAsync(), Clipboard.hasUrlAsync()]).then(
+        ([text, url]) => {
+          if (active) setPasteable(text || url);
+        },
+        () => undefined,
+      );
+    };
+    check();
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state === "active") check();
+    });
+    return () => {
+      active = false;
+      subscription.remove();
+    };
+  }, []);
+  return pasteable;
 }

@@ -2,7 +2,6 @@ import { isTrustedRendererUrl } from "./trusted-renderer";
 
 interface RendererPermissionDetails {
   mediaType?: string;
-  mediaTypes?: readonly string[];
 }
 
 export function canCheckRendererPermission(
@@ -16,14 +15,19 @@ export function canCheckRendererPermission(
   return permission === "media" && details.mediaType === "audio";
 }
 
+interface RendererPermissionRequest {
+  requestingUrl: string;
+  isMainFrame: boolean;
+  mediaTypes?: readonly string[];
+}
+
 export function canRequestRendererPermission(
   permission: string,
-  rendererUrl: string,
-  details: RendererPermissionDetails,
+  request: RendererPermissionRequest,
   developmentUrl = process.env.ELECTRON_RENDERER_URL,
 ): boolean {
-  if (!isTrustedRendererUrl(rendererUrl, developmentUrl)) return false;
+  if (!request.isMainFrame || !isTrustedRendererUrl(request.requestingUrl, developmentUrl)) return false;
   if (permission === "clipboard-sanitized-write") return true;
-  const mediaTypes = details.mediaTypes ?? [];
+  const mediaTypes = request.mediaTypes ?? [];
   return permission === "media" && mediaTypes.length > 0 && mediaTypes.every((mediaType) => mediaType === "audio");
 }

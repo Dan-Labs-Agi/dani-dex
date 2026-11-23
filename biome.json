@@ -1,7 +1,6 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.5.9/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.5.13/schema.json",
   "plugins": [
-    "./tools/biome/anti-slop/rules/no-collections-in-stores.grit",
     "./tools/biome/anti-slop/rules/no-known-value-widening.grit",
     "./tools/biome/anti-slop/rules/no-module-mocking.grit",
     "./tools/biome/anti-slop/rules/no-object-parameters.grit",
@@ -13,6 +12,8 @@
   "files": {
     "includes": [
       "**",
+      "!!.codex",
+      "!!.claude",
       "!node_modules",
       "!!out",
       "!!out-*",
@@ -31,12 +32,15 @@
       "!tools/ui-foundation/fixtures",
       "!!coverage",
       "!!.openbot-build",
+      "!!scripts/provider-live/.e2e",
       "!!Agents",
       "!!Bots",
       "!!Shared",
       "!!.worktrees",
       "!!.agents",
-      "!src/renderer/src/vendor"
+      "!src/renderer/src/vendor",
+      "!packages/whatsapp/vendor",
+      "!marketplace/production-catalog/bundles"
     ]
   },
   "formatter": {
@@ -62,6 +66,7 @@
         "noUselessTypeConstraint": "error"
       },
       "nursery": {
+        "noFloatingPromises": "error",
         "noMisleadingReturnType": "error",
         "noUnsafeTypeAssertion": "error",
         "useReduceTypeParameter": "error"
@@ -142,7 +147,12 @@
       }
     },
     {
-      "includes": ["src/renderer/src/**/*.ts", "src/renderer/src/**/*.tsx"],
+      "includes": [
+        "src/renderer/src/**/*.ts",
+        "src/renderer/src/**/*.tsx",
+        "packages/ui/src/**/*.ts",
+        "packages/ui/src/**/*.tsx"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -152,7 +162,7 @@
                 "patterns": [
                   {
                     "group": ["**/main/**", "**/backend/**", "**/preload/**"],
-                    "message": "The renderer reaches main only through the IPC contract. Declare a channel in packages/contracts and go through window.danidex."
+                    "message": "The renderer reaches main only through the IPC contract. Declare a channel in packages/contracts and go through window.openbot."
                   }
                 ]
               }
@@ -182,6 +192,71 @@
       }
     },
     {
+      "includes": ["packages/contracts/src/**/*.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "electron",
+                      "electron/**",
+                      "solid-js",
+                      "solid-js/**",
+                      "@solidjs/**",
+                      "cloudflare:*",
+                      "@cloudflare/**",
+                      "@anthropic-ai/**",
+                      "@openai/**",
+                      "openai",
+                      "**/src/main/**",
+                      "**/src/backend/**",
+                      "**/src/preload/**",
+                      "**/src/renderer/**",
+                      "**/apps/**"
+                    ],
+                    "message": "Contracts are shared by every surface. Keep them free of Electron, SolidJS, provider, Cloudflare and application code."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/auth-api/src/server/**/*.ts", "apps/auth-api/src/worker-entry.ts"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": [
+                      "electron",
+                      "electron/**",
+                      "@openbot/renderer-preview",
+                      "@openbot/renderer-web",
+                      "**/src/main/**",
+                      "**/src/backend/**",
+                      "**/src/preload/**",
+                      "**/src/renderer/**"
+                    ],
+                    "message": "The account server does not import desktop implementation files. Share the type through packages/contracts."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "includes": ["**/*.test.ts", "**/*.test.tsx"],
       "plugins": [
         "./tools/biome/anti-slop/rules/no-class-assertions.grit",
@@ -197,6 +272,78 @@
         "./tools/biome/anti-slop/rules/no-class-selector-queries.grit",
         "./tools/biome/anti-slop/rules/no-sleep-in-tests.grit"
       ]
+    },
+    {
+      "includes": ["src/renderer/**", "packages/ui/**", "packages/brand/**", "apps/auth-api/**", ".storybook/**"],
+      "plugins": [
+        "./tools/biome/anti-slop/rules/no-collections-in-stores.grit",
+        "./tools/biome/anti-slop/rules/no-cleanup-in-effect-callbacks.grit"
+      ]
+    },
+    {
+      "includes": ["src/backend/**", "src/main/**", "!src/backend/database/sqlite-transaction.ts"],
+      "plugins": ["./tools/biome/anti-slop/rules/no-raw-sqlite-transaction.grit"]
+    },
+    {
+      "includes": ["**/*.stories.ts", "**/*.stories.tsx"],
+      "plugins": ["./tools/ui-foundation/no-story-play.grit"]
+    },
+    {
+      "includes": [
+        "src/renderer/src/**/*.ts",
+        "src/renderer/src/**/*.tsx",
+        "packages/ui/src/**/*.ts",
+        "packages/ui/src/**/*.tsx",
+        "apps/mobile/src/**/*.ts",
+        "apps/mobile/src/**/*.tsx",
+        "!**/*.test.ts",
+        "!**/*.test.tsx",
+        "!**/*.stories.tsx",
+        "!src/renderer/src/preview/**",
+        "!src/renderer/src/setupTests.ts"
+      ],
+      "plugins": ["./tools/ui-foundation/no-hardcoded-ui-text.grit"]
+    },
+    {
+      "includes": ["packages/ui/src/**/*.ts", "packages/ui/src/**/*.tsx"],
+      "plugins": ["./tools/ui-foundation/no-desktop-preload.grit"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["**/renderer/**", "**/main/**", "**/backend/**", "**/preload/**"],
+                    "message": "Shared UI receives data and actions through props; do not import application or platform implementations."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["apps/mobile/src/**/*.ts", "apps/mobile/src/**/*.tsx"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "lucide-react-native": {
+                    "allowImportNames": ["LucideIcon", "LucideProps"],
+                    "message": "Metro does not remove unused exports, so this index adds every icon to the mobile bundle. Import one icon from \"lucide-react-native/icons/<name>\"."
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "javascript": {

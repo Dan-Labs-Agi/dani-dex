@@ -1,78 +1,64 @@
-import { INPUT_LIMITS } from "@dani-dex/contracts/input-limits";
-import { type AvatarHue, type ChannelDraft, type ChannelSummary, isChannelDraft } from "@dani-dex/contracts/ipc";
-import { userErrorMessage } from "@dani-dex/user-errors";
+import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
+import { type ChannelDraft, type ChannelSummary, canAdministerServer, isChannelDraft } from "@openbot/contracts/ipc";
 import * as Crypto from "expo-crypto";
-import { router, Stack, useLocalSearchParams, useNavigation } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { usePreventRemove } from "expo-router/react-navigation";
 import { Typography } from "heroui-native";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Pressable } from "react-native";
-import { BloubAvatarThumbnail } from "@/features/agents/components/bloub-avatar";
+import { useThemeColor } from "heroui-native/hooks";
+import BookBookmark from "lucide-react-native/icons/book-bookmark";
+import CalendarClock from "lucide-react-native/icons/calendar-clock";
+import Crown from "lucide-react-native/icons/crown";
+import Pencil from "lucide-react-native/icons/pencil";
+import Trash2 from "lucide-react-native/icons/trash";
+import Users from "lucide-react-native/icons/users";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Alert, Pressable, View } from "react-native";
+import { useUniwind } from "uniwind";
+import { ChannelAvatar } from "@/features/channels/components/channel-avatar";
+import { ChannelContextActions } from "@/features/channels/components/channel-context-actions";
+import { ChannelFoldersRow } from "@/features/channels/components/channel-folders";
 import { useChannels } from "@/features/channels/components/use-channels";
 import { SettingsRow, SettingsSection } from "@/features/settings/components/settings-content";
-import { useMobileWorkspace } from "@/features/workspace/context/mobile-workspace-context";
+import { SettingsPicker } from "@/features/settings/components/settings-controls";
+import { RowIcon } from "@/features/settings/components/settings-row-icon";
+import {
+  useMobileWorkspaceReader,
+  useMobileWorkspaceSelector,
+} from "@/features/workspace/context/mobile-workspace-context";
+import { SaveError } from "@/shared/components/save-error";
+import { SheetCloseAction } from "@/shared/components/sheet-close-action";
 import { SheetFormField } from "@/shared/components/sheet-form-field";
 import { SheetSaveAction } from "@/shared/components/sheet-save-action";
 import { SheetScrollView } from "@/shared/components/sheet-scroll-view";
+import { haptics } from "@/shared/lib/haptics";
+import { currentText, useText } from "@/shared/lib/text";
+import { useChannelAgentPicker } from "../model/channel-agent-picker";
 import { toggleChannelMember } from "../model/channel-draft";
 import type { MobileChannelStore } from "../model/channel-store";
 
+const AVATAR_SIZE = 112;
+
 const EMPTY_DRAFT: ChannelDraft = { name: "", title: "", instructions: "", members: [], leadAgentId: null };
 
-// No workspace/activity subscriptions, animation frames, or live agent avatars in this row.
-const MemberChoice = memo(function MemberChoice({
-  id,
-  name,
-  serverId,
-  avatarSeed,
-  avatarHue,
-  selected,
-  disabled,
-  onToggle,
-}: {
-  id: string;
-  name: string;
-  serverId: string;
-  avatarSeed: string;
-  avatarHue: AvatarHue | null;
-  selected: boolean;
-  disabled: boolean;
-  onToggle: (id: string) => void;
-}) {
-  return (
-    <Pressable
-      accessibilityRole="checkbox"
-      accessibilityLabel={name}
-      accessibilityState={{ checked: selected, disabled }}
-      disabled={disabled}
-      onPress={() => onToggle(id)}
-      className="min-h-12 flex-row items-center gap-3 px-4 py-3"
-    >
-      <BloubAvatarThumbnail agentId={id} serverId={serverId} seed={avatarSeed} hue={avatarHue} size={32} />
-      <Typography.Paragraph className="flex-1">{name}</Typography.Paragraph>
-      <Typography>{selected ? "✓" : ""}</Typography>
-    </Pressable>
-  );
-});
-
 export function ChannelFormScreen({ create = false }: { create?: boolean }) {
+  const { t } = useText();
   const params = useLocalSearchParams<{ serverId?: string; channelId?: string }>();
-  const workspace = useMobileWorkspace();
-  const [serverId] = useState(params.serverId ?? workspace.activeServer.id);
+  const workspace = useMobileWorkspaceReader();
+  const [serverId] = useState(params.serverId ?? workspace().activeServer.id);
   const [channelId] = useState(() => (create ? `channel-${Crypto.randomUUID()}` : (params.channelId ?? "")));
   const state = useChannels(serverId);
   const current = state.channels.find((channel) => channel.id === channelId);
   const last = useRef(current);
   if (current) last.current = current;
-  const available =
-    state.supported &&
-    workspace.servers.some((server) => server.id === serverId && server.state === "online") &&
-    (create || Boolean(current));
+  const online = useMobileWorkspaceSelector((current) =>
+    current.servers.some((server) => server.id === serverId && server.state === "online"),
+  );
+  const available = state.supported && online && (create || Boolean(current));
   if (!create && !last.current)
     return (
       <SheetScrollView>
         <Typography.Paragraph>
-          {state.loading ? "Loading channel…" : "This channel is no longer available."}
+          {t(state.loading ? "mobile.channel.form.loading" : "mobile.channel.form.gone")}
         </Typography.Paragraph>
       </SheetScrollView>
     );
@@ -84,6 +70,8 @@ export function ChannelFormScreen({ create = false }: { create?: boolean }) {
       channelId={channelId}
       channel={create ? undefined : (current ?? last.current)}
       available={available}
+      pictureSupported={state.canSetPicture}
+      contextActionsSupported={state.canUseContextActions}
       store={state.store}
     />
   );
@@ -95,6 +83,8 @@ function ChannelForm({
   channelId,
   channel,
   available,
+  pictureSupported,
+  contextActionsSupported,
   store,
 }: {
   create: boolean;
@@ -102,11 +92,18 @@ function ChannelForm({
   channelId: string;
   channel?: ChannelSummary;
   available: boolean;
+  pictureSupported: boolean;
+  contextActionsSupported: boolean;
   store: MobileChannelStore;
 }) {
-  const { agents, servers } = useMobileWorkspace();
-  const canManage = servers.find((server) => server.id === serverId)?.role !== "member";
-  const navigation = useNavigation();
+  const { t, errorMessage } = useText();
+  const agents = useMobileWorkspaceSelector((current) => current.agents);
+  const role = useMobileWorkspaceSelector((current) => current.servers.find((server) => server.id === serverId)?.role);
+  const canManage = role !== "member";
+  const canManageFolders = useMobileWorkspaceSelector((current) => current.canManageChannelFolders(serverId));
+  const { theme } = useUniwind();
+  const openAgentPicker = useChannelAgentPicker((state) => state.open);
+  const foreground = String(useThemeColor("foreground"));
   const [edits, setEdits] = useState<Partial<ChannelDraft>>({});
   const [saving, setSaving] = useState(false);
   const [finished, setFinished] = useState(false);
@@ -129,14 +126,23 @@ function ChannelForm({
   );
   const valid = isChannelDraft(draft);
   const choices = useMemo(() => agents.filter((agent) => agent.serverId === serverId), [agents, serverId]);
-  const availableIds = useMemo(() => new Set(choices.map((agent) => agent.id)), [choices]);
-  const selectedIds = useMemo(() => new Set(draft.members.map((member) => member.agentId)), [draft.members]);
+  const agentsById = useMemo(() => new Map(choices.map((agent) => [agent.id, agent])), [choices]);
   const disabled = saving || !available || finished || Boolean(channel?.archived);
-  usePreventRemove(!finished && (dirty || saving), ({ data }) => {
+  const [discarding, setDiscarding] = useState(false);
+  usePreventRemove(!discarding && !finished && (dirty || saving), ({ repeat }) => {
     if (lock.current) return;
-    Alert.alert("Discard changes?", "Your changes have not been saved.", [
-      { text: "Keep editing", style: "cancel" },
-      { text: "Discard", style: "destructive", onPress: () => navigation.dispatch(data.action) },
+    void haptics.notification("warning");
+    const text = currentText();
+    Alert.alert(text.t("mobile.channel.discard.title"), text.t("mobile.channel.discard.body"), [
+      { text: text.t("mobile.channel.discard.keepEditing"), style: "cancel" },
+      {
+        text: text.t("mobile.channel.discard.discard"),
+        style: "destructive",
+        onPress: () => {
+          setDiscarding(true);
+          repeat();
+        },
+      },
     ]);
   });
   useEffect(() => {
@@ -151,11 +157,13 @@ function ChannelForm({
     setError(null);
     try {
       await action();
+      void haptics.notification("success");
       operation.current = null;
       setEdits({});
       if (close) setFinished(true);
     } catch (cause) {
-      setError(userErrorMessage(cause, "Could not save this channel. Try again."));
+      void haptics.notification("error");
+      setError(errorMessage(cause, t("mobile.channel.form.saveFailed")));
     } finally {
       lock.current = false;
       setSaving(false);
@@ -178,6 +186,10 @@ function ChannelForm({
       create,
     );
   }
+  const leadOptions = draft.members.flatMap((member) => {
+    const agent = agentsById.get(member.agentId);
+    return agent ? [{ value: agent.id, label: agent.name }] : [];
+  });
   const draftRef = useRef(draft);
   draftRef.current = draft;
   const toggle = useCallback((id: string) => {
@@ -194,22 +206,47 @@ function ChannelForm({
       keyboardShouldPersistTaps="handled"
     >
       {create ? (
-        <Stack.Toolbar placement="left">
-          <Stack.Toolbar.Button icon="xmark" accessibilityLabel="Close" disabled={saving} onPress={() => router.back()}>
-            Close
-          </Stack.Toolbar.Button>
-        </Stack.Toolbar>
+        <SheetCloseAction
+          disabled={saving}
+          onPress={() => {
+            void haptics.impact("soft");
+            router.back();
+          }}
+        />
       ) : null}
       <SheetSaveAction
         dirty={dirty}
         canSave={valid && !disabled}
         pending={saving}
-        label={create ? "Create channel" : "Save channel"}
+        label={t(create ? "mobile.channel.form.create" : "mobile.channel.form.save")}
         onSave={save}
       />
+      {!create && channel ? (
+        pictureSupported && !channel.archived ? (
+          <Pressable
+            className="self-center"
+            accessibilityRole="button"
+            accessibilityLabel={t("mobile.channel.picture.title")}
+            disabled={saving || finished}
+            onPress={() => {
+              void haptics.impact("soft");
+              router.push({ pathname: "/channel-info/[channelId]/picture", params: { channelId, serverId } });
+            }}
+          >
+            <ChannelAvatar channel={channel} agents={agentsById} size={AVATAR_SIZE} serverId={serverId} />
+            <View className="absolute -right-2 -bottom-2 size-9 items-center justify-center rounded-full border-4 border-sheet bg-grouped">
+              <Pencil color={foreground} size={14} />
+            </View>
+          </Pressable>
+        ) : (
+          <View className="self-center">
+            <ChannelAvatar channel={channel} agents={agentsById} size={AVATAR_SIZE} serverId={serverId} />
+          </View>
+        )
+      ) : null}
       <SheetFormField
-        label="Name"
-        placeholder="Launch hub"
+        label={t("mobile.channel.form.name")}
+        placeholder={t("mobile.channel.form.namePlaceholder")}
         appearance="soft"
         value={draft.name}
         onChangeText={(name) => setEdits((current) => ({ ...current, name }))}
@@ -219,16 +256,18 @@ function ChannelForm({
       {!create ? (
         <>
           <SheetFormField
-            label="Title"
+            label={t("mobile.channel.form.title")}
             appearance="soft"
+            placeholder={t("mobile.channel.form.titlePlaceholder")}
             value={draft.title}
             onChangeText={(title) => setEdits((current) => ({ ...current, title }))}
             editable={!disabled}
             maxLength={INPUT_LIMITS.agentTitle}
           />
           <SheetFormField
-            label="Instructions"
+            label={t("mobile.channel.form.instructions")}
             appearance="soft"
+            placeholder={t("mobile.channel.form.instructionsPlaceholder")}
             multiline
             value={draft.instructions}
             onChangeText={(instructions) => setEdits((current) => ({ ...current, instructions }))}
@@ -237,119 +276,115 @@ function ChannelForm({
           />
         </>
       ) : null}
-      <SettingsSection title="Agents">
-        {choices.map((agent) => (
-          <MemberChoice
-            key={agent.id}
-            id={agent.id}
-            name={agent.name}
-            serverId={agent.serverId}
-            avatarSeed={agent.avatarSeed}
-            avatarHue={agent.avatarHue}
-            selected={selectedIds.has(agent.id)}
-            disabled={disabled}
-            onToggle={toggle}
-          />
-        ))}
-        {!choices.length ? (
-          <SettingsRow>
-            <Typography.Paragraph>No agents on this server.</Typography.Paragraph>
+      <SettingsSection>
+        <SettingsRow
+          leading={<RowIcon icon={Users} />}
+          value={String(draft.members.length)}
+          disabled={disabled}
+          onPress={() => {
+            openAgentPicker({ serverId, members: draft.members.map((member) => member.agentId), toggle });
+            router.push(
+              create
+                ? { pathname: "/add-channel/agents" }
+                : { pathname: "/channel-info/[channelId]/agents", params: { channelId, serverId } },
+            );
+          }}
+        >
+          <Typography.Paragraph>{t("mobile.channel.form.agents")}</Typography.Paragraph>
+        </SettingsRow>
+        {leadOptions.length > 0 && draft.leadAgentId ? (
+          <SettingsRow
+            leading={<RowIcon icon={Crown} />}
+            trailing={
+              <SettingsPicker
+                value={draft.leadAgentId}
+                options={leadOptions}
+                enabled={!disabled}
+                dark={theme === "dark"}
+                label={t("mobile.channel.form.lead")}
+                onChange={(leadAgentId) => {
+                  void haptics.selection();
+                  setEdits((current) => ({ ...current, leadAgentId }));
+                }}
+              />
+            }
+          >
+            <Typography.Paragraph>{t("mobile.channel.form.lead")}</Typography.Paragraph>
           </SettingsRow>
         ) : null}
-        {draft.members
-          .filter((member) => !availableIds.has(member.agentId))
-          .map((member) => (
-            <SettingsRow
-              key={member.agentId}
-              disabled={disabled}
-              onPress={() => toggle(member.agentId)}
-              disclosure={false}
-            >
-              <Typography.Paragraph>Remove unavailable agent</Typography.Paragraph>
-            </SettingsRow>
-          ))}
       </SettingsSection>
-      {draft.members.length > 0 ? (
-        <SettingsSection title="Lead agent">
-          {choices
-            .filter((agent) => selectedIds.has(agent.id))
-            .map((agent) => (
-              <SettingsRow
-                key={agent.id}
-                disabled={disabled}
-                disclosure={false}
-                trailing={<Typography>{draft.leadAgentId === agent.id ? "✓" : ""}</Typography>}
-                onPress={() => setEdits((current) => ({ ...current, leadAgentId: agent.id }))}
-              >
-                <Typography.Paragraph>{agent.name}</Typography.Paragraph>
-              </SettingsRow>
-            ))}
-        </SettingsSection>
-      ) : null}
       {!create && !channel?.archived ? (
         <SettingsSection>
           <SettingsRow
+            leading={<RowIcon icon={BookBookmark} />}
             disabled={saving}
             onPress={() =>
               router.push({ pathname: "/channel-info/[channelId]/memories", params: { channelId, serverId } })
             }
           >
-            <Typography.Paragraph>Memories</Typography.Paragraph>
+            <Typography.Paragraph>{t("mobile.channel.form.memories")}</Typography.Paragraph>
           </SettingsRow>
           <SettingsRow
+            leading={<RowIcon icon={CalendarClock} />}
             disabled={saving}
             onPress={() =>
               router.push({ pathname: "/channel-info/[channelId]/routines", params: { channelId, serverId } })
             }
           >
-            <Typography.Paragraph>Routines</Typography.Paragraph>
+            <Typography.Paragraph>{t("mobile.channel.form.routines")}</Typography.Paragraph>
           </SettingsRow>
+          {canManageFolders ? (
+            <ChannelFoldersRow serverId={serverId} channelId={channelId} available={available} disabled={saving} />
+          ) : null}
         </SettingsSection>
+      ) : null}
+      {!create && channel && !channel.archived && contextActionsSupported ? (
+        <ChannelContextActions
+          serverId={serverId}
+          channelId={channelId}
+          channelName={channel.name}
+          store={store}
+          available={available && !saving && !finished}
+          canDeleteHistory={canAdministerServer(role)}
+        />
       ) : null}
       {!create && !channel?.archived ? (
         <SettingsSection>
           {canManage ? (
             <SettingsRow
-              disabled={disabled || dirty}
+              leading={<RowIcon icon={Trash2} tone="danger" />}
+              disabled={disabled || dirty || (channel?.activeTasks ?? 0) > 0}
               disclosure={false}
-              onPress={() =>
-                Alert.alert(
-                  "Delete channel?",
-                  "This stops the channel. Its history stays in Deleted channels for preview only. You cannot restore it. Agents are kept.",
-                  [
-                    { text: "Cancel", style: "cancel" },
-                    {
-                      text: "Delete",
-                      style: "destructive",
-                      onPress: () =>
-                        void run(
-                          () =>
-                            store.command(serverId, { type: "archive", operationId: Crypto.randomUUID(), channelId }),
-                          true,
-                        ),
-                    },
-                  ],
-                )
-              }
+              onPress={() => {
+                const text = currentText();
+                Alert.alert(text.t("mobile.channel.form.deleteTitle"), text.t("mobile.channel.form.deleteBody"), [
+                  { text: text.t("common.cancel"), style: "cancel" },
+                  {
+                    text: text.t("common.delete"),
+                    style: "destructive",
+                    onPress: () =>
+                      void run(
+                        () => store.command(serverId, { type: "archive", operationId: Crypto.randomUUID(), channelId }),
+                        true,
+                      ),
+                  },
+                ]);
+              }}
             >
-              <Typography.Paragraph className="text-danger-text">Delete channel</Typography.Paragraph>
+              <Typography.Paragraph className="text-danger-text">
+                {t("mobile.channel.form.delete")}
+              </Typography.Paragraph>
             </SettingsRow>
           ) : null}
         </SettingsSection>
       ) : null}
-      {!available ? (
-        <Typography.Paragraph>Connect to a desktop server that supports channels to make changes.</Typography.Paragraph>
-      ) : null}
+      {!available ? <Typography.Paragraph>{t("mobile.channel.form.unavailable")}</Typography.Paragraph> : null}
       {dirty && !valid ? (
         <Typography.Paragraph accessibilityRole="alert" className="text-danger-text">
-          Enter a valid channel name.
+          {t("mobile.channel.form.invalidName")}
         </Typography.Paragraph>
       ) : null}
-      {error ? (
-        <Typography.Paragraph accessibilityRole="alert" className="text-danger-text">
-          {error}
-        </Typography.Paragraph>
-      ) : null}
+      <SaveError error={error} />
     </SheetScrollView>
   );
 }

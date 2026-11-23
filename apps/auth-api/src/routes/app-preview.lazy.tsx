@@ -1,9 +1,13 @@
+import { DEFAULT_APP_LANGUAGE } from "@openbot/contracts/app-language";
+import { loadLocale, resolveLocale } from "@openbot/i18n";
 import { createLazyFileRoute } from "@tanstack/solid-router";
 import { createSignal, lazy, onSettled, Show } from "solid-js";
-import "../../../../src/renderer/src/preview/preview.css";
 
-const DaniDexPlayground = lazy(() =>
-  import("@dani-dex/renderer-preview").then((module) => ({ default: module.DaniDexPlayground })),
+const OpenBotPlayground = lazy(() =>
+  Promise.all([
+    import("@openbot/renderer-preview"),
+    loadLocale(resolveLocale(DEFAULT_APP_LANGUAGE, navigator.language)).catch(() => undefined),
+  ]).then(([module]) => ({ default: module.OpenBotPlayground })),
 );
 
 export const Route = createLazyFileRoute("/app-preview")({ component: AppPreviewPage });
@@ -15,12 +19,12 @@ export function AppPreviewPage() {
   });
 
   return (
-    <div id="root" class="dani-dex-playground-root" data-preview-variant="landing">
+    <div id="root" class="openbot-playground-root" data-preview-variant="landing">
       <Show
         when={mounted()}
-        fallback={<div class="dani-dex-playground-loading" role="status" aria-label="Loading Dani-Dex preview" />}
+        fallback={<div class="openbot-playground-loading" role="status" aria-label="Loading OpenBot preview" />}
       >
-        <DaniDexPlayground variant="landing" />
+        <OpenBotPlayground variant="landing" />
       </Show>
     </div>
   );

@@ -1,428 +1,587 @@
-import { type ChildProcess, spawn } from "node:child_process";
+import { randomUUID } from "node:crypto";
 import { EventEmitter } from "node:events";
 import { existsSync } from "node:fs";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { availableParallelism, tmpdir } from "node:os";
 import { join } from "node:path";
-import { INPUT_LIMITS } from "@dani-dex/contracts/input-limits";
-import type { VoiceModelStatus, VoiceTranscriptionResult } from "@dani-dex/contracts/ipc";
-import { isString } from "@dani-dex/contracts/runtime-values";
-import { createDaniDexLogger } from "@dani-dex/logging";
+import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
+import {
+  AUTOMATIC_VOICE_LANGUAGE,
+  type CloudVoiceModelId,
+  type CloudVoiceModelInfo,
+  type DictationKeyProvider,
+  ELEVENLABS_VOICE_MODEL_ID,
+  type GroqVoiceModelId,
+  isGroqVoiceModelId,
+  isLocalVoiceModelId,
+  LOCAL_VOICE_MODEL_IDS,
+  type LocalVoiceModelId,
+  modelLanguage,
+  VOICE_AUDIO_LIMITS,
+  VOICE_KEY_PROVIDER_NAMES,
+  VOICE_MODEL_IDS,
+  VOICE_MODELS,
+  type VoiceModelId,
+  type VoiceModelStatus,
+  type VoiceSettings,
+  type VoiceStream,
+  type VoiceStreamAudio,
+  type VoiceStreamTranscript,
+  type VoiceTranscriptionResult,
+} from "@openbot/contracts/ipc";
+import { sourceText } from "@openbot/i18n/source";
+import { createOpenBotLogger } from "@openbot/logging";
+import { Effect, Exit, Fiber, Scope, Semaphore } from "effect";
+import { savedKeyError, type VoiceApiKeyStore } from "./voice-api-key-store";
+import {
+  type OpenVoiceStreamSocket,
+  ScribeRealtimeSession,
+  scribeRealtimeUrl,
+  VoiceStreamFailure,
+} from "./voice-cloud-stream";
+import {
+  TRANSCRIPTION_SESSION_CONFIGS,
+  transcriptionHostThreads,
+  VOICE_RUNTIME_ADDON,
+  VoiceModelService,
+  VoiceOperationError,
+} from "./voice-model-service";
+import type { VoicePreferenceStore } from "./voice-preference-store";
+import { transcribeRecording } from "./voice-server-service";
+import type {
+  VoiceTranscriptionEngine,
+  VoiceTranscriptionFailure,
+  VoiceTranscriptionHostProcess,
+  VoiceTranscriptionResponse,
+} from "./voice-transcription-protocol";
 
-import { ResidentWhisper } from "./resident-whisper";
-import { VoiceModelService, WHISPER_VAD_MODEL_BYTES, WHISPER_VAD_MODEL_SHA256 } from "./voice-model-service";
-import { WhistleService } from "./whistle-service";
-
-const logger = createDaniDexLogger("voice-transcription-service");
+const logger = createOpenBotLogger("voice-transcription-service");
 
 const TRANSCRIPTION_TIMEOUT_MS = 180_000;
-const TERMINATION_GRACE_MS = 1_000;
+const TRANSCRIPTION_TIMEOUT_PER_AUDIO_SECOND_MS = 1_500;
+const GROQ_API_ADDRESS = "https://api.groq.com/openai/v1";
+const GROQ_MODELS: Record<GroqVoiceModelId, string> = {
+  "groq-whisper-large-v3-turbo": "whisper-large-v3-turbo",
+  "groq-whisper-large-v3": "whisper-large-v3",
+};
+const CLOUD_MODELS = VOICE_MODELS.filter((model): model is CloudVoiceModelInfo => model.kind === "cloud");
+export const MODEL_ENGINES: Record<LocalVoiceModelId, VoiceTranscriptionEngine> = {
+  "parakeet-tdt-0.6b-v3": "nemo-transducer",
+  "parakeet-unified-en-0.6b": "nemo-transducer",
+  "bark-3.0-plus": "nemo-transducer",
+  "whisper-turbo": "whisper",
+  "cohere-transcribe-03-2026": "cohere-transcribe",
+};
+const LEADING_SILENCE_SAMPLES: Record<LocalVoiceModelId, number> = {
+  "parakeet-tdt-0.6b-v3": 0,
+  "parakeet-unified-en-0.6b": 0,
+  "bark-3.0-plus": 4_000,
+  "whisper-turbo": 0,
+  "cohere-transcribe-03-2026": 0,
+};
+
+function hostLanguage(modelId: LocalVoiceModelId, language: VoiceSettings["language"]): string {
+  if (MODEL_ENGINES[modelId] === "nemo-transducer") return "";
+  const model = VOICE_MODELS.find((candidate) => candidate.id === modelId);
+  const used = model ? modelLanguage(model, language) : language;
+  return used === AUTOMATIC_VOICE_LANGUAGE ? "" : used;
+}
+
+const HOST_IDLE_MS = 60_000;
+const HOST_THREADS = transcriptionHostThreads();
+const WAV_HEADER_BYTES = 44;
+const BYTES_PER_SECOND = 32_000;
+const MAXIMUM_STREAM_BYTES = VOICE_AUDIO_LIMITS.maximumSeconds * BYTES_PER_SECOND;
 
 interface VoiceTranscriptionEvents {
   modelStatus: [status: VoiceModelStatus];
+  streamTranscript: [transcript: VoiceStreamTranscript];
 }
 
-const RUNTIME_UNAVAILABLE_MESSAGE =
-  process.platform === "darwin" || process.platform === "win32"
-    ? "The local voice runtime is not installed. Run `bun run voice:prepare-runtime`, then try voice again."
-    : "Local voice transcription is not available on this platform.";
+interface ActiveStream {
+  id: string;
+  session: ScribeRealtimeSession;
+  bytes: number;
+}
+
+const RUNTIME_UNAVAILABLE_MESSAGE = sourceText("error.voice.runtimeUnavailable");
 
 interface VoiceTranscriptionServiceOptions {
   resourcesRoot: string;
-  /** Explicit development-only local QA directory, never supplied by the renderer. */
-  diagnosticRoot?: string;
-  whistleRoot?: string;
-  modelPath: string;
-  modelDownloadUrl: string | null;
-  vadModelPath: string;
-  vadModelDownloadUrl: string | null;
-  fetch?: (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
+  modelDirectories: Record<LocalVoiceModelId, string>;
+  preferences: VoicePreferenceStore;
+  apiKeys: Record<DictationKeyProvider, VoiceApiKeyStore>;
+  spawnHost: () => VoiceTranscriptionHostProcess;
+  openStreamSocket: OpenVoiceStreamSocket;
+  fetch?: typeof fetch;
+  modelFetch?: (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
+}
+
+class HostFailure extends Error {
+  constructor(readonly category: VoiceTranscriptionFailure | "host-exited") {
+    super(category);
+  }
+}
+
+interface PendingRequest {
+  id: number;
+  settle: (result: Effect.Effect<string, VoiceOperationError>) => void;
 }
 
 export class VoiceTranscriptionService extends EventEmitter<VoiceTranscriptionEvents> {
-  private readonly diagnosticRoot: string | undefined;
-  private readonly resident: ResidentWhisper | null;
-  private readonly whistle: WhistleService | null;
-  private activeChild: ChildProcess | null = null;
-  private activeRequest: AbortController | null = null;
-  private readonly executable: string;
-  private readonly model: VoiceModelService;
-  private readonly vadModel: VoiceModelService;
-  private readonly vadExecutable: string;
-  private whisperStatus: VoiceModelStatus = {
-    phase: "missing",
-    progress: null,
-    message: null,
-  };
-  private vadStatus: VoiceModelStatus = {
-    phase: "missing",
-    progress: null,
-    message: null,
-  };
+  readonly #scope = Scope.makeUnsafe();
+  readonly #addonPath: string;
+  readonly #models: Record<LocalVoiceModelId, VoiceModelService<LocalVoiceModelId>>;
+  readonly #preferences: VoicePreferenceStore;
+  readonly #apiKeys: Record<DictationKeyProvider, VoiceApiKeyStore>;
+  readonly #fetch: typeof fetch;
+  readonly #spawnHost: () => VoiceTranscriptionHostProcess;
+  readonly #openStreamSocket: OpenVoiceStreamSocket;
+  #host: VoiceTranscriptionHostProcess | null = null;
+  #hostModelId: LocalVoiceModelId | null = null;
+  #stream: ActiveStream | null = null;
+  #pending: PendingRequest | null = null;
+  #nextRequestId = 1;
+  #idleTimer: NodeJS.Timeout | null = null;
+  #busy = false;
+  readonly #queue = Semaphore.makeUnsafe(1);
 
   constructor(options: VoiceTranscriptionServiceOptions) {
     super();
-    this.diagnosticRoot = options.diagnosticRoot;
-    this.whistle =
-      options.whistleRoot && WhistleService.available(options.whistleRoot)
-        ? new WhistleService(options.whistleRoot)
-        : null;
-    this.executable = join(
-      options.resourcesRoot,
-      "bin",
-      process.platform === "win32" ? "whisper-cli.exe" : "whisper-cli",
+    this.#addonPath = join(options.resourcesRoot, "runtime", VOICE_RUNTIME_ADDON);
+    this.#spawnHost = options.spawnHost;
+    this.#openStreamSocket = options.openStreamSocket;
+    this.#preferences = options.preferences;
+    this.#apiKeys = options.apiKeys;
+    this.#fetch = options.fetch ?? fetch;
+    const modelFetch = options.modelFetch ?? options.fetch;
+    const model = (modelId: LocalVoiceModelId) => {
+      const service = new VoiceModelService<LocalVoiceModelId>({
+        modelId,
+        directory: options.modelDirectories[modelId],
+        ...(modelFetch === undefined ? {} : { fetch: modelFetch }),
+      });
+      service.on("status", (status) => this.emit("modelStatus", status));
+      return service;
+    };
+    this.#models = {
+      "parakeet-tdt-0.6b-v3": model("parakeet-tdt-0.6b-v3"),
+      "parakeet-unified-en-0.6b": model("parakeet-unified-en-0.6b"),
+      "bark-3.0-plus": model("bark-3.0-plus"),
+      "whisper-turbo": model("whisper-turbo"),
+      "cohere-transcribe-03-2026": model("cohere-transcribe-03-2026"),
+    };
+  }
+
+  readonly getModelStatus = Effect.fn("VoiceTranscription.getModelStatus")(function* (this: VoiceTranscriptionService) {
+    return yield* this.#status(this.#preferences.get().modelId);
+  }).bind(this);
+
+  readonly getModelStatuses = Effect.fn("VoiceTranscription.getModelStatuses")(function* (
+    this: VoiceTranscriptionService,
+  ) {
+    const statuses: VoiceModelStatus[] = [];
+    for (const modelId of VOICE_MODEL_IDS) statuses.push(yield* this.#status(modelId));
+    return statuses;
+  }).bind(this);
+
+  readonly prepareModel = Effect.fn("VoiceTranscription.prepareModel")(function* (this: VoiceTranscriptionService) {
+    return yield* this.downloadModel(this.#preferences.get().modelId);
+  }).bind(this);
+
+  readonly downloadModel = Effect.fn("VoiceTranscription.downloadModel")(function* (
+    this: VoiceTranscriptionService,
+    modelId: VoiceModelId,
+  ) {
+    if (!isLocalVoiceModelId(modelId)) return this.#cloudStatus(modelId);
+    return this.#runtimeMissing(modelId) ?? (yield* this.#models[modelId].prepare());
+  }).bind(this);
+
+  readonly cancelModelDownload = Effect.fn("VoiceTranscription.cancelModelDownload")(function* (
+    this: VoiceTranscriptionService,
+    modelId: VoiceModelId,
+  ) {
+    if (!isLocalVoiceModelId(modelId)) return this.#cloudStatus(modelId);
+    return this.#runtimeMissing(modelId) ?? (yield* this.#models[modelId].cancel());
+  }).bind(this);
+
+  readonly removeModel = Effect.fn("VoiceTranscription.removeModel")(function* (
+    this: VoiceTranscriptionService,
+    modelId: VoiceModelId,
+  ) {
+    if (!isLocalVoiceModelId(modelId))
+      return yield* new VoiceOperationError({ cause: new Error("A cloud model has no files to remove.") });
+    if (this.#busy) return yield* new VoiceOperationError({ cause: new Error(sourceText("error.voice.removeBusy")) });
+    return yield* this.#models[modelId].remove(
+      Effect.suspend(() => (this.#hostModelId === modelId ? this.#endHost() : Effect.void)),
     );
-    const worker = join(options.resourcesRoot, "bin", process.platform === "win32" ? "voice-stt.exe" : "voice-stt");
-    this.resident = existsSync(worker) ? new ResidentWhisper(worker, options.modelPath, options.vadModelPath) : null;
-    this.model = new VoiceModelService({
-      modelPath: options.modelPath,
-      downloadUrl: options.modelDownloadUrl,
-      fetch: options.fetch,
-    });
-    this.vadExecutable = join(
-      options.resourcesRoot,
-      "bin",
-      process.platform === "win32" ? "voice-vad.exe" : "voice-vad",
+  }).bind(this);
+
+  getSettings(): VoiceSettings {
+    return this.#preferences.get();
+  }
+
+  readonly setSettings = Effect.fn("VoiceTranscription.setSettings")(function* (
+    this: VoiceTranscriptionService,
+    settings: VoiceSettings,
+  ) {
+    return yield* this.#preferences.set(settings);
+  }).bind(this);
+
+  readonly transcribe = Effect.fn("VoiceTranscription.transcribe")(
+    (audio: Uint8Array): Effect.Effect<VoiceTranscriptionResult, VoiceOperationError> =>
+      Effect.gen({ self: this }, function* () {
+        return yield* this.#queue.withPermit(
+          Effect.acquireUseRelease(
+            Effect.sync(() => {
+              this.#busy = true;
+            }),
+            () =>
+              Effect.gen({ self: this }, function* () {
+                const settings = this.#preferences.get();
+                const { modelId } = settings;
+                if (isGroqVoiceModelId(modelId))
+                  return yield* this.#transcribeAtGroq(audio, modelId, settings.language);
+                if (!isLocalVoiceModelId(modelId))
+                  return yield* new VoiceOperationError({
+                    cause: new Error(sourceText("error.voice.transcriptionFailed")),
+                  });
+                const modelStatus = yield* this.downloadModel(modelId);
+                if (modelStatus.phase !== "ready")
+                  return yield* new VoiceOperationError({
+                    cause: new Error(modelStatus.message ?? sourceText("error.voice.modelUnavailable")),
+                  });
+                const startedAt = Date.now();
+                const pcm = audio.slice(WAV_HEADER_BYTES);
+                const audioSeconds = (pcm.byteLength / BYTES_PER_SECOND).toFixed(1);
+                return yield* Effect.gen({ self: this }, function* () {
+                  const text = yield* this.#request(pcm, modelId, settings.language);
+                  if (text.length > INPUT_LIMITS.messageText)
+                    return yield* new VoiceOperationError({ cause: new Error("The voice transcript is too long.") });
+                  logger.info(`Voice transcription of ${audioSeconds}s completed in ${Date.now() - startedAt}ms.`);
+                  return { text };
+                }).pipe(
+                  Effect.mapError((error) => {
+                    logger.error(
+                      `Voice transcription of ${audioSeconds}s failed after ${Date.now() - startedAt}ms.`,
+                      errorCategory(error.cause),
+                    );
+                    return new VoiceOperationError({ cause: userFacingError(error.cause) });
+                  }),
+                );
+              }),
+            () =>
+              Effect.sync(() => {
+                this.#busy = false;
+              }),
+          ),
+        );
+      }).pipe(Effect.forkIn(this.#scope, { startImmediately: true }), Effect.flatMap(Fiber.join)),
+  );
+
+  readonly setApiKey = Effect.fn("VoiceTranscription.setApiKey")(function* (
+    this: VoiceTranscriptionService,
+    provider: DictationKeyProvider,
+    key: string | null,
+  ) {
+    yield* this.#apiKeys[provider]
+      .set(key)
+      .pipe(Effect.mapError(({ cause }) => new VoiceOperationError({ cause: savedKeyError(cause, provider) })));
+    if (key === null && provider === "elevenlabs") this.#endStream();
+    const statuses = CLOUD_MODELS.filter((model) => model.provider === provider).map((model) =>
+      this.#cloudStatus(model.id),
     );
-    this.vadModel = new VoiceModelService({
-      modelPath: options.vadModelPath,
-      downloadUrl: options.vadModelDownloadUrl,
-      fetch: options.fetch,
-      expectedBytes: WHISPER_VAD_MODEL_BYTES,
-      expectedSha256: WHISPER_VAD_MODEL_SHA256,
-    });
-    this.model.on("status", (status) => {
-      this.whisperStatus = status;
-      this.emit("modelStatus", this.combinedStatus());
-    });
-    this.vadModel.on("status", (status) => {
-      this.vadStatus = status;
-      this.emit("modelStatus", this.combinedStatus());
-    });
-  }
+    for (const status of statuses) this.emit("modelStatus", status);
+    const inUse = this.#preferences.get().modelId;
+    return (
+      statuses.find((status) => status.modelId === inUse) ?? statuses[0] ?? this.#cloudStatus(ELEVENLABS_VOICE_MODEL_ID)
+    );
+  }).bind(this);
 
-  get vadModelPath(): string {
-    return this.vadModel.modelPath;
-  }
+  readonly startStream = Effect.fn("VoiceTranscription.startStream")(function* (this: VoiceTranscriptionService) {
+    this.#endStream();
+    const { modelId, language } = this.#preferences.get();
+    const apiKey = this.#apiKeys.elevenlabs.get();
+    if (modelId !== ELEVENLABS_VOICE_MODEL_ID || !apiKey)
+      return yield* new VoiceOperationError({
+        cause: new Error(
+          sourceText("error.voice.cloud.keyRequired", { provider: VOICE_KEY_PROVIDER_NAMES.elevenlabs }),
+        ),
+      });
+    const id = randomUUID();
+    const session = new ScribeRealtimeSession({
+      url: scribeRealtimeUrl(language),
+      apiKey,
+      open: this.#openStreamSocket,
+      onText: (text) => {
+        if (this.#stream?.id === id) this.emit("streamTranscript", { streamId: id, text });
+      },
+    });
+    this.#stream = { id, session, bytes: 0 };
+    yield* Effect.tryPromise({ try: () => session.ready, catch: streamError }).pipe(
+      Effect.tapError(() => Effect.sync(() => this.#endStream(id))),
+      Effect.onInterrupt(() => Effect.sync(() => this.#endStream(id))),
+    );
+    return { streamId: id } satisfies VoiceStream;
+  }).bind(this);
 
-  async getModelStatus(): Promise<VoiceModelStatus> {
-    const missing = this.runtimeMissing();
-    if (missing) return missing;
-    this.whisperStatus = this.whistle
-      ? await this.whistle.prepare().then(
-          () =>
-            ({
-              phase: "ready",
-              progress: 100,
-              message: null,
-            }) satisfies VoiceModelStatus,
-        )
-      : await this.model.getStatus();
-    this.vadStatus = await this.vadModel.getStatus();
-    return this.combinedStatus();
-  }
-
-  async prepareModel(signal?: AbortSignal): Promise<VoiceModelStatus> {
-    const missing = this.runtimeMissing();
-    if (missing) return missing;
-    this.whisperStatus = this.whistle
-      ? await this.whistle.prepare(signal).then(
-          () =>
-            ({
-              phase: "ready",
-              progress: 100,
-              message: null,
-            }) satisfies VoiceModelStatus,
-        )
-      : await this.model.prepare(signal);
-    signal?.throwIfAborted();
-    if (this.whisperStatus.phase !== "ready") return this.combinedStatus();
-    this.vadStatus = await this.vadModel.prepare(signal);
-    signal?.throwIfAborted();
-    if (this.resident && this.vadStatus.phase === "ready") {
-      // Prepare resident Whisper before the microphone opens, not on the first spoken sentence.
-      const whisper = await this.model.prepare(signal);
-      if (whisper.phase !== "ready") return whisper;
-      await this.resident.prepare(signal);
+  readonly appendStream = Effect.fn("VoiceTranscription.appendStream")(function* (
+    this: VoiceTranscriptionService,
+    { streamId, pcm }: VoiceStreamAudio,
+  ) {
+    const stream = yield* this.#activeStream(streamId);
+    stream.bytes += pcm.byteLength;
+    if (stream.bytes > MAXIMUM_STREAM_BYTES) {
+      this.#endStream(streamId);
+      return yield* new VoiceOperationError({ cause: new Error(sourceText("error.voice.cloud.tooLong")) });
     }
-    return this.combinedStatus();
+    yield* Effect.try({ try: () => stream.session.append(pcm), catch: streamError });
+  }).bind(this);
+
+  readonly finishStream = Effect.fn("VoiceTranscription.finishStream")(function* (
+    this: VoiceTranscriptionService,
+    { streamId }: VoiceStream,
+  ) {
+    const stream = yield* this.#activeStream(streamId);
+    const text = yield* Effect.tryPromise({ try: () => stream.session.finish(), catch: streamError }).pipe(
+      Effect.ensuring(Effect.sync(() => this.#endStream(streamId))),
+    );
+    if (text.length > INPUT_LIMITS.messageText)
+      return yield* new VoiceOperationError({ cause: new Error("The voice transcript is too long.") });
+    return { text } satisfies VoiceTranscriptionResult;
+  }).bind(this);
+
+  cancelStream({ streamId }: VoiceStream): void {
+    this.#endStream(streamId);
   }
 
-  async transcribe(
+  readonly removeRetiredModelFiles = Effect.fn("VoiceTranscription.removeRetiredModelFiles")(function* (
+    this: VoiceTranscriptionService,
+  ) {
+    for (const modelId of LOCAL_VOICE_MODEL_IDS) yield* this.#models[modelId].removeRetiredFiles();
+  }).bind(this);
+
+  readonly shutdown = Effect.fn("VoiceTranscription.shutdown")(function* (this: VoiceTranscriptionService) {
+    this.#endStream();
+    this.#stopHost();
+    for (const modelId of LOCAL_VOICE_MODEL_IDS) yield* this.#models[modelId].shutdown();
+    yield* Scope.close(this.#scope, Exit.void);
+  }, Effect.uninterruptible).bind(this);
+
+  #status(modelId: VoiceModelId): Effect.Effect<VoiceModelStatus, VoiceOperationError> {
+    if (!isLocalVoiceModelId(modelId)) return Effect.succeed(this.#cloudStatus(modelId));
+    const missing = this.#runtimeMissing(modelId);
+    return missing ? Effect.succeed(missing) : this.#models[modelId].getStatus();
+  }
+
+  #cloudStatus(modelId: CloudVoiceModelId): VoiceModelStatus {
+    const provider = cloudProvider(modelId);
+    return this.#apiKeys[provider].get()
+      ? { modelId, phase: "ready", progress: null, message: null }
+      : {
+          modelId,
+          phase: "missing",
+          progress: null,
+          message: sourceText("error.voice.cloud.keyRequired", { provider: VOICE_KEY_PROVIDER_NAMES[provider] }),
+        };
+  }
+
+  #transcribeAtGroq(
     audio: Uint8Array,
-    signal: AbortSignal,
-    options: { language?: "en" | "hi" | "bn"; engine?: "whisper" } = {},
-  ): Promise<VoiceTranscriptionResult> {
-    throwIfAborted(signal);
-    if (this.activeRequest) throw new Error("A voice transcription is already in progress.");
-    const request = new AbortController();
-    const abort = () => request.abort();
-    signal.addEventListener("abort", abort, { once: true });
-    this.activeRequest = request;
-    let temporaryRoot: string | undefined;
-    let unavailableMessage: string | undefined;
-    const startedAt = Date.now();
-
-    let diagnosticPath: string | undefined;
-    const diagnostic = async (result: VoiceTranscriptionResult) => {
-      if (diagnosticPath)
-        await writeFile(
-          `${diagnosticPath}.json`,
-          JSON.stringify({
-            startedAt,
-            completedAt: Date.now(),
-            elapsedMs: Date.now() - startedAt,
-            language: options.language ?? "auto",
-            engine: options.engine ?? "default",
-            result,
-          }),
-          { mode: 0o600 },
-        ).catch(() => undefined);
-      return result;
-    };
-    try {
-      if (this.diagnosticRoot) {
-        try {
-          await mkdir(this.diagnosticRoot, { recursive: true, mode: 0o700 });
-          diagnosticPath = join(this.diagnosticRoot, `${startedAt}-${crypto.randomUUID()}`);
-          await writeFile(`${diagnosticPath}.wav`, audio, { mode: 0o600 });
-        } catch {
-          diagnosticPath = undefined;
-          logger.warn("Local voice QA capture could not be saved.");
-        }
-      }
-      const modelStatus = await this.prepareModel(request.signal);
-      throwIfAborted(request.signal);
-      if (modelStatus.phase !== "ready") {
-        unavailableMessage = modelStatus.message ?? "The voice model is unavailable.";
-        throw new Error(unavailableMessage);
-      }
-      if (
-        this.whistle &&
-        options.engine !== "whisper" &&
-        options.language !== "hi" &&
-        options.language !== "bn" &&
-        whistleSupportsWav(audio)
-      ) {
-        const result = await this.whistle.transcribe(audio, request.signal, options.language);
-        logger.info(`Whistle transcription completed in ${Date.now() - startedAt}ms.`);
-        return await diagnostic(result);
-      }
-      if (this.whistle) {
-        const fallback = await this.model.prepare(request.signal);
-        throwIfAborted(request.signal);
-        if (fallback.phase !== "ready") throw new Error(fallback.message ?? "The fallback voice model is unavailable.");
-      }
-      const audioContext = whisperAudioContextForWav(audio);
-      if (this.resident && audioContext < 1500) {
-        const text = await this.resident.transcribe(audio, audioContext, options.language, request.signal);
-        if (text.length > INPUT_LIMITS.messageText) throw new Error("The voice transcript is too long.");
-        logger.info(`Resident voice transcription completed in ${Date.now() - startedAt}ms.`);
-        return await diagnostic({ text });
-      }
-      temporaryRoot = await mkdtemp(join(tmpdir(), "dani-dex-voice-"));
-      throwIfAborted(request.signal);
-      const inputPath = join(temporaryRoot, "recording.wav");
-      const outputPath = join(temporaryRoot, "transcript");
-      await writeFile(inputPath, audio, { signal: request.signal });
-      throwIfAborted(request.signal);
-      await this.run(
-        this.executable,
-        [
-          "--model",
-          this.model.modelPath,
-          "--file",
-          inputPath,
-          "--language",
-          options.language ?? "auto",
-          "--output-txt",
-          "--output-file",
-          outputPath,
-          "--no-timestamps",
-          "--no-gpu",
-          "--threads",
-          String(Math.min(8, availableParallelism())),
-          "--audio-ctx",
-          "1500",
-          "--beam-size",
-          "1",
-          "--best-of",
-          "1",
-          "--no-fallback",
-        ],
-        request.signal,
+    modelId: GroqVoiceModelId,
+    language: VoiceSettings["language"],
+  ): Effect.Effect<VoiceTranscriptionResult, VoiceOperationError> {
+    const apiKey = this.#apiKeys.groq.get();
+    if (!apiKey)
+      return Effect.fail(
+        new VoiceOperationError({
+          cause: new Error(sourceText("error.voice.cloud.keyRequired", { provider: VOICE_KEY_PROVIDER_NAMES.groq })),
+        }),
       );
-      const text = (
-        await readFile(`${outputPath}.txt`, {
-          encoding: "utf8",
-          signal: request.signal,
-        })
-      ).trim();
-      throwIfAborted(request.signal);
-      if (text.length > INPUT_LIMITS.messageText) throw new Error("The voice transcript is too long.");
-      logger.info(`Voice transcription completed in ${Date.now() - startedAt}ms.`);
-      return await diagnostic({ text });
-    } catch (error) {
-      if (request.signal.aborted) throw abortError();
-      if (unavailableMessage) throw new Error(unavailableMessage);
-      logger.error(`Voice transcription failed after ${Date.now() - startedAt}ms.`, errorCategory(error));
-      throw userFacingError(error);
-    } finally {
-      try {
-        if (temporaryRoot) await rm(temporaryRoot, { recursive: true, force: true });
-      } finally {
-        signal.removeEventListener("abort", abort);
-        if (this.activeRequest === request) this.activeRequest = null;
-      }
-    }
+    const startedAt = Date.now();
+    const audioSeconds = (Math.max(0, audio.byteLength - WAV_HEADER_BYTES) / BYTES_PER_SECOND).toFixed(1);
+    return transcribeRecording(
+      this.#fetch,
+      { address: GROQ_API_ADDRESS, apiKey },
+      GROQ_MODELS[modelId],
+      audio,
+      language,
+      { label: "Groq", refused: groqRefusal },
+    ).pipe(
+      Effect.flatMap((result) =>
+        result.text.length > INPUT_LIMITS.messageText
+          ? Effect.fail(new VoiceOperationError({ cause: new Error("The voice transcript is too long.") }))
+          : Effect.succeed(result),
+      ),
+      Effect.tap(() =>
+        Effect.sync(() =>
+          logger.info(`Groq transcription of ${audioSeconds}s completed in ${Date.now() - startedAt}ms.`),
+        ),
+      ),
+    );
   }
 
-  shutdown(): void {
-    this.activeRequest?.abort();
-    this.resident?.stop();
-    this.whistle?.shutdown();
-    this.model.shutdown();
-    this.vadModel.shutdown();
+  #activeStream(streamId: string): Effect.Effect<ActiveStream, VoiceOperationError> {
+    const stream = this.#stream;
+    if (stream?.id === streamId) return Effect.succeed(stream);
+    return Effect.fail(new VoiceOperationError({ cause: new Error(sourceText("error.voice.cloud.streamEnded")) }));
   }
 
-  /**
-   * Return an error when either required native executable is absent. The status does not
-   * claim that model assets alone make full-duplex voice available.
-   */
-  private runtimeMissing(): Promise<VoiceModelStatus> | null {
-    if (existsSync(this.executable) && existsSync(this.vadExecutable)) return null;
-    const status: VoiceModelStatus = {
-      phase: "error",
-      progress: null,
-      message: RUNTIME_UNAVAILABLE_MESSAGE,
-    };
+  #endStream(streamId?: string): void {
+    const stream = this.#stream;
+    if (!stream || (streamId !== undefined && stream.id !== streamId)) return;
+    this.#stream = null;
+    stream.session.cancel();
+  }
+
+  #runtimeMissing(modelId: LocalVoiceModelId): VoiceModelStatus | null {
+    if (existsSync(this.#addonPath)) return null;
+    const status: VoiceModelStatus = { modelId, phase: "error", progress: null, message: RUNTIME_UNAVAILABLE_MESSAGE };
     this.emit("modelStatus", status);
-    return Promise.resolve(status);
+    return status;
   }
 
-  private combinedStatus(): VoiceModelStatus {
-    return {
-      ...(this.whisperStatus.phase === "ready" ? this.vadStatus : this.whisperStatus),
-    };
+  #request(
+    pcm: Uint8Array,
+    modelId: LocalVoiceModelId,
+    language: VoiceSettings["language"],
+  ): Effect.Effect<string, VoiceOperationError> {
+    return Effect.callback<string, VoiceOperationError>((resume) => {
+      this.#cancelIdleStop();
+      if (this.#hostModelId !== modelId) this.#stopHost();
+      const host = this.#ensureHost();
+      this.#hostModelId = modelId;
+      const id = this.#nextRequestId++;
+      let settled = false;
+      this.#pending = {
+        id,
+        settle: (result) => {
+          settled = true;
+          resume(result);
+        },
+      };
+      const engine = MODEL_ENGINES[modelId];
+      host.send({
+        id,
+        addonPath: this.#addonPath,
+        modelDirectory: this.#models[modelId].directory,
+        engine,
+        language: hostLanguage(modelId, language),
+        leadingSilenceSamples: LEADING_SILENCE_SAMPLES[modelId],
+        numThreads: HOST_THREADS,
+        sessionConfig: TRANSCRIPTION_SESSION_CONFIGS[modelId],
+        pcm,
+      });
+      return Effect.sync(() => {
+        if (this.#pending?.id === id) this.#pending = null;
+        if (!settled) this.#stopHost();
+      });
+    }).pipe(
+      Effect.timeoutOrElse({
+        duration: Math.max(
+          TRANSCRIPTION_TIMEOUT_MS,
+          (pcm.byteLength / BYTES_PER_SECOND) * TRANSCRIPTION_TIMEOUT_PER_AUDIO_SECOND_MS,
+        ),
+        orElse: () =>
+          Effect.fail(new VoiceOperationError({ cause: new Error(sourceText("error.voice.transcriptionTimedOut")) })),
+      }),
+      Effect.ensuring(Effect.sync(() => this.#scheduleIdleStop())),
+    );
   }
 
-  private run(executable: string, arguments_: string[], signal: AbortSignal): Promise<void> {
-    throwIfAborted(signal);
-    const { promise, resolve, reject } = Promise.withResolvers<void>();
-    const child = spawn(executable, arguments_, {
-      windowsHide: true,
-      stdio: ["ignore", "ignore", "pipe"],
+  #ensureHost(): VoiceTranscriptionHostProcess {
+    if (this.#host) return this.#host;
+    const host = this.#spawnHost();
+    this.#host = host;
+    host.onResponse((response) => {
+      if (this.#host !== host) return;
+      this.#settle(response.id, responseResult(response));
     });
-    this.activeChild = child;
-    let failure: Error | undefined;
-    let killTimer: NodeJS.Timeout | undefined;
-    const stop = (error: Error) => {
-      if (failure) return;
-      failure = error;
-      child.kill();
-      killTimer = setTimeout(() => child.kill("SIGKILL"), TERMINATION_GRACE_MS);
-    };
-    const abort = () => stop(abortError());
-    signal.addEventListener("abort", abort, { once: true });
-    // Drain diagnostics, but do not retain paths, transcript text, or other private native output.
-    child.stderr?.resume();
-    const timer = setTimeout(() => stop(new Error("Voice transcription timed out.")), TRANSCRIPTION_TIMEOUT_MS);
-    child.once("error", (error) => {
-      failure ??= error;
+    host.onExit(() => {
+      if (this.#host !== host) return;
+      this.#host = null;
+      this.#hostModelId = null;
+      this.#cancelIdleStop();
+      const pending = this.#pending;
+      if (pending)
+        this.#settle(pending.id, Effect.fail(new VoiceOperationError({ cause: new HostFailure("host-exited") })));
     });
-    // Only close proves that the process and its stdio are gone. Keep ownership until then.
-    child.once("close", (code) => {
-      clearTimeout(timer);
-      clearTimeout(killTimer);
-      signal.removeEventListener("abort", abort);
-      if (this.activeChild === child) this.activeChild = null;
-      if (signal.aborted) reject(abortError());
-      else if (failure) reject(failure);
-      else if (code === 0) resolve();
-      else reject(new Error("Whisper inference failed."));
+    return host;
+  }
+
+  #settle(id: number, result: Effect.Effect<string, VoiceOperationError>): void {
+    const pending = this.#pending;
+    if (pending?.id !== id) return;
+    this.#pending = null;
+    pending.settle(result);
+  }
+
+  #scheduleIdleStop(): void {
+    this.#cancelIdleStop();
+    if (!this.#host) return;
+    this.#idleTimer = setTimeout(() => this.#stopHost(), HOST_IDLE_MS);
+    this.#idleTimer.unref();
+  }
+
+  #cancelIdleStop(): void {
+    if (this.#idleTimer) clearTimeout(this.#idleTimer);
+    this.#idleTimer = null;
+  }
+
+  #endHost(): Effect.Effect<void> {
+    const host = this.#host;
+    if (!host) return Effect.void;
+    return Effect.callback<void>((resume) => {
+      host.onExit(() => resume(Effect.void));
+      this.#stopHost();
     });
-    if (signal.aborted) abort();
-    return promise;
+  }
+
+  #stopHost(): void {
+    this.#cancelIdleStop();
+    const host = this.#host;
+    this.#host = null;
+    this.#hostModelId = null;
+    host?.kill();
   }
 }
 
-function abortError(): Error {
-  const error = new Error("Voice transcription was stopped.");
-  error.name = "AbortError";
-  return error;
+function groqRefusal(status: number): string | null {
+  const provider = VOICE_KEY_PROVIDER_NAMES.groq;
+  if (status === 401 || status === 403) return sourceText("error.voice.cloud.keyRejected", { provider });
+  if (status === 429) return sourceText("error.voice.cloud.rateLimited", { provider });
+  return null;
 }
 
-function throwIfAborted(signal: AbortSignal): void {
-  if (signal.aborted) throw abortError();
+function cloudProvider(modelId: CloudVoiceModelId): DictationKeyProvider {
+  return CLOUD_MODELS.find((model) => model.id === modelId)?.provider ?? "elevenlabs";
 }
 
-/**
- * The pinned encoder uses two 10 ms mel frames per context token. Keep one second of
- * padding beyond every recorded sample, and use the full context for long or noncanonical WAVs.
- */
-export function whisperAudioContextForWav(audio: Uint8Array): number {
-  if (audio.byteLength < 44) return 1500;
-  const view = new DataView(audio.buffer, audio.byteOffset, audio.byteLength);
-  // Big-endian reads compare the four literal RIFF chunk bytes without string allocation.
-  const samples = view.getUint32(40, true) / 2;
-  if (
-    view.getUint32(0, false) !== 0x52494646 ||
-    view.getUint32(8, false) !== 0x57415645 ||
-    view.getUint32(4, true) !== audio.byteLength - 8 ||
-    view.getUint32(12, false) !== 0x666d7420 ||
-    view.getUint32(16, true) !== 16 ||
-    view.getUint16(20, true) !== 1 ||
-    view.getUint16(22, true) !== 1 ||
-    view.getUint32(24, true) !== 16000 ||
-    view.getUint32(28, true) !== 32000 ||
-    view.getUint16(32, true) !== 2 ||
-    view.getUint16(34, true) !== 16 ||
-    view.getUint32(36, false) !== 0x64617461 ||
-    view.getUint32(40, true) !== audio.byteLength - 44 ||
-    !Number.isInteger(samples)
-  )
-    return 1500;
-  return Math.min(1500, Math.max(50, Math.ceil(samples / 320) + 50));
+function responseResult(response: VoiceTranscriptionResponse): Effect.Effect<string, VoiceOperationError> {
+  if ("text" in response) return Effect.succeed(response.text);
+  return Effect.fail(new VoiceOperationError({ cause: new HostFailure(response.error) }));
 }
 
-function errorCategory(error: unknown): "unknown" | "runtime-unavailable" | "timeout" | "inference-failed" {
+function streamError(cause: unknown): VoiceOperationError {
+  return new VoiceOperationError({
+    cause:
+      cause instanceof VoiceStreamFailure
+        ? new Error(cause.message)
+        : new Error(sourceText("error.voice.transcriptionFailed")),
+  });
+}
+
+function errorCategory(
+  error: unknown,
+): "unknown" | "timeout" | "runtime-unavailable" | "model-load-failed" | "inference-failed" | "host-exited" {
+  if (error instanceof HostFailure) return error.category;
   if (!(error instanceof Error)) return "unknown";
-  if (errorCode(error) === "ENOENT") return "runtime-unavailable";
-  if (error.message.includes("timed out")) return "timeout";
+  if (error.message === sourceText("error.voice.transcriptionTimedOut")) return "timeout";
   return "inference-failed";
 }
 
 function userFacingError(error: unknown): Error {
-  if (error instanceof Error && error.message.includes("timed out")) return error;
-  if (error instanceof Error && errorCode(error) === "ENOENT") {
-    return new Error("Local voice transcription is unavailable. Run `bun run voice:prepare` and restart Dani-Dex.");
+  if (error instanceof Error && error.message === sourceText("error.voice.transcriptionTimedOut")) return error;
+  if (error instanceof HostFailure && error.category === "runtime-unavailable") {
+    return new Error(sourceText("error.voice.prepareRequired"));
   }
-  return new Error("Dani-Dex could not transcribe this recording.");
-}
-
-function errorCode(error: Error): string | undefined {
-  const code = "code" in error ? error.code : undefined;
-  return isString(code) ? code : undefined;
-}
-
-/** Needle's pinned speech API accepts at most 30 seconds per call. Long dictation stays on Whisper. */
-export function whistleSupportsWav(audio: Uint8Array): boolean {
-  if (audio.byteLength < 44 || audio.byteLength > 960_044) return false;
-  const view = new DataView(audio.buffer, audio.byteOffset, audio.byteLength);
-  return (
-    view.getUint32(0, false) === 0x52494646 &&
-    view.getUint32(4, true) === audio.byteLength - 8 &&
-    view.getUint32(8, false) === 0x57415645 &&
-    view.getUint32(12, false) === 0x666d7420 &&
-    view.getUint32(16, true) === 16 &&
-    view.getUint16(20, true) === 1 &&
-    view.getUint16(22, true) === 1 &&
-    view.getUint32(24, true) === 16_000 &&
-    view.getUint32(28, true) === 32_000 &&
-    view.getUint16(32, true) === 2 &&
-    view.getUint16(34, true) === 16 &&
-    view.getUint32(36, false) === 0x64617461 &&
-    view.getUint32(40, true) === audio.byteLength - 44 &&
-    (audio.byteLength - 44) % 2 === 0
-  );
+  return new Error(sourceText("error.voice.transcriptionFailed"));
 }

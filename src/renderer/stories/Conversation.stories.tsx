@@ -1,76 +1,45 @@
-import { serializeAttachmentReference } from "@dani-dex/contracts/attachment-references";
-import type {
-  AgentEvent,
-  AttachmentSummary,
-  AvatarImageInput,
-  DraftAttachment,
-  QueueSnapshot,
-  UpdateAgentInput,
-} from "@dani-dex/contracts/ipc";
+import { serializeAttachmentReference } from "@openbot/contracts/attachment-references";
+import type { AgentEvent, AttachmentSummary, DraftAttachment, QueueSnapshot } from "@openbot/contracts/ipc";
+import {
+  type ConversationUiBlock,
+  type UiChoiceBlock,
+  type UiConfirmBlock,
+  uiBlockFallbackQuestions,
+} from "@openbot/contracts/ui-blocks";
+import type { AgentMessage as RendererAgentMessage, RoutineRunMarkerModel } from "@openbot/ui/data";
+import { BrowserTakeoverCard } from "@openbot/ui/features/conversation/ConversationPrompts";
+import type { VoicePhase } from "@openbot/ui/features/conversation/VoiceRecordingMorph";
+import { currentText } from "@openbot/ui/text";
 import { Portal } from "@solidjs/web";
-import { createEffect, createSignal, onCleanup, onSettled, type ParentProps, Show } from "solid-js";
-import { expect, fireEvent, fn, waitFor, within } from "storybook/test";
+import { createEffect, createSignal, onCleanup, onSettled, Show } from "solid-js";
+import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { clipboardFiles } from "../../preload/clipboard-files";
-import type { AgentMessage as RendererAgentMessage } from "../src/data";
-import { AuthProvider } from "../src/features/account/account-context";
 import { Conversation, createConversationController } from "../src/features/conversation/Conversation";
-import { BrowserTakeoverCard } from "../src/features/conversation/ConversationPrompts";
 import { ConversationView } from "../src/features/conversation/ConversationView";
 import { ConversationControllerProvider } from "../src/features/conversation/conversation-controller-context";
 import { composerDraftKey } from "../src/features/conversation/conversation-keys";
-import { SetupProvider } from "../src/features/onboarding/onboarding-context";
-import { ServersProvider } from "../src/features/servers/servers-context";
-import { SettingsProvider } from "../src/features/settings/settings-context";
-import { UsageProvider } from "../src/features/usage/usage-context";
-import { PlatformProvider } from "../src/platform";
-import { encodePcmWav } from "../src/voice-recording";
 import browserTakeoverPreviewUrl from "./assets/browser-takeover-preview.svg";
 import {
+  CONVERSATION_STORY_ARGS,
+  CONVERSATION_STORY_ATTACHMENT,
+  CONVERSATION_STORY_MESSAGES,
+  StoryAppProviders,
+} from "./conversation-story-support";
+import {
+  requireFixture,
   STORY_AGENT_STATUS,
   STORY_AGENTS,
   STORY_ATTACHMENTS,
-  STORY_CONVERSATION_MESSAGES,
-  STORY_MODELS,
   STORY_PRESENCE,
-  STORY_REMOTE_DESKTOP_SESSION,
-  STORY_SERVERS,
+  STORY_QUEUES,
+  STORY_REPLY_QUOTE_BODY,
 } from "./fixtures";
-import { createMockDaniDex } from "./mock-dani-dex";
+import { createMockOpenBot } from "./mock-openbot";
 
-const messages: RendererAgentMessage[] = STORY_CONVERSATION_MESSAGES.map((message) => ({
-  id: message.id,
-  author: message.author === "user" ? "you" : "agent",
-  body:
-    message.id === "message-agent-1"
-      ? `${message.text}\n\nPlease review ${serializeAttachmentReference(STORY_ATTACHMENTS[0].name, STORY_ATTACHMENTS[0].id)} before editing the implementation notes.\n\nTransformers scale well with data and compute [1], though attention is quadratic in sequence length [2].`
-      : message.text,
-  time: "10:00",
-  itemType: message.itemType,
-  senderAgentId: message.senderAgentId,
-  replyToMessageId: message.replyToMessageId,
-  attachments: message.attachments,
-  citations:
-    message.id === "message-agent-1"
-      ? [
-          {
-            number: 1,
-            label: "Attention Is All You Need",
-            url: "https://arxiv.org/abs/1706.03762",
-            host: "arxiv.org",
-          },
-          {
-            number: 2,
-            label: "Efficient Transformers: A Survey",
-            url: "https://arxiv.org/abs/2009.06732",
-            host: "arxiv.org",
-          },
-        ]
-      : undefined,
-  exchange: message.exchange,
-  reaction: message.reaction,
-  kind: message.exchange ? "exchange" : "text",
-}));
+const storyAttachment = CONVERSATION_STORY_ATTACHMENT;
+const messages = CONVERSATION_STORY_MESSAGES;
+const args = CONVERSATION_STORY_ARGS;
 
 const unreadStoryMessages: RendererAgentMessage[] = [
   ...Array.from(
@@ -97,28 +66,6 @@ const unreadStoryMessages: RendererAgentMessage[] = [
     }),
   ),
 ];
-
-/*
- * The pill that counts what arrived below the reader. The messages live in a signal, because the
- * count is a function of arrival: the play function has to append to a transcript the reader is
- * already scrolled away from.
- */
-const newMessagePillHistory: RendererAgentMessage[] = unreadStoryMessages.map((message, index) => ({
-  ...message,
-  id: `pill-history-${index + 1}`,
-}));
-
-function newMessagePillArrival(index: number): RendererAgentMessage {
-  return {
-    id: `pill-arrival-${index}`,
-    author: "agent",
-    body: `Arrived while the reader was scrolled up (${index}). The pill above the composer counts this one.`,
-    time: `09:${String(50 + index).padStart(2, "0")}`,
-    kind: "text",
-  };
-}
-
-const [newMessagePillMessages, setNewMessagePillMessages] = createSignal<RendererAgentMessage[]>(newMessagePillHistory);
 
 const imageGenerationMessages: RendererAgentMessage[] = [
   ...messages,
@@ -147,8 +94,8 @@ const imageGenerationMessages: RendererAgentMessage[] = [
   },
 ];
 
-const generatedImagePreview = new URL("../src/assets/dani-dex-logo-production.png", import.meta.url).href;
-const generatedImagePreviewAlternate = new URL("../src/assets/dani-dex-logo-dev.png", import.meta.url).href;
+const generatedImagePreview = new URL("../src/assets/openbot-logo-production.png", import.meta.url).href;
+const generatedImagePreviewAlternate = new URL("../src/assets/openbot-logo-dev.png", import.meta.url).href;
 const generatedImageAttachment: AttachmentSummary = {
   id: "generated-image-in-chat",
   name: "generated-image.png",
@@ -158,15 +105,18 @@ const generatedImageAttachment: AttachmentSummary = {
   previewKind: "image",
   previewUrl: generatedImagePreview,
 };
-const queuePreviewAttachments: AttachmentSummary[] = [
-  { ...generatedImageAttachment, id: "queue-preview-primary", name: "command-search.png" },
-  {
-    ...generatedImageAttachment,
-    id: "queue-preview-alternate",
-    name: "message-search.png",
-    previewUrl: generatedImagePreviewAlternate,
-  },
-];
+const queuePrimaryAttachment: AttachmentSummary = {
+  ...generatedImageAttachment,
+  id: "queue-preview-primary",
+  name: "command-search.png",
+};
+const queueAlternateAttachment: AttachmentSummary = {
+  ...generatedImageAttachment,
+  id: "queue-preview-alternate",
+  name: "message-search.png",
+  previewUrl: generatedImagePreviewAlternate,
+};
+const queuePreviewAttachments: AttachmentSummary[] = [queuePrimaryAttachment, queueAlternateAttachment];
 const supportedContextAttachments: AttachmentSummary[] = [
   {
     id: "composer-context-pdf",
@@ -280,17 +230,17 @@ const agentMessageGalleryMessages: RendererAgentMessage[] = [
     body: [
       "## Links and references",
       "",
-      "Review [Dani-Dex documentation](https://dani-dex.example/docs), the [Kobalte guide](https://kobalte.dev/docs/core/overview/introduction), and https://zaidan.carere.dev/docs/components/kobalte/bubble.",
+      "Review [OpenBot documentation](https://openbot.run/docs), the [Kobalte guide](https://kobalte.dev/docs/core/overview/introduction), and https://zaidan.carere.dev/docs/components/kobalte/bubble.",
       "",
-      "You can also open [ConversationView.tsx](/Users/test/Dani-Dex/src/renderer/src/features/conversation/ConversationView.tsx), ask @Research, or inspect the attached source file below.",
+      "You can also open [ConversationView.tsx](/Users/test/OpenBot/src/renderer/src/features/conversation/ConversationView.tsx), ask @Research, or inspect the attached source file below.",
       "",
-      `Attachment reference: ${serializeAttachmentReference(STORY_ATTACHMENTS[0].name, STORY_ATTACHMENTS[0].id)}.`,
+      `Attachment reference: ${serializeAttachmentReference(storyAttachment.name, storyAttachment.id)}.`,
       "",
       "The implementation follows the component source [1] and the accessibility guidance [2].",
     ].join("\n"),
     time: "10:02",
     kind: "text",
-    attachments: [STORY_ATTACHMENTS[0]],
+    attachments: [storyAttachment],
     citations: [
       {
         number: 1,
@@ -397,7 +347,7 @@ const agentMessageGalleryMessages: RendererAgentMessage[] = [
     body: "",
     time: "10:09",
     kind: "text",
-    attachments: [STORY_ATTACHMENTS[0]],
+    attachments: [storyAttachment],
     reaction: "🔥",
   },
   {
@@ -467,6 +417,30 @@ const dataTableMessages: RendererAgentMessage[] = [
     time: "10:03",
     kind: "text",
   },
+  {
+    id: "data-table-wide-user",
+    author: "you",
+    body: "Add the form and the expected goals for each team.",
+    time: "10:04",
+    kind: "text",
+  },
+  {
+    id: "data-table-wide-agent",
+    author: "agent",
+    body: [
+      "A wide table takes more of the chat:",
+      "",
+      "| Fixture | Kickoff | Home form | Away form | Home xG | Away xG | Market odds H/D/A | Implied H/D/A | Scenario | Pick |",
+      "| --- | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |",
+      "| Ipswich–Liverpool | Sat 12:30 | L D L W L | W W D W W | 1.02 | 2.14 | 5.25 / 4.60 / 1.57 | 18% / 21% / 61% | 20% / 22% / 58% | Liverpool win |",
+      "| Newcastle–Bournemouth | Sat 15:00 | W W L D W | D L W W L | 1.71 | 1.18 | 2.20 / 3.70 / 3.00 | 43% / 26% / 32% | 45% / 27% / 28% | Newcastle, cautiously |",
+      "| Brighton–Leeds | Sun 14:00 | W D W L W | L L D W D | 1.88 | 0.97 | 1.90 / 3.60 / 4.00 | 50% / 26% / 24% | 48% / 27% / 25% | Brighton win |",
+      "",
+      `![Remote desktop](${new URL("./assets/remote-desktop-mac-mock.png", import.meta.url).href})`,
+    ].join("\n"),
+    time: "10:05",
+    kind: "text",
+  },
 ];
 
 const codeBlockMessages: RendererAgentMessage[] = [
@@ -498,6 +472,105 @@ const codeBlockMessages: RendererAgentMessage[] = [
     body: "The checks should complete before release.",
     time: "10:04",
     kind: "text",
+  },
+];
+
+const diagramMessages: RendererAgentMessage[] = [
+  {
+    id: "diagram-user",
+    author: "you",
+    body: "Draw how a message gets to the agent.",
+    time: "10:02",
+    kind: "text",
+  },
+  {
+    id: "diagram-agent",
+    author: "agent",
+    body: [
+      "```mermaid",
+      "flowchart LR",
+      "  Composer --> Queue --> Agent --> Reply",
+      "```",
+      "",
+      "The second diagram has an error, so it stays code with the reason above it:",
+      "",
+      "```mermaid",
+      "flowchart LR",
+      "  Composer --> --> Agent",
+      "```",
+    ].join("\n"),
+    time: "10:03",
+    kind: "text",
+  },
+];
+
+const markdownImageMessages: RendererAgentMessage[] = [
+  {
+    id: "markdown-images-user",
+    author: "you",
+    body: "Show me the logo options.",
+    time: "10:02",
+    kind: "text",
+  },
+  {
+    id: "markdown-images-agent",
+    author: "agent",
+    body: [
+      "These are the three options. Select an image to open it larger.",
+      "",
+      `![Production logo](${generatedImagePreview})`,
+      "",
+      `![Development logo](${generatedImagePreviewAlternate})`,
+      "",
+      `![](${new URL("../src/assets/openbot-logo-preview.png", import.meta.url).href})`,
+    ].join("\n"),
+    time: "10:03",
+    kind: "text",
+  },
+];
+
+const longPathReplyMessages: RendererAgentMessage[] = [
+  {
+    id: "long-path-user",
+    author: "you",
+    body: "Clean up the old build logs, and keep a copy of what you delete first.",
+    time: "10:02",
+    kind: "text",
+  },
+  {
+    id: "long-path-agent",
+    author: "agent",
+    body: [
+      "I deleted 42 build logs older than 30 days. Together they took 3.2 GB, and none of them belonged to an open release.",
+      "",
+      "- **Nightly builds:** removed. The 28 logs of the nightly channel from before the last release are gone.",
+      "- **Disk after the clean-up:**",
+      "  - Used: 81% → **64%**. The next full rotation is due in 12 days.",
+      "  - Largest folder now: **release-candidates**, with 410 MB.",
+      "- **Copies:** I kept the list of deleted logs and their checksums in `/Users/test/OpenBot/Agents/agent-5b0c2e7a-91d4-4f3e-8a6b-2c7d9e1f0a3b/backups/build-log-cleanup-2026-10-15/deleted-build-logs-with-checksums.json`.",
+      "",
+      "Nothing else on the disk changed. Tell me if you also want the crash dumps archived.",
+    ].join("\n"),
+    time: "10:03",
+    kind: "text",
+  },
+];
+
+const replyQuoteMessages: RendererAgentMessage[] = [
+  {
+    id: "reply-quote-agent",
+    author: "agent",
+    body: STORY_REPLY_QUOTE_BODY,
+    time: "10:02",
+    kind: "text",
+  },
+  {
+    id: "reply-quote-user",
+    author: "you",
+    body: "Approved. Tag it after the checks pass.",
+    time: "10:03",
+    kind: "text",
+    replyToMessageId: "reply-quote-agent",
   },
 ];
 
@@ -584,6 +657,8 @@ const streamingMarkdownChunks = [
 ] as const;
 
 function streamingMarkdownMessages(chunkIndex: number): RendererAgentMessage[] {
+  const body = streamingMarkdownChunks[chunkIndex];
+  if (body === undefined) throw new Error(`Streaming Markdown chunk ${chunkIndex} is missing.`);
   return [
     {
       id: "streaming-markdown-user",
@@ -595,7 +670,7 @@ function streamingMarkdownMessages(chunkIndex: number): RendererAgentMessage[] {
     {
       id: "streaming-markdown-agent",
       author: "agent",
-      body: streamingMarkdownChunks[chunkIndex],
+      body,
       time: "10:03",
       kind: "text",
       streaming: chunkIndex < streamingMarkdownChunks.length - 1,
@@ -640,6 +715,65 @@ function StreamingMarkdownConversation(props: { args: Parameters<typeof Conversa
   });
 
   return <MockedConversation args={{ ...props.args, activeTurnId: "streaming-markdown" }} messages={stableMessages} />;
+}
+
+const readingHistoryMessages = (length: number) =>
+  Array.from(
+    { length },
+    (_, index): RendererAgentMessage => ({
+      id: `reading-history-${index + 1}`,
+      author: index % 2 === 0 ? "you" : "agent",
+      body:
+        index % 2 === 0
+          ? `Can you check step ${index + 1} of the release plan?`
+          : `I checked step ${index + 1}. The owner, the date and the open risk are in the plan now.`,
+      time: "10:00",
+      kind: "text",
+    }),
+  );
+
+const readingHistoryStreamSentence = "I am still checking the release plan and adding each finding to this reply. ";
+
+function StreamingWhileReadingHistoryConversation(props: {
+  args: Parameters<typeof Conversation>[0];
+  history: RendererAgentMessage[];
+}) {
+  const [tick, setTick] = createSignal(0);
+  const thinkingMessage: RendererAgentMessage = {
+    id: "reading-history-thinking",
+    author: "agent",
+    body: "",
+    time: "10:01",
+    kind: "thinking",
+    streaming: true,
+  };
+  Object.defineProperty(thinkingMessage, "items", {
+    configurable: true,
+    enumerable: true,
+    get: () => [`Checking step ${Math.floor(tick() / 4) + 1} of the release plan`],
+  });
+  const streamingMessage: RendererAgentMessage = {
+    id: "reading-history-reply",
+    author: "agent",
+    body: "",
+    time: "10:01",
+    kind: "text",
+    streaming: true,
+  };
+  Object.defineProperty(streamingMessage, "body", {
+    configurable: true,
+    enumerable: true,
+    get: () => readingHistoryStreamSentence.repeat(tick() + 1),
+  });
+  const interval = window.setInterval(() => setTick((current) => current + 1), 150);
+  onCleanup(() => window.clearInterval(interval));
+
+  return (
+    <MockedConversation
+      args={{ ...props.args, activeTurnId: "reading-history-turn" }}
+      messages={[...props.history, thinkingMessage, streamingMessage]}
+    />
+  );
 }
 
 const comparisonTableMessages: RendererAgentMessage[] = [
@@ -755,6 +889,87 @@ const promptChatMessages: RendererAgentMessage[] = [
   },
 ];
 
+const uiBlockLetter: UiConfirmBlock = {
+  type: "confirm",
+  title: "Send the letter to the board?",
+  danger: true,
+  fields: [
+    { label: "To", value: "board@example.com" },
+    { label: "From", select: "from", options: ["me@example.com", "team@example.com"] },
+  ],
+  preview: "Hello,\n\nThe **heating** is off in block B since Monday. Could you send someone?",
+  actions: [
+    { id: "send", label: "Send", style: "primary" },
+    { id: "cancel", label: "Do not send", style: "ghost" },
+  ],
+};
+
+const uiBlockAudience: UiChoiceBlock = {
+  type: "choice",
+  title: "Who gets the offer?",
+  options: [
+    { id: "active", label: "Active customers", meta: "1 284" },
+    { id: "sleeping", label: "Sleeping customers", meta: "3 102" },
+  ],
+};
+
+const uiBlockPendingLetter: ConversationUiBlock = {
+  version: 1,
+  blockId: "letter",
+  spec: uiBlockLetter,
+  state: { status: "pending" },
+};
+
+const uiBlockPrompt: Extract<AgentEvent, { type: "prompt" }> = {
+  type: "prompt",
+  requestId: "ui-block-letter",
+  agentId: "chief",
+  threadId: "thread-chief",
+  turnId: "turn-ui-block",
+  questions: uiBlockFallbackQuestions(uiBlockLetter),
+};
+
+const uiBlockChatMessages: RendererAgentMessage[] = [
+  {
+    id: "ui-block-chat-user",
+    author: "you",
+    body: "Write to the board about the heating, and pick who gets the spring offer.",
+    time: "10:00",
+    kind: "text",
+  },
+  {
+    id: "question-prompt:turn-ui-block-earlier:ui-block-audience",
+    turnId: "turn-ui-block-earlier",
+    author: "agent",
+    body: "",
+    time: "10:01",
+    kind: "question",
+    itemType: "question_prompt",
+    questionPrompt: {
+      requestId: "ui-block-audience",
+      questions: uiBlockFallbackQuestions(uiBlockAudience),
+      resolution: { status: "answered", responses: {} },
+    },
+    uiBlock: {
+      version: 1,
+      blockId: "audience",
+      spec: uiBlockAudience,
+      state: {
+        status: "answered",
+        response: { actionId: "submit", values: { selected: ["sleeping"] } },
+        outcome: "Sleeping customers",
+      },
+    },
+  },
+  {
+    id: "ui-block-chat-agent",
+    author: "agent",
+    body: "The offer goes to sleeping customers. Here is the letter for the board.",
+    time: "10:02",
+    kind: "text",
+  },
+];
+
 type QueueDeliveryFixture = QueueSnapshot["deliveries"][number];
 
 const queuedDelivery: QueueDeliveryFixture = {
@@ -772,10 +987,6 @@ const queuedDelivery: QueueDeliveryFixture = {
   createdAt: "2026-08-19T10:00:00.000Z",
 };
 
-/**
- * The panel shows what waits behind the work that runs now, so `presentQueueDeliveries` returns
- * nothing for a queue with no running delivery. Every queue fixture carries this one.
- */
 const runningDelivery: QueueDeliveryFixture = {
   ...queuedDelivery,
   id: "queued-running",
@@ -812,8 +1023,8 @@ function queueWithItems(count: number, text = "Add the final checklist and verif
 const queueReferenceMessages = [
   "Improve how right-clicking an agent works in the sidebar. It should match the app…",
   "The inputs are still not right. Check exactly how they work in the application…",
-  "Add Command+F to chat, like in Grok Bot, and keep message reordering consistent…",
-  "Add the same search modal as Grok Bot for messages and agents…",
+  "Add Command+F to chat, and keep message reordering consistent…",
+  "Add one search modal for messages and agents…",
   "The latest chat message is too low. Move it up so it stays visible…",
   "Run all checks and fix every failure",
   "Push the final changes to main",
@@ -824,33 +1035,57 @@ const referenceQueue: QueueSnapshot = {
   deliveries: [
     ...queueWithItems(queueReferenceMessages.length)
       .deliveries.filter((delivery) => delivery.status === "queued")
-      .map((delivery, index) => ({
-        ...delivery,
-        text: queueReferenceMessages[index],
-        attachments: index === 2 ? [queuePreviewAttachments[0]] : index === 3 ? [queuePreviewAttachments[1]] : [],
-      })),
+      .map((delivery, index) => {
+        const text = queueReferenceMessages[index];
+        if (text === undefined) throw new Error(`Queue reference message ${index} is missing.`);
+        return {
+          ...delivery,
+          text,
+          attachments: index === 2 ? [queuePrimaryAttachment] : index === 3 ? [queueAlternateAttachment] : [],
+        };
+      }),
     runningDelivery,
   ],
 };
 
-/**
- * The domains `ConversationView` and its panels read through `use*()`, nested in the order
- * `app-providers.tsx` uses. Each one talks to the mocked `window.danidex` the story installs.
- */
-function StoryAppProviders(props: ParentProps) {
-  return (
-    <PlatformProvider>
-      <AuthProvider>
-        <SetupProvider>
-          <SettingsProvider>
-            <ServersProvider>
-              <UsageProvider>{props.children}</UsageProvider>
-            </ServersProvider>
-          </SettingsProvider>
-        </SetupProvider>
-      </AuthProvider>
-    </PlatformProvider>
-  );
+const LIVE_DICTATION =
+  "Can you check the release notes for 2.18 and tell me which fixes still need a changelog entry before Friday?";
+
+function playLiveDictation(
+  controller: ReturnType<typeof createConversationController>,
+  target: { agentId: string; serverId: string },
+  options: { draft: string; animate: boolean },
+): () => void {
+  const setDraft = (text: string) =>
+    controller.setDrafts({ [target.agentId]: { text, attachments: [], replyToMessageId: null } });
+  setDraft(options.draft);
+  controller.setVoicePhase("recording");
+  if (!options.animate) {
+    controller.setVoiceElapsedSeconds(7);
+    controller.setVoiceLiveTranscript({ ...target, text: LIVE_DICTATION });
+    return () => undefined;
+  }
+  const words = LIVE_DICTATION.split(" ");
+  const recordingTicks = Math.ceil(words.length / 3);
+  let tick = 0;
+  const timer = window.setInterval(() => {
+    tick = tick >= recordingTicks + 3 ? 0 : tick + 1;
+    if (tick === 0) {
+      setDraft(options.draft);
+      controller.setVoiceLiveTranscript(null);
+      controller.setVoicePhase("recording");
+    } else if (tick <= recordingTicks) {
+      controller.setVoiceLiveTranscript({ ...target, text: words.slice(0, tick * 3).join(" ") });
+    } else if (tick === recordingTicks + 1) {
+      controller.setVoicePhase("transcribing");
+    } else if (tick === recordingTicks + 2) {
+      controller.setVoiceLiveTranscript(null);
+      controller.setVoicePhase("idle");
+      setDraft(options.draft ? `${options.draft} ${LIVE_DICTATION}` : LIVE_DICTATION);
+    }
+    controller.setVoiceElapsedSeconds(Math.min(tick, recordingTicks));
+  }, 1_000);
+  return () => window.clearInterval(timer);
 }
 
 function MockedConversation(props: {
@@ -858,11 +1093,14 @@ function MockedConversation(props: {
   messages?: RendererAgentMessage[];
   initialAttachments?: DraftAttachment[];
   voiceModelProgress?: number;
+  voiceLive?: { draft: string; animate: boolean };
+  voicePhase?: VoicePhase;
   takeoverStateGallery?: boolean;
   conversationError?: string;
+  replyToMessageId?: string;
 }) {
-  const previousApi = window.danidex;
-  const mock = createMockDaniDex();
+  const previousApi = window.openbot;
+  const mock = createMockOpenBot();
   const controller = createConversationController({ onTypingChange: props.args.onTypingChange });
   const previewUrls = new Set<string>();
   let storyFrameElement: HTMLDivElement | undefined;
@@ -875,14 +1113,30 @@ function MockedConversation(props: {
       });
     });
   }
+  const replyToMessageId = props.replyToMessageId;
+  if (initialAgentId && replyToMessageId) {
+    onSettled(() => {
+      controller.setDrafts({ [initialAgentId]: { text: "", attachments: [], replyToMessageId } });
+    });
+  }
   if (props.voiceModelProgress !== undefined) {
     onSettled(() => {
       controller.setVoicePhase("preparing");
       controller.setVoiceModelProgress(props.voiceModelProgress ?? null);
     });
   }
-  // The same keyed entry `agent-event-bridge` writes when a provider reports an error, so the
-  // story shows the banner where the chat it belongs to actually renders it.
+  const voiceLive = props.voiceLive;
+  if (initialAgentId && voiceLive) {
+    onSettled(() =>
+      playLiveDictation(controller, { agentId: initialAgentId, serverId: props.args.server?.id ?? "local" }, voiceLive),
+    );
+  }
+  const voicePhase = props.voicePhase;
+  if (voicePhase) {
+    onSettled(() => {
+      controller.setVoicePhase(voicePhase);
+    });
+  }
   if (initialAgentId && props.conversationError) {
     onSettled(() => {
       controller.setConversationErrors({
@@ -901,7 +1155,7 @@ function MockedConversation(props: {
       setFirstUnreadMessageId(messageId);
     },
   );
-  window.danidex = mock.api;
+  window.openbot = mock.api;
   if (props.takeoverStateGallery) {
     onSettled(() => {
       const mount = storyFrameElement?.querySelector<HTMLElement>(".conversation-scroll") ?? null;
@@ -949,7 +1203,7 @@ function MockedConversation(props: {
     if (takeoverGalleryScrollTimer !== undefined) window.clearTimeout(takeoverGalleryScrollTimer);
     for (const previewUrl of previewUrls) URL.revokeObjectURL(previewUrl);
     mock.dispose();
-    window.danidex = previousApi;
+    window.openbot = previousApi;
   });
   return (
     <div ref={setStoryFrameElement} class="conversation-story-frame">
@@ -969,7 +1223,7 @@ function MockedConversation(props: {
         </ConversationControllerProvider>
       </StoryAppProviders>
       <Show when={props.takeoverStateGallery && takeoverGalleryMount()}>
-        <Portal mount={takeoverGalleryMount() ?? undefined}>
+        <Portal mount={takeoverGalleryMount() ?? document.body}>
           <div class="browser-takeover-story-states">
             <BrowserTakeoverCard
               agentName={props.args.agent?.name ?? "the agent"}
@@ -1000,7 +1254,7 @@ function RecordingConversation(props: { args: Parameters<typeof Conversation>[0]
   const previousMediaDevices = navigator.mediaDevices;
   const previousMediaRecorder = window.MediaRecorder;
   class StoryMediaRecorder extends EventTarget {
-    readonly mimeType = "audio/wav";
+    readonly mimeType = "audio/webm";
     state: RecordingState = "inactive";
 
     start(): void {
@@ -1009,15 +1263,12 @@ function RecordingConversation(props: { args: Parameters<typeof Conversation>[0]
 
     stop(): void {
       this.state = "inactive";
-      const audio = new Uint8Array(encodePcmWav(new Float32Array(1_600), 16_000));
-      this.dispatchEvent(new BlobEvent("dataavailable", { data: new Blob([audio.buffer], { type: this.mimeType }) }));
-      this.dispatchEvent(new Event("stop"));
     }
   }
   Object.defineProperty(window, "MediaRecorder", { configurable: true, value: StoryMediaRecorder });
   Object.defineProperty(navigator, "mediaDevices", {
     configurable: true,
-    value: { getUserMedia: async () => new MediaStream() },
+    value: { getUserMedia: async () => ({ getTracks: () => [{ stop: () => undefined }] }) },
   });
   onCleanup(() => {
     Object.defineProperty(window, "MediaRecorder", { configurable: true, value: previousMediaRecorder });
@@ -1025,61 +1276,6 @@ function RecordingConversation(props: { args: Parameters<typeof Conversation>[0]
   });
   return <MockedConversation args={props.args} />;
 }
-
-const args: Parameters<typeof Conversation>[0] = {
-  agentStatus: STORY_AGENT_STATUS,
-  agent: STORY_AGENTS[0],
-  agents: STORY_AGENTS,
-  modelOptions: STORY_MODELS,
-  messages,
-  unreadCount: 0,
-  firstUnreadMessageId: null,
-  loaded: true,
-  activeTurnId: null,
-  globalOverlayOpen: false,
-  settingsRequest: null,
-  messageFocusRequest: null,
-  queue: undefined,
-  browserTabs: [],
-  activeBrowserTabId: null,
-  browserVisibilitySuspended: false,
-  browserControlState: { sessions: [] },
-  server: STORY_SERVERS[0],
-  presence: STORY_PRESENCE,
-  currentUserEmail: "person@example.com",
-  remoteDesktopSessionActive: Boolean(STORY_REMOTE_DESKTOP_SESSION),
-  remoteDesktopVisible: false,
-  prompt: undefined,
-  approval: undefined,
-  browserTakeover: undefined,
-  onSelectAgent: fn(),
-  onUpdateAgent: async (_agentId: string, _updates: Omit<UpdateAgentInput, "agentId">) => undefined,
-  onSetAgentAvatar: async (_agentId: string, _image: AvatarImageInput | null) => undefined,
-  onSendMessage: async (_body: string, _attachmentDraftIds: string[], _replyToMessageId: string | null) => ({
-    messageId: "storybook-message",
-    deliveries: [],
-  }),
-  onReadAgentReplyMessages: async () => [],
-  onInterruptDelivery: async () => undefined,
-  onMarkRead: async () => undefined,
-  onTypingChange: fn(),
-  onAnswerPrompt: async (_answers: Record<string, string[]>) => true,
-  onRespondToApproval: async (_decision: "accept" | "decline") => true,
-  onRespondToBrowserTakeover: async (_decision: "complete" | "cancel") => true,
-  onCancelQueuedMessage: fn(),
-  onSteerQueuedMessage: fn(),
-  onUpdateQueuedMessage: async (
-    _deliveryId: string,
-    _text: string,
-    _keepAttachmentIds: string[],
-    _attachmentDraftIds: string[],
-  ) => true,
-  onReorderQueue: fn(),
-  onActivateBrowserTab: fn(),
-  onCloseBrowserTab: fn(),
-  onOpenRemoteDesktop: async (_serverId: string, _trigger: HTMLElement) => undefined,
-  onStop: fn(),
-};
 
 const meta = {
   title: "Conversation/Conversation",
@@ -1094,7 +1290,38 @@ type Story = StoryObj<typeof meta>;
 
 export const RichConversation: Story = {};
 
-/** The real composer with a signed-out provider: the notice takes the queue's place above the input. */
+const contextStoryAgent = requireFixture(args.agent, "Context story agent");
+
+export const ContextIndication: Story = {
+  args: {
+    contextState: {
+      agentId: contextStoryAgent.id,
+      threadId: contextStoryAgent.threadId ?? "story-context-thread",
+      usage: { usedTokens: 168400, windowTokens: 272000, autoCompactAt: 0.8, nativeManaged: false },
+      compaction: {
+        id: "story-context-compaction",
+        startedAt: Date.now() - 10000,
+        status: "running",
+        beforeTokens: 219000,
+      },
+    },
+  },
+};
+export const ContextCompactionFailed: Story = {
+  args: {
+    ...ContextIndication.args,
+    contextState: {
+      ...ContextIndication.args.contextState,
+      compaction: {
+        id: "story-context-failed",
+        startedAt: Date.now() - 10000,
+        status: "failed",
+        beforeTokens: 219000,
+      },
+    },
+  },
+};
+
 export const ProviderSignInRequired: Story = {
   name: "Provider sign in required",
   args: {
@@ -1106,72 +1333,31 @@ export const ProviderSignInRequired: Story = {
     },
     onSignInProvider: fn(),
   },
-  play: async ({ args, canvas, userEvent }) => {
-    const signIn = await canvas.findByRole("button", { name: "Sign in to ChatGPT" });
-    // The composer still takes a draft, so signing in never costs the user their message.
-    await expect(canvas.getByRole("textbox", { name: "Message Chief" })).toBeInTheDocument();
-    await userEvent.click(signIn);
-    await expect(args.onSignInProvider).toHaveBeenCalledWith("codex");
-  },
 };
 
-/** The real composer with the plan window spent: the card states the reset and offers no button. */
 export const UsageLimitReached: Story = {
   name: "Usage limit reached",
   args: {
     accountUsage: {
       limits: [
         {
-          id: "codex-primary",
-          primary: { usedPercent: 100, windowDurationMins: 300, resetsAt: Date.UTC(2026, 8, 21, 9, 0) / 1_000 },
-          secondary: { usedPercent: 62, windowDurationMins: 10_080, resetsAt: Date.UTC(2026, 8, 26, 9, 0) / 1_000 },
+          id: "codex",
+          primary: { usedPercent: 100, windowDurationMins: 300, resetsAt: Math.floor(Date.now() / 1_000) + 3_600 },
+          secondary: null,
         },
       ],
     },
   },
-  play: async ({ canvas }) => {
-    await expect(await canvas.findByText("Usage limit reached")).toBeInTheDocument();
-    // The composer still takes a draft, so the user can write while they wait for the reset.
-    await expect(canvas.getByRole("textbox", { name: "Message Chief" })).toBeInTheDocument();
-  },
 };
 
-/**
- * The real composer after a provider reported an error. The report stands above the input, in the
- * same column as the usage-limit and sign-in notices, rather than as a bubble in the transcript:
- * a provider that retries a dropped transport reports the same failure once per attempt, and one
- * banner stands for the whole run. One press clears it.
- */
 export const ProviderErrorBanner: Story = {
   name: "Provider error banner",
   render: (storyArgs) => (
     <MockedConversation
       args={storyArgs}
-      conversationError="Falling back from WebSockets to HTTPS transport. stream disconnected before completion: Connection refused (os error 61)"
+      conversationError="stream disconnected before completion: Connection refused (os error 61)"
     />
   ),
-  play: async ({ canvas }) => {
-    const banner = await canvas.findByRole("alert");
-    await expect(banner).toHaveTextContent(/Connection refused/u);
-    // The composer still takes a draft, so the error never costs the user their message.
-    await expect(canvas.getByRole("textbox", { name: "Message Chief" })).toBeInTheDocument();
-  },
-};
-
-/** The same chat after the press: the banner goes, the composer keeps its place and its draft. */
-export const ProviderErrorDismissed: Story = {
-  name: "Provider error dismissed",
-  render: (storyArgs) => (
-    <MockedConversation
-      args={storyArgs}
-      conversationError="Falling back from WebSockets to HTTPS transport. stream disconnected before completion: Connection refused (os error 61)"
-    />
-  ),
-  play: async ({ canvas, userEvent }) => {
-    await userEvent.click(await canvas.findByRole("button", { name: "Dismiss error" }));
-    await waitFor(() => expect(canvas.queryByRole("alert")).not.toBeInTheDocument());
-    await expect(canvas.getByRole("textbox", { name: "Message Chief" })).toHaveFocus();
-  },
 };
 
 export const AllAgentMessageTypes: Story = {
@@ -1184,73 +1370,49 @@ export const AllAgentMessageTypes: Story = {
 };
 
 export const VoiceRecording: Story = {
-  name: "Voice recording — hold, release and cancel",
-  args: { onSendMessage: fn().mockResolvedValue({ messageId: "storybook-message", deliveries: [] }) },
+  name: "Voice recording",
   render: (storyArgs) => <RecordingConversation args={storyArgs} />,
-  play: async ({ canvas, args }) => {
-    const press = async () => {
-      await fireEvent.pointerDown(await canvas.findByRole("button", { name: "Create prompt with voice" }), {
-        button: 0,
-        pointerId: 1,
-      });
-      await expect(canvas.findByRole("group", { name: "Voice recording" })).resolves.toBeVisible();
-    };
-    await press();
-    await fireEvent.pointerCancel(window, { pointerId: 1 });
-    await expect(canvas.findByRole("button", { name: "Create prompt with voice" })).resolves.toBeEnabled();
-    await expect(args.onSendMessage).not.toHaveBeenCalled();
-    await expect(canvas.getByRole("textbox", { name: "Message Chief" })).toHaveTextContent("");
-    await press();
-    await fireEvent.pointerUp(window, { pointerId: 1 });
-    await fireEvent.pointerUp(window, { pointerId: 1 });
-    await waitFor(() => expect(args.onSendMessage).toHaveBeenCalledOnce());
-    // Leave the gallery showing the held state; release sends, Escape/blur cancels.
-    await press();
-    await expect(canvas.findByRole("button", { name: "Stop voice recording" })).resolves.toBeVisible();
-  },
+};
+
+export const VoiceLiveTranscription: Story = {
+  name: "Voice live transcription",
+  render: (storyArgs) => <MockedConversation args={storyArgs} voiceLive={{ draft: "", animate: true }} />,
+};
+
+export const VoiceLiveTranscriptionAfterDraft: Story = {
+  name: "Voice live transcription after a draft",
+  render: (storyArgs) => (
+    <MockedConversation args={storyArgs} voiceLive={{ draft: "Quick question about the release.", animate: false }} />
+  ),
+};
+
+export const VoiceRequestingMicrophone: Story = {
+  name: "Voice requesting microphone",
+  render: (storyArgs) => <MockedConversation args={storyArgs} voicePhase="requesting" />,
+};
+
+export const VoiceTranscribing: Story = {
+  name: "Voice transcribing",
+  render: (storyArgs) => (
+    <MockedConversation args={storyArgs} voiceLive={{ draft: "", animate: false }} voicePhase="transcribing" />
+  ),
+};
+
+export const VoiceWhileAgentStarts: Story = {
+  name: "Voice while the agent starts",
+  args: { agentStatus: { ...STORY_AGENT_STATUS, phase: "starting" } },
+};
+
+export const VoiceMicrophoneBlocked: Story = {
+  name: "Voice microphone blocked",
+  render: (storyArgs) => (
+    <MockedConversation args={storyArgs} conversationError={currentText().t("composer.voice.blocked")} />
+  ),
 };
 
 export const VoiceModelDownload: Story = {
   name: "Voice model download",
   render: (storyArgs) => <MockedConversation args={storyArgs} voiceModelProgress={47} />,
-};
-
-export const SearchConversation: Story = {
-  name: "Search conversation",
-  play: async ({ canvas, canvasElement, userEvent }) => {
-    const storyWindow = canvasElement.ownerDocument.defaultView;
-    if (!storyWindow) throw new Error("Story window is missing.");
-    const searchReturnTarget = canvas.getByRole("button", { name: "View agent settings" });
-    fireEvent.keyDown(searchReturnTarget, { key: "f", ctrlKey: true });
-
-    const search = await canvas.findByRole("search", { name: "Search conversation" });
-    const input = canvas.getByRole("searchbox", { name: "Search messages" });
-    await expect(search).toBeVisible();
-    await waitFor(() => expect(input).toHaveFocus());
-    await userEvent.type(input, "milestone");
-    await expect(canvas.findByText("1/2")).resolves.toBeVisible();
-
-    await userEvent.click(canvas.getByRole("button", { name: "Next match" }));
-    await expect(canvas.findByText("2/2")).resolves.toBeVisible();
-    await userEvent.keyboard("{Escape}");
-    await expect(canvas.queryByRole("search", { name: "Search conversation" })).not.toBeInTheDocument();
-  },
-};
-
-export const ComposerActionMenu: Story = {
-  name: "Composer action menu",
-  play: async ({ canvas, canvasElement, userEvent }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Add to prompt" }));
-    const menu = await within(canvasElement.ownerDocument.body).findByRole("menu", { name: "Add to prompt" });
-    await waitFor(() => expect(menu).toBeVisible());
-    const attachImage = within(menu).getByRole("menuitem", { name: /Attach image/ });
-    const useSkill = within(menu).getByRole("menuitem", { name: /Use a skill/ });
-    const addContext = within(menu).getByRole("menuitem", { name: /Add context/ });
-    await expect(menu).toHaveClass("ui-action-menu");
-    await waitFor(() => expect(attachImage).toHaveFocus());
-    await expect(useSkill).toHaveAttribute("data-disabled");
-    await expect(addContext).toBeVisible();
-  },
 };
 
 export const PastedImageInComposer: Story = {
@@ -1261,11 +1423,8 @@ export const PastedImageInComposer: Story = {
 export const MixedAttachmentsInNarrowComposer: Story = {
   name: "Mixed attachments in narrow composer",
   render: (storyArgs) => (
-    <section
-      data-testid="narrow-composer-attachments-sample"
-      style={{ width: "360px", height: "820px", overflow: "hidden" }}
-    >
-      <MockedConversation args={storyArgs} initialAttachments={[...queuePreviewAttachments, STORY_ATTACHMENTS[0]]} />
+    <section style={{ width: "360px", height: "820px", overflow: "hidden" }}>
+      <MockedConversation args={storyArgs} initialAttachments={[...queuePreviewAttachments, storyAttachment]} />
     </section>
   ),
 };
@@ -1303,59 +1462,77 @@ export const ScrollToLatest: Story = {
     unreadCount: 0,
     firstUnreadMessageId: null,
   },
-  play: async ({ canvas, canvasElement }) => {
-    const scrollElement = canvasElement.querySelector<HTMLElement>(".conversation-scroll");
-    if (!scrollElement) throw new Error("Conversation scroll element is missing.");
-    Object.defineProperties(scrollElement, {
-      clientHeight: { configurable: true, value: 600 },
-      scrollHeight: { configurable: true, value: 1_200 },
-    });
-    scrollElement.scrollTop = 0;
-    scrollElement.dispatchEvent(new Event("scroll"));
-    await expect(canvas.findByRole("button", { name: "Scroll to latest message" })).resolves.toBeVisible();
-  },
 };
 
-export const NewMessagesPill: Story = {
-  name: "New messages pill",
+export const LongHistory: Story = {
   args: {
-    messages: newMessagePillHistory,
+    messages: Array.from({ length: 120 }, (_, index): RendererAgentMessage => {
+      const createdAt = new Date(2026, 8, 1 + Math.floor(index / 24), 9, (index % 24) * 2);
+      return {
+        id: `long-history-${index + 1}`,
+        author: index % 3 === 0 ? "you" : "agent",
+        body:
+          index % 3 === 0
+            ? `Can you check step ${index + 1} of the release plan?`
+            : `I checked step ${index + 1}. The owner, the date and the open risk are in the plan now.`,
+        time: `${String(createdAt.getHours()).padStart(2, "0")}:${String(createdAt.getMinutes()).padStart(2, "0")}`,
+        createdAt: createdAt.toISOString(),
+        kind: "text",
+      };
+    }),
     unreadCount: 0,
     firstUnreadMessageId: null,
   },
-  render: (storyArgs) => <MockedConversation args={storyArgs} messages={newMessagePillMessages()} />,
-  play: async ({ canvas, canvasElement }) => {
-    setNewMessagePillMessages(newMessagePillHistory);
-    const scrollElement = canvasElement.querySelector<HTMLElement>(".conversation-scroll");
-    if (!scrollElement) throw new Error("Conversation scroll element is missing.");
-    Object.defineProperties(scrollElement, {
-      clientHeight: { configurable: true, value: 600 },
-      scrollHeight: { configurable: true, value: 1_200 },
-    });
-    scrollElement.scrollTop = 0;
-    scrollElement.dispatchEvent(new Event("scroll"));
-    await expect(canvas.findByRole("button", { name: "Scroll to latest message" })).resolves.toBeVisible();
+};
 
-    setNewMessagePillMessages((current) => [...current, newMessagePillArrival(1)]);
-    await expect(canvas.findByRole("button", { name: "Jump to 1 new message" })).resolves.toBeVisible();
-
-    setNewMessagePillMessages((current) => [...current, newMessagePillArrival(2), newMessagePillArrival(3)]);
-    await expect(canvas.findByRole("button", { name: "Jump to 3 new messages" })).resolves.toBeVisible();
-
-    // The reader's own message is not news to them.
-    setNewMessagePillMessages((current) => [
-      ...current,
-      { id: "pill-own-message", author: "you", body: "Reading up from here.", time: "09:54", kind: "text" },
-    ]);
-    await expect(canvas.findByRole("button", { name: "Jump to 3 new messages" })).resolves.toBeVisible();
-
-    fireEvent.click(await canvas.findByRole("button", { name: "Dismiss new message count" }));
-    await expect(canvas.findByRole("button", { name: "Scroll to latest message" })).resolves.toBeVisible();
-    expect(scrollElement.scrollTop).toBe(0);
-
-    // A dismissed count comes back with the next arrival, from zero.
-    setNewMessagePillMessages((current) => [...current, newMessagePillArrival(4)]);
-    await expect(canvas.findByRole("button", { name: "Jump to 1 new message" })).resolves.toBeVisible();
+export const SeveralPeople: Story = {
+  name: "Several people",
+  args: {
+    messages: [
+      {
+        id: "people-own",
+        author: "you",
+        body: "Can we ship the launch notes today?",
+        time: "10:00",
+        createdAt: "2026-08-20T10:00:00.000Z",
+        senderMember: { id: "member-self", name: "Norbert" },
+      },
+      {
+        id: "people-alice-1",
+        author: "you",
+        body: "I still need the pricing section.",
+        time: "10:01",
+        createdAt: "2026-08-20T10:01:00.000Z",
+        senderMember: { id: "member-alice", name: "Alice Chen" },
+      },
+      {
+        id: "people-alice-2",
+        author: "you",
+        body: "Also the screenshots.",
+        time: "10:01",
+        createdAt: "2026-08-20T10:01:30.000Z",
+        senderMember: { id: "member-alice", name: "Alice Chen" },
+      },
+      {
+        id: "people-left",
+        author: "you",
+        body: "A person who left the team keeps the name the host stored.",
+        time: "10:02",
+        createdAt: "2026-08-20T10:02:00.000Z",
+        senderMember: {
+          id: "member-former",
+          name: "Maximiliana Konstantinopoulou-Wolfeschlegelsteinhausenberger",
+        },
+      },
+      {
+        id: "people-agent",
+        author: "agent",
+        body: "I will draft the pricing section and add the screenshots.",
+        time: "10:03",
+        createdAt: "2026-08-20T10:03:00.000Z",
+        replyToMessageId: "people-alice-1",
+      },
+    ],
   },
 };
 
@@ -1378,32 +1555,12 @@ export const ImageGenerationCompletedInChat: Story = {
     activeTurnId: "turn-image-generation",
     presence: completedImageGenerationPresence,
   },
-  play: async ({ canvas, canvasElement }) => {
-    expect(canvas.queryByRole("status", { name: "Chief is working" })).not.toBeInTheDocument();
-    await canvas.getByRole("button", { name: "Preview generated image" }).click();
-    await expect(
-      within(canvasElement.ownerDocument.body).findByRole("dialog", { name: "generated-image.png" }),
-    ).resolves.toBeInTheDocument();
-  },
 };
 
 export const DataTableInChat: Story = {
   name: "Data table in chat",
   args: {
     messages: dataTableMessages,
-  },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText("Compare the upcoming Premier League fixtures.")).toBeVisible();
-    const table = canvas.getByRole("table");
-    await expect(table).toBeVisible();
-    await expect(canvas.getAllByRole("columnheader")).toHaveLength(5);
-    const bubble = table.closest<HTMLElement>(".ui-bubble");
-    const actions = canvas.getByRole("toolbar", { name: "Agent message actions" });
-    if (!bubble) throw new Error("The data table message bubble is missing.");
-    await expect(bubble).toHaveAttribute("data-variant", "muted");
-    await expect(
-      Math.abs(actions.getBoundingClientRect().bottom - bubble.getBoundingClientRect().bottom),
-    ).toBeLessThanOrEqual(2);
   },
 };
 
@@ -1412,16 +1569,19 @@ export const CodeBlockInChat: Story = {
   args: {
     messages: codeBlockMessages,
   },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole("region", { name: "Shell code block" })).toBeVisible();
-    const codeRow = canvasElement.querySelector<HTMLElement>(".virtual-chat-row:has(.message-code-block)");
-    const followUp = canvas
-      .getByText("The checks should complete before release.")
-      .closest<HTMLElement>(".virtual-chat-row");
-    if (!codeRow || !followUp) throw new Error("Code block chat rows are missing.");
-    await waitFor(() =>
-      expect(followUp.getBoundingClientRect().top).toBeGreaterThanOrEqual(codeRow.getBoundingClientRect().bottom),
-    );
+};
+
+export const DiagramsInChat: Story = {
+  name: "Diagrams in chat",
+  args: {
+    messages: diagramMessages,
+  },
+};
+
+export const MarkdownImagesInChat: Story = {
+  name: "Markdown images in chat",
+  args: {
+    messages: markdownImageMessages,
   },
 };
 
@@ -1430,20 +1590,26 @@ export const MarkdownInChat: Story = {
   args: {
     messages: markdownMessages,
   },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole("heading", { level: 2, name: "Recommendation" })).toBeVisible();
-    await expect(canvas.getByText("Kobalte").tagName).toBe("STRONG");
-    await expect(canvas.getByRole("checkbox", { name: "Works with our design system" })).toBeChecked();
-    await expect(canvas.queryByText("## Recommendation")).not.toBeInTheDocument();
-    const markdownRow = canvasElement.querySelector<HTMLElement>(".virtual-chat-row:has(.message-markdown)");
-    const followUp = canvas
-      .getByText("I can prepare the migration checklist next.")
-      .closest<HTMLElement>(".virtual-chat-row");
-    if (!markdownRow || !followUp) throw new Error("Markdown chat rows are missing.");
-    await waitFor(() =>
-      expect(followUp.getBoundingClientRect().top).toBeGreaterThanOrEqual(markdownRow.getBoundingClientRect().bottom),
-    );
+};
+
+export const LongFilePathInReply: Story = {
+  name: "Long file path in a reply",
+  args: {
+    messages: longPathReplyMessages,
   },
+  render: (storyArgs) => (
+    <section style={{ width: "720px", height: "820px", overflow: "hidden" }}>
+      <MockedConversation args={storyArgs} />
+    </section>
+  ),
+};
+
+export const MarkdownReplyQuote: Story = {
+  name: "Markdown reply quote",
+  args: {
+    messages: replyQuoteMessages,
+  },
+  render: (storyArgs) => <MockedConversation args={storyArgs} replyToMessageId="reply-quote-agent" />,
 };
 
 export const StreamingMarkdownInChat: Story = {
@@ -1453,44 +1619,81 @@ export const StreamingMarkdownInChat: Story = {
     activeTurnId: "streaming-markdown",
   },
   render: (storyArgs) => <StreamingMarkdownConversation args={storyArgs} />,
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole("heading", { level: 2, name: "Live response" })).toBeVisible();
-    const streamingRow = canvasElement.querySelector<HTMLElement>(
-      '.virtual-chat-row:has([data-chat-search-message="streaming-markdown-agent"])',
-    );
-    if (!streamingRow) throw new Error("The streaming Markdown row is missing.");
-    const initialHeight = streamingRow.getBoundingClientRect().height;
+};
 
-    await expect(
-      canvas.findByText("The streamed response is complete.", {}, { timeout: 2_000 }),
-    ).resolves.toBeVisible();
-    await expect(canvas.getByText("Markdown renderer").tagName).toBe("STRONG");
-    await expect(canvas.getByRole("region", { name: "TypeScript code block" })).toBeVisible();
+const shortReadingHistory = readingHistoryMessages(40);
 
-    const updatedRow = canvasElement.querySelector<HTMLElement>(
-      '.virtual-chat-row:has([data-chat-search-message="streaming-markdown-agent"])',
-    );
-    const followUp = canvas
-      .getByText("This message must stay below the growing response.")
-      .closest<HTMLElement>(".virtual-chat-row");
-    if (!updatedRow || !followUp) throw new Error("The streamed chat rows are missing.");
-    expect(updatedRow).toBe(streamingRow);
-    await waitFor(() => expect(updatedRow.getBoundingClientRect().height).toBeGreaterThan(initialHeight));
-    await waitFor(() =>
-      expect(followUp.getBoundingClientRect().top).toBeGreaterThanOrEqual(updatedRow.getBoundingClientRect().bottom),
-    );
+export const StreamingWhileReadingHistory: Story = {
+  args: {
+    messages: shortReadingHistory,
+    activeTurnId: "reading-history-turn",
+    unreadCount: 0,
+    firstUnreadMessageId: null,
   },
+  render: (storyArgs) => <StreamingWhileReadingHistoryConversation args={storyArgs} history={shortReadingHistory} />,
+};
+
+const longReadingHistory = readingHistoryMessages(120);
+
+export const StreamingWhileReadingLongHistory: Story = {
+  args: {
+    messages: longReadingHistory,
+    activeTurnId: "reading-history-turn",
+    unreadCount: 0,
+    firstUnreadMessageId: null,
+  },
+  render: (storyArgs) => <StreamingWhileReadingHistoryConversation args={storyArgs} history={longReadingHistory} />,
+};
+
+function ReplyBurstConversation(props: { args: Parameters<typeof Conversation>[0]; history: RendererAgentMessage[] }) {
+  const [count, setCount] = createSignal(1);
+  const replies = () =>
+    Array.from(
+      { length: count() },
+      (_, index): RendererAgentMessage => ({
+        id: `reply-burst-${index + 1}`,
+        author: "agent",
+        body: `Update ${index + 1}: I finished one more step of the release plan and noted its owner and date.`,
+        time: "10:01",
+        kind: "text",
+        ...(index === count() - 1 ? { streaming: true } : {}),
+      }),
+    );
+  const interval = window.setInterval(() => setCount((current) => current + 1), 400);
+  onCleanup(() => window.clearInterval(interval));
+
+  return (
+    <MockedConversation
+      args={{ ...props.args, activeTurnId: "reply-burst-turn" }}
+      messages={[...props.history, ...replies()]}
+    />
+  );
+}
+
+export const ReplyBurstWhileReadingHistory: Story = {
+  args: {
+    messages: shortReadingHistory,
+    activeTurnId: "reply-burst-turn",
+    unreadCount: 0,
+    firstUnreadMessageId: null,
+  },
+  render: (storyArgs) => <ReplyBurstConversation args={storyArgs} history={shortReadingHistory} />,
+};
+
+export const ReplyBurstWhileReadingLongHistory: Story = {
+  args: {
+    messages: longReadingHistory,
+    activeTurnId: "reply-burst-turn",
+    unreadCount: 0,
+    firstUnreadMessageId: null,
+  },
+  render: (storyArgs) => <ReplyBurstConversation args={storyArgs} history={longReadingHistory} />,
 };
 
 export const ComparisonTableInChat: Story = {
   name: "Comparison table in chat",
   args: {
     messages: comparisonTableMessages,
-  },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText("Compare the Personal and Enterprise plans feature by feature.")).toBeVisible();
-    await expect(canvas.getByRole("region", { name: "Comparison table" })).toBeVisible();
-    await expect(canvas.getAllByRole("columnheader")).toHaveLength(3);
   },
 };
 
@@ -1559,10 +1762,14 @@ export const BrowserTakeover: Story = {
     messages: [],
   },
   render: (storyArgs) => <MockedConversation args={storyArgs} takeoverStateGallery />,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole("region", { name: "Browser takeover" })).toBeVisible();
-    await expect(canvas.getByRole("region", { name: "Browser takeover complete" })).toBeVisible();
-    await expect(canvas.getByRole("region", { name: "Browser takeover cancelled" })).toBeVisible();
+};
+
+export const QueuedDuringBrowserTakeover: Story = {
+  ...BrowserTakeover,
+  name: "Queued during browser takeover",
+  args: {
+    ...BrowserTakeover.args,
+    queue: { ...queue, deliveries: [queuedDelivery, { ...runningDelivery, turnId: "turn-takeover" }] },
   },
 };
 
@@ -1574,12 +1781,247 @@ export const PromptQuestionsInChat: Story = {
   },
 };
 
+export const AnsweredQuestionsInChat: Story = {
+  name: "Answered questions in chat",
+  args: {
+    messages: [
+      ...promptChatMessages,
+      {
+        id: "question-prompt:turn-answered:answered-auth",
+        turnId: "turn-answered",
+        author: "agent",
+        body: "",
+        time: "10:02",
+        kind: "question",
+        itemType: "question_prompt",
+        questionPrompt: {
+          requestId: "answered-auth",
+          questions: promptQuestions.questions.slice(0, 1),
+          resolution: { status: "answered", responses: { approach: { status: "skipped" } } },
+        },
+      },
+      {
+        id: "answered-chat-agent",
+        author: "agent",
+        body: "Session cookies it is. I will keep the secrets where they are and ship to everyone.",
+        time: "10:03",
+        kind: "text",
+      },
+    ],
+  },
+};
+
+export const UiBlocksInChat: Story = {
+  name: "Agent UI blocks in chat",
+  args: {
+    messages: uiBlockChatMessages,
+    prompt: uiBlockPrompt,
+    promptUiBlock: uiBlockPendingLetter,
+  },
+};
+
+const uiBlockEpicTable = [
+  "Recommendation: **Sunday — reliability and finish**, with 7 items.",
+  "",
+  "| Issue | Proposed delivery | Size | Area |",
+  "| --- | --- | --- | --- |",
+  "| #5476 | Isolate the test foundation contention; accept 10 runs in a row without a timeout | M | Backend tests |",
+  "| #5258 | Make the auth connection and cache lock tests deterministic; 20 runs without a failure | M | Tests/CI |",
+  "| #5454 | Make the actions test really exercise the kept snapshot during a failure and API recovery | M | Frontend cache |",
+  "| #4700 | Count every FETCH miss without a double hit or miss | S | Observability |",
+  "| #4703 | Limit the memory of the PDF extraction subprocess; keep the parent alive | M | Backend security |",
+  "| #4720 | Remove duplicate historical alerts and keep new anomalies, repairs and repeats | M | Data quality |",
+  "| #4722 | Document reference_date of the options hub, also for an old trading session | S | API contract |",
+].join("\n");
+
+const uiBlockEpic: UiConfirmBlock = {
+  type: "confirm",
+  title: "Approve the Sunday epic before I open it?",
+  preview: uiBlockEpicTable,
+  actions: [
+    { id: "open", label: "Open the epic", style: "primary" },
+    { id: "change", label: "Change items" },
+  ],
+};
+
+const uiBlockEarlierEpic: UiConfirmBlock = {
+  ...uiBlockEpic,
+  title: "Approve the Saturday epic before I open it?",
+  preview: [
+    "| Issue | Proposed delivery | Size | Area | Owner | Risk | Tests | Docs | Release |",
+    "| --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    "| #5476 | Isolate the test foundation contention | M | Backend tests | Ana | Low | 10 runs | None | 0.71 |",
+    "| #5258 | Make the auth and cache lock tests deterministic | M | Tests/CI | Rui | Low | 20 runs | None | 0.71 |",
+  ].join("\n"),
+};
+
+const uiBlockEpicScript: UiConfirmBlock = {
+  type: "confirm",
+  title: "Run the script that opens the epics?",
+  preview: [
+    "```sh",
+    'gh issue create --title "Sunday — reliability and finish" --label epic --body-file sunday-epic.md --milestone 0.71',
+    "```",
+  ].join("\n"),
+  actions: [{ id: "run", label: "Run", style: "primary" }],
+};
+
+export const UiBlockWithTable: Story = {
+  name: "Agent UI block with a table",
+  args: {
+    messages: [
+      {
+        id: "ui-block-table-user",
+        author: "you",
+        body: "Plan the weekend epics from the open issues.",
+        time: "10:00",
+        kind: "text",
+      },
+      {
+        id: "question-prompt:turn-ui-block-table-earlier:ui-block-saturday",
+        turnId: "turn-ui-block-table-earlier",
+        author: "agent",
+        body: "",
+        time: "10:01",
+        kind: "question",
+        itemType: "question_prompt",
+        questionPrompt: {
+          requestId: "ui-block-saturday",
+          questions: uiBlockFallbackQuestions(uiBlockEarlierEpic),
+          resolution: { status: "answered", responses: {} },
+        },
+        uiBlock: {
+          version: 1,
+          blockId: "saturday",
+          spec: uiBlockEarlierEpic,
+          state: { status: "answered", response: { actionId: "open" }, outcome: "Open the epic" },
+        },
+      },
+      {
+        id: "question-prompt:turn-ui-block-table-script:ui-block-script",
+        turnId: "turn-ui-block-table-script",
+        author: "agent",
+        body: "",
+        time: "10:02",
+        kind: "question",
+        itemType: "question_prompt",
+        questionPrompt: {
+          requestId: "ui-block-script",
+          questions: uiBlockFallbackQuestions(uiBlockEpicScript),
+          resolution: { status: "answered", responses: {} },
+        },
+        uiBlock: {
+          version: 1,
+          blockId: "script",
+          spec: uiBlockEpicScript,
+          state: { status: "answered", response: { actionId: "run" }, outcome: "Run" },
+        },
+      },
+    ],
+    prompt: {
+      type: "prompt",
+      requestId: "ui-block-sunday",
+      agentId: "chief",
+      threadId: "thread-chief",
+      turnId: "turn-ui-block-table",
+      questions: uiBlockFallbackQuestions(uiBlockEpic),
+    },
+    promptUiBlock: { version: 1, blockId: "sunday", spec: uiBlockEpic, state: { status: "pending" } },
+  },
+};
+
 export const Queued: Story = {
   args: { queue },
 };
 
+export const QueuedDuringApproval: Story = {
+  args: {
+    activeTurnId: "turn-active",
+    queue,
+    approval: {
+      requestId: "queued-approval",
+      agentId: "chief",
+      threadId: "thread-chief",
+      turnId: "turn-active",
+      kind: "command",
+      command: "bun run release:notes",
+      cwd: null,
+      reason: null,
+      grantRoot: null,
+      permissions: null,
+    },
+  },
+};
+
+export const WaitingForReplies: Story = {
+  args: {
+    queue: { agentId: "chief", deliveries: [...(STORY_QUEUES.chief ?? []), queuedDelivery, runningDelivery] },
+    activeTurnId: "turn-active",
+  },
+};
+
+export const WaitingForRepliesWithUsageLimit: Story = {
+  args: { ...WaitingForReplies.args, accountUsage: UsageLimitReached.args?.accountUsage },
+};
+
+export const PlanInProgress: Story = {
+  args: {
+    activeTurnId: "turn-plan-live",
+    messages: [
+      ...messages.filter((message) => message.kind !== "plan"),
+      {
+        id: "turn-plan-live:plan",
+        author: "agent",
+        body: "",
+        time: "10:05",
+        turnId: "turn-plan-live",
+        itemType: "plan",
+        status: "streaming",
+        streaming: true,
+        kind: "plan",
+        plan: {
+          explanation: null,
+          stopped: false,
+          steps: [
+            { id: "0", text: "Read the migration notes", status: "completed" },
+            {
+              id: "1",
+              text: "Add the column for the saved provider",
+              activeText: "Adding the column for the saved provider",
+              status: "inProgress",
+            },
+            { id: "2", text: "Run the migration tests", status: "pending" },
+          ],
+        },
+      },
+    ],
+  },
+};
+
 export const ThreeQueuedMessages: Story = {
   args: { queue: queueWithItems(3), activeTurnId: "turn-active" },
+};
+
+export const QueuedAfterSteerFallback: Story = {
+  args: {
+    activeTurnId: "turn-active",
+    queue: {
+      ...queue,
+      deliveries: [
+        { ...queuedDelivery, text: "Use the staging database, not production.", steerFallback: "provider-unsupported" },
+        {
+          ...queuedDelivery,
+          id: "queued-2",
+          messageId: "queued-message-2",
+          text: "Skip the flaky browser tests.",
+          position: 2,
+          createdAt: "2026-08-19T10:01:00.000Z",
+          steerFallback: "steer-failed",
+        },
+        runningDelivery,
+      ],
+    },
+  },
 };
 
 export const SevenQueuedMessages: Story = {
@@ -1642,7 +2084,7 @@ export const SevenQueuedMessages: Story = {
     };
     const sendMessage = async (body: string, attachmentDraftIds: string[], replyToMessageId: string | null) => {
       const sent = await storyArgs.onSendMessage(body, attachmentDraftIds, replyToMessageId);
-      if (!sent || !storyArgs.activeTurnId) return sent;
+      if ("error" in sent || !storyArgs.activeTurnId) return sent;
       const id = `storybook-queued-${nextStoryDeliveryId++}`;
       setQueueState((current) => ({
         ...current,
@@ -1664,17 +2106,7 @@ export const SevenQueuedMessages: Story = {
           },
         ],
       }));
-      return {
-        messageId: `${id}-message`,
-        deliveries: [
-          {
-            id,
-            recipientAgentId: queueState().agentId,
-            status: "queued" as const,
-            position: queueState().deliveries.find((delivery) => delivery.id === id)?.position ?? null,
-          },
-        ],
-      };
+      return { messageId: id };
     };
 
     return (
@@ -1689,79 +2121,6 @@ export const SevenQueuedMessages: Story = {
         }}
       />
     );
-  },
-};
-
-export const SevenQueuedMessagesInteractions: Story = {
-  ...SevenQueuedMessages,
-  name: "Seven queued messages interactions",
-  tags: ["!dev"],
-  play: async ({ canvas, canvasElement, userEvent }) => {
-    const messagesInQueue = () =>
-      Array.from(canvasElement.querySelectorAll(".agent-queue-message"), (element) => element.textContent);
-    const composer = canvasElement.querySelector<HTMLElement>(".composer");
-    const editor = canvas.getByRole("textbox", { name: "Message Chief" });
-    if (!composer) throw new Error("Composer is missing.");
-
-    const paddingPointerDown = new PointerEvent("pointerdown", { bubbles: true, cancelable: true });
-    expect(composer.dispatchEvent(paddingPointerDown)).toBe(false);
-    await waitFor(() => expect(editor).toHaveFocus());
-
-    // The panel mounts from an effect, so the first row arrives after the composer takes focus.
-    const firstRow = await waitFor(() => {
-      const row = canvasElement.querySelector<HTMLFieldSetElement>(".agent-queue-item");
-      if (!row) throw new Error("Queue row is missing.");
-      return row;
-    });
-
-    fireEvent.keyDown(firstRow, { key: "ArrowDown", altKey: true });
-    await waitFor(() =>
-      expect(messagesInQueue().slice(0, 2)).toEqual([queueReferenceMessages[1], queueReferenceMessages[0]]),
-    );
-
-    const movedRow = Array.from(canvasElement.querySelectorAll<HTMLFieldSetElement>(".agent-queue-item")).find((row) =>
-      row.textContent?.includes(queueReferenceMessages[0]),
-    );
-    if (!movedRow) throw new Error("Moved queue row is missing.");
-    fireEvent.keyDown(movedRow, { key: "ArrowUp", altKey: true });
-    await waitFor(() =>
-      expect(messagesInQueue().slice(0, 2)).toEqual([queueReferenceMessages[0], queueReferenceMessages[1]]),
-    );
-
-    await userEvent.click(canvas.getByRole("button", { name: "Edit queued message 1" }));
-    await waitFor(() => expect(editor).toHaveFocus());
-    await waitFor(() => expect(canvas.getByRole("button", { name: "Save queued message" })).toBeVisible());
-    await waitFor(() => expect(messagesInQueue()).toHaveLength(queueReferenceMessages.length - 1));
-    expect(messagesInQueue()).not.toContain(queueReferenceMessages[0]);
-    editor.textContent = "Updated queue message from Storybook";
-    await fireEvent.input(editor);
-    await userEvent.click(canvas.getByRole("button", { name: "Save queued message" }));
-    await waitFor(() => expect(messagesInQueue()[0]).toBe("Updated queue message from Storybook"));
-
-    await userEvent.click(canvas.getByRole("button", { name: "Edit queued message 1" }));
-    await waitFor(() => expect(messagesInQueue()).toHaveLength(queueReferenceMessages.length - 1));
-    editor.textContent = queueReferenceMessages[0];
-    await fireEvent.input(editor);
-    await userEvent.click(canvas.getByRole("button", { name: "Save queued message" }));
-    await waitFor(() => expect(messagesInQueue()[0]).toBe(queueReferenceMessages[0]));
-
-    await userEvent.click(canvas.getByRole("button", { name: "Edit queued message 3" }));
-    const attachmentCard = canvasElement.querySelector<HTMLElement>(".composer-attachment");
-    const queuePanel = canvasElement.querySelector<HTMLElement>(".agent-queue-panel");
-    if (!attachmentCard || !queuePanel) throw new Error("Queue attachment edit layout is missing.");
-    await waitFor(() =>
-      expect(queuePanel.getBoundingClientRect().bottom).toBeLessThanOrEqual(attachmentCard.getBoundingClientRect().top),
-    );
-    await userEvent.click(canvas.getByRole("button", { name: "Save queued message" }));
-    await waitFor(() => expect(messagesInQueue()).toHaveLength(queueReferenceMessages.length));
-
-    editor.textContent = "Queued from the Storybook composer";
-    await fireEvent.input(editor);
-    await userEvent.click(canvas.getByRole("button", { name: "Send message" }));
-    await waitFor(() => expect(messagesInQueue().at(-1)).toBe("Queued from the Storybook composer"));
-
-    await userEvent.click(canvas.getByRole("button", { name: "Delete queued message 8" }));
-    await waitFor(() => expect(messagesInQueue()).toHaveLength(queueReferenceMessages.length));
   },
 };
 
@@ -1826,7 +2185,7 @@ const actionMarkerMessages: RendererAgentMessage[] = [
     body: "",
     time: "22:49",
     kind: "exchange",
-    attachments: [STORY_ATTACHMENTS[0]],
+    attachments: [storyAttachment],
     exchange: {
       direction: "incoming",
       messageId: "spacing-marker-incoming",
@@ -1906,8 +2265,8 @@ const actionMarkerMessages: RendererAgentMessage[] = [
       operationId: "op-1",
       siteId: "site-1",
       title: "Launch status page",
-      hostname: "launch-status-23456789ab.sites.dani-dex.example",
-      url: "https://launch-status-23456789ab.sites.dani-dex.example",
+      hostname: "launch-status-23456789ab.openbot.site",
+      url: "https://launch-status-23456789ab.openbot.site",
       timestamp: "2026-08-19T22:50:00.000Z",
     },
   },
@@ -1951,6 +2310,30 @@ export const ActionMarkerSpacing: Story = {
   args: actionMarkerArgs,
 };
 
+export const ActionMarkerHistory: Story = {
+  name: "Action marker history",
+  args: {
+    ...actionMarkerArgs,
+    messages: actionMarkerMessages.map((message) =>
+      message.id === "spacing-routine-run" && message.actionMarker?.kind === "routine-run"
+        ? {
+            ...message,
+            actionMarker: {
+              ...message.actionMarker,
+              status: "succeeded",
+              previousTransitions: [
+                { status: "queued", timestamp: "2026-08-19T22:49:00.000Z" },
+                { status: "running", timestamp: "2026-08-19T22:50:00.000Z" },
+                { status: "needs-attention", timestamp: "2026-08-19T22:51:00.000Z" },
+                { status: "running", timestamp: "2026-08-19T22:52:00.000Z" },
+              ],
+            },
+          }
+        : message,
+    ),
+  },
+};
+
 export const NarrowActionMarkerSpacing: Story = {
   name: "Narrow action marker spacing",
   args: actionMarkerArgs,
@@ -1959,4 +2342,251 @@ export const NarrowActionMarkerSpacing: Story = {
       <MockedConversation args={storyArgs} />
     </section>
   ),
+};
+
+function agentExchangeMessage(
+  id: string,
+  direction: "incoming" | "outgoing",
+  otherAgentId: string,
+  time: string,
+  options: { body?: string; replyTo?: string; expectsReply?: boolean } = {},
+): RendererAgentMessage {
+  const timestamp = `2026-08-19T${time}:00.000Z`;
+  const sourceAgentId = direction === "outgoing" ? "chief" : otherAgentId;
+  const targetAgentId = direction === "outgoing" ? otherAgentId : "chief";
+  return {
+    id,
+    author: "agent",
+    body: options.body ?? "",
+    time,
+    createdAt: timestamp,
+    kind: "exchange",
+    exchange: {
+      direction,
+      messageId: id,
+      senderAgentId: sourceAgentId,
+      recipientAgentIds: [targetAgentId],
+      replyToMessageId: options.replyTo ?? null,
+      deliveries: [],
+    },
+    actionMarker: {
+      kind: "agent-message",
+      direction,
+      sourceAgentId,
+      targetDeliveries: [{ agentId: targetAgentId, status: "completed" }],
+      status: "completed",
+      timestamp,
+      messageId: id,
+      replyToMessageId: options.replyTo ?? null,
+      expectsReply: options.expectsReply ?? true,
+    },
+  };
+}
+
+export const AgentMessageGroupInChat: Story = {
+  name: "Agent message group in chat",
+  args: {
+    messages: [
+      {
+        id: "group-user",
+        author: "you",
+        body: "Ask research and sales where the launch stands, then summarize.",
+        time: "09:00",
+        createdAt: "2026-08-19T09:00:00.000Z",
+        kind: "text",
+      },
+      agentExchangeMessage("group-1", "outgoing", "research", "09:01", {
+        body: "Which launch sources are still not confirmed?",
+      }),
+      agentExchangeMessage("group-2", "outgoing", "sales", "09:01", {
+        body: "How many accounts are ready for the launch email?",
+      }),
+      agentExchangeMessage("group-3", "incoming", "research", "09:03", {
+        body: "Two sources are left: the pricing page archive and the analyst note from June.",
+        replyTo: "group-1",
+      }),
+      agentExchangeMessage("group-4", "incoming", "sales", "09:04", {
+        body: "14 accounts are ready. Three more wait for a contact name.",
+        replyTo: "group-2",
+      }),
+      agentExchangeMessage("group-5", "outgoing", "research", "09:05", {
+        body: "Thanks. I will tell the user that two sources are still open.",
+        replyTo: "group-3",
+        expectsReply: false,
+      }),
+      {
+        id: "group-agent",
+        author: "agent",
+        body: "Research has two sources left to confirm. Sales has 14 accounts ready for the launch email.",
+        time: "09:06",
+        createdAt: "2026-08-19T09:06:00.000Z",
+        kind: "text",
+      },
+    ],
+  },
+};
+
+function routineRunMessages(
+  hour: number,
+  minute: number,
+  status: RoutineRunMarkerModel["status"] = "succeeded",
+): RendererAgentMessage[] {
+  const runId = `watch-${hour}-${minute}`;
+  return (["running", status] as const).map((markerStatus, offset) => {
+    const timestamp = new Date(Date.UTC(2026, 7, 19, hour, minute + offset)).toISOString();
+    return {
+      id: `${runId}-${markerStatus}`,
+      author: "agent",
+      body: "Watchdog",
+      time: timestamp.slice(11, 16),
+      createdAt: timestamp,
+      kind: "action-marker",
+      actionMarker: {
+        kind: "routine-run",
+        sourceAgentId: null,
+        routineId: "routine-watch",
+        runId,
+        routineName: "Watchdog",
+        status: markerStatus,
+        timestamp,
+      },
+    };
+  });
+}
+
+export const RoutineRunGroupInChat: Story = {
+  name: "Routine run group in chat",
+  args: {
+    messages: [
+      {
+        id: "watch-user",
+        author: "you",
+        body: "Check the site every 15 minutes and tell me only when something breaks.",
+        time: "17:00",
+        createdAt: "2026-08-19T17:00:00.000Z",
+        kind: "text",
+      },
+      ...routineRunMessages(17, 15),
+      ...routineRunMessages(17, 30),
+      ...routineRunMessages(17, 45),
+      ...routineRunMessages(18, 0),
+      ...routineRunMessages(18, 15, "failed"),
+      ...routineRunMessages(18, 30),
+      ...routineRunMessages(18, 45),
+    ],
+  },
+};
+
+function NaturalSendLoopConversation(props: { args: Parameters<typeof Conversation>[0]; historyRows: number }) {
+  const [chat, setChat] = createSignal<RendererAgentMessage[]>(readingHistoryMessages(props.historyRows));
+  const [activeTurnId, setActiveTurnId] = createSignal<string | null>(null);
+  const [deliveries, setDeliveries] = createSignal<QueueSnapshot["deliveries"]>([]);
+  const timers = new Set<number>();
+  const later = (delay: number, step: () => void) => {
+    const timer = window.setTimeout(() => {
+      timers.delete(timer);
+      step();
+    }, delay);
+    timers.add(timer);
+  };
+  onCleanup(() => {
+    for (const timer of timers) window.clearTimeout(timer);
+  });
+  let sends = 0;
+  const sendMessage = async (body: string) => {
+    sends += 1;
+    const id = `natural-send-${sends}`;
+    const delivery = {
+      ...queuedDelivery,
+      id,
+      messageId: id,
+      text: body,
+      status: "queued" as const,
+      position: 0,
+      createdAt: new Date().toISOString(),
+    };
+    setDeliveries((current) => [...current, delivery]);
+    later(220, () => {
+      setDeliveries((current) =>
+        current.map((item) => (item.id === id ? { ...item, status: "running" as const, turnId: id } : item)),
+      );
+      setActiveTurnId(id);
+      setChat((current) => [
+        ...current,
+        { id, author: "you", body, time: "10:02", createdAt: new Date().toISOString(), kind: "text" },
+      ]);
+    });
+    later(500, () =>
+      setChat((current) => [
+        ...current,
+        {
+          id: `thinking:${id}`,
+          author: "agent",
+          body: "",
+          time: "10:02",
+          kind: "thinking",
+          items: ["Read the message", "Checked the release plan"],
+          streaming: true,
+        },
+      ]),
+    );
+    const reply = `I checked it. The owner, the date and the open risk for "${body}" are in the plan now.`;
+    later(1600, () =>
+      setChat((current) => [
+        ...current,
+        {
+          id: `${id}:assistant`,
+          author: "agent",
+          body: reply.slice(0, 20),
+          time: "10:02",
+          kind: "text",
+          streaming: true,
+        },
+      ]),
+    );
+    later(2200, () =>
+      setChat((current) =>
+        current.map((message) => {
+          if (message.id === `${id}:assistant`) return { ...message, body: reply, streaming: false };
+          if (message.id === `thinking:${id}`) return { ...message, streaming: false };
+          return message;
+        }),
+      ),
+    );
+    later(2260, () => {
+      setActiveTurnId((current) => (current === id ? null : current));
+      setDeliveries((current) =>
+        current.map((item) => (item.id === id ? { ...item, status: "completed" as const, position: null } : item)),
+      );
+    });
+    await new Promise<void>((resolve) => later(200, resolve));
+    return { messageId: id };
+  };
+  return (
+    <MockedConversation
+      args={{
+        ...props.args,
+        responseStyle: "natural",
+        activeTurnId: activeTurnId(),
+        queue: { agentId: queuedDelivery.recipientAgentId, deliveries: deliveries() },
+        onSendMessage: sendMessage,
+      }}
+      messages={chat()}
+    />
+  );
+}
+
+export const NaturalSendLoop: Story = {
+  args: { messages: [], activeTurnId: null, queue: undefined, unreadCount: 0, firstUnreadMessageId: null },
+  render: (storyArgs) => <NaturalSendLoopConversation args={storyArgs} historyRows={20} />,
+};
+
+export const NaturalSendLoopAtRowLimit: Story = {
+  args: NaturalSendLoop.args,
+  render: (storyArgs) => <NaturalSendLoopConversation args={storyArgs} historyRows={99} />,
+};
+
+export const NaturalSendLoopLongHistory: Story = {
+  args: NaturalSendLoop.args,
+  render: (storyArgs) => <NaturalSendLoopConversation args={storyArgs} historyRows={300} />,
 };

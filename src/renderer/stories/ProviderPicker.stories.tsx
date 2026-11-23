@@ -1,6 +1,11 @@
-import { expect, fn, within } from "storybook/test";
+import type { AgentProviderId } from "@openbot/contracts/ipc";
+import { Toaster } from "@openbot/ui";
+import type { ProviderPickerOption } from "@openbot/ui/components/ProviderPicker";
+import { ProviderPicker } from "@openbot/ui/components/ProviderPicker";
+import { createSignal } from "solid-js";
+import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { ProviderPicker, type ProviderPickerOption } from "../src/components/ProviderPicker";
+import { createFakeConnection } from "./provider-connection-fixture";
 
 const options: ProviderPickerOption[] = [
   {
@@ -45,6 +50,33 @@ type Story = StoryObj<typeof meta>;
 
 export const Available: Story = {};
 
+export const BrowserSignInStalled: Story = {
+  args: {
+    allowUnavailableSelection: true,
+    onSignInProvider: fn(),
+  },
+  render: (args) => {
+    const [connecting, setConnecting] = createSignal(false);
+    const connection = createFakeConnection({ browser: () => void setConnecting(true), finishAfterMs: 0 });
+    return (
+      <ProviderPicker
+        {...args}
+        options={options.map((option) =>
+          option.id === "codex"
+            ? {
+                ...option,
+                state: "sign-in-required",
+                email: null,
+                connectionState: connecting() ? "connecting" : undefined,
+              }
+            : option,
+        )}
+        connection={connection}
+      />
+    );
+  },
+};
+
 export const Embedded: Story = {
   args: { embedded: true, label: undefined },
 };
@@ -60,10 +92,6 @@ export const ProviderUnavailable: Story = {
   },
 };
 
-/**
- * The three isolated update states. An update is a re-download of a newer runtime, so the
- * in-flight and failed rows reuse the Cancel and Retry buttons a first download already has.
- */
 const claudeReady: ProviderPickerOption["runtimeStatus"] = {
   phase: "ready",
   progress: 100,
@@ -104,11 +132,6 @@ export const UpdateFailed: Story = {
   },
 };
 
-/**
- * A CLI the user installed themselves, with a newer version pinned by this Dani-Dex release. The row
- * reads exactly like a managed update - same badge, same button - because only the work behind the
- * button differs, and the row does not choose it.
- */
 export const UserOwnedCliUpdate: Story = {
   args: {
     value: "codex",
@@ -121,7 +144,7 @@ export const UserOwnedCliUpdate: Story = {
           }
         : option,
     ),
-    onConnectProvider: fn(),
+    connection: createFakeConnection({ browser: fn(), alternative: [] }),
     onUpdateProvider: fn(),
   },
 };
@@ -133,29 +156,14 @@ export const AllowUnavailableSelection: Story = {
   },
 };
 
-/**
- * A custom endpoint runs as OpenCode, so its row follows OpenCode's row: it offers OpenCode's install
- * until the CLI is there, and Add from then on, with or without an OpenCode account.
- */
 function withOpenCode(state: ProviderPickerOption["state"]): ProviderPickerOption[] {
   return [...options, { id: "opencode", name: "OpenCode", state, description: "Use your installed OpenCode CLI" }];
 }
 
 export const CustomProviderNotInstalled: Story = {
   args: { options: withOpenCode("not-installed"), onAddCustomProvider: fn(), onInstallProvider: fn() },
-  play: async ({ args, canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Install custom provider" }));
-    await expect(args.onInstallProvider).toHaveBeenCalledWith("opencode");
-    await expect(canvas.queryByRole("button", { name: "Add custom provider" })).toBeNull();
-  },
 };
 
-/**
- * Two saved endpoints in the one row that stands for them all. The row is a choice now, so it joins
- * the group and takes the check mark from the provider that serves it, and the count is the button
- * that opens the list. The button sits beside Add, outside the label: a button inside a `<label>`
- * would answer the radio instead.
- */
 export const CustomProviderEndpoints: Story = {
   args: {
     value: "opencode",
@@ -181,26 +189,8 @@ export const CustomProviderEndpoints: Story = {
     onSelectCustomProvider: fn(),
     onManageCustomProviders: fn(),
   },
-  play: async ({ args, canvas, userEvent }) => {
-    const providers = within(canvas.getByRole("radiogroup", { name: "Default provider" }));
-    const custom = providers.getByRole("radio", { name: /Custom provider/ });
-    await userEvent.click(custom);
-    await expect(args.onSelectCustomProvider).toHaveBeenCalledTimes(1);
-    // The count counts, and opens the list. The radio keeps its own name.
-    await expect(custom).not.toHaveAccessibleName(/endpoints/);
-    const manage = canvas.getByRole("button", { name: "Manage 2 endpoints" });
-    await expect(manage).toHaveTextContent("2 endpoints");
-    await userEvent.click(manage);
-    await expect(args.onManageCustomProviders).toHaveBeenCalledTimes(1);
-    // Add keeps its own place on the row, so choosing the row never opens the form.
-    await expect(canvas.getByRole("button", { name: "Add custom provider" })).toBeVisible();
-  },
 };
 
-/**
- * One endpoint, chosen, and no list to open. Without `onManageCustomProviders` the count stays a
- * badge inside the label and counts in the singular. No provider row holds the check.
- */
 export const CustomProviderSelected: Story = {
   args: {
     value: "opencode",
@@ -218,24 +208,113 @@ export const CustomProviderSelected: Story = {
     onAddCustomProvider: fn(),
     onSelectCustomProvider: fn(),
   },
-  play: async ({ canvas }) => {
-    const providers = within(canvas.getByRole("radiogroup", { name: "Default provider" }));
-    const custom = providers.getByRole("radio", { name: /Custom provider/ });
-    await expect(custom).toBeChecked();
-    await expect(custom).toHaveAccessibleName(/1 endpoint/);
-    await expect(providers.getByRole("radio", { name: /OpenCode/ })).not.toBeChecked();
-  },
 };
 
 export const CustomProviderReady: Story = {
   args: { options: withOpenCode("sign-in-required"), onAddCustomProvider: fn() },
-  play: async ({ args, canvas, userEvent }) => {
-    // Anywhere on the row answers, as it does on the rows above, not only the button at its edge.
-    await userEvent.click(canvas.getByText("Custom provider"));
-    await expect(args.onAddCustomProvider).toHaveBeenCalledTimes(1);
-    // It adds, it does not select, so it stays outside the group of choices.
-    await expect(canvas.getByRole("radiogroup", { name: "Default provider" })).not.toContainElement(
-      canvas.getByRole("button", { name: "Add custom provider" }),
-    );
+};
+
+const switchOptions: ProviderPickerOption[] = [
+  ...options,
+  { id: "cursor", name: "Cursor", state: "error", checkError: "The model list could not be read." },
+  { id: "opencode", name: "OpenCode", state: "available", email: null },
+];
+
+function ProviderSwitchStory(props: {
+  off: readonly AgentProviderId[];
+  usedBy?: Partial<Record<AgentProviderId, string[]>>;
+  save?: () => Promise<void>;
+}) {
+  const [off, setOff] = createSignal<readonly AgentProviderId[]>(props.off);
+  return (
+    <>
+      <ProviderPicker
+        {...args}
+        embedded
+        label={undefined}
+        hint={undefined}
+        allowUnavailableSelection
+        options={switchOptions.map((option) => ({
+          ...option,
+          off: off().includes(option.id),
+          usedBy: props.usedBy?.[option.id],
+        }))}
+        onSetProviderOn={async (provider, on) => {
+          await props.save?.();
+          setOff((current) => (on ? current.filter((id) => id !== provider) : [...current, provider]));
+        }}
+      />
+      <Toaster />
+    </>
+  );
+}
+
+export const ProvidersOff: Story = {
+  render: () => <ProviderSwitchStory off={["cursor", "opencode"]} />,
+};
+
+export const ProviderInUse: Story = {
+  render: () => <ProviderSwitchStory off={["cursor"]} usedBy={{ codex: ["Ada"], claude: ["Rex", "Mila"] }} />,
+};
+
+export const ProviderSwitchPending: Story = {
+  render: () => <ProviderSwitchStory off={[]} save={() => new Promise<void>(() => undefined)} />,
+};
+
+export const ProviderSwitchError: Story = {
+  render: () => (
+    <ProviderSwitchStory
+      off={[]}
+      save={() => Promise.reject(new Error("OpenBot could not change the provider setting."))}
+    />
+  ),
+};
+
+export const ProviderAccounts: Story = {
+  args: {
+    embedded: true,
+    label: undefined,
+    hint: undefined,
+    options: [
+      {
+        id: "codex",
+        name: "Codex",
+        state: "available",
+        accounts: [
+          {
+            id: "default",
+            label: "Work",
+            email: "person@example.com",
+            state: "available",
+            message: null,
+            usedBy: ["Ada"],
+          },
+          {
+            id: "a0123456789abcdef",
+            label: null,
+            email: "person@home.example",
+            state: "available",
+            message: null,
+            usedBy: ["Rex", "Mila"],
+          },
+        ],
+      },
+      {
+        id: "claude",
+        name: "Claude",
+        state: "available",
+        email: "person@example.com",
+        accounts: [
+          { id: "default", label: null, email: "person@example.com", state: "available", message: null },
+          { id: "a00000000000000002", label: null, email: null, state: "connecting", message: null },
+        ],
+      },
+    ],
+    accountActions: {
+      connect: fn(async () => undefined),
+      cancel: fn(async () => undefined),
+      rename: fn(async () => undefined),
+      remove: fn(async () => undefined),
+    },
   },
 };

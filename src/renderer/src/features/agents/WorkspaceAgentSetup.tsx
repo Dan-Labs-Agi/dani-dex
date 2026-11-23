@@ -1,16 +1,19 @@
-import { isFreeOpencodeModel } from "@dani-dex/contracts/ipc";
-import { TEAM_AGENT_CREATE_MODEL_CAPABILITY } from "@dani-dex/contracts/team-protocol/current";
-import { createEffect, createMemo } from "solid-js";
+import { TEAM_AGENT_CREATE_MODEL_CAPABILITY } from "@openbot/contracts/team-protocol/current";
+import { PROVIDER_ACCOUNTS_CAPABILITY } from "@openbot/contracts/team-protocol/provider-accounts-v1";
+import { FIRST_AGENT_SUGGESTIONS, FirstAgentSetup } from "@openbot/ui/features/agents/FirstAgentSetup";
+import { createEffect, createMemo, createSignal } from "solid-js";
+import { useProviders } from "../../providers";
+import { useAuth } from "../account/account-context";
+import { useCustomAgents } from "../custom-agents/custom-agents-context";
+import { useSetup } from "../onboarding/onboarding-context";
+import { serverCanAdminister } from "../servers/server-capabilities";
+import { useServerSettings } from "../servers/server-settings";
 import { useServers } from "../servers/servers-context";
 import { useAgentActions } from "./agent-actions";
+import { resolveCreationModel } from "./agent-creation-model";
 import { useAgents } from "./agents-context";
-import { FIRST_AGENT_SUGGESTIONS, FirstAgentSetup } from "./FirstAgentSetup";
+import { withHostAccountUsage } from "./host-provider-accounts";
 
-/**
- * The create-an-agent form, which takes over the conversation pane instead of
- * opening over it. `mode` is derived from the agent list rather than passed in
- * because the first agent and the fifth are the same command with different copy.
- */
 export function WorkspaceAgentSetup() {
   const {
     agentList,
@@ -20,28 +23,64 @@ export function WorkspaceAgentSetup() {
     creatingAgent,
     cancelAgentSetup,
     modelOptions,
+    agentStatus,
+    serverSetupChoice,
+    hostAccountLimits,
+    developmentCreation,
   } = useAgents();
   const { createAgent } = useAgentActions();
+  const { setupState } = useSetup();
+  const { customAgents } = useCustomAgents();
   const { activeServer, activeServerSupportsCapability } = useServers();
-  // The home creation flow uses a listed free model: the local proxy when ready, or a
-  // keyless OpenCode model if the proxy failed. Never choose an unknown-price model.
-  const daniModel = createMemo(() => {
-    if (activeServer()?.kind === "remote" && !activeServerSupportsCapability(TEAM_AGENT_CREATE_MODEL_CAPABILITY)) {
-      return undefined;
-    }
-    return (
-      modelOptions().find((option) => option.provider === "opencode" && option.id === "dani/dani-free-auto") ??
-      modelOptions().find((option) => option.provider === "opencode" && isFreeOpencodeModel(option.id, option.name))
-    );
-  });
+  const {
+    providerRuntimeStatuses,
+    providerRuntimeDownloadsAvailable,
+    downloadProviderRuntime,
+    cancelProviderRuntimeDownload,
+    connectProvider,
+    providerAdminServerId,
+    activeCustomProviders,
+  } = useProviders();
+  const { openServerSettings } = useServerSettings();
+  const auth = useAuth();
+  const accountChoice = createMemo(() => serverCanAdminister(activeServer(), PROVIDER_ACCOUNTS_CAPABILITY));
+  const localProviderDownloads = createMemo(
+    () => activeServer()?.kind === "local" && providerRuntimeDownloadsAvailable(),
+  );
+  const manageProviders = createMemo(() => activeServer()?.kind === "local" || providerAdminServerId() !== undefined);
+  const openProviderSettings = (trigger: HTMLElement) => {
+    const server = activeServer();
+    if (server) openServerSettings(server.id, trigger, "providers");
+  };
+  const createModelSupported = createMemo(
+    () => activeServer()?.kind !== "remote" || activeServerSupportsCapability(TEAM_AGENT_CREATE_MODEL_CAPABILITY),
+  );
+  const [modelTouched, setModelTouched] = createSignal(false);
   createEffect(
-    () => daniModel(),
-    (model) => {
-      if (!model) return;
-      const draft = agentSetupDraft();
-      if (draft.provider !== "opencode" || draft.model !== model.id) {
-        setAgentSetupDraft({ ...draft, provider: "opencode", model: model.id });
-      }
+    () => ({
+      touched: modelTouched(),
+      setup: serverSetupChoice() ?? setupState(),
+      options: modelOptions(),
+      status: agentStatus(),
+      development: developmentCreation(),
+      draft: agentSetupDraft(),
+    }),
+    ({ touched, setup, options, status, development, draft }) => {
+      if (touched) return;
+      const resolved = resolveCreationModel(setup, options, status, development);
+      if (!resolved) return;
+      if (
+        draft.provider === resolved.provider &&
+        draft.model === resolved.model &&
+        draft.reasoningEffort === resolved.reasoningEffort
+      )
+        return;
+      setAgentSetupDraft({
+        ...draft,
+        provider: resolved.provider,
+        model: resolved.model,
+        reasoningEffort: resolved.reasoningEffort,
+      });
     },
   );
 
@@ -52,13 +91,30 @@ export function WorkspaceAgentSetup() {
       mode={agentList().length === 0 ? "first" : "additional"}
       submitting={creatingAgent()}
       error={agentSetupError()}
-      modelReady={Boolean(daniModel())}
-      onChange={setAgentSetupDraft}
-      onSubmit={(draft) => {
-        const model = daniModel();
-        if (!model) return;
-        void createAgent({ ...draft, provider: "opencode", model: model.id });
+      modelOptions={createModelSupported() ? modelOptions() : undefined}
+      agentStatus={agentStatus()}
+      accountChoice={accountChoice()}
+      accountUsage={accountChoice() ? withHostAccountUsage(auth.accountUsage(), hostAccountLimits()) : undefined}
+      runtimeStatuses={localProviderDownloads() ? providerRuntimeStatuses() : undefined}
+      customProviders={activeCustomProviders()}
+      customAgents={activeServer()?.kind === "local" ? customAgents() : undefined}
+      onDownloadProvider={localProviderDownloads() ? downloadProviderRuntime : undefined}
+      onCancelProviderDownload={localProviderDownloads() ? cancelProviderRuntimeDownload : undefined}
+      onConnectProvider={localProviderDownloads() ? connectProvider : undefined}
+      onAddCustomProvider={manageProviders() ? openProviderSettings : undefined}
+      onManageProviders={manageProviders() ? openProviderSettings : undefined}
+      onChange={(next) => {
+        const current = agentSetupDraft();
+        if (
+          next.provider !== current.provider ||
+          next.model !== current.model ||
+          next.reasoningEffort !== current.reasoningEffort ||
+          next.providerAccountId !== current.providerAccountId
+        )
+          setModelTouched(true);
+        setAgentSetupDraft(next);
       }}
+      onSubmit={createAgent}
       onCancel={agentList().length > 0 ? cancelAgentSetup : undefined}
     />
   );

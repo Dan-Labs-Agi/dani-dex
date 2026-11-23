@@ -1,69 +1,64 @@
-import type { HostStatus, ServerSummary } from "@dani-dex/contracts/ipc";
-import type { TeamCurrentCapability } from "@dani-dex/contracts/team-protocol/current";
-import { createMemo, createSignal, flush, onSettled } from "solid-js";
+import type { HostedServerEntryPoint } from "@openbot/contracts/hosted-servers";
+import type { HostStatus, ServerNotificationLevel, ServerSummary } from "@openbot/contracts/ipc";
+import type { TeamCurrentCapability } from "@openbot/contracts/team-protocol/current";
+import { WAKE_RECONNECT_STATES } from "@openbot/team-client/hosted-server-wake";
+import { classifyFailure } from "@openbot/telemetry";
+import { toast } from "@openbot/ui";
+import { serverPlanDeletionDates } from "@openbot/ui/features/servers/ServerPlanEnd";
+import { currentText } from "@openbot/ui/text";
+import { createEffect, createMemo, createSignal, flush, onSettled, untrack } from "solid-js";
+import { actionToast } from "../../action-toast";
 import { FALLBACK_HOST_STATUS } from "../../app-defaults";
-import { toast } from "../../components/ui";
-import { errorMessage } from "../../error-message";
 import { createSimpleContext } from "../../simple-context";
-import { serverSupportsCapability } from "./server-capabilities";
+import { refreshEndedPlansOnFocus } from "./ServerPlanReminder";
+import {
+  olderAppSide,
+  remoteUpdateServer,
+  serverRoleCanAdminister,
+  serverSupportsCapability,
+} from "./server-capabilities";
+import { checkServerUpdate, offerServerUpdate, type ServerUpdateTarget } from "./server-update-flow";
+import { serversPort } from "./servers-port";
 
-/**
- * The workspaces the user can switch between - the local one this computer
- * hosts and every remote team server joined - plus the status of the host this
- * computer runs itself.
- *
- * Two things are deliberately *not* here, and both are the same rule: a domain
- * never reaches into one nested under it.
- *
- * - **`selectServer` stays in the controller.** It tears down and refetches
- *   agents, conversation, direct messages, turns, browser tabs and the sidebar -
- *   every domain that sits below this one. It moves here (or into the keyed
- *   scope that replaces it) once those domains own their own teardown, which is
- *   what the scoped-provider step does.
- * - **`serverLoadRequest` is how this domain asks for that anyway.** A retried
- *   incompatible host, or a remote that only just reported its version, has to
- *   be loaded again the moment the summaries say so. Rather than call downward,
- *   `applyServerSummaries` publishes the request and the active server scope reloads its data.
- *   It uses the same `{ id, nonce }` shape the renderer already uses for
- *   `settingsRequest` and `messageFocusRequest`. The nonce is load-bearing: the
- *   same server can need loading twice in a row.
- *
- * `initialServersReady` exists for the same reason. The first `list()` read is
- * this domain's, but the per-server bootstrap that runs after it belongs to the
- * domains below, so they get the promise instead of the read.
- *
- * Ungated - see `app-providers.tsx` for why no provider gates during the
- * migration. `activeServerId()` answers `"local"` before the list arrives, which
- * is the same answer it gives for the local workspace, so nothing below has to
- * distinguish "not loaded yet" from "local".
- */
+const LOCAL_SERVER_HIDDEN_STORAGE_KEY = "openbot:local-server-hidden";
+
+function readLocalServerHidden(): boolean {
+  try {
+    return window.localStorage.getItem(LOCAL_SERVER_HIDDEN_STORAGE_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
 const Servers = createSimpleContext({
   name: "Servers",
   init: () => {
+    const [serversLoaded, setServersLoaded] = createSignal(false);
+    const [serversLoadFailed, setServersLoadFailed] = createSignal(false);
     const [servers, setServers] = createSignal<ServerSummary[]>([]);
     const [hostStatus, setHostStatus] = createSignal<HostStatus>(FALLBACK_HOST_STATUS);
     const [joinServerOpen, setJoinServerOpen] = createSignal(false);
-    const [serverLoadRequest, setServerLoadRequest] = createSignal<{ serverId: string; nonce: number } | null>(null);
+    const [createLocalServerOpen, setCreateLocalServerOpen] = createSignal(false);
+    const [installServerOpen, setInstallServerOpen] = createSignal(false);
+    const [addServerEntryPoint, setAddServerEntryPoint] = createSignal<HostedServerEntryPoint | null>(null);
+    const addServerOpen = () => addServerEntryPoint() !== null;
+    const setAddServerOpen = (...args: [open: false] | [open: true, entryPoint: HostedServerEntryPoint]) =>
+      setAddServerEntryPoint(args[0] ? args[1] : null);
+    const [hostedServersAvailable, setHostedServersAvailable] = createSignal(false);
+    const [hostedServerIds, setHostedServerIds] = createSignal<ReadonlySet<string>>(new Set());
+    const [hostedServersLoaded, setHostedServersLoaded] = createSignal(false);
+    const [planDeletesAtById, setPlanDeletesAtById] = createSignal<ReadonlyMap<string, number>>(new Map());
+    const planDeletesAt = (serverId: string) => planDeletesAtById().get(serverId) ?? null;
+    const [serverLoadRequest, setServerLoadRequest] = createSignal<{
+      serverId: string;
+      nonce: number;
+      connectionSequence?: number;
+    } | null>(null);
+    const [localServerHidden, setLocalServerHiddenSignal] = createSignal(readLocalServerHidden());
     let loadRequestNonce = 0;
     let pendingCompatibilityRetryServerId: string | null = null;
     let serverSelectionGeneration = 0;
 
-    /**
-     * A token for "no other server selection has started since this point".
-     *
-     * The counter lives here because two unrelated callers need the same
-     * answer: whoever runs the switch, and `closeBrowserTab`, which must not
-     * apply a close that raced a switch. Neither can read the other's local, and
-     * `activeServerId()` alone is not enough - it only changes once
-     * `servers.select()` resolves, so it says "unchanged" for the whole window
-     * in which a switch is already under way.
-     *
-     * `beginServerSelection` claims the next generation and invalidates every
-     * predicate handed out before it; `currentServerSelection` only observes.
-     * Both return the predicate rather than the number so no caller can compare
-     * generations across owners - a comparison that stops meaning anything once
-     * the counter lives inside a keyed scope.
-     */
     function beginServerSelection(): () => boolean {
       const generation = ++serverSelectionGeneration;
       return () => generation === serverSelectionGeneration;
@@ -81,24 +76,109 @@ const Servers = createSimpleContext({
       return serverSupportsCapability(activeServer(), capability);
     }
 
+    createEffect(
+      () => {
+        const server = activeServer();
+        return server?.hostedSleep === "sleeping" ? server.id : null;
+      },
+      (serverId) => {
+        if (!serverId) return;
+        let active = true;
+        const addListeners = () => {
+          window.addEventListener("pointerdown", wake, true);
+          window.addEventListener("keydown", wake, true);
+        };
+        const removeListeners = () => {
+          window.removeEventListener("pointerdown", wake, true);
+          window.removeEventListener("keydown", wake, true);
+        };
+        const wake = () => {
+          removeListeners();
+          void serversPort()
+            .hostedServers.wake(serverId)
+            .then(
+              (server) => WAKE_RECONNECT_STATES.has(server.state),
+              () => false,
+            )
+            .then((started) => {
+              if (!started && active) addListeners();
+            });
+        };
+        addListeners();
+        return () => {
+          active = false;
+          removeListeners();
+        };
+      },
+    );
+
+    let openHostUpdate: ((serverId: string) => void) | undefined;
+    function setHostUpdateOpener(opener: ((serverId: string) => void) | undefined): void {
+      openHostUpdate = opener;
+    }
+
+    const updateChecks = new Map<string, number>();
+    let entry: { id: string; offered: boolean } | null = null;
+
+    function updateTarget(server: ServerSummary): ServerUpdateTarget {
+      return {
+        serverId: server.id,
+        name: server.name,
+        canManage: serverRoleCanAdminister(server),
+        calls: serversPort().hostAdmin,
+      };
+    }
+
     function applyServerSummaries(value: ServerSummary[]): void {
+      setServersLoaded(true);
+      setServersLoadFailed(false);
       const previous = new Map(servers().map((server) => [server.id, server]));
       for (const server of value) {
         const sequence = server.connectionSequence ?? 0;
         const previousSequence = previous.get(server.id)?.connectionSequence ?? 0;
         const compatibility = server.compatibility;
+        const canUpdate = remoteUpdateServer(server);
         if (
           server.kind === "remote" &&
           sequence > previousSequence &&
           compatibility?.hostAppVersion &&
           compatibility.hostAppVersion !== compatibility.localAppVersion
         ) {
-          toast.warning(`Different Dani-Dex versions on ${server.name}`, {
-            description: `The connection uses protocol ${compatibility.negotiatedProtocol}. Some newer features may be unavailable. Client ${compatibility.localAppVersion}; host ${compatibility.hostAppVersion}.`,
+          const { t } = currentText();
+          const opener = openHostUpdate;
+          const serverId = server.id;
+          const older = olderAppSide(compatibility.localAppVersion, compatibility.hostAppVersion);
+          const descriptionParams = {
+            name: server.name,
+            protocol: String(compatibility.negotiatedProtocol),
+            clientVersion: compatibility.localAppVersion,
+            hostVersion: compatibility.hostAppVersion,
+          };
+          const offerUpdate = opener && canUpdate && older !== "client";
+          toast.warning(t("server.compatibility.versionMismatchTitle", { name: server.name }), {
+            ...{
+              description:
+                older === "host"
+                  ? t("server.compatibility.versionMismatchUpdateHostDescription", descriptionParams)
+                  : older === "client"
+                    ? t("server.compatibility.versionMismatchUpdateClientDescription", descriptionParams)
+                    : t("server.compatibility.versionMismatchDescription", descriptionParams),
+              action:
+                opener && offerUpdate
+                  ? { label: t("server.update.hostAction"), onClick: () => opener(serverId) }
+                  : undefined,
+            },
+            report: { operation: "team", source: "system", cause_code: "unknown" },
           });
+        }
+        if (canUpdate && server.state === "online" && updateChecks.get(server.id) !== sequence) {
+          updateChecks.set(server.id, sequence);
+          if (!server.active || (entry?.id === server.id && entry.offered))
+            void checkServerUpdate(updateTarget(server));
         }
       }
       setServers(value);
+      if (!value.some((server) => server.kind === "remote") && untrack(localServerHidden)) setLocalServerHidden(false);
       const retryTarget = value.find(
         (server) => server.id === pendingCompatibilityRetryServerId && server.active && server.state === "online",
       );
@@ -126,7 +206,29 @@ const Servers = createSimpleContext({
       if (loadTarget) {
         pendingCompatibilityRetryServerId = null;
         loadRequestNonce += 1;
-        setServerLoadRequest({ serverId: loadTarget.id, nonce: loadRequestNonce });
+        const connectionSequence = retryTarget ? undefined : loadTarget.connectionSequence;
+        setServerLoadRequest({
+          serverId: loadTarget.id,
+          nonce: loadRequestNonce,
+          ...(connectionSequence === undefined ? {} : { connectionSequence }),
+        });
+      }
+    }
+
+    function setLocalServerHidden(hidden: boolean): void {
+      setLocalServerHiddenSignal(hidden);
+      try {
+        if (hidden) window.localStorage.setItem(LOCAL_SERVER_HIDDEN_STORAGE_KEY, "true");
+        else window.localStorage.removeItem(LOCAL_SERVER_HIDDEN_STORAGE_KEY);
+      } catch {}
+    }
+
+    async function refreshServers(): Promise<void> {
+      setServersLoadFailed(false);
+      try {
+        applyServerSummaries(await serversPort().servers.list());
+      } catch {
+        setServersLoadFailed(true);
       }
     }
 
@@ -136,50 +238,136 @@ const Servers = createSimpleContext({
     });
 
     onSettled(() => {
-      const unsubscribeServers = window.danidex.servers.onEvent((value) => flush(() => applyServerSummaries(value)));
-      const unsubscribeHost = window.danidex.host.onEvent((status) => flush(() => setHostStatus(status)));
-      // One `then` rather than a `then`/`catch`/`finally` chain: every extra link
-      // is another microtask between the summaries arriving and the per-server
-      // bootstrap that waits on this promise, and that gap is long enough for the
-      // view to paint a first pass from stale state.
-      void window.danidex.servers.list().then(
-        (value) => {
-          applyServerSummaries(value);
-          markServersLoaded();
-        },
-        () => markServersLoaded(),
-      );
-      void window.danidex.host
-        .getStatus()
+      const unsubscribeServers = serversPort().servers.onEvent((value) => flush(() => applyServerSummaries(value)));
+      const unsubscribeHost = serversPort().host.onEvent((status) => flush(() => setHostStatus(status)));
+      void refreshServers().finally(markServersLoaded);
+      void serversPort()
+        .host.getStatus()
         .then(setHostStatus)
         .catch(() => undefined);
+      void refreshHostedServersAvailable();
+      let signedInUserId: string | null = null;
+      const unsubscribeAuth = serversPort().auth.onEvent((state) => {
+        if (state.status !== "signed_in" && state.status !== "signed_out") return;
+        const userId = state.status === "signed_in" ? state.user.id : null;
+        if (userId === signedInUserId) return;
+        signedInUserId = userId;
+        if (userId) void refreshHostedServersAvailable();
+        else {
+          setHostedServersAvailable(false);
+          setHostedServerIds(new Set<string>());
+          setPlanDeletesAtById(new Map());
+          setHostedServersLoaded(false);
+        }
+      });
+      const stopPlanRefresh = refreshEndedPlansOnFocus(
+        () => untrack(planDeletesAtById).size > 0,
+        refreshHostedServersAvailable,
+      );
       return () => {
         unsubscribeServers();
         unsubscribeHost();
+        unsubscribeAuth();
+        stopPlanRefresh();
       };
     });
 
+    let hostedListRequest = 0;
+    async function refreshHostedServersAvailable(): Promise<boolean> {
+      const request = ++hostedListRequest;
+      const list = await serversPort()
+        .hostedServers.list()
+        .catch(() => null);
+      if (!list) return hostedServersAvailable();
+      if (request !== hostedListRequest) return list.available;
+      setHostedServersAvailable(list.available);
+      setHostedServerIds(new Set(list.servers.map((server) => server.serverId)));
+      setPlanDeletesAtById(serverPlanDeletionDates(list.servers));
+      setHostedServersLoaded(true);
+      return list.available;
+    }
+
+    createEffect(
+      () =>
+        hostedServersLoaded() &&
+        servers().some((server) => server.hostedIssue === "plan_ended" && !planDeletesAtById().has(server.id)),
+      (dateMissing) => {
+        if (dateMissing) void refreshHostedServersAvailable();
+      },
+    );
+
+    createEffect(
+      () => {
+        const active = servers().find((server) => server.active);
+        return active ? { id: active.id, online: active.state === "online" } : null;
+      },
+      (current) => {
+        if (current?.id !== entry?.id) {
+          entry = current ? { id: current.id, offered: false } : null;
+          void offerServerUpdate(null);
+        }
+        if (!current?.online || !entry || entry.offered) return;
+        entry.offered = true;
+        const active = untrack(servers).find((server) => server.id === current.id);
+        void offerServerUpdate(remoteUpdateServer(active) && active ? updateTarget(active) : null);
+      },
+    );
+
+    const readOwnedServerIds = new Set<string>();
+    createEffect(
+      () =>
+        servers()
+          .filter((server) => server.kind === "remote" && server.role === "owner" && !readOwnedServerIds.has(server.id))
+          .map((server) => server.id),
+      (serverIds) => {
+        if (serverIds.length === 0) return;
+        for (const serverId of serverIds) readOwnedServerIds.add(serverId);
+        void refreshHostedServersAvailable();
+      },
+    );
+
     async function retryServerConnection(serverId: string): Promise<void> {
-      pendingCompatibilityRetryServerId = serverId;
+      if (servers().find((server) => server.id === serverId)?.state !== "online")
+        pendingCompatibilityRetryServerId = serverId;
       try {
-        await window.danidex.servers.retryConnection(serverId);
+        await serversPort().servers.retryConnection(serverId);
       } catch (error) {
         pendingCompatibilityRetryServerId = null;
-        toast.error("The connection failed", {
-          description: errorMessage(
-            error,
-            "Could not connect to this server. Check that the host is online and try again.",
-          ),
+        const text = currentText();
+        actionToast.error(text.t("server.connection.failedTitle"), {
+          error,
+          fallback: text.t("server.connection.failedDescription"),
+          report: { operation: "team", source: "action", cause_code: classifyFailure(error) },
         });
       }
     }
 
-    async function setServerMuted(serverId: string, muted: boolean): Promise<void> {
+    async function setServerMuted(serverId: string, muted: boolean, durationMs?: number): Promise<void> {
       try {
-        applyServerSummaries(await window.danidex.servers.setMuted({ serverId, muted }));
+        applyServerSummaries(
+          await serversPort().servers.setMuted(
+            durationMs === undefined ? { serverId, muted } : { serverId, muted, durationMs },
+          ),
+        );
       } catch (error) {
-        toast.error("Could not change server notifications", {
-          description: errorMessage(error, "Could not save the setting. Try again."),
+        const text = currentText();
+        actionToast.error(text.t("server.notifications.changeFailedTitle"), {
+          error,
+          fallback: text.t("server.notifications.changeFailedDescription"),
+          report: { operation: "team", source: "action", cause_code: classifyFailure(error) },
+        });
+      }
+    }
+
+    async function setServerNotificationLevel(serverId: string, level: ServerNotificationLevel): Promise<void> {
+      try {
+        applyServerSummaries(await serversPort().servers.setNotificationLevel({ serverId, level }));
+      } catch (error) {
+        const text = currentText();
+        actionToast.error(text.t("server.notifications.changeFailedTitle"), {
+          error,
+          fallback: text.t("server.notifications.changeFailedDescription"),
+          report: { operation: "team", source: "action", cause_code: classifyFailure(error) },
         });
       }
     }
@@ -195,16 +383,24 @@ const Servers = createSimpleContext({
         }),
       ]);
       try {
-        setServers(await window.danidex.servers.reorder({ serverIds }));
+        setServers(await serversPort().servers.reorder({ serverIds }));
       } catch (error) {
-        setServers(previous);
+        setServers(
+          await serversPort()
+            .servers.list()
+            .catch(() => previous),
+        );
         throw error;
       }
     }
 
     return {
       servers,
+      serversLoaded,
+      serversLoadFailed,
+      refreshServers,
       setServers,
+      setHostUpdateOpener,
       activeServer,
       activeServerId,
       activeServerSupportsCapability,
@@ -212,8 +408,23 @@ const Servers = createSimpleContext({
       setHostStatus,
       joinServerOpen,
       setJoinServerOpen,
+      createLocalServerOpen,
+      setCreateLocalServerOpen,
+      installServerOpen,
+      setInstallServerOpen,
+      addServerOpen,
+      addServerEntryPoint,
+      setAddServerOpen,
+      hostedServersAvailable,
+      hostedServerIds,
+      hostedServersLoaded,
+      planDeletesAt,
+      refreshHostedServersAvailable,
       reorderServers,
+      localServerHidden,
+      setLocalServerHidden,
       setServerMuted,
+      setServerNotificationLevel,
       retryServerConnection,
       serverLoadRequest,
       initialServersReady,

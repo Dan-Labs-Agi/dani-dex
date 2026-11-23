@@ -1,72 +1,102 @@
-import { AppLogo, PlatformLogo, ProviderLogo } from "@dani-dex/brand";
-import { Link } from "@tanstack/solid-router";
-import { onSettled } from "solid-js";
+import { AppLogo, PlatformLogo, ProviderLogo } from "@openbot/brand";
+import { For, onSettled, Show } from "solid-js";
 import { landingAnalytics } from "../../lib/analytics";
-import { DANI_DEX_LINKS, EXTERNAL_LINK_REL } from "../../lib/landing-links";
-import { Button } from "../ui/button";
+import type { HeroProviderPart, LandingPageText } from "../../lib/landing-page-text";
+import { ContentCallToAction } from "../content/ContentCallToAction";
+import { ButtonLink } from "../ui/button";
+import { AgentNetworkSection } from "./AgentNetworkSection";
 import { DownloadSection } from "./DownloadSection";
+import { FaqSection } from "./FaqSection";
+import { FeaturesSection } from "./FeaturesSection";
 import { HeroDownloadSelector } from "./HeroDownloadSelector";
 import { LandingAppPreview } from "./LandingAppPreview";
+import { LandingBeam } from "./LandingBeam";
 import { LandingFooter } from "./LandingFooter";
 import { LandingGlow } from "./LandingGlow";
+import { LandingTextProvider, useLandingText } from "./LandingText";
 import { PricingSection } from "./PricingSection";
+import { SiteHeader } from "./SiteHeader";
+import { useSitePath } from "./SiteText";
+import { TeamsSection } from "./TeamsSection";
 
-export function LandingPage() {
-  let hero: HTMLDivElement | undefined;
-
-  onSettled(() => {
-    const cleanup = landingAnalytics.start(document, window.location.hostname);
-    if (hero) {
-      hero.classList.remove("is-hiding");
-      hero.classList.remove("is-shown");
-      void hero.offsetHeight;
-      hero.classList.add("is-shown");
-    }
-    return cleanup;
+function latch(): { open: () => void; opened: Promise<void> } {
+  let open = () => {};
+  const opened = new Promise<void>((resolve) => {
+    open = resolve;
   });
+  return { open, opened };
+}
+
+export function LandingPage(props: { text: LandingPageText }) {
+  return (
+    <LandingTextProvider text={props.text}>
+      <LandingPageContent />
+    </LandingTextProvider>
+  );
+}
+
+function HeroDescriptionPart(props: { part: string | HeroProviderPart }) {
+  const provider = () => (typeof props.part === "string" ? undefined : props.part);
+  const words = () => (typeof props.part === "string" ? props.part : undefined);
+  return (
+    <Show when={provider()} fallback={words()}>
+      {(part) => <HeroProvider part={part()} />}
+    </Show>
+  );
+}
+
+function HeroProvider(props: { part: HeroProviderPart }) {
+  const name = () => (
+    <span class="landing-provider">
+      <ProviderLogo provider={props.part.provider} class="landing-provider-logo" />
+      {props.part.name}
+    </span>
+  );
+  return (
+    <Show when={props.part.suffix} fallback={name()}>
+      <span class="landing-provider-item">
+        {name()}
+        {props.part.suffix}
+      </span>
+    </Show>
+  );
+}
+
+function LandingPageContent() {
+  const text = useLandingText();
+  const path = useSitePath();
+  const hero = () => text().hero;
+  const previewReady = latch();
+  const beamImpact = latch();
+  let copy: HTMLDivElement | undefined;
+  let preview: HTMLElement | undefined;
+  let download: HTMLElement | undefined;
+  onSettled(() => landingAnalytics.start(document, window.location.hostname));
 
   return (
     <div class="landing-page">
-      <header class="landing-header" data-enter="header">
-        <a class="landing-brand" href="/" aria-label="Dani-Dex home">
-          <AppLogo variant="production" class="landing-brand-logo" />
-          <span>Dani-Dex</span>
-        </a>
-
-        <nav class="landing-navigation" aria-label="Primary navigation">
-          <Link class="landing-header-link" to="/news">
-            News
-          </Link>
-          <Link class="landing-header-link" to="/guides">
-            Guides
-          </Link>
-          <Link class="landing-header-link" to="/plugins">
-            Plugins
-          </Link>
-          <Button
-            href={DANI_DEX_LINKS.contact}
-            target="_blank"
-            rel={EXTERNAL_LINK_REL}
-            variant="secondary"
-            size="sm"
-            icon="contact"
-            class="landing-header-contact"
-          >
-            Contact
-          </Button>
-          <Button href={DANI_DEX_LINKS.download} variant="primary" size="sm" icon="download">
-            Download
-          </Button>
-        </nav>
-      </header>
+      <SiteHeader
+        page="landing"
+        downloadRef={(element) => {
+          download = element;
+        }}
+      />
 
       <main>
         <section class="landing-hero" aria-labelledby="landing-title">
-          <div class="landing-hero-grid" data-slot="hero-grid" aria-hidden="true" />
-          <div ref={hero} class="landing-hero-copy t-stagger">
-            <p class="landing-availability t-stagger-line t-stagger-line--1">
-              <span class="landing-availability-new">NEW</span>
-              <span class="landing-availability-copy">Available on</span>
+          <LandingBeam
+            surface={() => preview}
+            source={() => download}
+            avoid={() => (copy ? [...copy.children] : [])}
+            beamPosition={0.78}
+            color="#a46cf5"
+            start={previewReady.opened}
+            onImpact={beamImpact.open}
+          />
+          <div ref={copy} class="landing-hero-copy">
+            <p class="landing-availability landing-hero-line" style={{ "--landing-hero-line": 0 }}>
+              <span class="landing-availability-new">{hero().new}</span>
+              <span class="landing-availability-copy">{hero().availableOn}</span>
               <span class="landing-availability-platform">
                 <PlatformLogo platform="macos" />
                 macOS
@@ -78,53 +108,78 @@ export function LandingPage() {
                 <PlatformLogo platform="windows" />
                 Windows
               </span>
+              <span class="landing-availability-separator" aria-hidden="true">
+                ·
+              </span>
+              <span class="landing-availability-platform">
+                <PlatformLogo platform="linux" solid />
+                Linux
+              </span>
+              <span class="landing-availability-divider" aria-hidden="true" />
+              <span class="landing-availability-platform">
+                <PlatformLogo platform="ios" />
+                iOS
+              </span>
+              <span class="landing-availability-separator" aria-hidden="true">
+                ·
+              </span>
+              <span class="landing-availability-platform">
+                <PlatformLogo platform="android" />
+                Android
+              </span>
             </p>
 
-            <h1 id="landing-title" class="landing-title t-stagger-line t-stagger-line--2">
-              <span>Meet</span>
-              <AppLogo variant="production" animation="blink" interactive class="landing-hero-logo" />
-              <span>Dani-Dex</span>
+            <h1 id="landing-title" class="landing-title landing-hero-line" style={{ "--landing-hero-line": 1 }}>
+              <Show when={hero().title.before}>
+                {(before) => (
+                  <>
+                    <span>{before()}</span>{" "}
+                  </>
+                )}
+              </Show>
+              <AppLogo variant="production" animation="blink" interactive class="landing-hero-logo" />{" "}
+              <span>OpenBot</span>
+              <Show when={hero().title.after}>
+                {(after) => (
+                  <>
+                    {" "}
+                    <span>{after()}</span>
+                  </>
+                )}
+              </Show>
             </h1>
 
-            <p class="landing-description t-stagger-line t-stagger-line--3">
-              Persistent AI teammates for real work. Run{" "}
-              <span class="landing-provider">
-                <ProviderLogo provider="codex" class="landing-provider-logo" />
-                Codex
-              </span>
-              ,{" "}
-              <span class="landing-provider">
-                <ProviderLogo provider="claude" class="landing-provider-logo" />
-                Claude
-              </span>{" "}
-              and{" "}
-              <span class="landing-provider">
-                <ProviderLogo provider="grok" class="landing-provider-logo" />
-                Grok
-              </span>{" "}
-              side by side, each with its own workspace, queue, and context.
+            <p class="landing-description landing-hero-line" style={{ "--landing-hero-line": 2 }}>
+              <For each={hero().description}>{(part) => <HeroDescriptionPart part={part} />}</For>
             </p>
 
-            <div class="landing-actions t-stagger-line t-stagger-line--4">
+            <div class="landing-actions landing-hero-line" style={{ "--landing-hero-line": 3 }}>
               <HeroDownloadSelector />
-              <Button
-                href={DANI_DEX_LINKS.contact}
-                target="_blank"
-                rel={EXTERNAL_LINK_REL}
+              <ButtonLink
+                to={path("/contact")}
                 variant="secondary"
                 size="lg"
                 icon="contact"
                 class="landing-button-glass"
               >
-                Contact
-              </Button>
+                {hero().contact}
+              </ButtonLink>
             </div>
           </div>
 
-          <LandingAppPreview />
+          <LandingAppPreview
+            ref={(element) => (preview = element)}
+            onReady={previewReady.open}
+            revealAfter={beamImpact.opened}
+          />
         </section>
+        <AgentNetworkSection />
+        <FeaturesSection />
         <PricingSection />
+        <TeamsSection />
+        <FaqSection />
         <DownloadSection />
+        <ContentCallToAction />
       </main>
       <LandingFooter />
       <LandingGlow />

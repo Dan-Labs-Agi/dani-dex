@@ -1,50 +1,38 @@
-import type { UpdateStatus } from "@dani-dex/contracts/ipc";
+import type { UpdateStatus } from "@openbot/contracts/ipc";
 import { createSignal, flush, onSettled } from "solid-js";
 import { desktopAnalytics } from "../../analytics";
 import { FALLBACK_UPDATE_STATUS } from "../../app-defaults";
 import { createSimpleContext } from "../../simple-context";
+import { createIdleRestartToast } from "./idle-restart-toast";
+import { createScheduledUpdateToast } from "./scheduled-update-toast";
+import { idleRestartTarget, updatesPort } from "./updates-port";
 
-/**
- * The updater, as the renderer sees it: one status main pushes, and one button
- * whose meaning depends on that status.
- *
- * Ungated - the app is fully usable while the updater is still checking, so
- * nothing waits on it, and consumers read `FALLBACK_UPDATE_STATUS` meanwhile.
- * It depends on no other domain, which is why it is the smallest one to move.
- */
 const Updates = createSimpleContext({
   name: "Updates",
   init: () => {
     const [status, setStatus] = createSignal<UpdateStatus>(FALLBACK_UPDATE_STATUS);
 
     onSettled(() => {
-      const unsubscribe = window.danidex.update.onEvent((next) => {
+      const unsubscribe = updatesPort().update.onEvent((next) => {
         flush(() => setStatus(next));
       });
-      void window.danidex.update
-        .getStatus()
+      void updatesPort()
+        .update.getStatus()
         .then(setStatus)
         .catch(() => undefined);
       return unsubscribe;
     });
 
-    /**
-     * One button, four meanings. `ready` installs; `available` and a failed
-     * download retry the download; everything else checks again. The status
-     * main pushes back is applied here rather than waited for, so the button
-     * settles even if the event is slower than the call.
-     */
     async function runAction(): Promise<void> {
       const analytics = desktopAnalytics.scope();
       const current = status();
-      // Host-managed tenants never act: the host owns check, download and install timing.
-      // The button is disabled too; this is the second lock for callers that reach past it.
       if (current.managedByHost === true) return;
       const phase = current.phase;
       if (phase === "ready") {
         try {
-          await window.danidex.update.install();
-          analytics.track("update_action", { action: "install", result: "succeeded", phase: "installing" });
+          const next = await updatesPort().update.install();
+          setStatus(next);
+          analytics.track("update_action", { action: "install", result: "succeeded", phase: next.phase });
         } catch (error) {
           analytics.track("update_action", {
             action: "install",
@@ -60,8 +48,7 @@ const Updates = createSimpleContext({
           ? ("download" as const)
           : ("check" as const);
       try {
-        const next =
-          action === "download" ? await window.danidex.update.download() : await window.danidex.update.check();
+        const next = action === "download" ? await updatesPort().update.download() : await updatesPort().update.check();
         setStatus(next);
         const succeeded =
           action === "download"
@@ -83,7 +70,27 @@ const Updates = createSimpleContext({
       }
     }
 
-    return { status, runAction };
+    async function cancelScheduledRestart(): Promise<void> {
+      setStatus(await updatesPort().update.cancelScheduledRestart());
+    }
+
+    createScheduledUpdateToast({ status, cancel: cancelScheduledRestart });
+
+    async function restartWhenIdle(): Promise<void> {
+      setStatus(await updatesPort().update.restartWhenIdle(idleRestartTarget(status())));
+    }
+
+    async function cancelIdleRestart(): Promise<void> {
+      setStatus(await updatesPort().update.cancelIdleRestart());
+    }
+
+    async function restartNow(): Promise<void> {
+      setStatus(await updatesPort().update.restartNow());
+    }
+
+    createIdleRestartToast({ status, cancel: cancelIdleRestart });
+
+    return { status, runAction, cancelScheduledRestart, restartWhenIdle, cancelIdleRestart, restartNow };
   },
 });
 

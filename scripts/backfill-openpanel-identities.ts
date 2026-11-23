@@ -1,14 +1,12 @@
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
-import { isDynamicRecord, isString } from "@dani-dex/contracts/runtime-values";
-import { normalizeEmailAddress } from "@dani-dex/contracts/validation";
-import { createDaniDexLogger, toLogValue } from "@dani-dex/logging";
+import { isDynamicRecord, isString } from "@openbot/contracts/runtime-values";
+import { normalizeEmailAddress } from "@openbot/contracts/validation";
+import { createOpenBotLogger, toLogValue } from "@openbot/logging";
 
-const logger = createDaniDexLogger("backfill-openpanel-identities");
+const logger = createOpenBotLogger("backfill-openpanel-identities");
 
-// Dan Lab runs no analytics service yet: the reserved .invalid default never resolves, so name the
-// real endpoint with OPENPANEL_API_URL or --api-url.
-const DEFAULT_OPENPANEL_API_URL = "https://analytics.dani-dex.invalid/api";
+const DEFAULT_OPENPANEL_API_URL = "https://analytics.openbot.run/api";
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY_MS = 250;
 const DEFAULT_REQUEST_TIMEOUT_MS = 10_000;
@@ -33,8 +31,8 @@ export interface BackfillOptions {
   openPanelProfilesPath: string;
   apply: boolean;
   apiUrl?: string;
-  clientId?: string;
-  clientSecret?: string;
+  clientId?: string | undefined;
+  clientSecret?: string | undefined;
   requestTimeoutMs?: number;
   fetcher?: typeof fetch;
   sleep?: (milliseconds: number) => Promise<void>;
@@ -145,7 +143,7 @@ async function identifyProfile(
           "content-type": "application/json",
           "openpanel-client-id": clientId,
           "openpanel-client-secret": clientSecret,
-          "openpanel-sdk-name": "dani-dex-backfill",
+          "openpanel-sdk-name": "openbot-backfill",
         },
         body: JSON.stringify({ type: "identify", payload: identity }),
         redirect: "error",
@@ -224,9 +222,7 @@ async function readRecords(path: string, label: string): Promise<unknown[]> {
   try {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) return parsed;
-  } catch {
-    // Fall through to newline-delimited JSON.
-  }
+  } catch {}
   try {
     return raw
       .split(/\r?\n/u)

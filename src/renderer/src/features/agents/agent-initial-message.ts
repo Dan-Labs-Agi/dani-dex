@@ -1,6 +1,10 @@
-import type { FirstAgentDraft } from "./FirstAgentSetup";
+import { agentWelcomeMessage } from "@openbot/contracts/agent-welcome";
+import { appLanguageOption } from "@openbot/i18n/languages";
+import type { FirstAgentDraft } from "@openbot/ui/features/agents/FirstAgentSetup";
+import { currentText } from "@openbot/ui/text";
 
-/** Give a newly created agent its standing role, or ask for a greeting when no purpose is supplied. */
-export function createAgentInitialMessage(_draft: Pick<FirstAgentDraft, "purpose">): string {
-  return "Hi. Tell me briefly how you can help.";
+export function createAgentInitialMessage(draft: Pick<FirstAgentDraft, "purpose">, welcomeSupported: boolean): string {
+  if (welcomeSupported) return agentWelcomeMessage({ language: appLanguageOption(currentText().locale()).label });
+  const purpose = draft.purpose.trim();
+  return purpose ? `Your ongoing role is: ${purpose}` : "Greet me briefly.";
 }

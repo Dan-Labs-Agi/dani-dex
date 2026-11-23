@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
-import { type AgentProviderId, isAgentProvider } from "@dani-dex/contracts/ipc";
-import type { DynamicRecord } from "@dani-dex/contracts/runtime-values";
+import { type AgentProviderId, isAgentProvider } from "@openbot/contracts/ipc";
+import type { DynamicRecord } from "@openbot/contracts/runtime-values";
+import { createOpenBotLogger } from "@openbot/logging";
 import type { DatabaseCore } from "./database-core";
 import { databaseRow, databaseRows, optionalStringColumn, requiredStringColumn } from "./database-rows";
 
@@ -34,17 +35,11 @@ export interface ProviderSessionsOptions {
   core: DatabaseCore;
 }
 
-/**
- * The provider-side resume state of a thread: which CLI session a provider is attached to now, and
- * the inactive ones it was attached to before.
- *
- * Owns `projection_provider_sessions` and the `provider-session.*` events behind it. Binding a
- * session deactivates the thread's previous active one inside the same dispatch, so a thread never
- * holds two. This state is deliberately private to the provider boundary and never reaches a
- * renderer. The class never imports the facade.
- */
+const logger = createOpenBotLogger("provider-sessions");
+
 export class ProviderSessions {
   readonly #core: DatabaseCore;
+  readonly #reportedUnknownProviders = new Set<string>();
 
   constructor(options: ProviderSessionsOptions) {
     this.#core = options.core;
@@ -76,7 +71,30 @@ export class ProviderSessions {
            ORDER BY created_at, last_event_sequence`,
         )
         .all(threadId),
-    ).map((row) => toProviderSession(requiredSessionRow(row)));
+    ).flatMap((row) => {
+      const session = this.#knownProviderRow(row);
+      return session ? [toProviderSession(session)] : [];
+    });
+  }
+
+  #knownProviderRow(row: DynamicRecord): SessionRow | null {
+    if (isAgentProvider(requiredStringColumn(row, "provider"))) return requiredSessionRow(row);
+    const id = requiredStringColumn(row, "id");
+    if (!this.#reportedUnknownProviders.has(id)) {
+      this.#reportedUnknownProviders.add(id);
+      logger.warn("A provider session names a provider that OpenBot does not know, so OpenBot skips it.", {
+        providerSessionId: id,
+      });
+    }
+    return null;
+  }
+
+  listProviderSessionIds(externalSessionId?: string): string[] {
+    return databaseRows(
+      this.#core.connection
+        .prepare("SELECT id FROM projection_provider_sessions WHERE ? IS NULL OR external_session_id = ?")
+        .all(externalSessionId ?? null, externalSessionId ?? null),
+    ).map((row) => requiredStringColumn(row, "id"));
   }
 
   listExternalSessionIds(): string[] {
@@ -85,14 +103,6 @@ export class ProviderSessions {
     ).map((row) => requiredStringColumn(row, "external_session_id"));
   }
 
-  /**
-   * Every thread of one agent that holds an active provider session.
-   *
-   * An agent has more than one: its own thread, and one execution thread for each channel it works
-   * in. A caller that must reach all of a provider's resume state - a refresh after a tool or MCP
-   * change - cannot read `agent.threadId` alone, because a channel turn runs on a thread that field
-   * never names.
-   */
   activeProviderSessionThreads(agentId: string): string[] {
     return databaseRows(
       this.#core.connection
@@ -114,6 +124,7 @@ export class ProviderSessions {
     effort: string;
     resumeCursor?: string | null;
   }): ProviderSession {
+    if (!isAgentProvider(input.provider)) throw new Error("Unknown provider for a provider session.");
     const now = new Date().toISOString();
     const session: ProviderSession = {
       id: randomUUID(),
@@ -158,7 +169,7 @@ export class ProviderSessions {
           session.createdAt,
           session.updatedAt,
           session.resumeCursor,
-          sequences[0],
+          sequences[0] ?? 0,
         );
         return session;
       },
@@ -183,7 +194,7 @@ export class ProviderSessions {
           `UPDATE projection_provider_sessions
            SET state = 'inactive', updated_at = ?, last_event_sequence = ?
            WHERE thread_id = ? AND state = 'active'`,
-        ).run(new Date().toISOString(), sequences[0], threadId);
+        ).run(new Date().toISOString(), sequences[0] ?? 0, threadId);
         return null;
       },
     );
@@ -204,7 +215,7 @@ export class ProviderSessions {
         db.prepare(
           `UPDATE projection_provider_sessions
            SET model = ?, effort = ?, updated_at = ?, last_event_sequence = ? WHERE id = ?`,
-        ).run(model, effort, new Date().toISOString(), sequences[0], sessionId);
+        ).run(model, effort, new Date().toISOString(), sequences[0] ?? 0, sessionId);
         return null;
       },
     );

@@ -1,36 +1,13 @@
-import type { RemoteDesktopConnectResult, RemoteDesktopErrorCode, RemoteDesktopSession } from "@dani-dex/contracts/ipc";
+import type { RemoteDesktopConnectResult, RemoteDesktopErrorCode, RemoteDesktopSession } from "@openbot/contracts/ipc";
+import { currentText } from "@openbot/ui/text";
 import { createEffect, createMemo, createSignal, flush, onSettled } from "solid-js";
 import { desktopAnalytics } from "../../analytics";
-import { errorMessage } from "../../error-message";
 import { usePlatform } from "../../platform";
 import { createSimpleContext } from "../../simple-context";
 import { serverSupportsCapability } from "../servers/server-capabilities";
 import { useServers } from "../servers/servers-context";
+import { remoteDesktopPort } from "./remote-desktop-port";
 
-/**
- * Remote Control: viewing another machine's desktop through a server that
- * offers it.
- *
- * Global rather than scoped to the active server, for the same reason as
- * `server-settings.tsx` - `openRemoteDesktopWorkspace(serverId, trigger)` takes
- * an id and the rail can start a session on a server the user is not currently
- * on.
- *
- * Ungated - nothing is connected until someone opens the workspace.
- *
- * Three pieces of state that look redundant and are not:
- *
- * - `remoteDesktopWorkspaceServerId` is which server the workspace is *for*;
- *   `remoteDesktopWorkspaceVisible` is whether it is on screen. Hiding keeps the
- *   session, which is what makes hide/resume a round trip rather than a
- *   reconnect.
- * - `remoteDesktopSessionEstablished` is set once a connection has been seen, so
- *   the second effect below can tell "the session went away" from "no session
- *   yet", and only tear the workspace down for the first.
- * - `remoteDesktopConnectPromise` is the in-flight connect, so a second open of
- *   the same server awaits it instead of racing a second connect, and a
- *   disconnect arriving mid-connect has something to wait on.
- */
 const RemoteDesktop = createSimpleContext({
   name: "Remote desktop",
   init: () => {
@@ -44,9 +21,9 @@ const RemoteDesktop = createSimpleContext({
     const [remoteDesktopConnectionErrorCode, setRemoteDesktopConnectionErrorCode] =
       createSignal<RemoteDesktopErrorCode | null>(null);
     const [remoteDesktopSessionEstablished, setRemoteDesktopSessionEstablished] = createSignal(false);
+    const [remoteDesktopViewerFailed, setRemoteDesktopViewerFailed] = createSignal(false);
     let remoteDesktopRestoreTarget: HTMLElement | null = null;
     let remoteDesktopConnectPromise: Promise<RemoteDesktopSession | undefined> | null = null;
-    /** Bumped by every open, retry and disconnect, so a late connect cannot revive a closed workspace. */
     let remoteDesktopConnectionRequest = 0;
 
     function clearRemoteDesktopConnectionError(): void {
@@ -57,7 +34,7 @@ const RemoteDesktop = createSimpleContext({
     async function connectRemoteDesktop(serverId: string): Promise<RemoteDesktopConnectResult> {
       const analytics = desktopAnalytics.scope();
       try {
-        const result = await window.danidex.remoteDesktop.connect({ serverId });
+        const result = await remoteDesktopPort().remoteDesktop.connect({ serverId });
         if (result.status === "refused") {
           analytics.track("remote_desktop_action", {
             action: "connect",
@@ -87,7 +64,7 @@ const RemoteDesktop = createSimpleContext({
     async function disconnectRemoteDesktop(sessionId: string): Promise<void> {
       const analytics = desktopAnalytics.scope();
       try {
-        await window.danidex.remoteDesktop.disconnect(sessionId);
+        await remoteDesktopPort().remoteDesktop.disconnect(sessionId);
         setRemoteDesktopSessions((current) => current.filter((session) => session.id !== sessionId));
         analytics.track("remote_desktop_action", { action: "disconnect", result: "succeeded" });
       } catch (error) {
@@ -103,7 +80,7 @@ const RemoteDesktop = createSimpleContext({
     async function selectRemoteDesktopDisplay(serverId: string, displayId: string): Promise<void> {
       const analytics = desktopAnalytics.scope();
       try {
-        await window.danidex.remoteDesktop.selectDisplay({ serverId, displayId });
+        await remoteDesktopPort().remoteDesktop.selectDisplay({ serverId, displayId });
         setRemoteDesktopSessions((current) =>
           current.map((session) =>
             session.serverId === serverId ? { ...session, selectedDisplayId: displayId } : session,
@@ -135,6 +112,14 @@ const RemoteDesktop = createSimpleContext({
     function hideRemoteDesktopWorkspace(): void {
       setRemoteDesktopWorkspaceVisible(false);
       restoreRemoteDesktopFocus();
+      if (remoteDesktopViewerFailed()) void disconnectRemoteDesktopWorkspace(false).catch(() => undefined);
+    }
+
+    function reportRemoteDesktopViewerFailed(failed: boolean): void {
+      setRemoteDesktopViewerFailed(failed);
+      if (failed && !remoteDesktopWorkspaceVisible()) {
+        void disconnectRemoteDesktopWorkspace(false).catch(() => undefined);
+      }
     }
 
     async function startRemoteDesktopConnection(
@@ -146,7 +131,8 @@ const RemoteDesktop = createSimpleContext({
         const result = await connectRemoteDesktop(serverId);
         if (result.status === "refused") {
           if (current()) {
-            setRemoteDesktopConnectionError(errorMessage(result.message, "Could not start remote control."));
+            const text = currentText();
+            setRemoteDesktopConnectionError(text.errorMessage(result.message, text.t("remoteDesktop.startFailed")));
             setRemoteDesktopConnectionErrorCode(result.errorCode);
           }
           return undefined;
@@ -159,7 +145,8 @@ const RemoteDesktop = createSimpleContext({
         return result.session;
       } catch (error) {
         if (current()) {
-          setRemoteDesktopConnectionError(errorMessage(error, "Could not start remote control."));
+          const text = currentText();
+          setRemoteDesktopConnectionError(text.errorMessage(error, text.t("remoteDesktop.startFailed")));
           setRemoteDesktopConnectionErrorCode(null);
         }
         return undefined;
@@ -171,8 +158,6 @@ const RemoteDesktop = createSimpleContext({
     async function openRemoteDesktopWorkspace(serverId: string, trigger: HTMLElement): Promise<void> {
       const server = servers().find((item) => item.id === serverId);
       const existingSession = latestRemoteDesktopSession(serverId);
-      // Availability is a cached probe. A fresh session request checks the host and returns
-      // the setup error, so a failed probe must not prevent the user from trying again.
       if (
         server?.kind !== "remote" ||
         !serverSupportsCapability(server, "remote-desktop") ||
@@ -182,6 +167,7 @@ const RemoteDesktop = createSimpleContext({
       }
 
       remoteDesktopRestoreTarget = trigger;
+      if (remoteDesktopWorkspaceServerId() !== serverId) setRemoteDesktopViewerFailed(false);
       setRemoteDesktopWorkspaceServerId(serverId);
       setRemoteDesktopWorkspaceVisible(true);
       clearRemoteDesktopConnectionError();
@@ -210,6 +196,7 @@ const RemoteDesktop = createSimpleContext({
       const request = ++remoteDesktopConnectionRequest;
       clearRemoteDesktopConnectionError();
       setRemoteDesktopSessionEstablished(false);
+      setRemoteDesktopViewerFailed(false);
       setRemoteDesktopConnectingServerId(serverId);
       if (existingSession) await disconnectRemoteDesktop(existingSession.id);
       const connection = startRemoteDesktopConnection(serverId, request);
@@ -221,12 +208,14 @@ const RemoteDesktop = createSimpleContext({
     async function disconnectRemoteDesktopWorkspace(restoreFocus = true): Promise<void> {
       const serverId = remoteDesktopWorkspaceServerId();
       if (!serverId) return;
-      ++remoteDesktopConnectionRequest;
+      const request = ++remoteDesktopConnectionRequest;
       clearRemoteDesktopConnectionError();
       setRemoteDesktopSessionEstablished(false);
+      setRemoteDesktopViewerFailed(false);
       const session = latestRemoteDesktopSession(serverId);
       if (session) await disconnectRemoteDesktop(session.id);
       else await remoteDesktopConnectPromise;
+      if (request !== remoteDesktopConnectionRequest) return;
       remoteDesktopConnectPromise = null;
       setRemoteDesktopConnectingServerId(null);
       setRemoteDesktopWorkspaceVisible(false);
@@ -277,11 +266,11 @@ const RemoteDesktop = createSimpleContext({
 
     onSettled(() => {
       if (platform.landingPreview) return;
-      const unsubscribe = window.danidex.remoteDesktop.onEvent((sessions) =>
+      const unsubscribe = remoteDesktopPort().remoteDesktop.onEvent((sessions) =>
         flush(() => setRemoteDesktopSessions(sessions)),
       );
-      void window.danidex.remoteDesktop
-        .list()
+      void remoteDesktopPort()
+        .remoteDesktop.list()
         .then(setRemoteDesktopSessions)
         .catch(() => undefined);
       return unsubscribe;
@@ -297,6 +286,7 @@ const RemoteDesktop = createSimpleContext({
       remoteDesktopConnectionErrorCode,
       openRemoteDesktopWorkspace,
       hideRemoteDesktopWorkspace,
+      reportRemoteDesktopViewerFailed,
       retryRemoteDesktopWorkspace,
       disconnectRemoteDesktopWorkspace,
       selectRemoteDesktopDisplay,

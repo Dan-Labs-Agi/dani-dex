@@ -1,12 +1,11 @@
+import { QrCode } from "@openbot/ui";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
-import { QrCode } from "../src/components/ui";
 
 const meta = {
   title: "Foundation/QrCode",
   component: QrCode,
   args: {
-    value:
-      "dani-dex://mobile-connect?api=https%3A%2F%2Fapi.dani-dex.example&ticket=storybook-mobile-ticket_1234567890abcdef",
+    value: "openbot://mobile-connect?api=https%3A%2F%2Fapi.openbot.run&ticket=storybook-mobile-ticket_1234567890abcdef",
     label: "Example Mobile Connect QR code",
   },
   parameters: { layout: "centered", a11y: { test: "error" } },

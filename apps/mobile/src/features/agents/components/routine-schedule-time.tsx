@@ -4,20 +4,24 @@ import { useState } from "react";
 import { useUniwind } from "uniwind";
 import { SettingsRow } from "@/features/settings/components/settings-content";
 import { isAndroid } from "@/shared/lib/platform";
+import { useText } from "@/shared/lib/text";
 
 export function RoutineTimePicker({
   time,
+  label,
   disabled,
   onChange,
 }: {
   time: string;
+  label?: string;
   disabled: boolean;
   onChange: (time: string) => void;
 }) {
+  const { t } = useText();
+  const title = label ?? t("mobile.agent.record.time");
   const { theme } = useUniwind();
   const [open, setOpen] = useState(false);
   const [hour, minute] = time.split(":").map(Number);
-  // This is a wall-clock time in the routine's zone, not an instant to convert to the phone's zone.
   const value = new Date(2000, 0, 1, hour, minute);
   const picker = (
     <DateTimePicker
@@ -44,7 +48,7 @@ export function RoutineTimePicker({
           isAndroid ? <Typography.Paragraph className="text-grouped-secondary">{time}</Typography.Paragraph> : picker
         }
       >
-        <Typography.Paragraph>Time</Typography.Paragraph>
+        <Typography.Paragraph>{title}</Typography.Paragraph>
       </SettingsRow>
       {isAndroid && open ? picker : null}
     </>

@@ -1,5 +1,11 @@
-import type { AccountSession } from "@dani-dex/contracts/mobile-connect";
-import { isDynamicRecord, isFunction } from "@dani-dex/contracts/runtime-values";
+import type { AvatarColor } from "@openbot/contracts/ipc";
+import type { AccountSession } from "@openbot/contracts/mobile-connect";
+import { isDynamicRecord, isFunction } from "@openbot/contracts/runtime-values";
+import type { Effect } from "effect";
+import type { AuthStoreError } from "./d1-auth-repository";
+import type { EmailDeliveryError } from "./email-delivery";
+import { observedD1 } from "./observed-d1";
+import type { SmtpContactMessage, SmtpFailure, SmtpLicenseMessage, SmtpWelcomeMessage } from "./smtp-email-delivery";
 
 export interface WorkerBindings {
   DB: D1Database;
@@ -10,17 +16,34 @@ export interface WorkerBindings {
   MARKETPLACE_MUTATION_RATE_LIMITER: RateLimit;
   MARKETPLACE_UPLOAD_RATE_LIMITER: RateLimit;
   SITE_REPORT_RATE_LIMITER: RateLimit;
+  GITHUB_TOKEN_RATE_LIMITER: RateLimit;
+  LIVE_ACTIVITY_RATE_LIMITER?: RateLimit;
+  FEEDBACK_RATE_LIMITER?: RateLimit;
   AUTH_EXPOSE_DEVELOPMENT_CODE?: string;
   EMAIL_SMTP_HOST?: string;
   EMAIL_SMTP_PORT?: string;
   EMAIL_SMTP_USERNAME?: string;
   EMAIL_SMTP_PASSWORD?: string;
   EMAIL_FROM?: string;
+  EMAIL_REPLY_TO?: string;
+  EMAIL_LICENSE_FROM?: string;
+  EMAIL_LICENSE_REPLY_TO?: string;
+  EMAIL_RELAY?: Fetcher;
+  EMAIL_FALLBACK?: SendEmail;
   EMAIL_DELIVERY_WEBHOOK_URL?: string;
   EMAIL_DELIVERY_WEBHOOK_SECRET?: string;
   SKILLS_ADMIN_TOKEN?: string;
+  MEDIA_API_URL?: string;
+  MEDIA_API_KEY?: string;
+  MEDIA_API_TASKS_URL?: string;
+  MEDIA_API_TASKS_KEY?: string;
   SITE_OPERATIONS_ADMIN_TOKEN?: string;
+  SERVER_CLAIMS_ADMIN_TOKEN?: string;
   SITE_REPORT_HASH_SECRET?: string;
+  COMPANY_SIGN_IN_SECRET?: string;
+  HOSTED_ARCHIVE_KEY_SECRET?: string;
+  B2_WORKER_KEY_ID_EU?: string;
+  B2_WORKER_APPLICATION_KEY_EU?: string;
   SITE_COOKIE_ISOLATION_READY?: string;
   SITE_PUBLISH_ENABLED?: string;
   SITE_LOCAL_ORIGIN?: string;
@@ -28,11 +51,54 @@ export interface WorkerBindings {
   REMOTE_TICKET_PUBLIC_JWKS?: string;
   REMOTE_TICKET_KEY_ID?: string;
   REMOTE_SIGNAL_URL?: string;
+  REMOTE_SIGNAL_HOMES?: string;
+  REMOTE_SIGNAL_HOME_LOCATIONS?: string;
+  REMOTE_SIGNAL_HOME_COUNTRIES?: string;
   REMOTE_AUTH_WEBHOOK_URL?: string;
+  REMOTE_AUTH_WEBHOOK_URLS?: string;
   REMOTE_AUTH_WEBHOOK_SECRET?: string;
+  SIGNAL_ENTRY_ZONE_ID?: string;
+  SIGNAL_ENTRY_DNS_TOKEN?: string;
+  SLACK_ROUTE_PRIVATE_JWK?: string;
+  SLACK_ROUTE_KEY_ID?: string;
+  SLACK_CLIENT_ID?: string;
+  SLACK_CLIENT_SECRET?: string;
+  SLACK_STATE_SECRET?: string;
+  SLACK_DEV_PUBLIC_ORIGIN?: string;
+  DISCORD_ROUTE_PRIVATE_JWK?: string;
+  DISCORD_ROUTE_KEY_ID?: string;
+  DISCORD_CLIENT_ID?: string;
+  DISCORD_CLIENT_SECRET?: string;
+  DISCORD_STATE_SECRET?: string;
+  DISCORD_DEV_PUBLIC_ORIGIN?: string;
+  TELEGRAM_BOT_ID?: string;
+  TELEGRAM_BOT_USERNAME?: string;
+  STRIPE_SECRET_KEY?: string;
+  STRIPE_WEBHOOK_SECRET?: string;
+  VIES_REQUESTER_VAT_ID?: string;
+  LICENSE_TRIAL_END?: string;
+  BILLING_COUNTRY_REQUIRED?: string;
+  HOSTED_SERVERS_ENABLED?: string;
+  HOSTED_SERVERS_ALLOWED_USER_IDS?: string;
+  HOSTED_SERVERS_DEVELOPER_KEY?: string;
+  HOSTED_SERVER_TEMPLATE?: string;
+  BOAT_API_KEY?: string;
+  BOAT_WEBHOOK_SECRET?: string;
+  HOSTED_POOL_ALERT_WEBHOOK_URL?: string;
+  OPENPANEL_CLIENT_ID?: string;
+  OPENPANEL_CLIENT_SECRET?: string;
+  GITHUB_APP_CLIENT_ID?: string;
+  GITHUB_APP_PRIVATE_KEY?: string;
+  FEEDBACK_WITHDRAWN_REPOSITORY?: string;
+  APNS_PRIVATE_KEY?: string;
+  APNS_KEY_ID?: string;
+  APNS_TEAM_ID?: string;
+  APNS_TOPIC?: string;
+  APNS_ORIGIN?: string;
+  FCM_SERVICE_ACCOUNT?: string;
 }
 
-export function isWorkerBindings(value: unknown): value is WorkerBindings {
+function isWorkerBindings(value: unknown): value is WorkerBindings {
   if (!isDynamicRecord(value)) return false;
   const database = value.DB;
   const avatars = value.AVATARS;
@@ -42,6 +108,7 @@ export function isWorkerBindings(value: unknown): value is WorkerBindings {
   const marketplaceMutationRateLimiter = value.MARKETPLACE_MUTATION_RATE_LIMITER;
   const marketplaceUploadRateLimiter = value.MARKETPLACE_UPLOAD_RATE_LIMITER;
   const siteReportRateLimiter = value.SITE_REPORT_RATE_LIMITER;
+  const githubTokenRateLimiter = value.GITHUB_TOKEN_RATE_LIMITER;
   if (
     !isDynamicRecord(database) ||
     !isFunction(database.prepare) ||
@@ -64,24 +131,32 @@ export function isWorkerBindings(value: unknown): value is WorkerBindings {
     !isDynamicRecord(marketplaceUploadRateLimiter) ||
     !isFunction(marketplaceUploadRateLimiter.limit) ||
     !isDynamicRecord(siteReportRateLimiter) ||
-    !isFunction(siteReportRateLimiter.limit)
+    !isFunction(siteReportRateLimiter.limit) ||
+    !isDynamicRecord(githubTokenRateLimiter) ||
+    !isFunction(githubTokenRateLimiter.limit)
   ) {
     return false;
   }
   return true;
 }
 
+const observedBindings = new WeakMap<WorkerBindings, WorkerBindings>();
+
 export function requireWorkerBindings(value: unknown): WorkerBindings {
   if (!isWorkerBindings(value)) {
     throw new Error("Cloudflare worker bindings are unavailable.");
   }
-  return value;
+  const known = observedBindings.get(value);
+  if (known) return known;
+  const observed = { ...value, DB: observedD1(value.DB) };
+  observedBindings.set(value, observed);
+  return observed;
 }
 
 export interface MobileAuthSessionResult {
   sessionToken: string;
   user: AuthUser;
-  host?: import("@dani-dex/contracts/mobile-connect").MobileConnectHostBinding;
+  host?: import("@openbot/contracts/mobile-connect").MobileConnectHostBinding;
 }
 
 export interface AuthUser {
@@ -89,6 +164,8 @@ export interface AuthUser {
   email: string;
   name: string | null;
   avatarUrl: string | null;
+  analyticsEnabled: boolean | null;
+  chatColor: AvatarColor | null;
 }
 
 export interface MobileAuthDevice {
@@ -97,6 +174,7 @@ export interface MobileAuthDevice {
   platform: "ios" | "android" | "unknown";
   connectedAt: number;
   lastActiveAt: number;
+  via: "code" | "link";
 }
 
 export interface MobileAuthDeviceIdentity {
@@ -106,7 +184,20 @@ export interface MobileAuthDeviceIdentity {
 }
 
 export interface EmailCodeDelivery {
-  send(message: { email: string; code: string; expiresAt: number }): Promise<void>;
+  send(message: {
+    email: string;
+    code: string;
+    expiresAt: number;
+  }): Effect.Effect<void, EmailDeliveryError | SmtpFailure>;
+}
+
+export interface OwnerTransferEmailDelivery {
+  send(message: {
+    email: string;
+    fromEmail: string;
+    serverName: string;
+    appUrl: string;
+  }): Effect.Effect<void, EmailDeliveryError | SmtpFailure>;
 }
 
 export interface TeamInviteEmailDelivery {
@@ -116,11 +207,23 @@ export interface TeamInviteEmailDelivery {
     serverName: string;
     inviteUrl: string;
     role: "admin" | "member";
-  }): Promise<void>;
+  }): Effect.Effect<void, EmailDeliveryError | SmtpFailure>;
+}
+
+export interface WelcomeEmailDelivery {
+  send(message: SmtpWelcomeMessage): Effect.Effect<void, EmailDeliveryError | SmtpFailure>;
+}
+
+export interface LicenseEmailDelivery {
+  send(message: SmtpLicenseMessage): Effect.Effect<void, EmailDeliveryError | SmtpFailure>;
+}
+
+export interface ContactMessageDelivery {
+  send(message: SmtpContactMessage): Effect.Effect<void, EmailDeliveryError | SmtpFailure>;
 }
 
 export type EmailVerificationResult =
-  | { status: "verified"; session: { sessionToken: string; user: AuthUser } }
+  | { status: "verified"; session: { sessionToken: string; user: AuthUser }; created: boolean }
   | { status: "invalid" | "expired" | "too_many_attempts" };
 
 export type EmailChallengeDeliveryState = "pending" | "sent" | "failed";
@@ -134,10 +237,14 @@ export interface EmailChallengeRecord {
 }
 
 export interface AuthRepository {
-  listAccountSessions(userId: string, currentToken: string, now: number): Promise<AccountSession[]>;
-  revokeAccountSession(userId: string, sessionId: string, now: number): Promise<boolean>;
-  latestEmailChallengeAt(email: string): Promise<number | null>;
-  findEmailChallenge(idHash: string): Promise<EmailChallengeRecord | null>;
+  listAccountSessions(
+    userId: string,
+    currentToken: string,
+    now: number,
+  ): Effect.Effect<AccountSession[], AuthStoreError>;
+  revokeAccountSession(userId: string, sessionId: string, now: number): Effect.Effect<boolean, AuthStoreError>;
+  latestEmailChallengeAt(email: string): Effect.Effect<number | null, AuthStoreError>;
+  findEmailChallenge(idHash: string): Effect.Effect<EmailChallengeRecord | null, AuthStoreError>;
   createEmailChallenge(input: {
     idHash: string;
     email: string;
@@ -146,54 +253,115 @@ export interface AuthRepository {
     createdAt: number;
     expiresAt: number;
     maxAttempts: number;
-  }): Promise<boolean>;
-  completeEmailChallengeDelivery(idHash: string, state: "sent" | "failed", now: number): Promise<void>;
+  }): Effect.Effect<boolean, AuthStoreError>;
+  completeEmailChallengeDelivery(
+    idHash: string,
+    state: "sent" | "failed",
+    now: number,
+  ): Effect.Effect<void, AuthStoreError>;
   verifyEmailChallenge(input: {
     idHash: string;
     codeHash: string;
     now: number;
     session: { id: string; token: string; expiresAt: number };
-  }): Promise<EmailVerificationResult>;
+    device?: MobileAuthDeviceIdentity;
+  }): Effect.Effect<EmailVerificationResult, AuthStoreError>;
   incrementRateLimit(
     keyHash: string,
     windowStart: number,
     limit: number,
-  ): Promise<{ allowed: boolean; count: number; windowStart: number }>;
-  authenticate(sessionToken: string, now: number): Promise<AuthUser | null>;
-  authenticateDesktopSession(sessionToken: string, now: number): Promise<AuthUser | null>;
-  revokeSession(sessionToken: string, now: number): Promise<void>;
-  revokeMobileSession(sessionToken: string, now: number): Promise<boolean>;
-  updateUserName(userId: string, name: string, now: number): Promise<AuthUser>;
+  ): Effect.Effect<{ allowed: boolean; count: number; windowStart: number }, AuthStoreError>;
+  authenticate(sessionToken: string, now: number): Effect.Effect<AuthUser | null, AuthStoreError>;
+  authenticateDesktopSession(sessionToken: string, now: number): Effect.Effect<AuthUser | null, AuthStoreError>;
+  revokeSession(sessionToken: string, now: number): Effect.Effect<void, AuthStoreError>;
+  revokeMobileSession(sessionToken: string, now: number): Effect.Effect<boolean, AuthStoreError>;
+  updateUserName(userId: string, name: string, now: number): Effect.Effect<AuthUser, AuthStoreError>;
+  updateUserAnalytics(
+    userId: string,
+    enabled: boolean,
+    answeredAt: number,
+    now: number,
+  ): Effect.Effect<AuthUser, AuthStoreError>;
+  updateUserChatColor(
+    userId: string,
+    chatColor: AvatarColor | null,
+    now: number,
+  ): Effect.Effect<AuthUser, AuthStoreError>;
   updateUserAvatar(
     userId: string,
     avatarUrl: string | null,
     expectedAvatarUrl: string | null,
     now: number,
-  ): Promise<AuthUser | null>;
+  ): Effect.Effect<AuthUser | null, AuthStoreError>;
   createTeamAuthTicket(input: {
     ticketHash: string;
     userId: string;
     serverId: string;
     createdAt: number;
     expiresAt: number;
-  }): Promise<void>;
+  }): Effect.Effect<void, AuthStoreError>;
   replaceMobileAuthTicket(input: {
-    host?: import("@dani-dex/contracts/mobile-connect").MobileConnectHostBinding;
+    host?: import("@openbot/contracts/mobile-connect").MobileConnectHostBinding | undefined;
     ticketHash: string;
     userId: string;
     serverId: string;
     createdAt: number;
     expiresAt: number;
-  }): Promise<void>;
-  redeemTeamAuthTicket(input: { ticketHash: string; serverId: string; now: number }): Promise<AuthUser | null>;
+  }): Effect.Effect<void, AuthStoreError>;
+  cancelMobileAuthTickets(input: {
+    userId: string;
+    serverId: string;
+    hostId: string;
+    now: number;
+  }): Effect.Effect<void, AuthStoreError>;
+  redeemTeamAuthTicket(input: {
+    ticketHash: string;
+    serverId: string;
+    now: number;
+  }): Effect.Effect<AuthUser | null, AuthStoreError>;
   redeemMobileAuthTicket(input: {
     ticketHash: string;
     serverId: string;
     now: number;
     session: { id: string; token: string; expiresAt: number };
     device: MobileAuthDeviceIdentity;
-  }): Promise<MobileAuthSessionResult | null>;
-  authenticateMobileSession(sessionToken: string, now: number): Promise<AuthUser | null>;
-  listMobileAuthDevices(userId: string, now: number): Promise<MobileAuthDevice[]>;
-  revokeMobileAuthDevice(userId: string, sessionId: string, now: number): Promise<boolean>;
+  }): Effect.Effect<MobileAuthSessionResult | null, AuthStoreError>;
+  replaceMobileConnectLink(input: {
+    linkHash: string;
+    desktopSessionToken: string;
+    userId: string;
+    host: import("@openbot/contracts/mobile-connect").MobileConnectHostBinding;
+    createdAt: number;
+  }): Effect.Effect<boolean, AuthStoreError>;
+  revokeMobileConnectLink(input: { userId: string; hostId: string; now: number }): Effect.Effect<void, AuthStoreError>;
+  redeemMobileConnectLink(input: {
+    linkHash: string;
+    now: number;
+    session: { id: string; token: string; expiresAt: number };
+    device: MobileAuthDeviceIdentity;
+  }): Effect.Effect<MobileAuthSessionResult | null, AuthStoreError>;
+  authenticateMobileSession(sessionToken: string, now: number): Effect.Effect<AuthUser | null, AuthStoreError>;
+  listMobileAuthDevices(
+    userId: string,
+    now: number,
+    hostId: string | null,
+  ): Effect.Effect<MobileAuthDevice[], AuthStoreError>;
+  revokeMobileAuthDevice(userId: string, sessionId: string, now: number): Effect.Effect<boolean, AuthStoreError>;
+  createServerClaim(input: {
+    claimHash: string;
+    email: string;
+    createdAt: number;
+    expiresAt: number;
+  }): Effect.Effect<void, AuthStoreError>;
+  createServerClaimForUser(input: {
+    claimHash: string;
+    userId: string;
+    createdAt: number;
+    expiresAt: number;
+  }): Effect.Effect<void, AuthStoreError>;
+  redeemServerClaim(input: {
+    claimHash: string;
+    now: number;
+    session: { id: string; token: string; expiresAt: number };
+  }): Effect.Effect<{ sessionToken: string; user: AuthUser } | null, AuthStoreError>;
 }

@@ -1,5 +1,5 @@
-import type { ComputerUseState, MacPermissionId } from "@dani-dex/contracts/ipc";
-import { createSignal, For, onCleanup, onSettled, Show } from "solid-js";
+import type { ComputerUseState, MacPermissionId } from "@openbot/contracts/ipc";
+import type { AppTextKey } from "@openbot/i18n";
 import {
   Alert,
   AlertActions,
@@ -24,42 +24,40 @@ import {
   SettingsSection,
   Skeleton,
   TriangleAlert,
-} from "../../components/ui";
-import { errorMessage } from "../../error-message";
+} from "@openbot/ui";
+import { useText } from "@openbot/ui/text";
+import { createSignal, For, onCleanup, onSettled, Show } from "solid-js";
+import { desktopAnalytics } from "../../analytics";
+import { idleRestartTarget } from "../updates/updates-port";
+import { computerUsePort } from "./computer-use-port";
 
 export interface ComputerUseSetupProps {
-  /**
-   * Which of the two shapes to draw: the settings panel, or the compact card of the setup flow.
-   *
-   * There is no platform here. What one desktop asks for and another does not is the driver's own
-   * answer - the list of permissions, and the status - never a table this component keeps.
-   */
   variant: "settings" | "compact";
 }
 
-/**
- * How each grant is described. Which of them apply is the driver's answer, never this table: only
- * macOS puts a permission between Dani-Dex and the desktop, and a row shown elsewhere would name a
- * setting the user cannot find.
- */
-const PERMISSION_DETAILS: Record<MacPermissionId, { title: string; description: string; icon: typeof Monitor }> = {
+const PERMISSION_DETAILS: Record<
+  MacPermissionId,
+  { title: AppTextKey; description: AppTextKey; icon: typeof Monitor }
+> = {
   "screen-recording": {
-    title: "Screen Recording",
-    description: "Lets Dani-Dex see app windows.",
+    title: "computerUse.permission.screenRecording.title",
+    description: "computerUse.permission.screenRecording.description",
     icon: Monitor,
   },
   accessibility: {
-    title: "Accessibility",
-    description: "Lets Dani-Dex click and type.",
+    title: "computerUse.permission.accessibility.title",
+    description: "computerUse.permission.accessibility.description",
     icon: MousePointer2,
   },
 };
 
 export function ComputerUseSetup(props: ComputerUseSetupProps) {
-  const desktopApi = window.danidex;
+  const { t, errorMessage } = useText();
   const [state, setState] = createSignal<ComputerUseState | null>(null);
   const [loading, setLoading] = createSignal(false);
   const [busyPermission, setBusyPermission] = createSignal<MacPermissionId | null>(null);
+  const [restarting, setRestarting] = createSignal(false);
+  const [restartError, setRestartError] = createSignal<string | null>(null);
   const [error, setError] = createSignal<string | null>(null);
   let disposed = false;
 
@@ -70,10 +68,10 @@ export function ComputerUseSetup(props: ComputerUseSetupProps) {
     setLoading(true);
     setError(null);
     try {
-      const next = await desktopApi.getComputerUseState();
+      const next = await computerUsePort().computerUse.getState();
       if (!disposed) setState(next);
     } catch (cause) {
-      if (!disposed) setError(errorMessage(cause, "Dani-Dex could not check Computer Use."));
+      if (!disposed) setError(errorMessage(cause, t("computerUse.error.check")));
     } finally {
       if (!disposed) setLoading(false);
     }
@@ -83,19 +81,31 @@ export function ComputerUseSetup(props: ComputerUseSetupProps) {
     if (busyPermission()) return;
     setBusyPermission(permission);
     setError(null);
+    desktopAnalytics.track("computer_use_action", { action: "permission_opened", permission });
     try {
-      const next = await desktopApi.openComputerUsePermissionPane(permission);
+      const next = await computerUsePort().computerUse.openPermissionPane(permission);
       if (!disposed) setState(next);
     } catch (cause) {
-      if (!disposed) setError(errorMessage(cause, "Dani-Dex could not open System Settings."));
+      if (!disposed) setError(errorMessage(cause, t("computerUse.error.openSettings")));
     } finally {
       if (!disposed) setBusyPermission(null);
     }
   }
 
-  // A grant is given in System Settings, outside this window, and the driver reports only what it
-  // sees when it is asked. Coming back to Dani-Dex is the moment the answer may have changed, so the
-  // panel asks again rather than keeping a row that is granted already.
+  async function restart(): Promise<void> {
+    if (restarting()) return;
+    setRestarting(true);
+    setRestartError(null);
+    try {
+      const update = computerUsePort().update;
+      await update.restartWhenIdle(idleRestartTarget(await update.getStatus()));
+    } catch (cause) {
+      if (!disposed) setRestartError(errorMessage(cause, t("update.idleRestart.requestFailed")));
+    } finally {
+      if (!disposed) setRestarting(false);
+    }
+  }
+
   const recheckOnReturn = () => {
     if (showPermissions()) void loadState();
   };
@@ -109,27 +119,22 @@ export function ComputerUseSetup(props: ComputerUseSetupProps) {
 
   const showPermissions = () => {
     const status = state()?.status;
-    return (status === "permissions-required" || status === "ready") && permissions().length > 0;
+    return (
+      (status === "permissions-required" || status === "restart-required" || status === "ready") &&
+      permissions().length > 0
+    );
   };
 
-  /** Every status that leaves Computer Use not working, which the one alert below reports. */
   const unavailable = () => {
     const status = state()?.status;
     return status === "unsupported" || status === "driver-missing" || status === "error";
   };
 
-  /**
-   * The manual way back, for a user whose desktop gave this window no focus event.
-   *
-   * Offered while the rows are up, granted or not: a grant is taken away in System Settings as
-   * easily as it is given, and a panel that reads "Granted" with no way to ask again would keep
-   * saying so long after macOS stopped agreeing.
-   */
   const recheckButton = () => (
     <Show when={showPermissions()}>
       <Button type="button" variant="outline" size="sm" loading={loading()} onClick={() => void loadState()}>
         <RefreshCw aria-hidden="true" />
-        Check again
+        {t("computerUse.checkAgain")}
       </Button>
     </Show>
   );
@@ -143,7 +148,7 @@ export function ComputerUseSetup(props: ComputerUseSetupProps) {
   const content = () => (
     <>
       <Show when={loading() && state() === null}>
-        <ItemGroup class="computer-use-card computer-use-loading" aria-label="Checking Computer Use">
+        <ItemGroup class="computer-use-card computer-use-loading" aria-label={t("computerUse.checking")}>
           <For each={[0, 1]}>
             {() => (
               <Item class="computer-use-row">
@@ -160,45 +165,42 @@ export function ComputerUseSetup(props: ComputerUseSetupProps) {
         </ItemGroup>
       </Show>
 
-      {/*
-       * One alert for every fault, the missing driver included. Dani-Dex carries the driver, so a
-       * build without one is a fault of that build and not a thing the user installs by hand; the
-       * panel therefore names no command and offers the same way back as the rest.
-       */}
       <Show when={unavailable() || (!loading() && error() !== null)}>
         <Alert tone="warning" class="computer-use-alert" role="status">
           <AlertIcon>
             <TriangleAlert />
           </AlertIcon>
           <AlertContent>
-            <AlertTitle>Computer Use isn’t available yet</AlertTitle>
+            <AlertTitle>{t("computerUse.unavailable.title")}</AlertTitle>
             <AlertDescription>
-              {errorMessage(state()?.message ?? error(), "Dani-Dex could not start the Computer Use driver.")}
+              {errorMessage(state()?.message ?? error(), t("computerUse.error.startDriver"))}
             </AlertDescription>
           </AlertContent>
           <AlertActions>
             <Button type="button" variant="outline" size="sm" loading={loading()} onClick={() => void loadState()}>
               <RefreshCw aria-hidden="true" />
-              Try again
+              {t("common.tryAgain")}
             </Button>
           </AlertActions>
         </Alert>
       </Show>
 
-      {/* macOS dropped grants the user had given, usually at an update. Said plainly, so the list
-          below does not read as a first-time setup. */}
-      <Show when={state()?.status === "permissions-required" && state()?.message}>
-        {(message) => (
-          <Alert tone="warning" class="computer-use-alert" role="status">
-            <AlertIcon>
-              <TriangleAlert />
-            </AlertIcon>
-            <AlertContent>
-              <AlertTitle>Computer Use needs permission again</AlertTitle>
-              <AlertDescription>{message()}</AlertDescription>
-            </AlertContent>
-          </Alert>
-        )}
+      <Show when={state()?.status === "restart-required"}>
+        <Alert tone="warning" class="computer-use-alert" role="status">
+          <AlertIcon>
+            <TriangleAlert />
+          </AlertIcon>
+          <AlertContent>
+            <AlertTitle>{t("computerUse.restartRequired.title")}</AlertTitle>
+            <AlertDescription>{restartError() ?? t("computerUse.restartRequired.description")}</AlertDescription>
+          </AlertContent>
+          <AlertActions>
+            <Button type="button" variant="outline" size="sm" loading={restarting()} onClick={() => void restart()}>
+              <RefreshCw aria-hidden="true" />
+              {t("computerUse.restartRequired.action")}
+            </Button>
+          </AlertActions>
+        </Alert>
       </Show>
 
       <Show when={showPermissions()}>
@@ -206,23 +208,39 @@ export function ComputerUseSetup(props: ComputerUseSetupProps) {
           when={props.variant === "settings"}
           fallback={<PermissionGroup busy={busyPermission()} permissions={permissions()} onOpen={openPermission} />}
         >
-          <SettingsSection title="System permissions" description="Permissions are managed by macOS.">
+          <SettingsSection
+            data-settings-row="computerUse.permissions.title"
+            title={t("computerUse.permissions.title")}
+            description={t("computerUse.permissions.description")}
+          >
             <PermissionGroup busy={busyPermission()} permissions={permissions()} onOpen={openPermission} />
             {recheck()}
           </SettingsSection>
         </Show>
       </Show>
 
-      <Show when={state()?.status === "ready" && permissions().length === 0}>
+      <Show when={state()?.status === "ready" && permissions().length === 0 && state()?.message}>
+        {(limit) => (
+          <Alert tone="warning" class="computer-use-alert" role="status">
+            <AlertIcon>
+              <TriangleAlert />
+            </AlertIcon>
+            <AlertContent>
+              <AlertTitle>{t("computerUse.limited.title")}</AlertTitle>
+              <AlertDescription>{errorMessage(limit(), t("status.computerUse.inputRefused"))}</AlertDescription>
+            </AlertContent>
+          </Alert>
+        )}
+      </Show>
+
+      <Show when={state()?.status === "ready" && permissions().length === 0 && !state()?.message}>
         <Alert tone="success" class="computer-use-alert" role="status">
           <AlertIcon>
             <CircleCheck />
           </AlertIcon>
           <AlertContent>
-            <AlertTitle>Computer Use is ready</AlertTitle>
-            <AlertDescription>
-              Dani-Dex can see and interact with apps on this computer. This system asks for no extra permission.
-            </AlertDescription>
+            <AlertTitle>{t("computerUse.ready.title")}</AlertTitle>
+            <AlertDescription>{t("computerUse.ready.description")}</AlertDescription>
           </AlertContent>
         </Alert>
       </Show>
@@ -233,7 +251,7 @@ export function ComputerUseSetup(props: ComputerUseSetupProps) {
             <Info />
           </AlertIcon>
           <AlertContent>
-            <AlertTitle>Couldn’t open System Settings</AlertTitle>
+            <AlertTitle>{t("computerUse.openSettingsFailed.title")}</AlertTitle>
             <AlertDescription>{error()}</AlertDescription>
           </AlertContent>
         </Alert>
@@ -248,8 +266,8 @@ export function ComputerUseSetup(props: ComputerUseSetupProps) {
         <section class="computer-use-compact" aria-labelledby="computer-use-compact-title">
           <header class="computer-use-compact-header">
             <div>
-              <h2 id="computer-use-compact-title">Enable Computer Use</h2>
-              <p>Let Dani-Dex see and interact with apps on this computer.</p>
+              <h2 id="computer-use-compact-title">{t("computerUse.compact.title")}</h2>
+              <p>{t("computerUse.compact.description")}</p>
             </div>
             {recheckButton()}
           </header>
@@ -267,6 +285,7 @@ function PermissionGroup(props: {
   permissions: ComputerUseState["permissions"];
   onOpen: (permission: MacPermissionId) => Promise<void>;
 }) {
+  const { t } = useText();
   return (
     <ItemGroup class="settings-modal-card computer-use-card computer-use-permission-list">
       <For each={props.permissions}>
@@ -279,23 +298,14 @@ function PermissionGroup(props: {
                 <PermissionIcon aria-hidden="true" />
               </ItemMedia>
               <ItemContent>
-                <ItemTitle>{details.title}</ItemTitle>
-                <ItemDescription>{details.description}</ItemDescription>
+                <ItemTitle>{t(details.title)}</ItemTitle>
+                <ItemDescription>{t(details.description)}</ItemDescription>
               </ItemContent>
               <ItemActions>
-                {/*
-                 * The badge says where the grant stands; the button stays beside it. A grant is
-                 * taken away in the same pane it is given in, and a row that offered no way back
-                 * once it read "Granted" would leave the user to find that pane by themselves.
-                 *
-                 * The accent is on the one row that still needs the user, so a panel of two rows
-                 * says at a glance which one is left. A granted row keeps the way back and drops
-                 * both the accent and the word "Grant", which would ask for what it already has.
-                 */}
                 <Show when={permission.granted}>
                   <Badge variant="success-light">
                     <CircleCheck aria-hidden="true" />
-                    Granted
+                    {t("computerUse.granted")}
                   </Badge>
                 </Show>
                 <Button
@@ -304,14 +314,14 @@ function PermissionGroup(props: {
                   size="sm"
                   class={permission.granted ? undefined : "computer-use-grant"}
                   loading={props.busy === permission.id}
-                  loadingLabel="Opening…"
+                  loadingLabel={t("computerUse.opening")}
                   disabled={props.busy !== null}
-                  // "Grant" alone is the same word on both rows, which says nothing about which
-                  // permission it opens to anybody who reads the buttons on their own.
-                  aria-label={`${permission.granted ? "Manage" : "Grant"} ${details.title}`}
+                  aria-label={t(permission.granted ? "computerUse.manageLabel" : "computerUse.grantLabel", {
+                    permission: t(details.title),
+                  })}
                   onClick={() => void props.onOpen(permission.id)}
                 >
-                  {permission.granted ? "Manage" : "Grant"}
+                  {permission.granted ? t("computerUse.manage") : t("computerUse.grant")}
                 </Button>
               </ItemActions>
             </Item>

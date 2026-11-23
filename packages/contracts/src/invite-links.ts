@@ -1,33 +1,27 @@
-import { DANI_DEX_API_ORIGIN, DANI_DEX_WEB_ORIGIN } from "./online-services";
-import { isDaniDexTeamApiHostname } from "./validation";
+import { isOpenBotTeamApiHostname } from "./validation";
 
-/**
- * The https origin of the invitation page, or null while Dan Lab serves none. With no page, an
- * invitation is the `dani-dex://join` link, which the app opens and the join field accepts.
- */
-export const DANI_DEX_INVITE_ORIGIN: string | null = DANI_DEX_WEB_ORIGIN;
-export const DANI_DEX_INVITE_PATH = "/join";
-export const DANI_DEX_CONTROL_PLANE_ORIGIN: string | null = DANI_DEX_API_ORIGIN;
+export const OPENBOT_INVITE_ORIGIN = "https://openbot.run";
+export const OPENBOT_INVITE_PATH = "/join";
+export const OPENBOT_CONTROL_PLANE_ORIGIN = "https://api.openbot.run";
 
-/**
- * The finite deadline a permanent invitation carries. Invitation expiry travels the
- * released Team API and D1 schemas as a plain timestamp, so "never expires" is a
- * Date-compatible maximum rather than null. Matches `PERSISTENT_SESSION_EXPIRES_AT`.
- */
 export const PERMANENT_INVITE_EXPIRES_AT_MS = 8_640_000_000_000_000;
 
 export function permanentInviteExpiresAt(): string {
   return new Date(PERMANENT_INVITE_EXPIRES_AT_MS).toISOString();
 }
 
-/**
- * Whether an expiry timestamp is the never-expires sentinel. The frozen Team API
- * projections strip the `permanent` flag on the wire, so a client that only sees the
- * timestamp still recognizes a permanent link by its deadline.
- */
 export function isNeverExpiringInvite(value: string): boolean {
   const parsed = Date.parse(value);
   return Number.isFinite(parsed) && parsed >= PERMANENT_INVITE_EXPIRES_AT_MS;
+}
+
+export function isPermanentInvite(permanent: unknown, expiresAt: number | string): boolean {
+  if (permanent === true) return true;
+  return typeof expiresAt === "number" ? expiresAt >= PERMANENT_INVITE_EXPIRES_AT_MS : isNeverExpiringInvite(expiresAt);
+}
+
+export function inviteUseCount(value: unknown): number {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0 ? value : 0;
 }
 
 const INVITE_FIELDS = ["api", "fingerprint", "invite", "server"] as const;
@@ -44,33 +38,65 @@ export interface InviteLinkPayload {
 
 export interface InviteLinkOptions {
   allowLocalDevelopmentApiUrl?: boolean;
+  selfHostedApiOrigin?: string | undefined;
+}
+
+export function selfHostedApiOrigin(apiUrl: string | undefined): string | undefined {
+  if (!apiUrl) return undefined;
+  try {
+    const { protocol, origin } = new URL(apiUrl);
+    return protocol === "https:" && origin !== OPENBOT_INVITE_ORIGIN && !isValidRemoteApiUrl(`${origin}/`)
+      ? origin
+      : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export function createInviteUrl(payload: InviteLinkPayload, options: InviteLinkOptions = {}): string {
-  if (DANI_DEX_INVITE_ORIGIN === null) return createDaniDexInviteUrl(payload, options);
   validatePayload(payload, options);
-  const url = new URL(DANI_DEX_INVITE_PATH, DANI_DEX_INVITE_ORIGIN);
+  if (isSelfHostedApiUrl(new URL(payload.apiUrl), options)) return createOpenBotInviteUrl(payload, options);
+  const url = new URL(OPENBOT_INVITE_PATH, OPENBOT_INVITE_ORIGIN);
   writePayload(url, payload);
   return url.toString();
 }
 
-export function createDaniDexInviteUrl(payload: InviteLinkPayload, options: InviteLinkOptions = {}): string {
+export function createOpenBotInviteUrl(payload: InviteLinkPayload, options: InviteLinkOptions = {}): string {
   validatePayload(payload, options);
-  const url = new URL("dani-dex://join");
+  const url = new URL("openbot://join");
   writePayload(url, payload);
   return url.toString();
 }
 
-export function toDaniDexInviteUrl(value: string, options: InviteLinkOptions = {}): string {
-  return createDaniDexInviteUrl(parseInviteUrl(value, options), options);
+export function toOpenBotInviteUrl(value: string, options: InviteLinkOptions = {}): string {
+  return createOpenBotInviteUrl(parseInviteUrl(value, options), options);
+}
+
+export function createWebAppInvitePath(value: string, options: InviteLinkOptions = {}): string {
+  const url = new URL("/app", OPENBOT_INVITE_ORIGIN);
+  writePayload(url, parseInviteUrl(value, options));
+  return `${url.pathname}${url.search}`;
+}
+
+export const WEB_APP_INVITE_FIELDS: readonly string[] = INVITE_FIELDS;
+
+export function inviteUrlFromWebAppSearch(search: string, options: InviteLinkOptions = {}): string | null {
+  const params = new URLSearchParams(search);
+  if (!INVITE_FIELDS.some((field) => params.has(field))) return null;
+  const url = new URL(OPENBOT_INVITE_PATH, OPENBOT_INVITE_ORIGIN);
+  for (const field of INVITE_FIELDS) for (const value of params.getAll(field)) url.searchParams.append(field, value);
+  try {
+    return createInviteUrl(parseInviteUrl(url.toString(), options), options);
+  } catch {
+    return null;
+  }
 }
 
 export function isCanonicalInviteUrl(value: string, options: InviteLinkOptions = {}): boolean {
   try {
     parseInviteUrl(value, options);
     const url = new URL(value);
-    if (DANI_DEX_INVITE_ORIGIN === null) return url.protocol === "dani-dex:" && url.hostname === "join";
-    return url.origin === DANI_DEX_INVITE_ORIGIN && url.pathname === DANI_DEX_INVITE_PATH;
+    return url.origin === OPENBOT_INVITE_ORIGIN && url.pathname === OPENBOT_INVITE_PATH;
   } catch {
     return false;
   }
@@ -81,16 +107,13 @@ export function parseInviteUrl(value: string, options: InviteLinkOptions = {}): 
   try {
     url = new URL(value);
   } catch {
-    throw new Error("Enter a valid Dani-Dex invitation link.");
+    throw new Error("Enter a valid OpenBot invitation link.");
   }
 
   const canonical =
-    DANI_DEX_INVITE_ORIGIN !== null &&
-    url.protocol === "https:" &&
-    url.origin === DANI_DEX_INVITE_ORIGIN &&
-    url.pathname === DANI_DEX_INVITE_PATH;
+    url.protocol === "https:" && url.origin === OPENBOT_INVITE_ORIGIN && url.pathname === OPENBOT_INVITE_PATH;
   const customScheme =
-    url.protocol === "dani-dex:" && url.hostname === "join" && (url.pathname === "" || url.pathname === "/");
+    url.protocol === "openbot:" && url.hostname === "join" && (url.pathname === "" || url.pathname === "/");
   if (
     (!canonical && !customScheme) ||
     url.username !== "" ||
@@ -99,7 +122,7 @@ export function parseInviteUrl(value: string, options: InviteLinkOptions = {}): 
     url.hash !== "" ||
     !hasOnlyInviteFields(url.searchParams)
   ) {
-    throw new Error("The Dani-Dex invitation link is invalid.");
+    throw new Error("The OpenBot invitation link is invalid.");
   }
 
   const payload: InviteLinkPayload = {
@@ -127,15 +150,20 @@ export function isValidRemoteApiUrl(value: string, options: InviteLinkOptions = 
       url.search === "" &&
       url.hash === "" &&
       (localDevelopmentApi ||
+        isSelfHostedApiUrl(url, options) ||
         (url.protocol === "https:" &&
           url.port === "" &&
-          ((DANI_DEX_CONTROL_PLANE_ORIGIN !== null && url.origin === DANI_DEX_CONTROL_PLANE_ORIGIN) ||
+          (url.origin === OPENBOT_CONTROL_PLANE_ORIGIN ||
             TRY_CLOUDFLARE_HOST_PATTERN.test(url.hostname) ||
-            isDaniDexTeamApiHostname(url.hostname))))
+            isOpenBotTeamApiHostname(url.hostname))))
     );
   } catch {
     return false;
   }
+}
+
+function isSelfHostedApiUrl(url: URL, options: InviteLinkOptions): boolean {
+  return url.protocol === "https:" && url.origin === options.selfHostedApiOrigin;
 }
 
 function validatePayload(payload: InviteLinkPayload, options: InviteLinkOptions): void {
@@ -145,7 +173,7 @@ function validatePayload(payload: InviteLinkPayload, options: InviteLinkOptions)
     !BASE64URL_SECRET_PATTERN.test(payload.fingerprint) ||
     !BASE64URL_SECRET_PATTERN.test(payload.token)
   ) {
-    throw new Error("The Dani-Dex invitation link is invalid.");
+    throw new Error("The OpenBot invitation link is invalid.");
   }
 }
 

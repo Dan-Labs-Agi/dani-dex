@@ -3,6 +3,39 @@ import { resolve } from "node:path";
 import { z } from "zod";
 
 const sha256Schema = z.string().regex(/^[0-9a-f]{64}$/u, "Must use a complete SHA-256 value.");
+const nativeProviderArtifactSchema = z.object({
+  url: z.url(),
+  assetSha256: sha256Schema,
+  downloadBytes: z.number().int().positive(),
+  installedBytes: z.number().int().positive(),
+  executable: z.enum([
+    "pi",
+    "pi.exe",
+    "muse",
+    "muse.exe",
+    "devin",
+    "devin.exe",
+    "copilot",
+    "copilot.exe",
+    "vibe-acp",
+    "vibe-acp.exe",
+    "antigravity",
+    "antigravity.exe",
+  ]),
+  files: z.record(z.string().min(1), sha256Schema),
+});
+const nativeProviderLockSchema = z.object({
+  version: z.string().min(1),
+  license: z.string().min(1),
+  licenseUrl: z.url(),
+  artifacts: z.object({
+    "darwin-arm64": nativeProviderArtifactSchema,
+    "darwin-x64": nativeProviderArtifactSchema,
+    "linux-x64": nativeProviderArtifactSchema,
+    "linux-arm64": nativeProviderArtifactSchema,
+    "win32-x64": nativeProviderArtifactSchema,
+  }),
+});
 const codexArtifactSchema = z.object({
   asset: z.string().min(1),
   assetSha256: sha256Schema,
@@ -11,8 +44,12 @@ const codexArtifactSchema = z.object({
   executable: z.string().regex(/^bin\/codex(?:\.exe)?$/u),
 });
 const claudeArtifactSchema = z.object({
-  package: z.string().regex(/^@anthropic-ai\/claude-agent-sdk-(?:darwin-arm64|darwin-x64|linux-x64|win32-x64)$/u),
-  asset: z.string().regex(/^claude-agent-sdk-(?:darwin-arm64|darwin-x64|linux-x64|win32-x64)-\d+\.\d+\.\d+\.tgz$/u),
+  package: z
+    .string()
+    .regex(/^@anthropic-ai\/claude-agent-sdk-(?:darwin-arm64|darwin-x64|linux-x64|linux-arm64|win32-x64)$/u),
+  asset: z
+    .string()
+    .regex(/^claude-agent-sdk-(?:darwin-arm64|darwin-x64|linux-x64|linux-arm64|win32-x64)-\d+\.\d+\.\d+\.tgz$/u),
   assetSha256: sha256Schema,
   binarySha256: sha256Schema,
   downloadBytes: z.number().int().positive(),
@@ -21,8 +58,8 @@ const claudeArtifactSchema = z.object({
   platformDirectory: z.enum(["linux", "mac", "win"]),
 });
 const opencodeArtifactSchema = z.object({
-  package: z.string().regex(/^opencode-(?:darwin-arm64|darwin-x64|linux-x64|windows-x64)$/u),
-  asset: z.string().regex(/^opencode-(?:darwin-arm64|darwin-x64|linux-x64|windows-x64)-\d+\.\d+\.\d+\.tgz$/u),
+  package: z.string().regex(/^@opencode\/cli-(?:darwin-arm64|darwin-x64|linux-x64|linux-arm64|windows-x64)$/u),
+  asset: z.string().regex(/^cli-(?:darwin-arm64|darwin-x64|linux-x64|linux-arm64|windows-x64)-\d+\.\d+\.\d+\.tgz$/u),
   assetSha256: sha256Schema,
   binarySha256: sha256Schema,
   downloadBytes: z.number().int().positive(),
@@ -30,19 +67,17 @@ const opencodeArtifactSchema = z.object({
   executable: z.enum(["opencode", "opencode.exe"]),
   platformDirectory: z.enum(["linux", "mac", "win"]),
 });
-/**
- * Bun ships one npm package per target and no `bunx` of its own, so the staged layout makes that
- * name itself. `baseline` on x64: Bun's plain x64 builds need AVX2, and a machine older than that
- * would answer a spawn with an illegal instruction and no message. The baseline build starts
- * slightly slower, which is nothing against launching one MCP server.
- */
 const bunArtifactSchema = z.object({
   package: z
     .string()
-    .regex(/^@oven\/bun-(?:darwin-aarch64|darwin-x64-baseline|linux-x64-baseline|windows-x64-baseline)$/u),
+    .regex(
+      /^@oven\/bun-(?:darwin-aarch64|darwin-x64-baseline|linux-x64-baseline|linux-aarch64|windows-x64-baseline)$/u,
+    ),
   asset: z
     .string()
-    .regex(/^bun-(?:darwin-aarch64|darwin-x64-baseline|linux-x64-baseline|windows-x64-baseline)-\d+\.\d+\.\d+\.tgz$/u),
+    .regex(
+      /^bun-(?:darwin-aarch64|darwin-x64-baseline|linux-x64-baseline|linux-aarch64|windows-x64-baseline)-\d+\.\d+\.\d+\.tgz$/u,
+    ),
   assetSha256: sha256Schema,
   binarySha256: sha256Schema,
   downloadBytes: z.number().int().positive(),
@@ -51,7 +86,9 @@ const bunArtifactSchema = z.object({
 });
 
 const grokArtifactSchema = z.object({
-  asset: z.string().regex(/^grok-\d+\.\d+\.\d+-(?:linux-x86_64|macos-aarch64|macos-x86_64|windows-x86_64(?:\.exe)?)$/u),
+  asset: z
+    .string()
+    .regex(/^grok-\d+\.\d+\.\d+-(?:linux-x86_64|linux-aarch64|macos-aarch64|macos-x86_64|windows-x86_64(?:\.exe)?)$/u),
   assetSha256: sha256Schema,
   downloadBytes: z.number().int().positive(),
   installedBytes: z.number().int().positive(),
@@ -59,22 +96,39 @@ const grokArtifactSchema = z.object({
   platformDirectory: z.enum(["linux", "mac", "win"]),
 });
 
-/**
- * Hermes is a Python program, so its runtime is two pinned inputs: a relocatable CPython build per
- * target, and one universal hash-locked requirements file that `uv` installs for that target. The
- * requirements file is checksummed here so an edit to it cannot ship without a matching lock change.
- */
-const hermesPythonArtifactSchema = z.object({
-  asset: z.string().regex(/^cpython-3\.11\.\d+\+\d{8}-[\w-]+-install_only_stripped\.tar\.gz$/u),
+const cursorArtifactSchema = z.object({
+  platformDirectory: z.enum(["darwin", "linux", "windows"]),
+  architecture: z.enum(["arm64", "x64"]),
+  asset: z.enum(["agent-cli-package.tar.gz", "agent-cli-package.zip"]),
   assetSha256: sha256Schema,
   downloadBytes: z.number().int().positive(),
-  pythonPlatform: z.enum([
-    "aarch64-apple-darwin",
-    "x86_64-apple-darwin",
-    "x86_64-unknown-linux-gnu",
-    "x86_64-pc-windows-msvc",
-  ]),
-  platformDirectory: z.enum(["linux", "mac", "win"]),
+  installedBytes: z.number().int().positive(),
+  executable: z.enum(["cursor-agent", "cursor-agent.cmd"]),
+  files: z.record(z.string().regex(/^[A-Za-z0-9][A-Za-z0-9._-]*$/u), sha256Schema),
+});
+
+const clineArtifactSchema = z.object({
+  package: z.string().regex(/^@cline\/cli-(?:darwin-arm64|darwin-x64|linux-x64|linux-arm64|windows-x64)$/u),
+  asset: z.string().regex(/^cli-(?:darwin-arm64|darwin-x64|linux-x64|linux-arm64|windows-x64)-\d+\.\d+\.\d+\.tgz$/u),
+  assetSha256: sha256Schema,
+  binarySha256: sha256Schema,
+  bootstrapSha256: sha256Schema,
+  downloadBytes: z.number().int().positive(),
+  installedBytes: z.number().int().positive(),
+  executable: z.enum(["cline", "cline.exe"]),
+});
+
+const kimiArtifactSchema = z.object({
+  asset: z
+    .string()
+    .regex(
+      /^kimi-\d+\.\d+\.\d+-(?:aarch64-apple-darwin|x86_64-apple-darwin|x86_64-unknown-linux-gnu|aarch64-unknown-linux-gnu|x86_64-pc-windows-msvc)-onedir\.(?:tar\.gz|zip)$/u,
+    ),
+  assetSha256: sha256Schema,
+  downloadBytes: z.number().int().positive(),
+  installedBytes: z.number().int().positive(),
+  executable: z.enum(["kimi", "kimi.exe"]),
+  files: z.record(z.string().regex(/^(?:[A-Za-z0-9_][A-Za-z0-9._-]*\/)*[A-Za-z0-9_][A-Za-z0-9._-]*$/u), sha256Schema),
 });
 
 const agentRuntimeLockSchema = z.object({
@@ -89,6 +143,7 @@ const agentRuntimeLockSchema = z.object({
       "darwin-arm64": codexArtifactSchema,
       "darwin-x64": codexArtifactSchema,
       "linux-x64": codexArtifactSchema,
+      "linux-arm64": codexArtifactSchema,
       "win32-x64": codexArtifactSchema,
     }),
   }),
@@ -102,36 +157,25 @@ const agentRuntimeLockSchema = z.object({
       "darwin-arm64": claudeArtifactSchema,
       "darwin-x64": claudeArtifactSchema,
       "linux-x64": claudeArtifactSchema,
+      "linux-arm64": claudeArtifactSchema,
       "win32-x64": claudeArtifactSchema,
     }),
   }),
-  /**
-   * OpenCode publishes one npm platform package per target, and the CLI reports the npm version
-   * verbatim. There is no `sdkVersion` split like `claude`, so one `version` field is the whole
-   * truth: the tarball name, the `package.json` inside it, and what `opencode --version` prints.
-   */
   opencode: z.object({
     registry: z.literal("https://registry.npmjs.org"),
-    /** Canonical name. `github.com/sst/opencode` now redirects here, and the license fetch must not
-     *  have to follow a redirect. */
     repository: z.literal("https://github.com/anomalyco/opencode"),
     version: z.string().regex(/^\d+\.\d+\.\d+$/u),
     license: z.literal("MIT"),
+    licensePackage: z.object({ name: z.literal("opencode-ai"), version: z.string().regex(/^\d+\.\d+\.\d+$/u) }),
     licenseSha256: sha256Schema,
     artifacts: z.object({
       "darwin-arm64": opencodeArtifactSchema,
       "darwin-x64": opencodeArtifactSchema,
       "linux-x64": opencodeArtifactSchema,
+      "linux-arm64": opencodeArtifactSchema,
       "win32-x64": opencodeArtifactSchema,
     }),
   }),
-  /**
-   * The JavaScript runtime Dani-Dex downloads for the MCP servers, not for a provider CLI.
-   *
-   * `tag` is the source tag the licence is read from; `version` is what `bun --version` prints and
-   * what the npm packages carry. Bun states both as the same number, and the schema keeps them
-   * separate anyway, because a lock that cannot say they disagree cannot notice when they do.
-   */
   bun: z.object({
     registry: z.literal("https://registry.npmjs.org"),
     repository: z.literal("https://github.com/oven-sh/bun"),
@@ -143,29 +187,8 @@ const agentRuntimeLockSchema = z.object({
       "darwin-arm64": bunArtifactSchema,
       "darwin-x64": bunArtifactSchema,
       "linux-x64": bunArtifactSchema,
+      "linux-arm64": bunArtifactSchema,
       "win32-x64": bunArtifactSchema,
-    }),
-  }),
-  hermes: z.object({
-    repository: z.literal("https://github.com/NousResearch/hermes-agent"),
-    package: z.literal("hermes-agent"),
-    version: z.string().regex(/^\d+\.\d+\.\d+$/u),
-    extras: z.array(z.literal("acp")).length(1),
-    wheel: z.string().regex(/^hermes_agent-\d+\.\d+\.\d+-py3-none-any\.whl$/u),
-    wheelSha256: sha256Schema,
-    license: z.literal("MIT"),
-    requirements: z.literal("scripts/hermes-runtime-requirements.txt"),
-    requirementsSha256: sha256Schema,
-    python: z.object({
-      repository: z.literal("https://github.com/astral-sh/python-build-standalone"),
-      release: z.string().regex(/^\d{8}$/u),
-      version: z.string().regex(/^3\.11\.\d+$/u),
-      artifacts: z.object({
-        "darwin-arm64": hermesPythonArtifactSchema,
-        "darwin-x64": hermesPythonArtifactSchema,
-        "linux-x64": hermesPythonArtifactSchema,
-        "win32-x64": hermesPythonArtifactSchema,
-      }),
     }),
   }),
   grok: z.object({
@@ -180,7 +203,56 @@ const agentRuntimeLockSchema = z.object({
       "darwin-arm64": grokArtifactSchema,
       "darwin-x64": grokArtifactSchema,
       "linux-x64": grokArtifactSchema,
+      "linux-arm64": grokArtifactSchema,
       "win32-x64": grokArtifactSchema,
+    }),
+  }),
+  antigravity: nativeProviderLockSchema,
+  cursor: z.object({
+    registry: z.literal("https://raw.githubusercontent.com/agentclientprotocol/registry/main/cursor/agent.json"),
+    distribution: z.literal("https://downloads.cursor.com/lab"),
+    version: z.string().regex(/^\d{4}\.\d{2}\.\d{2}-[0-9a-f]{7,40}$/u),
+    license: z.literal("Proprietary"),
+    licenseUrl: z.literal("https://cursor.com/terms-of-service"),
+    artifacts: z.object({
+      "darwin-arm64": cursorArtifactSchema,
+      "darwin-x64": cursorArtifactSchema,
+      "linux-x64": cursorArtifactSchema,
+      "linux-arm64": cursorArtifactSchema,
+      "win32-x64": cursorArtifactSchema,
+    }),
+  }),
+  pi: nativeProviderLockSchema,
+  muse: nativeProviderLockSchema,
+  devin: nativeProviderLockSchema,
+  copilot: nativeProviderLockSchema,
+  mistral: nativeProviderLockSchema,
+  cline: z.object({
+    registry: z.literal("https://registry.npmjs.org"),
+    repository: z.literal("https://github.com/cline/cline"),
+    version: z.string().regex(/^\d+\.\d+\.\d+$/u),
+    license: z.literal("Apache-2.0"),
+    licenseSha256: sha256Schema,
+    artifacts: z.object({
+      "darwin-arm64": clineArtifactSchema,
+      "darwin-x64": clineArtifactSchema,
+      "linux-x64": clineArtifactSchema,
+      "linux-arm64": clineArtifactSchema,
+      "win32-x64": clineArtifactSchema,
+    }),
+  }),
+  kimi: z.object({
+    repository: z.literal("https://github.com/MoonshotAI/kimi-cli"),
+    version: z.string().regex(/^\d+\.\d+\.\d+$/u),
+    tag: z.string().regex(/^\d+\.\d+\.\d+$/u),
+    license: z.literal("Apache-2.0"),
+    licenseSha256: sha256Schema,
+    artifacts: z.object({
+      "darwin-arm64": kimiArtifactSchema,
+      "darwin-x64": kimiArtifactSchema,
+      "linux-x64": kimiArtifactSchema,
+      "linux-arm64": kimiArtifactSchema,
+      "win32-x64": kimiArtifactSchema,
     }),
   }),
 });

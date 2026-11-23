@@ -1,75 +1,56 @@
-import { DANI_DEX_WEB_ORIGIN } from "./online-services";
+export const OPENBOT_PLUGIN_ORIGIN = "https://openbot.run";
+export const OPENBOT_PLUGIN_PATH_PREFIX = "/plugins/";
+export const OPENBOT_PLUGIN_HOST = "plugins";
+export const WEB_APP_PLUGIN_PARAM = "plugin";
 
-/**
- * The two addresses one plugin listing has: the page a person shares, and the link that opens that
- * listing in the app.
- *
- * ```
- * <web origin>/plugins/<slug>    the link a person shares, once Dan Lab serves plugin pages
- * dani-dex://plugins/<slug>       the link the page button opens, and what is shared until then
- * ```
- *
- * The host gives the kind and the path gives the argument, which is the rule `parseInviteUrl`
- * already follows with `hostname === "join"`. An invite needs four fields and so needs a query; a
- * plugin needs one identifier, so a path segment is enough. Refusing a query outright is what stops
- * the shape growing an `?install=1` later.
- *
- * Both forms are *built* from a slug and never read out of catalog data. A listing therefore cannot
- * put a foreign address behind the button that says it copies its own link.
- *
- * `invite-links.ts` is untouched by this: it owns `join`, and the router asks it first, so no invite
- * rule becomes weaker.
- */
-
-/** Null while Dan Lab serves no plugin pages; shared links then use `dani-dex://plugins/<slug>`. */
-export const DANI_DEX_PLUGIN_ORIGIN: string | null = DANI_DEX_WEB_ORIGIN;
-export const DANI_DEX_PLUGIN_PATH_PREFIX = "/plugins/";
-export const DANI_DEX_PLUGIN_HOST = "plugins";
-
-/**
- * A slug cannot hold a dot, an upper-case letter or a slash. The dot is the load-bearing one: it is
- * what stops a slug reaching `catalog.json` when the static catalog routes land beside these pages.
- */
 const PLUGIN_SLUG_PATTERN = /^[a-z0-9][a-z0-9-]{0,62}$/u;
 
 export function isPluginSlug(value: string): boolean {
   return PLUGIN_SLUG_PATTERN.test(value);
 }
 
-/** Where a shared plugin link points. */
 export function createPluginShareUrl(slug: string): string {
   assertPluginSlug(slug);
-  if (DANI_DEX_PLUGIN_ORIGIN === null) return createDaniDexPluginUrl(slug);
-  return `${DANI_DEX_PLUGIN_ORIGIN}${DANI_DEX_PLUGIN_PATH_PREFIX}${slug}`;
+  return `${OPENBOT_PLUGIN_ORIGIN}${OPENBOT_PLUGIN_PATH_PREFIX}${slug}`;
 }
 
-/** The link the page's button opens, which raises the app on this listing. */
-export function createDaniDexPluginUrl(slug: string): string {
+export function createWebAppPluginPath(slug: string): string {
   assertPluginSlug(slug);
-  return `dani-dex://${DANI_DEX_PLUGIN_HOST}/${slug}`;
+  return `/app?${WEB_APP_PLUGIN_PARAM}=${slug}`;
 }
 
-/**
- * The slug a plugin link names, in either form. Throws for anything else, so a caller that wants a
- * decision rather than a value uses `isPluginUrl`.
- */
+export function pluginSlugFromWebAppSearch(search: string): string | null {
+  const slug = new URLSearchParams(search).get(WEB_APP_PLUGIN_PARAM);
+  return slug !== null && isPluginSlug(slug) ? slug : null;
+}
+
+export function createOpenBotPluginUrl(slug: string): string {
+  assertPluginSlug(slug);
+  return `openbot://${OPENBOT_PLUGIN_HOST}/${slug}`;
+}
+
+export function pluginLinkText(url: string): string {
+  try {
+    const { host, pathname } = new URL(url);
+    return `${host.replace(/^www\./, "")}${pathname === "/" ? "" : pathname.replace(/\/$/, "")}`;
+  } catch {
+    return url;
+  }
+}
+
 export function parsePluginUrl(value: string): string {
   let url: URL;
   try {
     url = new URL(value);
   } catch {
-    throw new Error("The Dani-Dex plugin link is invalid.");
+    throw new Error("The OpenBot plugin link is invalid.");
   }
 
-  /* The origin is compared as one string. An `endsWith` or a host expression here is what lets
-     `<origin>.example.com` through. */
   const canonical =
-    DANI_DEX_PLUGIN_ORIGIN !== null &&
     url.protocol === "https:" &&
-    url.origin === DANI_DEX_PLUGIN_ORIGIN &&
-    url.pathname.startsWith(DANI_DEX_PLUGIN_PATH_PREFIX);
-  const customScheme =
-    (url.protocol === "dani-dex:" || url.protocol === "dani-dex:") && url.hostname === DANI_DEX_PLUGIN_HOST;
+    url.origin === OPENBOT_PLUGIN_ORIGIN &&
+    url.pathname.startsWith(OPENBOT_PLUGIN_PATH_PREFIX);
+  const customScheme = url.protocol === "openbot:" && url.hostname === OPENBOT_PLUGIN_HOST;
   if (
     (!canonical && !customScheme) ||
     url.username !== "" ||
@@ -78,15 +59,13 @@ export function parsePluginUrl(value: string): string {
     url.search !== "" ||
     url.hash !== ""
   ) {
-    throw new Error("The Dani-Dex plugin link is invalid.");
+    throw new Error("The OpenBot plugin link is invalid.");
   }
 
-  /* One segment after the prefix, and no empty one. `..` and a trailing slash both fail here before
-     the pattern ever sees them. */
-  const rest = canonical ? url.pathname.slice(DANI_DEX_PLUGIN_PATH_PREFIX.length) : url.pathname.replace(/^\//u, "");
+  const rest = canonical ? url.pathname.slice(OPENBOT_PLUGIN_PATH_PREFIX.length) : url.pathname.replace(/^\//u, "");
   const segments = rest.split("/");
   if (segments.length !== 1) {
-    throw new Error("The Dani-Dex plugin link is invalid.");
+    throw new Error("The OpenBot plugin link is invalid.");
   }
 
   const slug = segments[0] ?? "";
@@ -105,6 +84,6 @@ export function isPluginUrl(value: string): boolean {
 
 function assertPluginSlug(slug: string): void {
   if (!isPluginSlug(slug)) {
-    throw new Error("The Dani-Dex plugin link is invalid.");
+    throw new Error("The OpenBot plugin link is invalid.");
   }
 }

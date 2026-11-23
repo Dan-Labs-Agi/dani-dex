@@ -1,10 +1,10 @@
-import { DANI_DEX_LINKS, EXTERNAL_LINK_REL } from "../../lib/landing-links";
+import { EXTERNAL_LINK_REL, OPENBOT_LINKS } from "../../lib/landing-links";
 
 export function YourWorkStaysOnYourComputer() {
   return (
     <>
       <p>
-        Dani-Dex keeps your workspaces, conversations, attachments, browser data and team data on the computer that runs
+        OpenBot keeps your workspaces, conversations, attachments, browser data and team data on the computer that runs
         it. They go into a SQLite database in your own home directory. There is no copy on our side, because there is no
         place on our side to put one.
       </p>
@@ -12,8 +12,7 @@ export function YourWorkStaysOnYourComputer() {
       <h2>What that rules out</h2>
       <p>
         We cannot read your chats. We cannot hand them to anyone who asks us, because we do not hold them. If you delete
-        the database, the conversation is gone rather than merely hidden. And the application keeps working when our
-        servers do not: Dani-Dex runs without an account at all.
+        the database, the conversation is gone rather than merely hidden.
       </p>
       <p>
         It also changes who is responsible for backups. Nothing is uploaded, so nothing is restored for you. That trade
@@ -27,9 +26,9 @@ export function YourWorkStaysOnYourComputer() {
         load from the internet. Plugins can still make requests.
       </p>
       <p>
-        The honest version of the promise is narrower than the slogan: Dani-Dex adds no hop of its own. We wrote down
+        The honest version of the promise is narrower than the slogan: OpenBot adds no hop of its own. We wrote down
         exactly which data leaves your machine and why in the{" "}
-        <a href={DANI_DEX_LINKS.privacy} target="_blank" rel={EXTERNAL_LINK_REL}>
+        <a href={OPENBOT_LINKS.privacy} target="_blank" rel={EXTERNAL_LINK_REL}>
           privacy notes
         </a>
         .

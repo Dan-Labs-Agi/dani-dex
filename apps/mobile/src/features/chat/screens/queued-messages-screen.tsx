@@ -1,13 +1,16 @@
-import type { QueueDelivery } from "@dani-dex/contracts/ipc";
-import { router, useLocalSearchParams } from "expo-router";
+import type { QueueDelivery } from "@openbot/contracts/ipc";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
+import { StackActions } from "expo-router/react-navigation";
 import { Button, Typography } from "heroui-native";
-import { X } from "lucide-react-native";
+import X from "lucide-react-native/icons/x";
 import { useMemo } from "react";
 import { View } from "react-native";
 import { useCSSVariable } from "uniwind";
 import { SettingsContent, SettingsRow, SettingsSection } from "@/features/settings/components/settings-content";
+import { useMobileWorkspace } from "@/features/workspace/context/mobile-workspace-context";
 import { formatUpdatedAt } from "@/shared/lib/format-updated-at";
-import { haptics } from "@/shared/lib/haptics";
+import { useText } from "@/shared/lib/text";
+import { AwaitingRepliesSection } from "../components/awaiting-replies-section";
 import { type QueuedUpload, useQueuedChat } from "../context/queued-messages-context";
 import { queueRowsWithHeldEdit } from "../model/queue-edit-draft";
 import { queuedMessagePreview } from "../model/queued-message-view";
@@ -23,15 +26,23 @@ function QueuePosition({ label }: { label: string }) {
 }
 
 function UploadRow({ pending }: { pending: QueuedUpload }) {
-  const muted = String(useCSSVariable("--dani-dex-text-grouped-secondary"));
+  const { t } = useText();
+  const muted = String(useCSSVariable("--openbot-text-grouped-secondary"));
   const uploading = pending.total > 0 && pending.progress < pending.total;
   return (
     <SettingsRow
       leading={<QueuePosition label="…" />}
-      supportingText={uploading ? `Uploading ${pending.progress} of ${pending.total}` : undefined}
+      supportingText={
+        uploading ? t("mobile.chat.queue.uploading", { progress: pending.progress, total: pending.total }) : undefined
+      }
       trailing={
         uploading ? (
-          <Button isIconOnly variant="ghost" accessibilityLabel="Cancel queued upload" onPress={pending.cancel}>
+          <Button
+            isIconOnly
+            variant="ghost"
+            accessibilityLabel={t("mobile.chat.queue.cancelUpload")}
+            onPress={pending.cancel}
+          >
             <X color={muted} size={18} />
           </Button>
         ) : null
@@ -44,15 +55,22 @@ function UploadRow({ pending }: { pending: QueuedUpload }) {
   );
 }
 
+const CHAT_ROUTE = "chat/[agentId]";
+
 export function QueuedMessagesScreen() {
+  const { t, format } = useText();
+  const sheetStack = useNavigation().getParent();
   const { chat } = useLocalSearchParams<{ chat: string }>();
   const { queue, pending } = useQueuedChat(chat);
   const queued = queue?.queued;
   const held = queue?.edit?.delivery ?? null;
   const rows = useMemo(() => queueRowsWithHeldEdit(queued ?? [], held), [queued, held]);
   const count = rows.length + (pending ? 1 : 0);
+  const { agents } = useMobileWorkspace();
+  const agentId = queue?.agentId;
+  const waiting = queue?.waiting ?? [];
+  const serverAgents = useMemo(() => agents.filter((agent) => agent.serverId === queue?.serverId), [agents, queue]);
   const open = (delivery: QueueDelivery) => {
-    void haptics.selection();
     router.push({ pathname: "/queued-messages/actions", params: { chat, deliveryId: delivery.id } });
   };
   return (
@@ -63,27 +81,39 @@ export function QueuedMessagesScreen() {
             {queue.error}
           </Typography.Paragraph>
           <SettingsSection>
-            <SettingsRow
-              disclosure={false}
-              disabled={queue.busy || queue.loading}
-              onPress={() => {
-                void haptics.selection();
-                queue.refresh();
-              }}
-            >
-              <Typography>Try again</Typography>
+            <SettingsRow disclosure={false} disabled={queue.busy || queue.loading} onPress={() => queue.refresh()}>
+              <Typography>{t("common.tryAgain")}</Typography>
             </SettingsRow>
           </SettingsSection>
         </>
       ) : null}
+      <AwaitingRepliesSection
+        rows={waiting}
+        agents={serverAgents}
+        self={serverAgents.find((agent) => agent.id === agentId)}
+        onHide={() => {
+          queue?.hideWaiting();
+          if (count === 0 && !queue?.error) router.back();
+        }}
+        onOpenReply={
+          queue?.activeTurnId && queue.steers
+            ? (deliveryId) => router.push({ pathname: "/queued-messages/actions", params: { chat, deliveryId } })
+            : undefined
+        }
+        onOpenAgent={(teammateId) => sheetStack?.dispatch(StackActions.replace(CHAT_ROUTE, { agentId: teammateId }))}
+      />
       {count > 0 ? (
-        <SettingsSection title="Waiting for the agent">
+        <SettingsSection title={t("mobile.chat.queue.waitingTitle")}>
           {pending ? <UploadRow pending={pending} /> : null}
           {rows.map((item) => (
             <SettingsRow
               key={item.id}
               leading={<QueuePosition label={String(item.position ?? "–")} />}
-              supportingText={item.editing || held?.id === item.id ? "Editing" : formatUpdatedAt(item.createdAt)}
+              supportingText={
+                item.editing || held?.id === item.id
+                  ? t("mobile.chat.queue.editing")
+                  : formatUpdatedAt(item.createdAt, format)
+              }
               onPress={() => open(item)}
             >
               <Typography numberOfLines={2}>{queuedMessagePreview(item)}</Typography>
@@ -91,18 +121,18 @@ export function QueuedMessagesScreen() {
           ))}
         </SettingsSection>
       ) : null}
-      {count === 0 && queue?.loading ? (
+      {count === 0 && waiting.length === 0 && queue?.loading ? (
         <Typography.Paragraph align="center" className="text-text-secondary">
-          Loading the queue…
+          {t("mobile.chat.queue.loading")}
         </Typography.Paragraph>
       ) : null}
-      {count === 0 && !queue?.loading ? (
+      {count === 0 && waiting.length === 0 && !queue?.loading ? (
         <View className="items-center px-8 py-12">
           <Typography.Paragraph align="center" weight="semibold">
-            No queued messages
+            {t("mobile.chat.queue.emptyTitle")}
           </Typography.Paragraph>
           <Typography.Paragraph type="body-xs" align="center" className="mt-1 text-text-secondary">
-            New messages join the queue while the agent works.
+            {t("mobile.chat.queue.emptyBody")}
           </Typography.Paragraph>
         </View>
       ) : null}

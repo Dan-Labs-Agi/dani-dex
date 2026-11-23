@@ -1,9 +1,10 @@
 .app-logo {
-  --app-logo-background: var(--dani-dex-logo-production);
+  --app-logo-background: var(--openbot-logo-production);
+  --app-logo-eye: var(--openbot-logo-production-eye);
   position: relative;
   display: inline-block;
   overflow: hidden;
-  border-radius: var(--dani-dex-radius-logo);
+  border-radius: var(--openbot-radius-logo);
   isolation: isolate;
 }
 
@@ -12,54 +13,89 @@
 }
 
 .app-logo[data-interactive="true"]:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--dani-dex-text-primary);
+  box-shadow: inset 0 0 0 2px var(--openbot-text-primary);
 }
 
 .app-logo[data-variant="dev"] {
-  --app-logo-background: var(--dani-dex-logo-dev);
+  --app-logo-background: var(--openbot-logo-dev);
+  --app-logo-eye: var(--openbot-logo-eye);
 }
 
 .app-logo[data-variant="preview"] {
-  --app-logo-background: var(--dani-dex-logo-preview);
+  --app-logo-background: var(--openbot-logo-preview);
+  --app-logo-eye: var(--openbot-logo-eye);
 }
 
 .app-logo-background {
   fill: var(--app-logo-background);
 }
 
-.app-logo-mark {
-  fill: var(--dani-dex-logo-eye);
+.app-logo-eye {
+  fill: none;
+  stroke: var(--app-logo-eye);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 9.5px;
   pointer-events: none;
   transform-box: view-box;
-  transform-origin: center;
 }
 
 .app-logo-eye-motion {
   pointer-events: none;
-  transform: translate(var(--app-logo-eye-x, 0%), var(--app-logo-eye-y, 0%));
+  transform: translate(var(--app-logo-eye-x, 0%), var(--app-logo-eye-y, 0%)) scaleY(var(--app-logo-eye-squint, 1));
   transform-origin: center;
-  transition: transform var(--dani-dex-duration-normal) cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform var(--openbot-duration-normal) cubic-bezier(0.23, 1, 0.32, 1);
 }
 
-/* The mark is one solid shape, so the old eye blinks become gentle whole-mark motion. */
-.app-logo[data-animation="look-around"] .app-logo-mark {
+.app-logo-eye-left {
+  transform-origin: 28.7% 48.7%;
+}
+
+.app-logo-eye-right {
+  transform-origin: 71.2% 48.8%;
+}
+
+.app-logo[data-animation="blink"]:where([data-blink]) .app-logo-eye {
+  animation: app-logo-blink 192ms cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.app-logo[data-animation="look-around"] .app-logo-eye {
   animation: app-logo-look-around 6s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.app-logo[data-animation="surprised"] .app-logo-mark {
+.app-logo[data-animation="surprised"] .app-logo-eye {
   animation: app-logo-surprised 5.4s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
-.app-logo[data-click-reaction="wink"] .app-logo-mark {
-  animation: app-logo-press 360ms cubic-bezier(0.23, 1, 0.32, 1) both;
+.app-logo[data-click-reaction="wink"] .app-logo-eye-left {
+  animation: app-logo-wink-left 360ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+.app-logo[data-click-reaction="wink"] .app-logo-eye-right {
+  animation: app-logo-wink-right 360ms cubic-bezier(0.23, 1, 0.32, 1) both;
 }
 
 .app-logo[data-easter-egg="party"] .app-logo-background {
   animation: app-logo-party-colors 1.2s cubic-bezier(0.77, 0, 0.175, 1) both;
 }
 
-.app-logo[data-easter-egg="party"] .app-logo-mark {
-  animation: app-logo-party 1.2s cubic-bezier(0.77, 0, 0.175, 1) both;
+.app-logo[data-easter-egg="party"] .app-logo-eye-left {
+  animation: app-logo-party-left 1.2s cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+
+.app-logo[data-easter-egg="party"] .app-logo-eye-right {
+  animation: app-logo-party-right 1.2s cubic-bezier(0.77, 0, 0.175, 1) both;
+}
+
+@keyframes app-logo-blink {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  50% {
+    transform: scaleY(0.08);
+  }
 }
 
 @keyframes app-logo-look-around {
@@ -96,7 +132,19 @@
   }
 }
 
-@keyframes app-logo-press {
+@keyframes app-logo-wink-left {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+
+  38%,
+  58% {
+    transform: scaleY(0.08);
+  }
+}
+
+@keyframes app-logo-wink-right {
   0%,
   100% {
     transform: translateY(0) scale(1);
@@ -114,19 +162,19 @@
   }
 
   22% {
-    fill: var(--dani-dex-logo-dev);
+    fill: var(--openbot-logo-dev);
   }
 
   48% {
-    fill: var(--dani-dex-logo-preview);
+    fill: var(--openbot-logo-preview);
   }
 
   74% {
-    fill: var(--dani-dex-logo-production);
+    fill: var(--openbot-logo-production);
   }
 }
 
-@keyframes app-logo-party {
+@keyframes app-logo-party-left {
   0%,
   100% {
     transform: translate(0) rotate(0);
@@ -145,6 +193,25 @@
   }
 }
 
+@keyframes app-logo-party-right {
+  0%,
+  100% {
+    transform: translate(0) rotate(0);
+  }
+
+  25% {
+    transform: translateY(6%) rotate(8deg);
+  }
+
+  50% {
+    transform: translate(-4%, -2%) rotate(-8deg);
+  }
+
+  75% {
+    transform: translate(4%, 2%) rotate(4deg);
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   .app-logo[data-interactive="true"] {
     cursor: pointer;
@@ -152,9 +219,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .app-logo[data-animation] .app-logo-mark,
-  .app-logo[data-click-reaction] .app-logo-mark,
-  .app-logo[data-easter-egg] .app-logo-mark,
+  .app-logo[data-animation] .app-logo-eye,
+  .app-logo[data-click-reaction] .app-logo-eye,
+  .app-logo[data-easter-egg] .app-logo-eye,
   .app-logo[data-easter-egg] .app-logo-background {
     animation: none;
     transform: none;

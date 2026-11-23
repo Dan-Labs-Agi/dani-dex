@@ -1,3 +1,4 @@
+import type { MobileTextKey } from "@openbot/i18n/mobile";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useFocusEffect } from "expo-router";
 import { Typography } from "heroui-native";
@@ -9,19 +10,38 @@ import {
   MobileSessionExpiredError,
   revokeMobileAccountSession,
 } from "@/features/auth/api/mobile-auth";
-import { useMobileSession } from "@/features/auth/context/mobile-session-context";
+import { useMobileSession, useQueryScope } from "@/features/auth/context/mobile-session-context";
 import {
   SettingsContent,
   SettingsNote,
   SettingsRow,
   SettingsSection,
 } from "@/features/settings/components/settings-content";
+import { queryKeys } from "@/features/workspace/model/query-keys";
+import { haptics } from "@/shared/lib/haptics";
+import { useText } from "@/shared/lib/text";
+
+const SESSION_KIND_KEYS = {
+  desktop: "mobile.settings.sessions.kindDesktop",
+  mobile: "mobile.settings.sessions.kindMobile",
+} as const satisfies Record<MobileAccountSession["kind"], MobileTextKey>;
+
+const LAST_ACTIVE_FORMAT: Intl.DateTimeFormatOptions = {
+  year: "numeric",
+  month: "numeric",
+  day: "numeric",
+  hour: "numeric",
+  minute: "numeric",
+  second: "numeric",
+};
 
 export function AccountSessionsScreen() {
-  const { session, sessionScope, handleSessionError } = useMobileSession();
+  const { t, format } = useText();
+  const { session, handleSessionError } = useMobileSession();
+  const queryScope = useQueryScope();
   const revoking = useRef(false);
   const sessions = useQuery({
-    queryKey: ["account-sessions", session?.apiUrl, session?.user.id, sessionScope],
+    queryKey: queryKeys.accountSessions(queryScope),
     enabled: Boolean(session),
     queryFn: async ({ signal }) => {
       if (!session) return [];
@@ -45,7 +65,11 @@ export function AccountSessionsScreen() {
       }
     },
     onSuccess: async () => {
+      void haptics.notification("success");
       await sessions.refetch();
+    },
+    onError: () => {
+      void haptics.notification("error");
     },
     onSettled: () => {
       revoking.current = false;
@@ -59,7 +83,7 @@ export function AccountSessionsScreen() {
   );
   return (
     <SettingsContent>
-      <SettingsSection title="Signed-in devices">
+      <SettingsSection title={t("mobile.settings.sessions.title")}>
         <SettingsRow
           disclosure={false}
           disabled={revoke.isPending}
@@ -68,33 +92,43 @@ export function AccountSessionsScreen() {
             void sessions.refetch();
           }}
         >
-          <Typography.Paragraph type="body-sm">
-            {sessions.isFetching ? "Loading sessions…" : "Refresh sessions"}
+          <Typography.Paragraph>
+            {sessions.isFetching ? t("mobile.settings.sessions.loading") : t("mobile.settings.sessions.refresh")}
           </Typography.Paragraph>
         </SettingsRow>
         {sessions.isError || revoke.isError ? (
-          <SettingsNote>Could not update account sessions. Refresh and try again.</SettingsNote>
+          <SettingsNote>{t("mobile.settings.sessions.updateFailed")}</SettingsNote>
         ) : null}
         {!sessions.isPending && !sessions.isError && sessions.data?.length === 0 ? (
-          <SettingsNote>No active account sessions.</SettingsNote>
+          <SettingsNote>{t("mobile.settings.sessions.empty")}</SettingsNote>
         ) : null}
         {sessions.data?.map((item) => (
           <SettingsRow
             disclosure={false}
             disabled={revoke.isPending}
             key={item.sessionId}
-            supportingText={`${item.kind} · Last active ${new Date(item.lastActiveAt).toLocaleString()}${item.current ? " · This device" : item.kind === "mobile" ? " · Tap to disconnect" : ""}`}
+            supportingText={t(
+              item.current
+                ? "mobile.settings.sessions.rowCurrent"
+                : item.kind === "mobile"
+                  ? "mobile.settings.sessions.rowRevocable"
+                  : "mobile.settings.sessions.row",
+              {
+                kind: t(item.hostedServer ? "mobile.settings.sessions.kindHostedServer" : SESSION_KIND_KEYS[item.kind]),
+                date: format.date(new Date(item.lastActiveAt), LAST_ACTIVE_FORMAT),
+              },
+            )}
             onPress={
               item.current || item.kind === "desktop"
                 ? undefined
                 : () =>
                     Alert.alert(
-                      `Disconnect ${item.name}?`,
-                      "This also ends the account’s active remote connections. The device can sign in again.",
+                      t("mobile.settings.sessions.disconnectTitle", { name: item.name }),
+                      t("mobile.settings.sessions.disconnectBody"),
                       [
-                        { text: "Cancel", style: "cancel" },
+                        { text: t("common.cancel"), style: "cancel" },
                         {
-                          text: "Disconnect",
+                          text: t("mobile.settings.sessions.disconnect"),
                           style: "destructive",
                           onPress: () => {
                             if (revoking.current) return;
@@ -106,7 +140,7 @@ export function AccountSessionsScreen() {
                     )
             }
           >
-            <Typography.Paragraph type="body-sm">{item.name}</Typography.Paragraph>
+            <Typography.Paragraph>{item.name}</Typography.Paragraph>
           </SettingsRow>
         ))}
       </SettingsSection>

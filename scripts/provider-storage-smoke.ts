@@ -2,13 +2,14 @@ import { randomUUID } from "node:crypto";
 import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { AgentSummary, ConversationMessage } from "@dani-dex/contracts/ipc";
+import type { AgentSummary, ConversationMessage } from "@openbot/contracts/ipc";
 import type { AgentClient, AgentProvider } from "../src/backend/agent-client";
 import { CodexAppServerClient } from "../src/backend/app-server-client";
 import { ClaudeAgentClient } from "../src/backend/claude-client";
 import { type GrokCliInfo, resolveClaudeCli, resolveCodexCli, resolveGrokCli } from "../src/backend/cli";
-import { DaniDexDatabase } from "../src/backend/dani-dex-database";
+import { runCauseEffect } from "../src/backend/effect-boundary";
 import { GrokAgentClient } from "../src/backend/grok-client";
+import { OpenBotDatabase } from "../src/backend/openbot-database";
 import {
   decodeAccountReadResult,
   decodeModelListResponse,
@@ -19,16 +20,16 @@ import {
   getString,
 } from "../src/backend/protocol";
 
-const EXPECTED = "DANI_DEX_SQLITE_SMOKE_OK";
-const root = await mkdtemp(join(tmpdir(), "dani-dex-provider-storage-smoke-"));
+const EXPECTED = "OPENBOT_SQLITE_SMOKE_OK";
+const root = await mkdtemp(join(tmpdir(), "openbot-provider-storage-smoke-"));
 
 try {
-  const database = new DaniDexDatabase(join(root, "user-data"));
-  await database.initialize();
+  const database = new OpenBotDatabase(join(root, "user-data"));
+  await runCauseEffect(database.initialize());
   const grokOnly = process.argv.includes("--grok-only");
   if (!grokOnly) {
-    const codex = await resolveCodexCli();
-    const claude = await resolveClaudeCli();
+    const codex = await runCauseEffect(resolveCodexCli());
+    const claude = await runCauseEffect(resolveClaudeCli());
     await runProvider(database, "codex", new CodexAppServerClient(codex.executable, 60_000), "gpt-5.6-luna");
     await runProvider(database, "claude", new ClaudeAgentClient(claude), "claude-opus-5");
   }
@@ -43,10 +44,10 @@ try {
   await rm(root, { recursive: true, force: true });
 }
 
-async function runOptionalGrok(database: DaniDexDatabase): Promise<boolean> {
+async function runOptionalGrok(database: OpenBotDatabase): Promise<boolean> {
   let cli: GrokCliInfo;
   try {
-    cli = await resolveGrokCli();
+    cli = await runCauseEffect(resolveGrokCli());
   } catch {
     process.stdout.write("Skipping optional Grok live smoke: Grok CLI is not installed.\n");
     return false;
@@ -55,15 +56,15 @@ async function runOptionalGrok(database: DaniDexDatabase): Promise<boolean> {
   client.start();
   let model: string | null = null;
   try {
-    await client.request("initialize", {}, decodeRecordResponse);
-    const account = await client.request("account/read", {}, decodeAccountReadResult);
-    const models = await client.request("model/list", { limit: 100, includeHidden: true }, decodeModelListResponse);
+    await runCauseEffect(client.request("initialize", {}, decodeRecordResponse));
+    const account = await runCauseEffect(client.request("account/read", {}, decodeAccountReadResult));
+    const models = await runCauseEffect(
+      client.request("model/list", { limit: 100, includeHidden: true }, decodeModelListResponse),
+    );
     model = account.account ? (models.data.find((candidate) => candidate.model)?.model ?? null) : null;
-  } catch {
-    // This is an optional smoke and an unauthenticated local Grok installation is a valid skip.
-  }
+  } catch {}
   if (!model) {
-    await client.stop();
+    await runCauseEffect(client.stop());
     process.stdout.write("Skipping optional Grok live smoke: Grok CLI is not authenticated or advertised no models.\n");
     return false;
   }
@@ -73,13 +74,13 @@ async function runOptionalGrok(database: DaniDexDatabase): Promise<boolean> {
 }
 
 async function runProvider(
-  database: DaniDexDatabase,
+  database: OpenBotDatabase,
   provider: AgentProvider,
   client: AgentClient,
   model: AgentSummary["model"],
 ): Promise<void> {
   const agentId = `smoke-${provider}`;
-  const threadId = `dani-dex-thread-${agentId}`;
+  const threadId = `openbot-thread-${agentId}`;
   const workspace = join(root, "workspace", provider);
   await mkdir(workspace, { recursive: true, mode: 0o700 });
   const agent: AgentSummary = {
@@ -145,30 +146,34 @@ async function runProvider(
   client.once("exit", (error) => rejectCompleted?.(error));
   client.start();
   try {
-    await client.request(
-      "initialize",
-      {
-        clientInfo: { name: "dani-dex-storage-smoke", version: "1.0.0" },
-        capabilities: { experimentalApi: true },
-      },
-      decodeRecordResponse,
+    await runCauseEffect(
+      client.request(
+        "initialize",
+        {
+          clientInfo: { name: "openbot-storage-smoke", version: "1.0.0" },
+          capabilities: { experimentalApi: true },
+        },
+        decodeRecordResponse,
+      ),
     );
     client.notify("initialized", {});
-    const started = await client.request(
-      "thread/start",
-      {
-        model,
-        effort: "low",
-        cwd: workspace,
-        runtimeWorkspaceRoots: [workspace],
-        approvalPolicy: "never",
-        sandbox: "danger-full-access",
-        developerInstructions: "Return only the exact text requested by the user.",
-        ephemeral: provider === "codex",
-        persistSession: provider !== "claude",
-        dynamicTools: [],
-      },
-      decodeThreadResponse,
+    const started = await runCauseEffect(
+      client.request(
+        "thread/start",
+        {
+          model,
+          effort: "low",
+          cwd: workspace,
+          runtimeWorkspaceRoots: [workspace],
+          approvalPolicy: "never",
+          sandbox: "danger-full-access",
+          developerInstructions: "Return only the exact text requested by the user.",
+          ephemeral: provider === "codex",
+          persistSession: provider !== "claude",
+          dynamicTools: [],
+        },
+        decodeThreadResponse,
+      ),
     );
     database.bindProviderSession({
       threadId,
@@ -177,20 +182,22 @@ async function runProvider(
       model,
       effort: "low",
     });
-    const turn = await client.request(
-      "turn/start",
-      {
-        threadId: started.thread.id,
-        model,
-        effort: "low",
-        clientUserMessageId: userMessage.id,
-        input: [{ type: "text", text: userMessage.text }],
-        cwd: workspace,
-        runtimeWorkspaceRoots: [workspace],
-        approvalPolicy: "never",
-        sandboxPolicy: { type: "dangerFullAccess" },
-      },
-      decodeTurnResponse,
+    const turn = await runCauseEffect(
+      client.request(
+        "turn/start",
+        {
+          threadId: started.thread.id,
+          model,
+          effort: "low",
+          clientUserMessageId: userMessage.id,
+          input: [{ type: "text", text: userMessage.text }],
+          cwd: workspace,
+          runtimeWorkspaceRoots: [workspace],
+          approvalPolicy: "never",
+          sandboxPolicy: { type: "dangerFullAccess" },
+        },
+        decodeTurnResponse,
+      ),
     );
     turnId = turn.turn.id;
     assistantMessage.turnId = turnId;
@@ -240,6 +247,6 @@ async function runProvider(
     }
   } finally {
     clearTimeout(timeout);
-    await client.stop();
+    await runCauseEffect(client.stop());
   }
 }

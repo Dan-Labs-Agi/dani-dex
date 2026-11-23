@@ -1,42 +1,87 @@
-import type { DynamicIslandAction } from "@dani-dex/contracts/ipc";
-import { TEAM_API_ROUTES } from "@dani-dex/contracts/team-api-routes";
-import { routeToServer } from "./ipc/route-to-server";
+import {
+  type ConversationMessageSender,
+  type DynamicIslandAction,
+  LOCAL_SERVER_ID,
+  type SendMessageInput,
+} from "@openbot/contracts/ipc";
+import { TEAM_API_ROUTES } from "@openbot/contracts/team-api-routes";
+import { Effect } from "effect";
+import type { PromptResponder } from "../backend/agent/attention-registry";
+import type { AgentLifecycleFailed } from "../backend/agent-service";
+import type { RemoteWorkflowError } from "./remote-service-effects";
 
-type CriticalAction = Extract<DynamicIslandAction, { type: "answer-prompt" | "respond-approval" }>;
+export type CriticalAction = Extract<
+  DynamicIslandAction,
+  { type: "answer-prompt" | "respond-approval" | "send-message" | "stop-agent" }
+>;
 
 export interface DynamicIslandActionAgent {
-  respondToPrompt(input: { requestId: string | number; answers: Record<string, string[]> }): Promise<void>;
-  respondToApproval(input: { requestId: string | number; decision: "accept" | "decline" }): Promise<void>;
+  respondToPrompt(
+    input: { requestId: string | number; answers: Record<string, string[]> },
+    responder?: PromptResponder,
+  ): Effect.Effect<void, AgentLifecycleFailed>;
+  respondToApproval(input: {
+    requestId: string | number;
+    decision: "accept" | "decline";
+  }): Effect.Effect<void, AgentLifecycleFailed>;
+  sendMessage(
+    input: SendMessageInput,
+    sender?: ConversationMessageSender,
+  ): Effect.Effect<unknown, AgentLifecycleFailed>;
+  interrupt(agentId: string, turnId: string): Effect.Effect<void, AgentLifecycleFailed>;
 }
 
 export interface DynamicIslandRemoteAgent {
   request(
     serverId: string,
     path: string,
-    decoder: (value: unknown) => void,
+    decoder: (value: unknown) => unknown,
     init: { method: "POST"; body: unknown },
-  ): Promise<void>;
+  ): Effect.Effect<unknown, RemoteWorkflowError>;
 }
 
-export async function performDynamicIslandCriticalAction(
+export const performDynamicIslandCriticalAction = Effect.fn("DynamicIsland.criticalAction")(function* (
   action: CriticalAction,
   local: DynamicIslandActionAgent,
   remote: DynamicIslandRemoteAgent,
-  decodeVoid: (value: unknown) => void,
-): Promise<void> {
+  decoders: { decodeVoid: (value: unknown) => void; decodeQueuedMessageReceipt: (value: unknown) => unknown },
+  sender: () => ConversationMessageSender | undefined,
+) {
+  const { decodeVoid, decodeQueuedMessageReceipt } = decoders;
+  if (action.type === "send-message") {
+    const input = { agentId: action.agentId, text: action.text, clientMessageId: action.clientMessageId };
+    return yield* action.serverId === LOCAL_SERVER_ID
+      ? local.sendMessage(input, sender()).pipe(Effect.asVoid)
+      : remote
+          .request(action.serverId, TEAM_API_ROUTES.agent.messages(action.agentId), decodeQueuedMessageReceipt, {
+            method: "POST",
+            body: { ...input, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+          })
+          .pipe(Effect.asVoid);
+  }
+  if (action.type === "stop-agent") {
+    return yield* action.serverId === LOCAL_SERVER_ID
+      ? local.interrupt(action.agentId, action.turnId)
+      : remote
+          .request(action.serverId, TEAM_API_ROUTES.agent.interrupt(action.agentId), decodeVoid, {
+            method: "POST",
+            body: { turnId: action.turnId },
+          })
+          .pipe(Effect.asVoid);
+  }
   if (action.type === "answer-prompt") {
     const input = { requestId: action.requestId, answers: action.answers };
-    await routeToServer<void>(action.serverId, {
-      local: () => local.respondToPrompt(input),
-      remote: (serverId) =>
-        remote.request(serverId, TEAM_API_ROUTES.respond.prompt, decodeVoid, { method: "POST", body: input }),
-    });
-    return;
+    const owner = action.serverId === LOCAL_SERVER_ID ? sender() : undefined;
+    return yield* action.serverId === LOCAL_SERVER_ID
+      ? local.respondToPrompt(input, { ...(owner ? { sender: owner } : {}), privileged: true })
+      : remote
+          .request(action.serverId, TEAM_API_ROUTES.respond.prompt, decodeVoid, { method: "POST", body: input })
+          .pipe(Effect.asVoid);
   }
   const input = { requestId: action.requestId, decision: action.decision };
-  await routeToServer<void>(action.serverId, {
-    local: () => local.respondToApproval(input),
-    remote: (serverId) =>
-      remote.request(serverId, TEAM_API_ROUTES.respond.approval, decodeVoid, { method: "POST", body: input }),
-  });
-}
+  return yield* action.serverId === LOCAL_SERVER_ID
+    ? local.respondToApproval(input)
+    : remote
+        .request(action.serverId, TEAM_API_ROUTES.respond.approval, decodeVoid, { method: "POST", body: input })
+        .pipe(Effect.asVoid);
+});

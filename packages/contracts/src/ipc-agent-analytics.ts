@@ -34,18 +34,21 @@ export interface AnalyticsModel extends AnalyticsTotals {
   model: string;
   share: number;
 }
+export const WORKFLOWS_USAGE_ID = "openbot:workflows";
+
 export interface AnalyticsAgent extends AnalyticsTotals {
   agentId: string;
   share: number;
 }
-// One cell of the daily-by-provider grid. The chart reads exactly these two measures, so
-// the cell carries them rather than the eleven other fields of AnalyticsTotals: at the
-// 367-day cap a full-totals cell per provider is four times the payload for nothing.
 export interface AnalyticsProviderDay {
   date: string;
   provider: string;
   processedTokens: number;
+  cachedInput?: number | null;
   estimatedCostUsd: number | null;
+}
+export function analyticsTokens(row: { processedTokens: number; cachedInput?: number | null }): number {
+  return Math.max(0, row.processedTokens - (row.cachedInput ?? 0));
 }
 export interface AgentAnalytics {
   agentId: string;
@@ -59,10 +62,6 @@ export interface AgentAnalytics {
   models: AnalyticsModel[];
 }
 
-// One formatter per time zone, not per call. A report walks every usage and activity row
-// through `analyticsDate`, so a host with 100,000 records used to construct 100,000 formatters
-// synchronously in the main process. The zone is validated before it reaches here - a string of
-// at most 100 characters that `Intl` accepts - so the key space is the IANA list, not user text.
 const dateFormatters = new Map<string, Intl.DateTimeFormat>();
 
 function dateFormatter(timeZone: string): Intl.DateTimeFormat {
@@ -84,8 +83,30 @@ export function analyticsDate(date: Date, timeZone: string): string {
   return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
+function isUsableTimeZone(timeZone: string | undefined): timeZone is string {
+  if (!timeZone) return false;
+  try {
+    dateFormatter(timeZone);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function utcOffsetTimeZone(now: Date): string {
+  const offsetMinutes = now.getTimezoneOffset();
+  if (offsetMinutes === 0 || offsetMinutes % 60 !== 0) return "UTC";
+  const zone = `Etc/GMT${offsetMinutes > 0 ? "+" : "-"}${Math.abs(offsetMinutes / 60)}`;
+  return isUsableTimeZone(zone) ? zone : "UTC";
+}
+
+function deviceTimeZone(now: Date): string {
+  const timeZone: string | undefined = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return isUsableTimeZone(timeZone) ? timeZone : utcOffsetTimeZone(now);
+}
+
 export function analyticsRange(agentId: string, days = 30, now = new Date()): AgentAnalyticsInput {
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const timeZone = deviceTimeZone(now);
   const endDate = analyticsDate(now, timeZone);
   const start = new Date(`${endDate}T12:00:00Z`);
   start.setUTCDate(start.getUTCDate() - days + 1);
@@ -218,8 +239,6 @@ export function decodeAnalyticsReport(value: unknown): Omit<AgentAnalytics, "age
   };
 }
 
-// The host report groups by agent beside provider and model, and the renderer joins each
-// row to the agent list it already reads, so only the id crosses the boundary.
 export function decodeAnalyticsAgents(value: unknown): AnalyticsAgent[] {
   if (!Array.isArray(value)) throw new Error("Invalid agent analytics rows.");
   return value.map((agent) => {
@@ -230,9 +249,6 @@ export function decodeAnalyticsAgents(value: unknown): AnalyticsAgent[] {
   });
 }
 
-// The daily grid is host-only for the same reason as the agent split, and it is a
-// separate array rather than a field on each AnalyticsDay because a day carries no
-// provider dimension anywhere else in the report.
 export function decodeAnalyticsProviderDays(value: unknown): AnalyticsProviderDay[] {
   if (!Array.isArray(value)) throw new Error("Invalid provider analytics rows.");
   return value.map((cell) => {
@@ -242,6 +258,7 @@ export function decodeAnalyticsProviderDays(value: unknown): AnalyticsProviderDa
       date: dateValue(cell.date),
       provider: cell.provider,
       processedTokens: number(cell.processedTokens),
+      ...(cell.cachedInput === undefined ? {} : { cachedInput: token(cell.cachedInput) }),
       estimatedCostUsd: nullableNumber(cell.estimatedCostUsd),
     };
   });
