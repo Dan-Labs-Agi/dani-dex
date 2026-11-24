@@ -229,7 +229,7 @@ function driverRuntime(name: string) {
     executable: fakeDriver,
     endpoint: { kind: "unix-socket", directory: join(driverRoot, name) },
     supported: true,
-    hostBundleId: "run.openbot.e2e",
+    hostBundleId: "dev.danlab.dex.e2e",
     platform: "darwin",
     spawnProcess: (command, args, options) => {
       daemon.child = spawn(command, args, options);

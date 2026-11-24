@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name           = 'OpenBotShareFiles'
+  s.name           = 'DaniDexShareFiles'
   s.version        = '1.0.0'
   s.summary        = 'Share many files at once'
   s.description    = 'Opens one share sheet with all the images of a chat gallery.'

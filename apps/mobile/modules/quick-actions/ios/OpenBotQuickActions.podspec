@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name           = 'OpenBotQuickActions'
+  s.name           = 'DaniDexQuickActions'
   s.version        = '1.0.0'
   s.summary        = 'Home Screen quick actions for dani-dex'
   s.description    = 'Sets the quick actions of the app icon and gives each chosen action to JavaScript.'

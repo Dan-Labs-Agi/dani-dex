@@ -3,11 +3,11 @@ import ExpoModulesCore
 import UIKit
 import os
 
-private let refreshLog = Logger(subsystem: "run.openbot.mobile", category: "BackgroundRefresh")
-private let refreshIdentifier = "run.openbot.mobile.refresh"
+private let refreshLog = Logger(subsystem: "dev.danlab.dex", category: "BackgroundRefresh")
+private let refreshIdentifier = "dev.danlab.dex.refresh"
 private let refreshEvent = "onRefresh"
 private let expireEvent = "onExpire"
-private let intervalKey = "run.openbot.mobile.backgroundRefreshMinutes"
+private let intervalKey = "dev.danlab.dex.backgroundRefreshMinutes"
 private let listenerWaitSeconds: TimeInterval = 10
 
 final class BackgroundRefreshNotScheduled: GenericException<String>, @unchecked Sendable {
@@ -125,7 +125,7 @@ private func refreshStatus() -> String {
 
 public class BackgroundRefreshModule: Module {
   public func definition() -> ModuleDefinition {
-    Name("OpenBotBackgroundRefresh")
+    Name("DaniDexBackgroundRefresh")
 
     Events(refreshEvent, expireEvent)
 

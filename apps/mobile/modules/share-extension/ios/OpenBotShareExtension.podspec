@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name           = 'OpenBotShareExtension'
+  s.name           = 'DaniDexShareExtension'
   s.version        = '1.0.0'
   s.summary        = 'Share extension data for dani-dex'
   s.description    = 'Gives the share extension the session of the app, and offers agents in the share sheet.'

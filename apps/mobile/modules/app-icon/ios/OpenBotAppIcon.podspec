@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name           = 'OpenBotAppIcon'
+  s.name           = 'DaniDexAppIcon'
   s.version        = '1.0.0'
   s.summary        = 'App icon selection for dani-dex'
   s.description    = 'Reads and selects the alternate app icon that the user selects in Settings.'

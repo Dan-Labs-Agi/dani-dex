@@ -53,7 +53,7 @@ function infoPlist({ targetName, groupIdentifier }) {
       </array>
     </dict>
   </dict>
-  <key>OpenBotAppGroup</key>
+  <key>DaniDexAppGroup</key>
   <string>${groupIdentifier}</string>
 </dict>
 </plist>

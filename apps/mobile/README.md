@@ -294,7 +294,7 @@ stops at the retry cooldown, then saves the encrypted workspace copy and makes t
 inactive again. The app stays "away" for the hosts, so they continue to send notifications, and a
 chat on screen is not marked as read. A refresh sends no connection analytics.
 
-- iOS uses `BGAppRefreshTask` with the identifier `run.openbot.mobile.refresh` (`UIBackgroundModes`
+- iOS uses `BGAppRefreshTask` with the identifier `dev.danlab.dex.refresh` (`UIBackgroundModes`
   `fetch` in `app.json`). The local `modules/background-refresh` module registers the task at launch
   and gives each run to JavaScript. iOS lists the app in Settings > General > Background App Refresh.
 - Android uses `expo-background-task` (WorkManager). `package.json` excludes it, `expo-task-manager`
@@ -306,15 +306,15 @@ chat on screen is not marked as read. A refresh sends no connection analytics.
   opens the app again.
 - The support log shows `Background refresh: available` (or the iOS status), and for each run the
   number of servers that loaded, or why the run did nothing (`Background refresh skipped: ...`). On
-  iOS, the device log (subsystem `run.openbot.mobile`, category `BackgroundRefresh`) shows when iOS
+  iOS, the device log (subsystem `dev.danlab.dex`, category `BackgroundRefresh`) shows when iOS
   started the task and when it ended.
 - Test on a device. iOS has no background tasks in the Simulator. Attach Xcode to `dani-dex`, put
   the app in the background and pause it. Select a thread that is not the main thread
   (`thread select <n>`): on the main thread the command does not return. Then run
   `e -l objc -- @import Foundation`, `e -l objc -- @import BackgroundTasks` and
-  `e -l objc -- (void)[[BGTaskScheduler sharedScheduler] performSelector:NSSelectorFromString(@"_simulateLaunchForTaskWithIdentifier:") withObject:@"run.openbot.mobile.refresh"]`,
+  `e -l objc -- (void)[[BGTaskScheduler sharedScheduler] performSelector:NSSelectorFromString(@"_simulateLaunchForTaskWithIdentifier:") withObject:@"dev.danlab.dex.refresh"]`,
   and continue. Wait before you open the app: a run with the app in the foreground does nothing.
-  On Android, `adb shell cmd jobscheduler run -f run.openbot.mobile <job id>` starts the job.
+  On Android, `adb shell cmd jobscheduler run -f dev.danlab.dex <job id>` starts the job.
 
 ## iOS shortcuts
 
@@ -486,15 +486,15 @@ One-time setup:
 3. Keep the iOS distribution certificate and provisioning profiles configured in EAS. CI downloads
    these existing credentials. If they expire or need repair, update them interactively through
    EAS before retrying; the upload API key is not passed to the build step. Each target has its own
-   profile: the app, `ExpoWidgetsTarget` (`run.openbot.mobile.ExpoWidgetsTarget`),
-   `OpenBotNotificationService` (`run.openbot.mobile.NotificationService`, the Notification Service
-   Extension) and `expo-sharing-extension` (`run.openbot.mobile.ShareExtension`, the share extension).
-   Each extension needs the App Group `group.run.openbot.mobile`. When a release adds a
+   profile: the app, `ExpoWidgetsTarget` (`dev.danlab.dex.ExpoWidgetsTarget`),
+   `DaniDexNotificationService` (`dev.danlab.dex.NotificationService`, the Notification Service
+   Extension) and `expo-sharing-extension` (`dev.danlab.dex.ShareExtension`, the share extension).
+   Each extension needs the App Group `group.dev.danlab.dex`. When a release adds a
    target, set up its profile interactively once (`bunx eas-cli credentials -p ios`) before CI builds
    it. Keep the saved push key; do not let EAS make a new one.
 4. Keep the OpenPanel variables in EAS `production` with `Plain text` or `Sensitive` visibility.
    `Secret` variables are unavailable to this local build. Do not copy these values into source.
-5. Ensure App Store Connect has the app `run.openbot.mobile` and the intended TestFlight group.
+5. Ensure App Store Connect has the app `dev.danlab.dex` and the intended TestFlight group.
 
 After this workflow is merged into `main`, authenticate GitHub CLI with `gh auth login`, then run
 from the repository root:
@@ -583,7 +583,7 @@ One-time setup:
    same as in `release-ios`. The Google secret is the full JSON key of a Google Cloud service account.
 3. In the Google Cloud project of that service account, enable the Google Play Android Developer API.
    In Play Console, under **Users and permissions**, invite the service account email and give it
-   access to `run.openbot.mobile` with the release permissions for testing tracks.
+   access to `dev.danlab.dex` with the release permissions for testing tracks.
 4. Keep the Android upload keystore configured in EAS as the default build credentials. CI downloads
    it. Play App Signing keeps the app signing key; the EAS keystore is the upload key.
 5. Keep the OpenPanel variables in EAS `production`, as for iOS.
@@ -593,7 +593,7 @@ One-time setup:
    published release, Play accepts only draft releases: dispatch with `release_status` set to `draft`
    and roll out the release in Play Console.
 7. Commit `apps/mobile/google-services.json`, the Firebase file of the Android app
-   `run.openbot.mobile`. `app.config.js` adds it when it exists. Without it the build has no Firebase,
+   `dev.danlab.dex`. `app.config.js` adds it when it exists. Without it the build has no Firebase,
    and Android gets no notifications. The file has public identifiers only. The account service has
    the key that sends (`FCM_SERVICE_ACCOUNT` in [the account service](../auth-api/README.md)).
 

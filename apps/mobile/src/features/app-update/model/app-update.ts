@@ -20,7 +20,7 @@ export type AppUpdate = { kind: "ready"; id: string } | { kind: "store"; id: str
 
 const IOS_STORE_URL = "itms-apps://apps.apple.com/app/id6807024266";
 const IOS_STORE_WEB_URL = "https://apps.apple.com/app/id6807024266";
-const ANDROID_STORE_URL = "market://details?id=run.openbot.mobile";
+const ANDROID_STORE_URL = "market://details?id=dev.danlab.dex";
 const ANDROID_STORE_WEB_URL = "https://dani.danlab.dev/download/android";
 
 export const MOBILE_CHANGELOG_URL = "https://dani.danlab.dev/changelog?platform=mobile";

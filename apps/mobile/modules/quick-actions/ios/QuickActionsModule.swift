@@ -40,7 +40,7 @@ final class QuickActionInbox {
 
 public class QuickActionsModule: Module {
   public func definition() -> ModuleDefinition {
-    Name("OpenBotQuickActions")
+    Name("DaniDexQuickActions")
 
     Events(quickActionEvent)
 

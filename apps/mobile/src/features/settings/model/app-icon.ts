@@ -15,7 +15,7 @@ declare class AppIconModule extends NativeModule {
   setIcon(id: string): Promise<void>;
 }
 
-const native = requireOptionalNativeModule<AppIconModule>("OpenBotAppIcon");
+const native = requireOptionalNativeModule<AppIconModule>("DaniDexAppIcon");
 
 const MAIN_ICON = "default";
 

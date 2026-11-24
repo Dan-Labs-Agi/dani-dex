@@ -76,7 +76,7 @@ const withExtensionFiles = (config, keychainGroup) =>
       buildPage(path.join(directory, PAGE));
       changePlist(path.join(directory, "Info.plist"), (info) => {
         info.CFBundleDisplayName = mod.name;
-        info.OpenBotShareKeychainGroup = keychainGroup;
+        info.DaniDexShareKeychainGroup = keychainGroup;
         info.NSExtension.NSExtensionAttributes.IntentsSupported = [SEND_MESSAGE_INTENT];
       });
       changePlist(path.join(directory, `${TARGET_NAME}.entitlements`), (entitlements) => {
@@ -186,7 +186,7 @@ const withAppKeychainGroup = (config, keychainGroup) =>
 /** @type {import('expo/config-plugins').ConfigPlugin<string>} */
 const withAppInfo = (config, keychainGroup) =>
   withInfoPlist(config, (mod) => {
-    mod.modResults.OpenBotShareKeychainGroup = keychainGroup;
+    mod.modResults.DaniDexShareKeychainGroup = keychainGroup;
     // iOS shows the donated agents in the share sheet only for an app that declares the intent.
     const types = mod.modResults.NSUserActivityTypes ?? [];
     if (!types.includes(SEND_MESSAGE_INTENT)) types.push(SEND_MESSAGE_INTENT);

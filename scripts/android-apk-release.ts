@@ -9,7 +9,7 @@ import { androidApkRelease, androidApkVersion } from "../apps/auth-api/src/lib/a
 import { parseStoreBuilds } from "./mobile-ota-lib";
 
 const run = promisify(execFile);
-const PACKAGE = "run.openbot.mobile";
+const PACKAGE = "dev.danlab.dex";
 const INSTALL_PAGE = "https://dani.danlab.dev/download/android";
 
 class UsageError extends Error {}

@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name           = 'OpenBotBackgroundRefresh'
+  s.name           = 'DaniDexBackgroundRefresh'
   s.version        = '1.0.0'
   s.summary        = 'Background App Refresh for dani-dex'
   s.description    = 'Schedules iOS app refresh tasks and gives each run to JavaScript, so the app reads its servers in the background.'

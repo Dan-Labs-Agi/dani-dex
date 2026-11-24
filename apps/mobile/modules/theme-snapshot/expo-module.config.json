@@ -4,6 +4,6 @@
     "modules": ["ThemeSnapshotModule"]
   },
   "android": {
-    "modules": ["run.openbot.themesnapshot.ThemeSnapshotModule"]
+    "modules": ["dev.danlab.dex.themesnapshot.ThemeSnapshotModule"]
   }
 }

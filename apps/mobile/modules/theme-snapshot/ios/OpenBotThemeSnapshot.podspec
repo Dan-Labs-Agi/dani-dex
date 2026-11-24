@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name           = 'OpenBotThemeSnapshot'
+  s.name           = 'DaniDexThemeSnapshot'
   s.version        = '1.0.0'
   s.summary        = 'Window picture for the dani-dex theme change'
   s.description    = 'Draws the whole window, sheets included, so the theme change can show the old theme over the new one.'

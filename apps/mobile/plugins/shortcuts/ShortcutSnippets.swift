@@ -90,8 +90,8 @@ private struct AgentRow: View {
   let agent: ShortcutDirectory.Agent
   let directory: ShortcutDirectory?
 
-  private var openChat: OpenOpenBotIntent {
-    OpenOpenBotIntent(screen: "chat", agentId: agent.id)
+  private var openChat: OpenDaniDexIntent {
+    OpenDaniDexIntent(screen: "chat", agentId: agent.id)
   }
 
   var body: some View {
@@ -229,13 +229,13 @@ private struct SendResultView: View {
 
   /// A message that did not go opens in the composer of the chat, where the user sends it. A
   /// message that can be in the chat does not: a second send would repeat it.
-  private var action: (label: String, intent: OpenOpenBotIntent) {
+  private var action: (label: String, intent: OpenDaniDexIntent) {
     outcome == .failed
       ? (
         text("mobile.settings.shortcuts.send.inApp"),
-        OpenOpenBotIntent(draft: message, for: agent)
+        OpenDaniDexIntent(draft: message, for: agent)
       )
-      : (text("mobile.settings.shortcuts.send.openChat"), OpenOpenBotIntent(screen: "chat", agentId: agent.id))
+      : (text("mobile.settings.shortcuts.send.openChat"), OpenDaniDexIntent(screen: "chat", agentId: agent.id))
   }
 
   var body: some View {
@@ -307,13 +307,13 @@ private struct NoticeView: View {
   }
 
   /// Where the button goes: the place that fixes the reason.
-  private var destination: OpenOpenBotIntent {
+  private var destination: OpenDaniDexIntent {
     switch notice {
-    case .noAgent: return OpenOpenBotIntent(screen: "settings")
+    case .noAgent: return OpenDaniDexIntent(screen: "settings")
     case .locked:
-      if let agent = directory?.agent { return OpenOpenBotIntent(screen: "chat", agentId: agent.id) }
-      return OpenOpenBotIntent(screen: "home")
-    case .setUp: return OpenOpenBotIntent(screen: "home")
+      if let agent = directory?.agent { return OpenDaniDexIntent(screen: "chat", agentId: agent.id) }
+      return OpenDaniDexIntent(screen: "home")
+    case .setUp: return OpenDaniDexIntent(screen: "home")
     }
   }
 

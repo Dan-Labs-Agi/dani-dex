@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name           = 'OpenBotAppLock'
+  s.name           = 'DaniDexAppLock'
   s.version        = '1.0.0'
   s.summary        = 'App lock signals for dani-dex'
   s.description    = 'Measures the time that the app is away and tells when the phone locks, so the app can lock itself.'

@@ -676,14 +676,14 @@ private func reasonPhrase(_ status: Int) -> String {
 }
 
 public class RemoteViewerProxyModule: Module {
-  private let queue = DispatchQueue(label: "run.openbot.remoteviewerproxy", qos: .userInitiated)
+  private let queue = DispatchQueue(label: "dev.danlab.dex.remoteviewerproxy", qos: .userInitiated)
   /// Only `queue` creates and uses it.
   private lazy var server = RemoteViewerServer(queue: queue) { [weak self] name, body in
     self?.sendEvent(name, body)
   }
 
   public func definition() -> ModuleDefinition {
-    Name("OpenBotRemoteViewerProxy")
+    Name("DaniDexRemoteViewerProxy")
 
     Events("onRequest", "onSocketOpen", "onSocketMessage", "onSocketClose")
 

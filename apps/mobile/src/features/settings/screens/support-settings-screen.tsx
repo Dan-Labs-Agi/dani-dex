@@ -16,8 +16,8 @@ import { clearSupportLog, phoneFeedback, supportLogFileText } from "@/features/s
 import { useText } from "@/shared/lib/text";
 
 const DISCORD_URL = "https://discord.openbot.run";
-const SUPPORT_X_HANDLE = "@OpenBot_";
-const SUPPORT_X_URL = "https://x.com/OpenBot_";
+const SUPPORT_X_HANDLE = "@DaniDex_";
+const SUPPORT_X_URL = "https://x.com/DaniDex_";
 
 export function SupportSettingsScreen() {
   const { t } = useText();

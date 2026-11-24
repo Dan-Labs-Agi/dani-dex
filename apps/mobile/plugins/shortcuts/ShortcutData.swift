@@ -37,7 +37,7 @@ struct ShortcutDirectory: Decodable {
   /// The app's accent color, as `#rrggbb`.
   let accent: String
 
-  private static let appGroup = "group.run.openbot.mobile"
+  private static let appGroup = "group.dev.danlab.dex"
   private static let directoryFile = "shortcuts.json"
   /// `src/features/share/model/share-extension.ts` writes this file and this folder.
   private static let shareDirectoryFile = "share-extension.json"
@@ -94,7 +94,7 @@ struct ShortcutSession: Decodable {
 
   /// Nil when there is no session, or it is for another account than the directory.
   static func read(for directory: ShortcutDirectory) -> ShortcutSession? {
-    guard let accessGroup = Bundle.main.object(forInfoDictionaryKey: "OpenBotShareKeychainGroup") as? String else {
+    guard let accessGroup = Bundle.main.object(forInfoDictionaryKey: "DaniDexShareKeychainGroup") as? String else {
       return nil
     }
     let query: [String: Any] = [

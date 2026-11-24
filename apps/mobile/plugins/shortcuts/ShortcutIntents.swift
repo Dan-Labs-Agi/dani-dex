@@ -1,8 +1,8 @@
 import AppIntents
 import Foundation
 
-#if canImport(OpenBotShortcuts)
-  internal import OpenBotShortcuts
+#if canImport(DaniDexShortcuts)
+  internal import DaniDexShortcuts
 #endif
 
 // The shortcuts of dani-dex: List Agents, Send Message and Open Agent.
@@ -160,7 +160,7 @@ struct OpenAgentIntent: AppIntent {
 /// Opens the app: the chat of an agent, or Settings > Shortcuts. JavaScript takes the request when
 /// its screens show, so it also waits for an app that starts now.
 @available(iOS 26.0, *)
-struct OpenOpenBotIntent: AppIntent {
+struct OpenDaniDexIntent: AppIntent {
   static let title: LocalizedStringResource = "Open dani-dex"
   static let isDiscoverable = false
   static let supportedModes: IntentModes = .foreground(.immediate)
@@ -207,7 +207,7 @@ struct OpenOpenBotIntent: AppIntent {
 }
 
 @available(iOS 26.0, *)
-struct OpenBotAppShortcuts: AppShortcutsProvider {
+struct DaniDexAppShortcuts: AppShortcutsProvider {
   static let shortcutTileColor: ShortcutTileColor = .grape
 
   static var appShortcuts: [AppShortcut] {

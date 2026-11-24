@@ -109,7 +109,7 @@ enum ShareExtensionData {
   }
 
   private static func session() -> ShareSession? {
-    guard let accessGroup = Bundle.main.object(forInfoDictionaryKey: "OpenBotShareKeychainGroup") as? String else {
+    guard let accessGroup = Bundle.main.object(forInfoDictionaryKey: "DaniDexShareKeychainGroup") as? String else {
       return nil
     }
     let query: [String: Any] = [

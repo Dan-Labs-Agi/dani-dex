@@ -17,19 +17,19 @@ unless File.exist?(marker) && File.directory?(framework)
   FileUtils.mkdir_p(vendor)
   archive = File.join(vendor, SHERPA_ONNX_ARCHIVE)
   system('curl', '--fail', '--location', '--silent', '--show-error', '--retry', '3', '--output', archive, SHERPA_ONNX_URL) ||
-    raise("OpenBotSpeech: could not download #{SHERPA_ONNX_URL}")
+    raise("DaniDexSpeech: could not download #{SHERPA_ONNX_URL}")
   actual = Digest::SHA256.file(archive).hexdigest
   unless actual == SHERPA_ONNX_SHA256
     FileUtils.rm_rf(vendor)
-    raise("OpenBotSpeech: #{SHERPA_ONNX_ARCHIVE} has SHA-256 #{actual}, expected #{SHERPA_ONNX_SHA256}")
+    raise("DaniDexSpeech: #{SHERPA_ONNX_ARCHIVE} has SHA-256 #{actual}, expected #{SHERPA_ONNX_SHA256}")
   end
-  system('unzip', '-q', '-o', archive, '-d', vendor) || raise("OpenBotSpeech: could not unzip #{SHERPA_ONNX_ARCHIVE}")
+  system('unzip', '-q', '-o', archive, '-d', vendor) || raise("DaniDexSpeech: could not unzip #{SHERPA_ONNX_ARCHIVE}")
   FileUtils.rm_f(archive)
   File.write(marker, SHERPA_ONNX_SHA256)
 end
 
 Pod::Spec.new do |s|
-  s.name           = 'OpenBotSpeech'
+  s.name           = 'DaniDexSpeech'
   s.version        = '1.0.0'
   s.summary        = 'Reads replies aloud for dani-dex'
   s.description    = 'Reads replies aloud with Supertonic 3 through sherpa-onnx on the phone, and plays speech audio.'

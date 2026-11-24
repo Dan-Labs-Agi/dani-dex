@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name           = 'OpenBotRemoteViewerProxy'
+  s.name           = 'DaniDexRemoteViewerProxy'
   s.version        = '1.0.0'
   s.summary        = 'Loopback HTTP and WebSocket server for the dani-dex remote desktop viewer'
   s.description    = 'Listens on 127.0.0.1 and gives each HTTP request and WebSocket message to JavaScript, which sends it to the host.'

@@ -21,8 +21,8 @@ interface NativeProps extends ViewProps {
   onSubmitKey: (event: NativeSyntheticEvent<{ text: string }>) => void;
 }
 
-const nativeModule = requireOptionalNativeModule<{ chatDrop?: boolean }>("OpenBotComposerPaste");
-const NativePasteTarget = nativeModule ? requireNativeView<NativeProps>("OpenBotComposerPaste") : null;
+const nativeModule = requireOptionalNativeModule<{ chatDrop?: boolean }>("DaniDexComposerPaste");
+const NativePasteTarget = nativeModule ? requireNativeView<NativeProps>("DaniDexComposerPaste") : null;
 
 interface NativeDropProps extends ViewProps {
   enabled: boolean;
@@ -32,7 +32,7 @@ interface NativeDropProps extends ViewProps {
 }
 
 const NativeDropTarget = nativeModule?.chatDrop
-  ? requireNativeView<NativeDropProps>("OpenBotComposerPaste", "ChatDrop")
+  ? requireNativeView<NativeDropProps>("DaniDexComposerPaste", "ChatDrop")
   : null;
 
 export function addPastedFiles(attachments: ChatAttachments | undefined, { files, failed }: PastedFiles): void {

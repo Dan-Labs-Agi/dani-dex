@@ -6,8 +6,8 @@ import { promisify } from "node:util";
 import { createOpenBotLogger } from "@openbot/logging";
 import { bootedSimulatorIds, hasMobileRuntime } from "./dev-mobile";
 
-const BUNDLE_ID = "run.openbot.mobile";
-const APP_GROUP = "group.run.openbot.mobile";
+const BUNDLE_ID = "dev.danlab.dex";
+const APP_GROUP = "group.dev.danlab.dex";
 const PAYLOAD_KEY = "expo-sharing";
 const SHARE_LINK = "openbot://expo-sharing";
 const OUT = resolve(import.meta.dirname, "../.openbot-build/mobile-share-e2e");

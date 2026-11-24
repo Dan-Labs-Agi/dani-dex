@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name           = 'OpenBotShortcuts'
+  s.name           = 'DaniDexShortcuts'
   s.version        = '1.0.0'
   s.summary        = 'The link between the dani-dex shortcuts and JavaScript'
   s.description    = 'Gives the requests of the App Intents to JavaScript and the card of a shortcut session to the snippet.'

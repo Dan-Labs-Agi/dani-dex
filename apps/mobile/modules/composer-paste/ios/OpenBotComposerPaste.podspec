@@ -1,5 +1,5 @@
 Pod::Spec.new do |s|
-  s.name           = 'OpenBotComposerPaste'
+  s.name           = 'DaniDexComposerPaste'
   s.version        = '1.0.0'
   s.summary        = 'File paste for the dani-dex chat composer'
   s.description    = 'Gives photos, videos and other files pasted in the chat composer to JavaScript as files.'

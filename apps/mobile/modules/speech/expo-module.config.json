@@ -4,6 +4,6 @@
     "modules": ["SpeechModule"]
   },
   "android": {
-    "modules": ["run.openbot.speech.SpeechModule"]
+    "modules": ["dev.danlab.dex.speech.SpeechModule"]
   }
 }

@@ -4,6 +4,6 @@
     "modules": ["ComposerPasteModule"]
   },
   "android": {
-    "modules": ["run.openbot.composerpaste.ComposerPasteModule"]
+    "modules": ["dev.danlab.dex.composerpaste.ComposerPasteModule"]
   }
 }

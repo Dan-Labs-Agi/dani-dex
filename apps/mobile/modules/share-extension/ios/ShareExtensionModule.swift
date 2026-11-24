@@ -25,7 +25,7 @@ enum ShareKeychain {
   static let account = "session"
 
   static var accessGroup: String? {
-    Bundle.main.object(forInfoDictionaryKey: "OpenBotShareKeychainGroup") as? String
+    Bundle.main.object(forInfoDictionaryKey: "DaniDexShareKeychainGroup") as? String
   }
 
   static func write(_ value: String?) throws {
@@ -52,7 +52,7 @@ enum ShareKeychain {
 
 public class ShareExtensionModule: Module {
   public func definition() -> ModuleDefinition {
-    Name("OpenBotShareExtension")
+    Name("DaniDexShareExtension")
 
     /// Saves the session for the share extension, or removes it with null.
     AsyncFunction("setSession") { (value: String?) throws in

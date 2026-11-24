@@ -264,7 +264,7 @@ private enum ComposerPaste {
 
 public class ComposerPasteModule: Module {
   public func definition() -> ModuleDefinition {
-    Name("OpenBotComposerPaste")
+    Name("DaniDexComposerPaste")
 
     /// A build before the `ChatDrop` view does not have it, so the app shows the chat without it.
     Constant("chatDrop") { true }

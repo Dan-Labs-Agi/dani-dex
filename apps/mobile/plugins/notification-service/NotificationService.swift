@@ -103,7 +103,7 @@ enum AgentSender {
 
   private static func picture(serverId: String, agentId: String) -> INImage? {
     guard
-      let group = Bundle.main.object(forInfoDictionaryKey: "OpenBotAppGroup") as? String,
+      let group = Bundle.main.object(forInfoDictionaryKey: "DaniDexAppGroup") as? String,
       let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group),
       let data = try? Data(contentsOf: container.appendingPathComponent(directoryFile)),
       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -190,7 +190,7 @@ enum SealedNotification {
 
   private static func loadServers() -> [ServerKeys] {
     guard
-      let group = Bundle.main.object(forInfoDictionaryKey: "OpenBotAppGroup") as? String,
+      let group = Bundle.main.object(forInfoDictionaryKey: "DaniDexAppGroup") as? String,
       let container = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: group),
       let data = try? Data(contentsOf: container.appendingPathComponent(keysFile)),
       let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],

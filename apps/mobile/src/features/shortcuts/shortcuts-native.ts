@@ -7,7 +7,7 @@ declare class ShortcutsModule extends NativeModule<{ onShortcutOpen: (event: { p
   readonly supported: boolean;
 }
 
-const native = requireOptionalNativeModule<ShortcutsModule>("OpenBotShortcuts");
+const native = requireOptionalNativeModule<ShortcutsModule>("DaniDexShortcuts");
 
 export const shortcutsSupported = native?.supported === true;
 
