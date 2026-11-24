@@ -149,8 +149,8 @@
         {
           "android": {
             "usesCleartextTraffic": true,
-            "enableMinifyInReleaseBuilds": true,
-            "enableShrinkResourcesInReleaseBuilds": true,
+            "enableMinifyInReleaseBuilds": false,
+            "enableShrinkResourcesInReleaseBuilds": false,
             "extraProguardRules": "-dontwarn org.webrtc.Dav1dDecoder$Natives",
             "gradleProperties": {
               "org.gradle.jvmargs": "-Xmx3g -XX:MaxMetaspaceSize=1g",
