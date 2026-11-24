@@ -80,7 +80,7 @@ export function redirectIncomingLink(path: string, initial: boolean): string | n
   if (path === "openbot://" || path === "openbot:///" || path === "openbot:") return initial ? "/" : null;
   if (/^exps?:\/\//u.test(path)) return path;
   if (path.startsWith("/") && !path.startsWith("//")) {
-    const url = new URL(path, "https://openbot.run");
+    const url = new URL(path, "https://dani.danlab.dev");
     if (
       url.pathname !== "/join" &&
       !url.pathname.startsWith("/plugins/") &&

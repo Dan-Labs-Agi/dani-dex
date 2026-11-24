@@ -876,7 +876,7 @@ class DesktopAnalytics {
   }
 
   configureWeb(options: { version: string; user: AnalyticsIdentity | null; enabled: boolean }): boolean {
-    if (!this.#client && (!this.#productionBuild || window.location.origin !== "https://openbot.run")) {
+    if (!this.#client && (!this.#productionBuild || window.location.origin !== "https://dani.danlab.dev")) {
       this.#disabled = true;
       this.#pending = [];
       return false;

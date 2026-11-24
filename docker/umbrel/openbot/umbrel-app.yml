@@ -6,14 +6,14 @@ category: ai
 name: dani-dex
 version: "__VERSION__"
 tagline: A server for your AI agents
-icon: https://openbot.run/icon-512x512.png
+icon: https://dani.danlab.dev/icon-512x512.png
 description: >-
   dani-dex runs your AI agents on your Umbrel. Each agent has its own workspace, conversation and
   memory, and keeps working when your computer is off.
 
 
   After the install, open the app and sign in with your dani-dex account. Then use the server from the
-  dani-dex desktop app, the dani-dex phone app or openbot.run/app with the same account, and connect a
+  dani-dex desktop app, the dani-dex phone app or dani.danlab.dev/app with the same account, and connect a
   provider such as Claude Code or Codex.
 
 
@@ -32,10 +32,10 @@ description: >-
 releaseNotes: ""
 
 developer: Synthetify Labs
-website: https://openbot.run
+website: https://dani.danlab.dev
 dependencies: []
-repo: https://github.com/nightly-labs/openbot
-support: https://github.com/nightly-labs/openbot/issues
+repo: https://github.com/somdipto/dani-dex
+support: https://github.com/somdipto/dani-dex/issues
 
 port: 4180
 gallery: []

@@ -9,7 +9,7 @@ export const messages = defineMessages("error.update", {
   "error.update.notInstalled": "The last restart did not install the update. Restart to try again.",
   "error.update.downloadFailed": "Could not download the update. Try again.",
   "error.update.signatureNotConfirmed":
-    "dani-dex could not verify the update. Try again. If this error continues, download dani-dex from openbot.run/download.",
+    "dani-dex could not verify the update. Try again. If this error continues, download dani-dex from dani.danlab.dev/download.",
   "error.update.checkFailed": "Could not check for updates. Try again.",
   "error.update.checkStalled": "The update check stopped responding. Try again.",
   "error.update.checkOffline": "Could not reach the update service. Check your internet connection, then try again.",

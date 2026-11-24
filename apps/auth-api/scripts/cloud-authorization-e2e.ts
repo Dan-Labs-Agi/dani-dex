@@ -572,7 +572,9 @@ async function aRateLimitIgnoresForwardedFor() {
     },
   };
   const send = (headers: Record<string, string>) =>
-    Effect.runPromise(enforceMarketplaceIngress(new Request("https://openbot.run/v1/skills", { headers }), bindings));
+    Effect.runPromise(
+      enforceMarketplaceIngress(new Request("https://dani.danlab.dev/v1/skills", { headers }), bindings),
+    );
   await send({ "CF-Connecting-IP": "203.0.113.7", "X-Forwarded-For": "198.51.100.1" });
   await send({ "CF-Connecting-IP": "203.0.113.7", "X-Forwarded-For": "198.51.100.2" });
   await send({ "X-Forwarded-For": "198.51.100.3" });

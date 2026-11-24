@@ -79,7 +79,7 @@ export const messages = {
   "billing.license.description": "לעבודה בחברה. אינו כולל שרת.",
   "billing.license.loadFailed": "לא ניתן היה לטעון את הרישיון.",
   "billing.license.actionFailed": "לא ניתן היה לשנות את הרישיון.",
-  "billing.license.contactSales": "למידע נוסף אפשר לפנות אל licenses@openbot.run.",
+  "billing.license.contactSales": "למידע נוסף אפשר לפנות אל team@danlab.dev.",
   "billing.license.saving": "שומר…",
   "billing.license.personal.title": "שימוש אישי",
   "billing.license.personal.description": "חינם לשימוש לא מסחרי.",

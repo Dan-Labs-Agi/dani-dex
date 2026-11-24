@@ -745,7 +745,7 @@
         "items": [
           "Rozgałęź rozmowę: kliknij prawym przyciskiem ostatnią wiadomość agenta w turze i wybierz Odgałęź stąd. Otworzy się nowy wątek z rozmową do tej wiadomości.",
           "Ustawienia agenta mają stronę Instrukcje, która pokazuje plik AGENTS.md agenta. Gdy agent zmieni swoje instrukcje, czat pokazuje zmianę z przyciskiem Cofnij.",
-          "Marketplace jest na openbot.run. Każdy agent i umiejętność mają własną stronę, a Kopiuj link pozwala się nią podzielić.",
+          "Marketplace jest na dani.danlab.dev. Każdy agent i umiejętność mają własną stronę, a Kopiuj link pozwala się nią podzielić.",
           "Agent może odpowiedzieć na alert lub prośbę o potwierdzenie strony, które otworzyła jego własna akcja w przeglądarce.",
           "Zatrzymane lub nieudane zadanie kanału ma przycisk Anuluj zadanie."
         ]

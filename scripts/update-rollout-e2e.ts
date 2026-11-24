@@ -93,7 +93,7 @@ if (parsed.values.manifests) {
     "download",
     RELEASE_TAG,
     "--repo",
-    "nightly-labs/openbot",
+    "somdipto/dani-dex",
     "--pattern",
     "*.yml",
     "--dir",

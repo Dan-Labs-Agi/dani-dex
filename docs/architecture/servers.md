@@ -1231,7 +1231,7 @@ zone of the computer from before that change.
 the memory of a server, no limit on a desktop computer. `automaticTurnLimit` gives that value. A chosen
 value can be above it; low memory still holds a new turn. `agentTaskLimit` is the task limit of an
 agent with no limit of its own; `null` is `defaultAgentTaskLimit` (4). A save starts the turns that a
-higher limit lets start. `openbot status` shows the limit that runs.
+higher limit lets start. `dani-dex status` shows the limit that runs.
 
 `host-personality-v1` reads and sets how the agents of a server talk while they work
 (`openbot-server-personality-v1.json`, Server settings → Personality). `natural`, the default, tells
@@ -1248,7 +1248,7 @@ start the app again: systemd (`Restart=always` in `openbot.service`) or the Dock
 The host answers, then quits; it does not use `app.relaunch`, which would start the app outside
 `xvfb-run`. Running agent turns stop, as on any restart. A hosted server still restarts through the
 account service, and a server on this computer through `localServers`. A host that does not answer
-cannot get the request; then the owner runs `sudo openbot restart`.
+cannot get the request; then the owner runs `sudo dani-dex restart`.
 
 `owner-transfer-v1` lets the owner give the server to another dani-dex account from Server Settings ›
 Members (desktop, web client and mobile). The owner enters an email; the account service stores a
@@ -1871,7 +1871,7 @@ the tiers used the same lookup key. The license terms allow 3 devices for each u
   the new page with `license_exists`. A second open license can still come from the
   Stripe Dashboard; `sync` logs a warning, and a person refunds it.
 - Refunds are by email only; the app and the Worker have no refund action. A customer emails
-  licenses@openbot.run within 24 hours of the first payment for a refund less a €3 / $3.60 /
+  team@danlab.dev within 24 hours of the first payment for a refund less a €3 / $3.60 /
   13.20 zł fee, once per account. There are no refunds for later changes.
 - When the owner of a full license creates an invite, the members section asks to add 1 user and
   shows the extra price, then adds the user and creates the invite. A 1-user license changes to Team

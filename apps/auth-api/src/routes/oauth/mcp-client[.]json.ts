@@ -1,14 +1,14 @@
 import { createFileRoute } from "@tanstack/solid-router";
 
-const CLIENT_ID = "https://openbot.run/oauth/mcp-client.json";
+const CLIENT_ID = "https://dani.danlab.dev/oauth/mcp-client.json";
 
 function mcpClientMetadataResponse(): Response {
   return Response.json(
     {
       client_id: CLIENT_ID,
       client_name: "dani-dex",
-      client_uri: "https://openbot.run",
-      logo_uri: "https://openbot.run/icon-512x512.png",
+      client_uri: "https://dani.danlab.dev",
+      logo_uri: "https://dani.danlab.dev/icon-512x512.png",
       redirect_uris: ["http://127.0.0.1:28417/mcp-auth"],
       application_type: "native",
       grant_types: ["authorization_code", "refresh_token"],

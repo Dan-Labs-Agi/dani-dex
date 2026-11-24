@@ -41,26 +41,26 @@ in_container() {
 
 require_host() {
   in_container || return 0
-  fail "In a container, $1. See https://github.com/nightly-labs/openbot/blob/main/docs/docker.md"
+  fail "In a container, $1. See https://github.com/somdipto/dani-dex/blob/main/docs/docker.md"
 }
 
 require_root() {
-  [ "$(id -u)" -eq 0 ] || fail "Run this with sudo: sudo openbot $*"
+  [ "$(id -u)" -eq 0 ] || fail "Run this with sudo: sudo dani-dex $*"
 }
 
 not_answering() {
   if in_container; then
     fail "dani-dex does not answer. Read the log on the host with: docker logs <container>"
   fi
-  fail "dani-dex does not answer. Read the log with: openbot logs"
+  fail "dani-dex does not answer. Read the log with: dani-dex logs"
 }
 
 not_running() {
   if start_loop_stopped; then
-    fail "dani-dex stopped because its start failed again and again. Read the log with: openbot logs
-Install a new release with: sudo openbot update. Or try again with: sudo openbot restart"
+    fail "dani-dex stopped because its start failed again and again. Read the log with: dani-dex logs
+Install a new release with: sudo dani-dex update. Or try again with: sudo dani-dex restart"
   fi
-  fail "dani-dex is not running. Start it with: sudo openbot start"
+  fail "dani-dex is not running. Start it with: sudo dani-dex start"
 }
 
 wait_for_socket() {
@@ -69,8 +69,8 @@ wait_for_socket() {
     [ -S "$SOCKET" ] && return 0
     in_container || systemctl is-active --quiet "$UNIT" || not_running
     if ! in_container && safe_mode_running; then
-      fail "dani-dex does not start, so it runs its safe mode: members see why. Read the log with: openbot logs
-Install a new release with: sudo openbot update. Or try again with: sudo openbot restart"
+      fail "dani-dex does not start, so it runs its safe mode: members see why. Read the log with: dani-dex logs
+Install a new release with: sudo dani-dex update. Or try again with: sudo dani-dex restart"
     fi
     if [ -d /run/openbot ] && [ ! -x /run/openbot ]; then
       fail "Run this with sudo, or as the user $(service_user)."
@@ -144,7 +144,7 @@ show_status() {
     if [ "$turns" = unlimited ]; then echo "Turns at the same time: no limit"; else echo "Turns at the same time: at most $turns"; fi
   fi
   staged=$(staged_version)
-  if [ -n "$staged" ]; then echo "dani-dex $staged is ready to install. Run: sudo openbot update"; fi
+  if [ -n "$staged" ]; then echo "dani-dex $staged is ready to install. Run: sudo dani-dex update"; fi
 }
 
 status_command() {
@@ -209,8 +209,8 @@ login_command() {
   done
   show_status
   if [ "$(value server)" = online ]; then
-    echo "Sign in to dani-dex with $email on your computer or https://openbot.run/app to use this server."
-    echo "To use it from your phone, run: openbot mobile-connect"
+    echo "Sign in to dani-dex with $email on your computer or https://dani.danlab.dev/app to use this server."
+    echo "To use it from your phone, run: dani-dex mobile-connect"
   fi
 }
 
@@ -236,9 +236,9 @@ restart_after_failed_update() {
   trap '' INT TERM HUP
   [ ! -e "$INSTALL/.applying" ] || "$INSTALL/hosted/openbot-hosted-update" apply || true
   if systemctl start "$UNIT"; then
-    echo "The update failed. dani-dex $(version_of "$INSTALL/app") runs. Try again with: sudo openbot update" >&2
+    echo "The update failed. dani-dex $(version_of "$INSTALL/app") runs. Try again with: sudo dani-dex update" >&2
   else
-    echo "The update failed, and dani-dex did not start. Read the log with: openbot logs" >&2
+    echo "The update failed, and dani-dex did not start. Read the log with: dani-dex logs" >&2
   fi
   exit "$status"
 }
@@ -295,7 +295,7 @@ uninstall_command() {
       apparmor_parser --replace /etc/apparmor.d/bwrap-userns-restrict 2>/dev/null || true
     fi
   fi
-  rm -f /etc/apparmor.d/openbot-hosted /usr/local/bin/openbot
+  rm -f /etc/apparmor.d/openbot-hosted /usr/local/bin/openbot /usr/local/bin/dani-dex
   for entry in app hosted staged staged.ready .applying; do rm -rf "${INSTALL:?}/$entry"; done
   rmdir "$INSTALL" 2>/dev/null || true
   home=$(getent passwd "$user" | cut -d: -f6)

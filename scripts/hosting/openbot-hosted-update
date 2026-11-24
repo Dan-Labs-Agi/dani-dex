@@ -4,7 +4,7 @@ export LC_ALL=C DEBIAN_FRONTEND=noninteractive
 umask 022
 
 INSTALL=/opt/dani-dex
-RELEASES=https://github.com/nightly-labs/openbot/releases
+RELEASES=https://github.com/somdipto/dani-dex/releases
 LOCK=/run/openbot-update.lock
 SCRATCH=/var/tmp
 RESTORE=/var/lib/ascii-lazy
@@ -261,6 +261,7 @@ install_hosting() {
     openbot-update-request.path
   if self_hosted; then
     ln -sfn "$INSTALL/hosted/openbot" /usr/local/bin/openbot
+    ln -sfn "$INSTALL/hosted/openbot" /usr/local/bin/dani-dex
   fi
   install_pre_stop "$source" || echo "The boat pre-stop hook is not installed." >&2
   install_boat_ignore || echo "The boat ignore file is not installed." >&2

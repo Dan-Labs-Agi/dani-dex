@@ -715,7 +715,7 @@ async function proxyCases(auth: Awaited<ReturnType<typeof startAuthorizationServ
       name: "openbot",
       title,
       version: "9.9.9-e2e",
-      websiteUrl: "https://openbot.run",
+      websiteUrl: "https://dani.danlab.dev",
     });
     assert.deepEqual(resource.clients.at(-1), openbotClient("dani-dex"));
     assert.ok(upstream.every((hit) => !/bot/iu.test(hit.userAgent ?? "")));

@@ -24,7 +24,7 @@ semantics and native verification steps are in [the mobile README](../../apps/mo
 ## Website analytics
 
 Public website tracking lives in `apps/auth-api/src/lib/analytics.ts`. It runs only on the
-production `openbot.run` hostname. Landing and invitation events carry a bounded
+production `dani.danlab.dev` hostname. Landing and invitation events carry a bounded
 `source_platform`, the existing `acquisition_source` category, and a domain-only referrer.
 
 A recognized `utm_source` tag takes precedence over the referring domain. Exact domain and

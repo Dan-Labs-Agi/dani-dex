@@ -40,7 +40,7 @@ chown 1000:1000 /srv/openbot-data
 # The seccomp profile of that image version, and no-new-privileges, for each container.
 [ ! -e /etc/docker/daemon.json ] || { echo "Add the two keys to /etc/docker/daemon.json." >&2; exit 1; }
 curl -fsSL -o /etc/docker/openbot-seccomp.json \
-  "https://raw.githubusercontent.com/nightly-labs/openbot/v$version/docker/seccomp.json"
+  "https://raw.githubusercontent.com/somdipto/dani-dex/v$version/docker/seccomp.json"
 cat >/etc/docker/daemon.json <<'EOF'
 { "seccomp-profile": "/etc/docker/openbot-seccomp.json", "no-new-privileges": true }
 EOF
@@ -64,7 +64,7 @@ the profile of that version again.
   "containerDefinitions": [
     {
       "name": "openbot",
-      "image": "ghcr.io/nightly-labs/openbot:<version>",
+      "image": "ghcr.io/somdipto/dani-dex:<version>",
       "essential": true,
       "memory": 4096,
       "linuxParameters": { "sharedMemorySize": 1024 },
@@ -122,8 +122,8 @@ aws ecs execute-command --cluster openbot --task <task ID> --container openbot \
   --interactive --command "openbot login"
 ```
 
-`openbot status`, `logout` and `name` work in the same way. The log is in the CloudWatch log group
-`/ecs/openbot`, not in `openbot logs`.
+`dani-dex status`, `logout` and `name` work in the same way. The log is in the CloudWatch log group
+`/ecs/openbot`, not in `dani-dex logs`.
 
 ## Network
 

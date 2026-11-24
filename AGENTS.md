@@ -217,7 +217,7 @@ State which surfaces a change touches. Check all affected consumers and reverse 
 - Desktop renderer (`src/renderer`), mobile (`apps/mobile`), public web (`apps/auth-api`; no separate
   landing app), hosted-site routing (`apps/site-router`), the mobile update server
   (`apps/mobile-updates`), and Signal (`remote/api`).
-- Joined servers: the desktop with a joined server, the web client (`openbot.run/app`), and mobile.
+- Joined servers: the desktop with a joined server, the web client (`dani.danlab.dev/app`), and mobile.
   See [Joined servers](#joined-servers).
 - IPC contracts (`packages/contracts`) and their preview implementation
   (`src/renderer/src/preview/mock-openbot.ts`).

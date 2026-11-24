@@ -1,8 +1,8 @@
 import { Link } from "@tanstack/solid-router";
 
-const LICENSES_EMAIL = "licenses@openbot.run";
-const PRICING_URL = "https://openbot.run/pricing";
-const PRICING_LABEL = "openbot.run/pricing";
+const LICENSES_EMAIL = "team@danlab.dev";
+const PRICING_URL = "https://dani.danlab.dev/pricing";
+const PRICING_LABEL = "dani.danlab.dev/pricing";
 
 export function CommercialLicense() {
   return (
@@ -150,7 +150,7 @@ export function CommercialLicense() {
         (e) the number of connected devices.
         <br />
         The Licensor processes this data as controller, in accordance with its privacy policy published at{" "}
-        <Link to="/privacy-policy">https://openbot.run/privacy</Link>, and only for the purposes of providing the
+        <Link to="/privacy-policy">https://dani.danlab.dev/privacy</Link>, and only for the purposes of providing the
         Software, verifying Seats, billing, and support.
       </p>
       <p>
@@ -242,7 +242,7 @@ export function CommercialLicense() {
       <p>
         6.3 Trademarks. The Licensee may refer to dani-dex by name to state that it uses dani-dex, provided that it does
         not alter the name or logo, does not suggest endorsement by the Licensor, and follows the trademark guidelines
-        published at <Link to="/brand">openbot.run/branding</Link>, as updated from time to time. All rights in the
+        published at <Link to="/brand">dani.danlab.dev/branding</Link>, as updated from time to time. All rights in the
         dani-dex name and logo remain with the Licensor.
       </p>
       <p>

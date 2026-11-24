@@ -420,7 +420,7 @@ sends a credential.
 
 A server with no `registration_endpoint` that sets `client_id_metadata_document_supported` gets
 dani-dex's client metadata document (CIMD, SEP-991) as the `client_id`:
-`https://openbot.run/oauth/mcp-client.json`, which `apps/auth-api` serves
+`https://dani.danlab.dev/oauth/mcp-client.json`, which `apps/auth-api` serves
 ([`mcp-client[.]json.ts`](../../apps/auth-api/src/routes/oauth/mcp-client%5B.%5Djson.ts)). Its
 `redirect_uris` holds only `http://127.0.0.1:28417/mcp-auth`: ElevenLabs refuses a document that
 also lists a custom scheme such as `openbot://mcp-auth` (#5748). A server that
@@ -434,7 +434,7 @@ address and the issuer that discovery finds. Both must match: any server can nam
 metadata, and the token goes to the server that asked for it. Meta Ads (`https://www.facebook.com/ads`) is one: its registration endpoint answers
 "Dynamic registration is not available for this client", and it refuses every `http` redirect,
 loopback too. Its client is the dani-dex Meta app 1479376854168579, with no secret. Its redirect is
-`https://openbot.run/oauth/mcp-callback`
+`https://dani.danlab.dev/oauth/mcp-callback`
 ([`mcp-callback.ts`](../../apps/auth-api/src/routes/oauth/mcp-callback.ts)), which answers 302 to
 `http://127.0.0.1:28417/mcp-auth` with the query unchanged. So the grant still arrives at the MCP
 listener of the computer where the browser runs, and a joined server uses the

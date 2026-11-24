@@ -745,7 +745,7 @@
         "items": [
           "Dérivez une conversation : faites un clic droit sur le dernier message de l’agent dans un tour et sélectionnez Dériver d’ici. Un nouveau fil s’ouvre avec la conversation jusqu’à ce message.",
           "Les réglages de l’agent ont une page Instructions qui affiche le fichier AGENTS.md de l’agent. Quand l’agent modifie ses instructions, la discussion affiche le changement avec Annuler.",
-          "La Marketplace est sur openbot.run. Chaque agent et chaque compétence a sa propre page, et Copier le lien la partage.",
+          "La Marketplace est sur dani.danlab.dev. Chaque agent et chaque compétence a sa propre page, et Copier le lien la partage.",
           "Un agent peut répondre à une alerte ou à une confirmation d’un site web que sa propre action de navigateur a ouverte.",
           "Une tâche de canal arrêtée ou échouée a un bouton Annuler la tâche."
         ]

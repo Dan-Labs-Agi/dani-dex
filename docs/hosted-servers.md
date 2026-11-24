@@ -70,7 +70,7 @@ when a server is idle or boat stops a sandbox; and `error` and `deleted`. The Wo
    renews on the same day as the server ([Commercial license](architecture/servers.md#commercial-license)).
    While the license promotion (`LICENSE_TRIAL_END`) runs, the page has the server line only, and the
    license starts with a free trial until the promotion ends.
-   Refunds are by email only (Terms: Consumer Right of Withdrawal): email hello@openbot.run within
+   Refunds are by email only (Terms: Consumer Right of Withdrawal): email team@danlab.dev within
    2 hours of the purchase for a 90% refund, or use the statutory withdrawal. An operator makes the
    refund in the Stripe Dashboard and cancels the subscription now. A refunded and cancelled server plan
    deletes the server and its data at once (step 7).
@@ -655,8 +655,8 @@ When the safe mode cannot start (no team, or no host credential), main exits wit
 The next start reads and removes the file, logs the reason, and tries once more. A failure of that
 start stops the loop again. These start dani-dex again:
 
-- a restart or a resume of the server, or `sudo openbot restart` or `start`;
-- `sudo openbot update`;
+- a restart or a resume of the server, or `sudo dani-dex restart` or `start`;
+- `sudo dani-dex update`;
 - `check` of `openbot-update.timer`, about each hour: when `openbot.service` is stopped with
   status 78, or runs its safe mode, it runs `stage`, stops the safe mode, and starts the service
   again, after `apply` when a newer release is staged. A hosted
@@ -665,8 +665,8 @@ start stops the loop again. These start dani-dex again:
   existence of the empty safe-mode file, never the content of a file of the service user.
 
 When dani-dex is not running or runs its safe mode, `openbot` commands that need the control socket
-say that the start loop stopped it, and name `openbot logs`, `sudo openbot update` and
-`sudo openbot restart`. The safe mode has no control socket.
+say that the start loop stopped it, and name `dani-dex logs`, `sudo dani-dex update` and
+`sudo dani-dex restart`. The safe mode has no control socket.
 
 A Docker container has no systemd and no `openbot-update.timer`. There the safe mode ends after one
 hour with exit 78, and the restart policy starts the container again, with the backoff of Docker.

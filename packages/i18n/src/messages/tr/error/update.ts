@@ -10,7 +10,7 @@ export const messages = {
   "error.update.notInstalled": "Son yeniden başlatma güncellemeyi yüklemedi. Tekrar denemek için yeniden başlatın.",
   "error.update.downloadFailed": "Güncelleme indirilemedi. Tekrar deneyin.",
   "error.update.signatureNotConfirmed":
-    "dani-dex güncellemeyi doğrulayamadı. Tekrar deneyin. Bu hata sürerse dani-dex'u openbot.run/download adresinden indirin.",
+    "dani-dex güncellemeyi doğrulayamadı. Tekrar deneyin. Bu hata sürerse dani-dex'u dani.danlab.dev/download adresinden indirin.",
   "error.update.checkFailed": "Güncellemeler denetlenemedi. Tekrar deneyin.",
   "error.update.checkStalled": "Güncelleme denetimi yanıt vermeyi durdurdu. Tekrar deneyin.",
   "error.update.checkOffline":

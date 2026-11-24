@@ -1,6 +1,6 @@
 {
   "name": "OpenBotGit",
-  "url": "https://github.com/nightly-labs/openbot",
+  "url": "https://github.com/somdipto/dani-dex",
   "description": "Gives dani-dex agents your repositories, issues and pull requests, through the GitHub MCP server, gh and git. The sign-in stays on the computer that runs dani-dex.",
   "public": true,
   "hook_attributes": { "url": "https://signal.openbot.run/v1/github/events", "active": true },

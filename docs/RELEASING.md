@@ -31,11 +31,11 @@ newest version that is not blocked, also when that version is older. A CLI that 
 
 ## One-time GitHub setup
 
-Create the `release` environment in `nightly-labs/openbot`, then add these environment secrets:
+Create the `release` environment in `somdipto/dani-dex`, then add these environment secrets:
 
 - `CSC_LINK` — a base64-encoded Developer ID Application `.p12` file.
 - `MAC_PROVISIONING_PROFILE` — the base64-encoded Developer ID provisioning profile for
-  `app.openbot.desktop`, with the `applinks:openbot.run` entitlement.
+  `app.openbot.desktop`, with the `applinks:dani.danlab.dev` entitlement.
 - `CSC_KEY_PASSWORD` — the application `.p12` export password.
 - `CSC_INSTALLER_LINK` — a base64-encoded **Developer ID Installer** `.p12` file for team `ZTRDTUL87R`.
 - `CSC_INSTALLER_KEY_PASSWORD` — the installer `.p12` export password.
@@ -56,9 +56,9 @@ After the first push, a package administrator must open the
 [dani-dex package](https://github.com/orgs/nightly-labs/packages/container/package/openbot):
 
 1. Open **Package settings** and set **Change visibility** to **Public**.
-2. Check that the package is linked to `nightly-labs/openbot`. The Dockerfile sets the
+2. Check that the package is linked to `somdipto/dani-dex`. The Dockerfile sets the
    `org.opencontainers.image.source` label for this link.
-3. Under **Manage Actions access**, check that `nightly-labs/openbot` has write access.
+3. Under **Manage Actions access**, check that `somdipto/dani-dex` has write access.
 
 If **Public** is disabled by organization administrators, an organization owner must enable
 **Public** under **Package creation** in the
@@ -74,8 +74,8 @@ Check access with an empty Docker configuration, so a saved login cannot hide th
 
 ```sh
 anonymous_config=$(mktemp -d)
-docker --config "$anonymous_config" manifest inspect ghcr.io/nightly-labs/openbot:latest
-docker --config "$anonymous_config" manifest inspect ghcr.io/nightly-labs/openbot:0.30.0
+docker --config "$anonymous_config" manifest inspect ghcr.io/somdipto/dani-dex:latest
+docker --config "$anonymous_config" manifest inspect ghcr.io/somdipto/dani-dex:0.30.0
 rm -rf "$anonymous_config"
 ```
 
@@ -462,7 +462,7 @@ feature in `apps/auth-api/src/server/mobile-features-config.ts`. The merge deplo
 service. An app with an older version then shows the update header on home. Set it only after the
 store has the build: before, Update opens a store page that cannot install the version.
 
-The Android version in `MOBILE_LATEST_VERSIONS` is also the version of the APK that openbot.run
+The Android version in `MOBILE_LATEST_VERSIONS` is also the version of the APK that dani.danlab.dev
 offers for a phone with no Google Play. The APK of a store build is a draft GitHub release, which is
 not public. The merge of this step makes it public (the `Publish the Android APK` workflow), before
 the account service deploys. That workflow fails when the version has no draft
@@ -601,7 +601,7 @@ workflow on that branch (Step 2c). It sends one real message to each provider
 ([Live provider test](provider-live-e2e.md)). Do not push the tag when it has a stop.
 
 Pushing the version tag runs `.github/workflows/release.yml`.
-The tag workflow builds nothing until `https://openbot.run/join` and the Apple association file return
+The tag workflow builds nothing until `https://dani.danlab.dev/join` and the Apple association file return
 direct `200` responses: `/join` with `Cache-Control: no-store`, and the association file as
 `application/json` with the exact app IDs and paths: `/join` for the desktop app, and `/join` and
 `/agents/*` for the mobile app.
@@ -634,14 +634,14 @@ The workflow:
    first rollout percentage into the four update manifests (see [Staged rollout](#staged-rollout)).
 10. builds a Docker image (`docker/Dockerfile`) from each Linux AppImage on a runner of that
     architecture, after it checks the AppImage against its `SHA256SUMS` file. It starts each image
-    with `docker/seccomp.json`, waits for `openbot status`, and stops it, which must exit with 0;
-11. after the GitHub Release is published, pushes both images to `ghcr.io/nightly-labs/openbot`
+    with `docker/seccomp.json`, waits for `dani-dex status`, and stops it, which must exit with 0;
+11. after the GitHub Release is published, pushes both images to `ghcr.io/somdipto/dani-dex`
     with the tags `<version>-amd64` and `<version>-arm64`, joins them under `<version>`, `v<version>`,
     `latest` and `sha-<commit>`, and attests the build provenance of that image. It then checks
     anonymous access to both architectures. See [Docker](docker.md).
 
 Users can verify a downloaded artifact with
-`gh attestation verify <file> --repo nightly-labs/openbot`.
+`gh attestation verify <file> --repo somdipto/dani-dex`.
 
 Before a tag, run the release path without publishing:
 
@@ -802,7 +802,7 @@ To stop a bad release on each path at once, before the patch is ready, make the 
 the latest one:
 
 ```sh
-gh release edit vX.Y.(Z-1) --latest --repo nightly-labs/openbot
+gh release edit vX.Y.(Z-1) --latest --repo somdipto/dani-dex
 ```
 
 electron-updater then sees an older version and offers no update. The update script of hosted and

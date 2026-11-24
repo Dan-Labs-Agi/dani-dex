@@ -88,7 +88,7 @@ One-time setup:
    record.
 3. In the `cloudflare-production` environment of the repository, add the secret
    `CLOUDFLARE_MOBILE_UPDATES_DEPLOY_TOKEN`: a Cloudflare API token with **Workers Scripts Write**
-   for the account and **Workers Routes Write** for the zone `openbot.run`. A deploy needs no more,
+   for the account and **Workers Routes Write** for the zone `dani.danlab.dev`. A deploy needs no more,
    and the token cannot read or write a bucket. Cloudflare has no permission for one Worker only,
    so the token can deploy each Worker of the account: keep it in this environment only. Do not use
    the token of the account Worker. The token in Cloudflare is `openbot-mobile-updates-deploy`.

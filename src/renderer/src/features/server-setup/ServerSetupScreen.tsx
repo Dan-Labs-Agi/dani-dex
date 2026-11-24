@@ -15,7 +15,7 @@ import {
   text,
 } from "./server-setup-port";
 
-const APP_URL = "https://openbot.run/app";
+const APP_URL = "https://dani.danlab.dev/app";
 const PRODUCT_NAME = "dani-dex";
 const DEFAULT_SERVER_NAME = "dani-dex";
 const STATUS_POLL_MS = 2_000;

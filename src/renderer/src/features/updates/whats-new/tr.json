@@ -745,7 +745,7 @@
         "items": [
           "Bir konuşmayı dallandırın: bir turun son ajan mesajına sağ tıklayıp Buradan dallandır'ı seçin. O mesaja kadarki konuşmayı içeren yeni bir mesaj dizisi açılır.",
           "Ajan ayarlarında ajanın AGENTS.md dosyasını gösteren bir Talimatlar sayfası var. Ajan talimatlarını değiştirdiğinde sohbet bu değişikliği Geri al düğmesiyle gösterir.",
-          "Pazaryeri artık openbot.run'da. Her ajanın ve becerinin kendi sayfası var ve Bağlantıyı kopyala ile paylaşabilirsiniz.",
+          "Pazaryeri artık dani.danlab.dev'da. Her ajanın ve becerinin kendi sayfası var ve Bağlantıyı kopyala ile paylaşabilirsiniz.",
           "Bir ajan, kendi tarayıcı işleminin açtığı bir web sitesi uyarısını veya onay penceresini yanıtlayabilir.",
           "Durdurulmuş veya başarısız bir kanal görevinde Görevi iptal et düğmesi var."
         ]

@@ -20,7 +20,7 @@ concurrency:
 jobs:
   check:
     name: Check the newest release
-    if: github.repository == 'nightly-labs/openbot'
+    if: github.repository == 'somdipto/dani-dex'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: analytics

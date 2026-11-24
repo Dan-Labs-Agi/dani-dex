@@ -1254,11 +1254,11 @@ export const messages = {
   "mobile.server.update.path.hosted":
     "托管服务会在后台下载更新。已下载的更新会在服务器下次启动时生效。停止并恢复服务器前请先等待进行中的工作结束。如果版本一直停留在旧版，请联系主机管理员。",
   "mobile.server.update.path.system":
-    "在主机上运行 sudo openbot update 以安装最新版本。该命令会停止 dani-dex，请先等待进行中的工作结束。自动下载的更新会在下次启动时安装。",
+    "在主机上运行 sudo dani-dex update 以安装最新版本。该命令会停止 dani-dex，请先等待进行中的工作结束。自动下载的更新会在下次启动时安装。",
   "mobile.server.update.path.container":
     "在 Docker 主机上拉取新的 dani-dex 镜像，并使用相同的数据卷重新创建容器。请先等待进行中的工作结束。保留原有数据卷，以免数据丢失。",
   "mobile.server.update.path.manual":
-    "该安装方式无法自我更新。请联系主机管理员从 github.com/nightly-labs/openbot/releases 安装兼容版本，并保留现有的 dani-dex 数据。",
+    "该安装方式无法自我更新。请联系主机管理员从 github.com/somdipto/dani-dex/releases 安装兼容版本，并保留现有的 dani-dex 数据。",
   "mobile.server.update.path.unavailable": "这是开发构建。请使用已安装的 dani-dex 正式版本检查更新。",
   "mobile.server.update.check": "检查更新",
   "mobile.server.update.start": "空闲时更新",

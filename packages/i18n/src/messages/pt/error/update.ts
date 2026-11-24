@@ -11,7 +11,7 @@ export const messages = {
   "error.update.notInstalled": "A última reinicialização não instalou a atualização. Reinicie para tentar outra vez.",
   "error.update.downloadFailed": "Não foi possível baixar a atualização. Tente novamente.",
   "error.update.signatureNotConfirmed":
-    "O dani-dex não conseguiu verificar a atualização. Tente novamente. Se o erro continuar, baixe o dani-dex em openbot.run/download.",
+    "O dani-dex não conseguiu verificar a atualização. Tente novamente. Se o erro continuar, baixe o dani-dex em dani.danlab.dev/download.",
   "error.update.checkFailed": "Não foi possível verificar se há atualizações. Tente novamente.",
   "error.update.checkStalled": "A verificação de atualizações parou de responder. Tente novamente.",
   "error.update.checkOffline":

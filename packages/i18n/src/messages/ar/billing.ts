@@ -79,7 +79,7 @@ export const messages = {
   "billing.license.description": "للعمل في شركة. لا يتضمن خادمًا.",
   "billing.license.loadFailed": "تعذّر تحميل الترخيص.",
   "billing.license.actionFailed": "تعذّر تغيير الترخيص.",
-  "billing.license.contactSales": "تواصل مع licenses@openbot.run لمزيد من المعلومات.",
+  "billing.license.contactSales": "تواصل مع team@danlab.dev لمزيد من المعلومات.",
   "billing.license.saving": "جارٍ الحفظ…",
   "billing.license.personal.title": "استخدام شخصي",
   "billing.license.personal.description": "مجاني للاستخدام غير التجاري.",

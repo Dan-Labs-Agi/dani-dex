@@ -1,14 +1,14 @@
 import { faqStructuredData, type LandingQuestion } from "./landing-faq";
 import { OPENBOT_ALTERNATE_DOWNLOAD_LINKS, OPENBOT_DOWNLOAD_LINKS, OPENBOT_LINKS } from "./landing-links";
 
-export const OPENBOT_SITE_URL = "https://openbot.run/";
+export const OPENBOT_SITE_URL = "https://dani.danlab.dev/";
 export const OPENBOT_SITE_TITLE = "dani-dex: Run a team of AI agents on your computer";
 export const OPENBOT_SITE_DESCRIPTION =
   "A free desktop app that runs AI agents as a team on your own computer, with the ChatGPT, Claude, Gemini or Grok plan you already pay for, or your own model.";
 export const OPENBOT_SOCIAL_IMAGE_URL = `${OPENBOT_SITE_URL}openbot-social.png`;
 export const OPENBOT_X_HANDLE = "@OpenBot_";
 const OPENBOT_X_URL = "https://x.com/OpenBot_";
-const OPENBOT_REPOSITORY_URL = "https://github.com/nightly-labs/openbot";
+const OPENBOT_REPOSITORY_URL = "https://github.com/somdipto/dani-dex";
 const OPENBOT_PRODUCT_HUNT_URL = "https://www.producthunt.com/products/openbot-3";
 const OPENBOT_LICENSE_URL = "https://polyformproject.org/licenses/noncommercial/1.0.0/";
 const OPENBOT_ORGANIZATION_ID = `${OPENBOT_SITE_URL}#organization`;
@@ -60,7 +60,7 @@ export function pageSocialImageMeta(image: PageSocialImage, siteUrl: string) {
   } as const;
 }
 
-const OPENBOT_PRODUCTION_HOSTS = new Set(["openbot.run", "api.openbot.run"]);
+const OPENBOT_PRODUCTION_HOSTS = new Set(["dani.danlab.dev", "api.openbot.run"]);
 
 export function siteUrlForPage(pageUrl: URL): string {
   return OPENBOT_PRODUCTION_HOSTS.has(pageUrl.hostname) ? OPENBOT_SITE_URL : `${pageUrl.origin}/`;

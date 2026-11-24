@@ -22,8 +22,7 @@ export interface LatestReleaseContext {
   fetch: Fetch;
 }
 
-const BLOCKED_VERSIONS_URL =
-  "https://raw.githubusercontent.com/nightly-labs/openbot/main/provider-runtime-blocklist.json";
+const BLOCKED_VERSIONS_URL = "https://raw.githubusercontent.com/somdipto/dani-dex/main/provider-runtime-blocklist.json";
 
 const REQUEST_TIMEOUT_MS = 30_000;
 const MAX_METADATA_BYTES = 4 * 1024 * 1024;

@@ -10,7 +10,7 @@ export const messages = {
   "error.update.notInstalled": "L'ultimo riavvio non ha installato l'aggiornamento. Riavvia per riprovare.",
   "error.update.downloadFailed": "Impossibile scaricare l'aggiornamento. Riprova.",
   "error.update.signatureNotConfirmed":
-    "dani-dex non è riuscito a verificare l'aggiornamento. Riprova. Se l'errore continua, scarica dani-dex da openbot.run/download.",
+    "dani-dex non è riuscito a verificare l'aggiornamento. Riprova. Se l'errore continua, scarica dani-dex da dani.danlab.dev/download.",
   "error.update.checkFailed": "Impossibile cercare aggiornamenti. Riprova.",
   "error.update.checkStalled": "La ricerca di aggiornamenti ha smesso di rispondere. Riprova.",
   "error.update.checkOffline":

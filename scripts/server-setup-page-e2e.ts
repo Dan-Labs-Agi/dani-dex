@@ -247,7 +247,7 @@ try {
     await tab.getByRole("heading", { name: `${SERVER_NAME} is online` }).waitFor({ timeout: 30_000 });
     await tab.getByText(`Signed in as ${EMAIL}`).waitFor();
     const appLink = await tab.getByRole("link", { name: "Open dani-dex" }).getAttribute("href");
-    assert.equal(appLink, "https://openbot.run/app");
+    assert.equal(appLink, "https://dani.danlab.dev/app");
     await settledScreenshot(tab, join(OUT, "3-online.png"));
     assert.equal(hostStatus.serverName, SERVER_NAME);
 

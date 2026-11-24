@@ -1,6 +1,6 @@
 import { isOpenBotTeamApiHostname } from "./validation";
 
-export const OPENBOT_INVITE_ORIGIN = "https://openbot.run";
+export const OPENBOT_INVITE_ORIGIN = "https://dani.danlab.dev";
 export const OPENBOT_INVITE_PATH = "/join";
 export const OPENBOT_CONTROL_PLANE_ORIGIN = "https://api.openbot.run";
 

@@ -2,7 +2,7 @@
 
 A self-hosted server is the Linux dani-dex build on your own computer with no screen: a VPS, a home
 server or a cloud VM. It is a normal Remote host of your account. You use it from the desktop app,
-the iPhone app or `openbot.run/app`, as you use a [hosted server](hosted-servers.md). You install
+the iPhone app or `dani.danlab.dev/app`, as you use a [hosted server](hosted-servers.md). You install
 and control it from a terminal.
 
 To run it in a container, see [Docker](docker.md).
@@ -12,13 +12,13 @@ To run it in a container, see [Docker](docker.md).
 On Ubuntu 24.04 or 26.04 (x86_64 or arm64) with systemd:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/nightly-labs/openbot/main/scripts/install-server.sh | sudo bash
-sudo openbot login
+curl -fsSL https://raw.githubusercontent.com/somdipto/dani-dex/main/scripts/install-server.sh | sudo bash
+sudo dani-dex login
 ```
 
 `openbot login` asks for your email and the code that dani-dex sends to it. After the sign-in, the
 server shows in the server list of that account. Its name is "dani-dex"; give another one with
-`sudo openbot login --name <name>` or `sudo openbot name <name>`. A name has 6 to 32 characters.
+`sudo dani-dex login --name <name>` or `sudo openbot name <name>`. A name has 6 to 32 characters.
 Then connect a provider from the app, as on a hosted server (see
 [Providers](hosted-servers.md#providers)).
 
@@ -28,7 +28,7 @@ In the desktop app, select Add server, then Other options, then New server on an
 The app shows one command with a one-time claim of your account:
 
 ```sh
-{ echo OPENBOT_CLAIM=<claim>; curl -fsSL https://raw.githubusercontent.com/nightly-labs/openbot/main/scripts/install-server.sh; } | sudo bash -s
+{ echo OPENBOT_CLAIM=<claim>; curl -fsSL https://raw.githubusercontent.com/somdipto/dani-dex/main/scripts/install-server.sh; } | sudo bash -s
 ```
 
 Run it on the server, or give it to an AI agent there with Copy for an AI agent. It asks no
@@ -69,7 +69,7 @@ restart dani-dex:
 
 ```sh
 sudo -u openbot -i bash -c 'curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash -s -- --non-interactive'
-sudo openbot restart
+sudo dani-dex restart
 ```
 
 In Docker, the service user is the image user, and its home folder is the data volume:
@@ -98,7 +98,7 @@ printf '{"email":"%s"}' owner@example.com |
   curl --fail -sS -X POST https://api.openbot.run/v2/admin/server-claims \
     -H @server-claims.header -H 'content-type: application/json' --data-binary @- |
   sed -n 's/.*"claim":"\([A-Za-z0-9_-]*\)".*/\1/p' |
-  sudo openbot login --claim --name <name>
+  sudo dani-dex login --claim --name <name>
 ```
 
 `server-claims.header` holds one line, `Authorization: Bearer <token>`, so the token is in no process
@@ -137,15 +137,15 @@ open a database that a newer one migrated. It also refuses a computer that is a 
 
 | Command | Use |
 | --- | --- |
-| `openbot status` | Show the version, the account, the server state, the memory and a staged update. |
+| `dani-dex status` | Show the version, the account, the server state, the memory and a staged update. |
 | `openbot login [<email>] [--name <name>]` | Sign in with an email code. |
 | `openbot login --claim [--name <name>]` | Sign in with an operator's one-time claim (see [Sign in with a server claim](#sign-in-with-a-server-claim)). |
 | `openbot mobile-connect` | Show a Mobile Connect QR code for the phone app (see [Phone app](#phone-app)). |
 | `openbot logout` | Sign out. The server is not available until the next sign-in. |
 | `openbot name <name>` | Change the server name. |
-| `openbot logs [-f]` | Show the journal of `openbot.service`. |
-| `sudo openbot start\|stop\|restart` | Control `openbot.service`. |
-| `sudo openbot update` | Download, check and install the newest release now. |
+| `dani-dex logs [-f]` | Show the journal of `openbot.service`. |
+| `sudo dani-dex start\|stop\|restart` | Control `openbot.service`. |
+| `sudo dani-dex update` | Download, check and install the newest release now. |
 | `sudo openbot uninstall` | Sign out and remove dani-dex. The data stays (see [Remove](#remove)). |
 | `openbot version` | Show the installed version. |
 
@@ -153,12 +153,12 @@ An owner or admin can also restart the server from the app: select Restart serve
 menu, or in Server settings on the phone. dani-dex closes, and `openbot.service` starts it again after
 about 10 seconds. In Docker, the container must have a restart policy, such as `--restart
 unless-stopped`; without one, the container stays stopped. When the server does not answer, use
-`sudo openbot restart`.
+`sudo dani-dex restart`.
 
 When the start of dani-dex fails again and again, the service stops, and systemd does not start it again
-(see [Start loop](hosted-servers.md#start-loop)). `openbot status` then says so. Read the reason with
-`openbot logs`. Install a newer release with `sudo openbot update`, or try again with
-`sudo openbot restart`. The update timer also starts the service again about each hour, with a
+(see [Start loop](hosted-servers.md#start-loop)). `dani-dex status` then says so. Read the reason with
+`dani-dex logs`. Install a newer release with `sudo dani-dex update`, or try again with
+`sudo dani-dex restart`. The update timer also starts the service again about each hour, with a
 newer release when one is staged.
 
 Run the account commands with `sudo` or as the service user. Other users cannot open the control
@@ -176,7 +176,7 @@ Unlimited, in Server Settings > Agent defaults > Threads at the same time. Low m
 The memory ceiling is the smaller of the machine memory and the limit of `openbot.service`
 (`MemoryMax=90%`). To give dani-dex less memory, lower the limit with
 `sudo systemctl edit openbot.service`, for example `MemoryMax=2G`, and restart the service. The
-turn limit and the low-memory levels then use the new ceiling. `openbot status` shows the ceiling,
+turn limit and the low-memory levels then use the new ceiling. `dani-dex status` shows the ceiling,
 the free memory, the level (`ok`, `low` or `critical`) and the turn limit:
 
 ```text
@@ -202,14 +202,14 @@ The display size does not change the dani-dex browser (`openbot_browser`). Its p
 size, 1200x800 when no panel shows them, and its clicks go to page elements.
 
 To use another size, give it at the install with `--display-size 1920x1080`, or write this line in
-`/opt/dani-dex/hosted/openbot.env` and run `sudo openbot restart`:
+`/opt/dani-dex/hosted/openbot.env` and run `sudo dani-dex restart`:
 
 ```text
 OPENBOT_DISPLAY_SIZE=1920x1080
 ```
 
 The value is `WIDTHxHEIGHT` in digits, from 640x480 to 2576x2576. The install refuses a value that is
-not valid. At a start, a value that is not valid writes this warning in `openbot logs`, and the
+not valid. At a start, a value that is not valid writes this warning in `dani-dex logs`, and the
 server starts with 1280x800:
 
 ```text
@@ -351,7 +351,7 @@ Updates work as on a hosted server (see [Updates](hosted-servers.md#updates)): t
 new release, and it starts at the next boot, or when an owner, an admin or a permitted member
 installs it in Server Settings > Updates. When an owner turns on the automatic update switch (it is
 off by default), the server also installs it when it is idle. A hosted server always does this, and
-also waits until no connected client uses it. `sudo openbot update` stages, stops the service, applies
+also waits until no connected client uses it. `sudo dani-dex update` stages, stops the service, applies
 and starts the service again. When a step fails or a signal stops it, the command completes an
 interrupted copy, starts the service, and exits with an error.
 
@@ -381,7 +381,7 @@ Threat model:
   the install uses those names.
 - Ubuntu 26.04: release 0.48.1 was tested on Ubuntu 26.04.1 arm64 in the Docker image, with
   `BASE=ubuntu:26.04` and the package list without `libminiupnpc17` (the 0.48.1 list stops that
-  build). The server started with the Electron sandbox on, `openbot status` answered, and it stopped
+  build). The server started with the Electron sandbox on, `dani-dex status` answered, and it stopped
   with exit code 0. The install with systemd and a native x86_64 run were not tested.
 - Remote desktop on Ubuntu 26.04: the runtime build checks with `ldd` that the x86_64 runtime finds
   all its libraries there (see [Linux runtime](RELEASING.md#linux-runtime-recipe-16)). In the x86_64

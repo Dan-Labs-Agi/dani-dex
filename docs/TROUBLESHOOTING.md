@@ -236,12 +236,12 @@ it writes anything. Your data is intact.
 
 Do not follow the reset steps below, and do not move the folder. When in-app updates and automatic
 downloads are on, dani-dex installs the latest version and opens again. Otherwise, or when the
-update fails, install the latest version from [openbot.run/download](https://openbot.run/download).
+update fails, install the latest version from [dani.danlab.dev/download](https://dani.danlab.dev/download).
 
 When the latest version is the one that did not open several times in a row, dani-dex does not install
 it again. It says that the latest dani-dex did not open, and it keeps your data as it is. Install a
 version newer than the one it names when one is available on the
-[releases page](https://github.com/nightly-labs/openbot/releases), and report the problem with the
+[releases page](https://github.com/somdipto/dani-dex/releases), and report the problem with the
 details below.
 
 Then remove the older copy. On Windows, look for a second dani-dex in Settings → Apps, and pin the
@@ -291,7 +291,7 @@ Ask the network administrator to allow these hosts over HTTPS (TCP 443) and WebS
 | --- | --- |
 | `api.openbot.run` | Accounts, sign-in, teams, and hosted servers |
 | `signal.openbot.run` | Connection setup for teams and remote servers |
-| `openbot.run` | Public site and images in invitation emails |
+| `dani.danlab.dev` | Public site and images in invitation emails |
 | `*.openbot.run` | Hosted servers and sites, and `analytics.openbot.run` |
 | `github.com`, `*.githubusercontent.com` | App updates |
 
@@ -300,7 +300,7 @@ Signal names, on the UDP and TCP ports that it names. A filter that blocks WebRT
 connections slow or stops them. Conversations stay on the computer; the [privacy policy](../PRIVACY.md) lists what each
 host receives.
 
-If the filter puts `openbot.run` in a blocked category, the administrator can ask the vendor to
+If the filter puts `dani.danlab.dev` in a blocked category, the administrator can ask the vendor to
 review it. For Fortinet, use the FortiGuard web filter lookup.
 
 ## A server connects slowly through a VPN or proxy app
@@ -313,7 +313,7 @@ Send dani-dex traffic directly, not through the proxy. Add this rule above the o
 proxy app:
 
 ```text
-DOMAIN-SUFFIX,openbot.run,DIRECT
+DOMAIN-SUFFIX,dani.danlab.dev,DIRECT
 ```
 
 If the app uses fake-IP DNS, also add `+.openbot.run` to the fake-IP filter (`fake-ip-filter` in a
@@ -351,14 +351,14 @@ are independent and are not removed with dani-dex.
 
 ## Report a problem
 
-Use the [bug report form](https://github.com/nightly-labs/openbot/issues/new?template=bug_report.yml)
+Use the [bug report form](https://github.com/somdipto/dani-dex/issues/new?template=bug_report.yml)
 for reproducible bugs. It asks for the platform, the dani-dex version (Settings → Updates on the
 desktop), the operating system and hardware, the provider and its CLI version, the steps, and the
 expected and actual results. When a provider row shows an error, select **Copy diagnostics** in its
 menu and paste the result into the form.
 
 For a problem in the iPhone or Android app, use the
-[mobile app bug report form](https://github.com/nightly-labs/openbot/issues/new?template=mobile_bug_report.yml).
+[mobile app bug report form](https://github.com/somdipto/dani-dex/issues/new?template=mobile_bug_report.yml).
 It asks for the full app version line from Settings → About. Settings → Support → **Save log file**
 makes a log that you can attach. Attach it for a connection or network problem: we will most
 probably close such a report without it.

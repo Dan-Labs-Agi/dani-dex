@@ -49,8 +49,8 @@ import type { PricingPagePlacement } from "../window/window-page-context";
 
 type PlansEvent = DesktopAnalyticsProperties<"hosted_server_plans_action">;
 
-const PRIVACY_URL = "https://openbot.run/privacy";
-const TERMS_URL = "https://openbot.run/terms";
+const PRIVACY_URL = "https://dani.danlab.dev/privacy";
+const TERMS_URL = "https://dani.danlab.dev/terms";
 
 const SETUP_POLL_INTERVAL_MS = 3_000;
 const RAIL_ANSWER_WAIT_MS = 60_000;

@@ -745,7 +745,7 @@
         "items": [
           "Vertak een gesprek: klik met de rechtermuisknop op het laatste agentbericht van een beurt en kies Hier aftakken. Er opent een nieuwe thread met het gesprek tot dat bericht.",
           "De agentinstellingen hebben een pagina Instructies die het AGENTS.md-bestand van de agent toont. Als de agent zijn instructies wijzigt, toont de chat de wijziging met Ongedaan maken.",
-          "De Marktplaats staat op openbot.run. Elke agent en vaardigheid heeft een eigen pagina, en met Link kopiëren deel je die.",
+          "De Marktplaats staat op dani.danlab.dev. Elke agent en vaardigheid heeft een eigen pagina, en met Link kopiëren deel je die.",
           "Een agent kan antwoorden op een melding of bevestiging van een website die zijn eigen browseractie heeft geopend.",
           "Een gestopte of mislukte kanaaltaak heeft de knop Taak annuleren."
         ]

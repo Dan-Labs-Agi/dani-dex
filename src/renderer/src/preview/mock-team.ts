@@ -454,7 +454,7 @@ export function createMockTeam(
       role: input.role,
       expiresAt: "2026-09-19T10:00:00.000Z",
       usedAt: null,
-      inviteUrl: "https://openbot.run/join?invite=mock-invite",
+      inviteUrl: "https://dani.danlab.dev/join?invite=mock-invite",
       email: input.email ?? null,
       permanent: input.permanent ?? false,
       useCount: 0,

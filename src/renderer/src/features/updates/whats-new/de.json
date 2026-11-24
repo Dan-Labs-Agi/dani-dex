@@ -745,7 +745,7 @@
         "items": [
           "Verzweige eine Unterhaltung: Klicke mit der rechten Maustaste auf die letzte Agentennachricht eines Durchlaufs und wähle Hier abzweigen. Ein neuer Thread öffnet sich mit der Unterhaltung bis zu dieser Nachricht.",
           "Die Agenteneinstellungen haben eine Seite Anweisungen, die die AGENTS.md-Datei des Agenten zeigt. Wenn der Agent seine Anweisungen ändert, zeigt der Chat die Änderung mit Rückgängig.",
-          "Der Marketplace ist auf openbot.run. Jeder Agent und jede Fähigkeit hat eine eigene Seite, und Link kopieren teilt sie.",
+          "Der Marketplace ist auf dani.danlab.dev. Jeder Agent und jede Fähigkeit hat eine eigene Seite, und Link kopieren teilt sie.",
           "Ein Agent kann auf eine Warnung oder Bestätigung einer Website antworten, die seine eigene Browseraktion geöffnet hat.",
           "Eine gestoppte oder fehlgeschlagene Kanalaufgabe hat eine Schaltfläche Aufgabe abbrechen."
         ]

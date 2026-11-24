@@ -12,7 +12,7 @@ export const messages = {
     "Beim letzten Neustart wurde die Aktualisierung nicht installiert. Starte neu, um es noch einmal zu versuchen.",
   "error.update.downloadFailed": "Die Aktualisierung konnte nicht heruntergeladen werden. Versuche es erneut.",
   "error.update.signatureNotConfirmed":
-    "dani-dex konnte die Aktualisierung nicht prüfen. Versuche es erneut. Wenn der Fehler bleibt, lade dani-dex von openbot.run/download herunter.",
+    "dani-dex konnte die Aktualisierung nicht prüfen. Versuche es erneut. Wenn der Fehler bleibt, lade dani-dex von dani.danlab.dev/download herunter.",
   "error.update.checkFailed": "Es konnte nicht nach Aktualisierungen gesucht werden. Versuche es erneut.",
   "error.update.checkStalled": "Die Suche nach Aktualisierungen reagiert nicht mehr. Versuche es erneut.",
   "error.update.checkOffline":

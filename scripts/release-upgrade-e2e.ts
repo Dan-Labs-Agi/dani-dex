@@ -34,7 +34,7 @@ declare global {
 }
 
 const logger = createOpenBotLogger("release-upgrade-e2e");
-const REPOSITORY = "nightly-labs/openbot";
+const REPOSITORY = "somdipto/dani-dex";
 const OUT = resolve(import.meta.dirname, "../.openbot-build/release-upgrade-e2e");
 const LAUNCH_LIMIT_MS = 5 * 60_000;
 const TURN_LIMIT_MS = 2 * 60_000;

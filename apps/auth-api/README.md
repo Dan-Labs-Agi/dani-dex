@@ -189,14 +189,14 @@ exercise real delivery locally, put a full set in the ignored `.dev.vars` file:
 ```dotenv
 EMAIL_SMTP_HOST=mail.privateemail.com
 EMAIL_SMTP_PORT=465
-EMAIL_SMTP_USERNAME=no_reply@openbot.run
+EMAIL_SMTP_USERNAME=no_reply@dani.danlab.dev
 EMAIL_SMTP_PASSWORD=<PRIVATE_EMAIL_APP_PASSWORD>
-EMAIL_FROM=no_reply@openbot.run
-EMAIL_REPLY_TO=hello@openbot.run
-EMAIL_LICENSE_REPLY_TO=licenses@openbot.run
+EMAIL_FROM=no_reply@dani.danlab.dev
+EMAIL_REPLY_TO=team@danlab.dev
+EMAIL_LICENSE_REPLY_TO=team@danlab.dev
 ```
 
-Sign-in codes, invitations and welcome emails go from `EMAIL_FROM`, the `no_reply@openbot.run`
+Sign-in codes, invitations and welcome emails go from `EMAIL_FROM`, the `no_reply@dani.danlab.dev`
 mailbox, with `EMAIL_REPLY_TO` in `Reply-To`, so a reply goes to the team's inbox. An empty
 `EMAIL_REPLY_TO` uses `EMAIL_FROM` and adds no `Reply-To`. `EMAIL_SMTP_PASSWORD` is the password of
 the `EMAIL_SMTP_USERNAME` mailbox. The CI deploy reads it from the `EMAIL_SMTP_PASSWORD` secret of the
@@ -206,7 +206,7 @@ change both, at the time of the merge.
 License emails (the first payment, a failed renewal payment, and the end of a license) go from
 `EMAIL_LICENSE_FROM`. The SMTP account must be allowed to send as that address: on Private Email,
 make it an alias of the `EMAIL_SMTP_USERNAME` mailbox. An empty value uses `EMAIL_FROM`, as production
-does. A reply goes to `EMAIL_LICENSE_REPLY_TO` (`licenses@openbot.run` in production), or to the
+does. A reply goes to `EMAIL_LICENSE_REPLY_TO` (`team@danlab.dev` in production), or to the
 license sender when it is empty.
 
 `bun run env:set:smtp` encrypts the app password into `.env.production` only.
@@ -237,7 +237,7 @@ before remote changes. Test deployments do not send account analytics.
 PKCS #1 key; convert it with `openssl pkcs8 -topk8 -nocrypt -in <key>.pem`. With the key, the
 Worker gives the desktop installation tokens, so GitHub shows `openbotgit[bot]` as the author of an
 agent's work. The key also lets `POST /v1/feedback` open an approved bug report or feature idea from the app as
-an issue in `nightly-labs/openbot`, for any signed-in account, three times a minute (`FEEDBACK_RATE_LIMITER`) and 10 times a UTC day (`feedback_daily_counts` in D1). The Worker does not store or log the text. With `sameAs`, the report is a comment on that open app issue. Before the card, `POST /v1/feedback/similar` finds open app issues with a similar title, three times a minute for each account (the same limiter, with its own key); the title is in the body, so request logs do not keep it. Each report ends with a hidden owner mark
+an issue in `somdipto/dani-dex`, for any signed-in account, three times a minute (`FEEDBACK_RATE_LIMITER`) and 10 times a UTC day (`feedback_daily_counts` in D1). The Worker does not store or log the text. With `sameAs`, the report is a comment on that open app issue. Before the card, `POST /v1/feedback/similar` finds open app issues with a similar title, three times a minute for each account (the same limiter, with its own key); the title is in the body, so request logs do not keep it. Each report ends with a hidden owner mark
 (`feedback-owner.ts`): a random value and an HMAC of it and the account ID, with a key that HKDF derives
 from the app key. `POST /v1/feedback/withdraw` takes `{ number }` and, for the account whose mark ends
 the text, deletes its comments on that issue or moves its issue to `FEEDBACK_WITHDRAWN_REPOSITORY`, a
@@ -305,7 +305,7 @@ recipient. The fallback uses only the time left in the 25-second delivery budget
 and it does not start with less than 2 seconds left, as after three SMTP timeouts. When
 Cloudflare also fails, the answer stays the SMTP failure, so a sender limit keeps its 429. Each
 fallback sends an `email_fallback_sent` analytics event. Before the first deploy with the binding,
-onboard `openbot.run` in the Cloudflare dashboard under Email Sending, and keep
+onboard `dani.danlab.dev` in the Cloudflare dashboard under Email Sending, and keep
 `allowed_sender_addresses` equal to `EMAIL_FROM` and `EMAIL_LICENSE_FROM`. The preview and test
 Workers have no fallback.
 
@@ -314,7 +314,7 @@ The contact form on `/contact` posts to `/v1/contact`. The Worker sends each mes
 The D1 counter of sign-in allows 3 messages for each IP address and 15 in total in each 15-minute
 window, so the form cannot spend the quota that sign-in codes need. A Cloudflare rate-limit binding
 counts in each location separately, so it cannot hold a total. Without SMTP the route answers 503
-`email_delivery_not_configured`, and the form tells the visitor to write to `hello@openbot.run`.
+`email_delivery_not_configured`, and the form tells the visitor to write to `team@danlab.dev`.
 
 ## Cloudflare deployment
 
@@ -331,7 +331,7 @@ The service applies limits per email, per IP, per challenge, and per resend.
 
 A deploy replaces every file under `/assets/`. Before a production deploy, CI and `bun run api:deploy`
 run `scripts/keep-previous-assets.ts`. It copies the files of the builds that were live in the last
-24 hours from `https://openbot.run` into the new build, so a tab that is open during a deploy can
+24 hours from `https://dani.danlab.dev` into the new build, so a tab that is open during a deploy can
 still load code. The site keeps the list of these files in `/asset-history.json`. When the list or a
 file cannot be read, the deploy continues with fewer files, and such a tab reloads when it next loads
 code.

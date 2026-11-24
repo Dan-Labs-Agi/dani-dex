@@ -1,6 +1,6 @@
 appId: app.openbot.desktop
 productName: dani-dex
-copyright: Copyright © 2026 Synthetify Labs spółka z ograniczoną odpowiedzialnością
+copyright: Copyright © 2026 Dan Lab
 protocols:
   - name: dani-dex invitations
     schemes:
@@ -20,8 +20,8 @@ electronFuses:
   grantFileProtocolExtraPrivileges: false
 publish:
   provider: github
-  owner: nightly-labs
-  repo: openbot
+  owner: somdipto
+  repo: dani-dex
 files:
   - out/**/*
   - package.json

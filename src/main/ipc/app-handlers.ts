@@ -60,14 +60,14 @@ import {
 } from "./app-inputs";
 import { stringPayload } from "./validation";
 
-const OPENBOT_SITE = "https://openbot.run";
+const OPENBOT_SITE = "https://dani.danlab.dev";
 
 function draftPost(translate: AppTranslate): string {
-  return encodeURIComponent(translate("app.socialFollow.draftPost", { site: "openbot.run" }));
+  return encodeURIComponent(translate("app.socialFollow.draftPost", { site: "dani.danlab.dev" }));
 }
 
 const EXTERNAL_DESTINATIONS: Record<ExternalDestination, string | ((translate: AppTranslate) => string)> = {
-  "agent-setup": "https://github.com/nightly-labs/openbot/blob/main/docs/TROUBLESHOOTING.md",
+  "agent-setup": "https://github.com/somdipto/dani-dex/blob/main/docs/TROUBLESHOOTING.md",
   "opencode-install": "https://opencode.ai/docs/",
   "opencode-auth": "https://opencode.ai/auth",
   "claude-install": "https://code.claude.com/docs",
@@ -75,14 +75,14 @@ const EXTERNAL_DESTINATIONS: Record<ExternalDestination, string | ((translate: A
   feedback: "https://x.com/intent/post?text=Feedback%20for%20OpenBot%20%40norbertbodziony%3A%20",
   "report-problem": () => bugReportFormUrl(feedbackFacts()),
   message: "https://x.com/norbertbodziony",
-  changelog: "https://openbot.run/changelog",
-  guides: "https://openbot.run/guides",
+  changelog: "https://dani.danlab.dev/changelog",
+  guides: "https://dani.danlab.dev/guides",
   discord: "https://discord.openbot.run",
-  github: "https://github.com/nightly-labs/openbot",
+  github: "https://github.com/somdipto/dani-dex",
   x: "https://x.com/OpenBot_",
-  threads: "https://www.threads.com/@openbot.run",
-  instagram: "https://www.instagram.com/openbot.run/",
-  tiktok: "https://www.tiktok.com/@openbot.run",
+  threads: "https://www.threads.com/@dani.danlab.dev",
+  instagram: "https://www.instagram.com/dani.danlab.dev/",
+  tiktok: "https://www.tiktok.com/@dani.danlab.dev",
   facebook: "https://www.facebook.com/profile.php?id=61595425259628",
   linkedin: "https://www.linkedin.com/company/openbot-si/",
   reddit: "https://www.reddit.com/r/OpenBot_/",

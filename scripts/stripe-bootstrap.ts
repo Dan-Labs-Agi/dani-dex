@@ -553,7 +553,7 @@ async function defaultPortalConfiguration(stripe: StripeAdmin): Promise<string> 
     await stripe.request(
       "POST",
       "/v1/billing_portal/sessions",
-      new URLSearchParams({ customer: customer.id, return_url: "https://openbot.run" }),
+      new URLSearchParams({ customer: customer.id, return_url: "https://dani.danlab.dev" }),
       z.object({ id: z.string() }),
     );
   } finally {

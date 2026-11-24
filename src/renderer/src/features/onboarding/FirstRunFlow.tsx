@@ -30,8 +30,8 @@ export interface FirstRunFlowProps extends SetupProviderProps {
 }
 
 const TEAM_SIZE = 7;
-const TERMS_URL = "https://openbot.run/terms";
-const PRIVACY_URL = "https://openbot.run/privacy";
+const TERMS_URL = "https://dani.danlab.dev/terms";
+const PRIVACY_URL = "https://dani.danlab.dev/privacy";
 
 type FirstRunStep = "choose" | "plan" | "computer";
 type FirstRunPath = "free" | "plan" | null;

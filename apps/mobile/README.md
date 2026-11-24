@@ -623,7 +623,7 @@ See [Fastlane Google Play upload](https://docs.fastlane.tools/actions/upload_to_
 
 ### Android APK
 
-openbot.run offers the Android app as an APK, for a phone with no Google Play: the "Get the APK"
+dani.danlab.dev offers the Android app as an APK, for a phone with no Google Play: the "Get the APK"
 link on the Android card of the home page, the "Android · APK" entry of its download menu, and the
 second button on `/download/android`. They open `/download/android/latest`, which redirects to the
 file on GitHub.

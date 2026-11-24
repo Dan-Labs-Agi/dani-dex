@@ -84,7 +84,7 @@ export function InstallOpenBotVPS() {
       <pre>
         <code>
           {
-            "curl -fsSL \\\n  https://raw.githubusercontent.com/nightly-labs/openbot/main/scripts/install-server.sh |\n  sudo bash"
+            "curl -fsSL \\\n  https://raw.githubusercontent.com/somdipto/dani-dex/main/scripts/install-server.sh |\n  sudo bash"
           }
         </code>
       </pre>
@@ -98,7 +98,7 @@ export function InstallOpenBotVPS() {
       <p>Sign in and give the server a name you will recognize in the app:</p>
 
       <pre>
-        <code>{'sudo openbot login --name "dani-dex VPS"'}</code>
+        <code>{'sudo dani-dex login --name "dani-dex VPS"'}</code>
       </pre>
 
       <p>
@@ -109,7 +109,7 @@ export function InstallOpenBotVPS() {
       <p>Check the result:</p>
 
       <pre>
-        <code>{"sudo openbot status"}</code>
+        <code>{"sudo dani-dex status"}</code>
       </pre>
 
       <p>
@@ -134,7 +134,7 @@ export function InstallOpenBotVPS() {
       <pre>
         <code>
           {
-            "mkdir openbot-vps\ncd openbot-vps\ncurl -fsSLO \\\n  https://raw.githubusercontent.com/nightly-labs/openbot/main/docker/compose.yaml\ncurl -fsSLO \\\n  https://raw.githubusercontent.com/nightly-labs/openbot/main/docker/seccomp.json\nsudo docker compose up -d"
+            "mkdir openbot-vps\ncd openbot-vps\ncurl -fsSLO \\\n  https://raw.githubusercontent.com/somdipto/dani-dex/main/docker/compose.yaml\ncurl -fsSLO \\\n  https://raw.githubusercontent.com/somdipto/dani-dex/main/docker/seccomp.json\nsudo docker compose up -d"
           }
         </code>
       </pre>
@@ -156,7 +156,7 @@ export function InstallOpenBotVPS() {
       <pre>
         <code>
           {
-            'sudo docker compose exec openbot openbot login --name "dani-dex VPS"\nsudo docker compose exec openbot openbot status'
+            'sudo docker compose exec openbot openbot login --name "dani-dex VPS"\nsudo docker compose exec openbot dani-dex status'
           }
         </code>
       </pre>
@@ -237,7 +237,7 @@ export function InstallOpenBotVPS() {
       <pre>
         <code>
           {
-            "sudo -u openbot -i bash -c \\\n  'curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash -s -- --non-interactive'\nsudo openbot restart"
+            "sudo -u openbot -i bash -c \\\n  'curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash -s -- --non-interactive'\nsudo dani-dex restart"
           }
         </code>
       </pre>
@@ -272,25 +272,25 @@ export function InstallOpenBotVPS() {
           <tr>
             <td>Check the server</td>
             <td>
-              <code>sudo openbot status</code>
+              <code>sudo dani-dex status</code>
             </td>
           </tr>
           <tr>
             <td>Follow its logs</td>
             <td>
-              <code>sudo openbot logs -f</code>
+              <code>sudo dani-dex logs -f</code>
             </td>
           </tr>
           <tr>
             <td>Restart dani-dex</td>
             <td>
-              <code>sudo openbot restart</code>
+              <code>sudo dani-dex restart</code>
             </td>
           </tr>
           <tr>
             <td>Install the latest update</td>
             <td>
-              <code>sudo openbot update</code>
+              <code>sudo dani-dex update</code>
             </td>
           </tr>
         </tbody>
@@ -298,21 +298,21 @@ export function InstallOpenBotVPS() {
 
       <p>
         An update restarts dani-dex, so run it when an interruption is acceptable. Back up the server data first. The
-        native service also checks for updates and can stage them for installation; <code>openbot status</code> shows a
+        native service also checks for updates and can stage them for installation; <code>dani-dex status</code> shows a
         staged update.
       </p>
 
       <p>For Docker Compose, use these commands from your deployment folder:</p>
 
       <pre>
-        <code>{"sudo docker compose logs --tail 100 openbot\nsudo docker compose exec openbot openbot status"}</code>
+        <code>{"sudo docker compose logs --tail 100 openbot\nsudo docker compose exec openbot dani-dex status"}</code>
       </pre>
 
       <p>To upgrade after checking the release notes and making a backup:</p>
 
       <pre>
         <code>
-          {"sudo docker compose pull\nsudo docker compose up -d\nsudo docker compose exec openbot openbot status"}
+          {"sudo docker compose pull\nsudo docker compose up -d\nsudo docker compose exec openbot dani-dex status"}
         </code>
       </pre>
 
@@ -344,7 +344,7 @@ export function InstallOpenBotVPS() {
       <p>Back up both locations using your normal backup process, then run:</p>
 
       <pre>
-        <code>{"sudo openbot start"}</code>
+        <code>{"sudo dani-dex start"}</code>
       </pre>
 
       <p>
@@ -366,9 +366,9 @@ export function InstallOpenBotVPS() {
       </p>
 
       <p>
-        For the native install, read <code>sudo openbot status</code> and <code>sudo openbot logs -f</code>. For Docker,
-        check <code>sudo docker compose ps</code> and the container logs. Follow any reported errors before trying to
-        reinstall.
+        For the native install, read <code>sudo dani-dex status</code> and <code>sudo dani-dex logs -f</code>. For
+        Docker, check <code>sudo docker compose ps</code> and the container logs. Follow any reported errors before
+        trying to reinstall.
       </p>
 
       <p>
@@ -381,8 +381,8 @@ export function InstallOpenBotVPS() {
       </p>
 
       <p>
-        If work starts waiting when memory is low, inspect the memory information in <code>openbot status</code>. Reduce
-        concurrent work or give the VPS more memory for the tasks you want to run.
+        If work starts waiting when memory is low, inspect the memory information in <code>dani-dex status</code>.
+        Reduce concurrent work or give the VPS more memory for the tasks you want to run.
       </p>
 
       <h2>Frequently asked questions</h2>

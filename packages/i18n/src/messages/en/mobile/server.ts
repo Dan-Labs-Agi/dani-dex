@@ -1782,11 +1782,11 @@ export const messages = defineMessages("mobile.server", {
   "mobile.server.update.path.hosted":
     "The hosted service downloads updates in the background. A downloaded update starts when the server next starts. Wait for active work to finish before you stop and resume the server. If it stays on an old version, contact the host administrator.",
   "mobile.server.update.path.system":
-    "On the host, run sudo openbot update to install the latest release. This command stops dani-dex. Wait for active work to finish first. Automatic downloads install at the next boot.",
+    "On the host, run sudo dani-dex update to install the latest release. This command stops dani-dex. Wait for active work to finish first. Automatic downloads install at the next boot.",
   "mobile.server.update.path.container":
     "On the Docker host, pull the new dani-dex image and create the container again with the same data volumes. Wait for active work to finish first. Keep the existing volumes to preserve your data.",
   "mobile.server.update.path.manual":
-    "This installation cannot replace itself. Ask the host administrator to install the compatible release from github.com/nightly-labs/openbot/releases. Keep the existing dani-dex data.",
+    "This installation cannot replace itself. Ask the host administrator to install the compatible release from github.com/somdipto/dani-dex/releases. Keep the existing dani-dex data.",
   "mobile.server.update.path.unavailable":
     "This is a development build. Use an installed dani-dex release to check for updates.",
   "mobile.server.update.check": "Check for updates",

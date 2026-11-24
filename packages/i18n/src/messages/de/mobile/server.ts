@@ -1428,11 +1428,11 @@ export const messages = {
   "mobile.server.update.path.hosted":
     "Der gehostete Dienst lädt Updates im Hintergrund herunter. Ein heruntergeladenes Update startet beim nächsten Serverstart. Warte, bis aktive Aufgaben beendet sind, bevor du den Server stoppst und fortsetzt. Bleibt er bei einer alten Version, kontaktiere den Host-Administrator.",
   "mobile.server.update.path.system":
-    "Führe auf dem Host sudo openbot update aus, um die neueste Version zu installieren. Dieser Befehl beendet dani-dex. Warte zuerst, bis aktive Aufgaben beendet sind. Automatische Downloads werden beim nächsten Systemstart installiert.",
+    "Führe auf dem Host sudo dani-dex update aus, um die neueste Version zu installieren. Dieser Befehl beendet dani-dex. Warte zuerst, bis aktive Aufgaben beendet sind. Automatische Downloads werden beim nächsten Systemstart installiert.",
   "mobile.server.update.path.container":
     "Lade auf dem Docker-Host das neue dani-dex-Image herunter und erstelle den Container mit denselben Datenvolumes neu. Warte zuerst, bis aktive Aufgaben beendet sind. Behalte die vorhandenen Volumes, um deine Daten zu erhalten.",
   "mobile.server.update.path.manual":
-    "Diese Installation kann sich nicht selbst ersetzen. Bitte den Host-Administrator, die kompatible Version von github.com/nightly-labs/openbot/releases zu installieren. Behalte die vorhandenen dani-dex-Daten.",
+    "Diese Installation kann sich nicht selbst ersetzen. Bitte den Host-Administrator, die kompatible Version von github.com/somdipto/dani-dex/releases zu installieren. Behalte die vorhandenen dani-dex-Daten.",
   "mobile.server.update.path.unavailable":
     "Dies ist eine Entwicklungsversion. Verwende eine installierte dani-dex-Version, um nach Updates zu suchen.",
   "mobile.server.update.check": "Nach Updates suchen",

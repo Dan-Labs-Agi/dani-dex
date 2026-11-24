@@ -19,9 +19,9 @@ const productionBucket = "openbot-skills";
 const owner = {
   id: "openbot-production-catalog",
   identityKey: "openbot-production-catalog",
-  email: "catalog@openbot.run",
+  email: "catalog@dani.danlab.dev",
   name: "dani-dex",
-  avatarUrl: "https://openbot.run/icon-192x192.png",
+  avatarUrl: "https://dani.danlab.dev/icon-192x192.png",
 } as const;
 
 interface PublishedSkill {

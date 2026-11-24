@@ -1,4 +1,4 @@
-export const OPENBOT_MARKETPLACE_ORIGIN = "https://openbot.run";
+export const OPENBOT_MARKETPLACE_ORIGIN = "https://dani.danlab.dev";
 export const OPENBOT_MARKETPLACE_PATH = "/marketplace";
 export const OPENBOT_MARKETPLACE_HOST = "marketplace";
 export const WEB_APP_MARKETPLACE_AGENT_PARAM = "marketplaceAgent";

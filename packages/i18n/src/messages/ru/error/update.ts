@@ -11,7 +11,7 @@ export const messages = {
   "error.update.notInstalled": "Последний перезапуск не установил обновление. Перезапустите, чтобы повторить попытку.",
   "error.update.downloadFailed": "Не удалось загрузить обновление. Повторите попытку.",
   "error.update.signatureNotConfirmed":
-    "dani-dex не удалось проверить обновление. Повторите попытку. Если ошибка повторяется, скачайте dani-dex на openbot.run/download.",
+    "dani-dex не удалось проверить обновление. Повторите попытку. Если ошибка повторяется, скачайте dani-dex на dani.danlab.dev/download.",
   "error.update.checkFailed": "Не удалось проверить обновления. Повторите попытку.",
   "error.update.checkStalled": "Проверка обновлений перестала отвечать. Повторите попытку.",
   "error.update.checkOffline":

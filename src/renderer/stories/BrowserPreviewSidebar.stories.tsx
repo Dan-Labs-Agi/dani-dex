@@ -9,7 +9,7 @@ const tabs = [
   {
     id: "docs",
     title: "dani-dex documentation",
-    url: "https://openbot.run/docs",
+    url: "https://dani.danlab.dev/docs",
     loading: false,
     ownerThreadId: "chief",
     ownerAgentId: "chief",

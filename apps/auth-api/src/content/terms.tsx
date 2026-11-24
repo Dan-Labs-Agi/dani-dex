@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/solid-router";
 
-const CONTACT_EMAIL = "hello@openbot.run";
-const PRICING_LABEL = "http://openbot.run/pricing";
+const CONTACT_EMAIL = "team@danlab.dev";
+const PRICING_LABEL = "https://dani.danlab.dev/pricing";
 
 export function Terms() {
   return (

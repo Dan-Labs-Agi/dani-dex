@@ -1,6 +1,6 @@
 import { BENCHMARK_SOURCES, type RoundupComparison } from "./comparison";
 
-const OPENBOT = "https://github.com/nightly-labs/openbot";
+const OPENBOT = "https://github.com/somdipto/dani-dex";
 
 export const BEST_AI_AGENT_APPS: RoundupComparison = {
   kind: "roundup",

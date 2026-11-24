@@ -24,12 +24,13 @@ RUN install -d -m 0755 /var/lib/openbot-update/requests /var/lib/openbot-update/
 COPY --from=release /tmp/squashfs-root /opt/dani-dex/app
 RUN install -d -m 0755 /opt/dani-dex/hosted \
   && printf 'container\n' >/opt/dani-dex/hosted/mode \
-  && ln -s /opt/dani-dex/app/resources/hosting/openbot /usr/local/bin/openbot
+  && ln -s /opt/dani-dex/app/resources/hosting/openbot /usr/local/bin/openbot \
+  && ln -s /opt/dani-dex/app/resources/hosting/openbot /usr/local/bin/dani-dex
 
 ARG VERSION=unknown
 ARG REVISION=unknown
 LABEL org.opencontainers.image.title=dani-dex \
-  org.opencontainers.image.source=https://github.com/nightly-labs/openbot \
+  org.opencontainers.image.source=https://github.com/somdipto/dani-dex \
   org.opencontainers.image.licenses=PolyForm-Noncommercial-1.0.0 \
   org.opencontainers.image.version=${VERSION} \
   org.opencontainers.image.revision=${REVISION}

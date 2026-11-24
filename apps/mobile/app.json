@@ -12,7 +12,7 @@
       "bundleIdentifier": "run.openbot.mobile",
       "appleTeamId": "8A47NKRZSJ",
       "supportsTablet": true,
-      "associatedDomains": ["applinks:openbot.run"],
+      "associatedDomains": ["applinks:dani.danlab.dev"],
       "infoPlist": {
         "NSLocalNetworkUsageDescription": "Allow dani-dex to connect to your desktop during local development.",
         "NSAppTransportSecurity": {

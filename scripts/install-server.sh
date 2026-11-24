@@ -1,7 +1,7 @@
 #!/bin/bash
 # Installs dani-dex as a self-hosted server on a Linux computer with no screen:
 #
-#   curl -fsSL https://raw.githubusercontent.com/nightly-labs/openbot/main/scripts/install-server.sh | sudo bash
+#   curl -fsSL https://raw.githubusercontent.com/somdipto/dani-dex/main/scripts/install-server.sh | sudo bash
 #
 # Options (after `sudo bash -s --`):
 #   --user <name>             The user that runs dani-dex and its agents. Default: the user of the
@@ -25,7 +25,7 @@
 set -euo pipefail
 export LC_ALL=C DEBIAN_FRONTEND=noninteractive
 
-RELEASES=https://github.com/nightly-labs/openbot/releases
+RELEASES=https://github.com/somdipto/dani-dex/releases
 service_user=""
 auth_api_url=""
 display_size=""
@@ -71,9 +71,9 @@ while [ "$#" -gt 0 ]; do
     *) fail "Unknown option: $1" ;;
   esac
 done
-[ -z "$server_name" ] || [ -n "$claim" ] || fail "Give --name only with the command from the app, or run: sudo openbot login --name <name>"
+[ -z "$server_name" ] || [ -n "$claim" ] || fail "Give --name only with the command from the app, or run: sudo dani-dex login --name <name>"
 
-[ "$(uname -s)" = Linux ] || fail "This install is for Linux. Download the desktop app at https://openbot.run."
+[ "$(uname -s)" = Linux ] || fail "This install is for Linux. Download the desktop app at https://dani.danlab.dev."
 [ "$(id -u)" -eq 0 ] || fail "Run this with sudo."
 [ -d /run/systemd/system ] || fail "dani-dex needs systemd."
 command -v apt-get >/dev/null || fail "dani-dex needs Ubuntu 24.04 or a newer Ubuntu or Debian."
@@ -88,14 +88,22 @@ case $(uname -m) in
   *) fail "dani-dex has no release for this machine." ;;
 esac
 
+server_cmd() {
+  if command -v dani-dex >/dev/null; then
+    dani-dex "$@"
+  else
+    openbot "$@"
+  fi
+}
+
 refuse_signed_in() {
   local status
-  status=$(openbot status 2>/dev/null) || return 0
+  status=$(server_cmd status 2>/dev/null) || return 0
   if grep -q '^Account: [^ ]*@' <<<"$status"; then
     fail "This server is signed in to an account. To add it to another account, run \"sudo openbot logout\" and then this command again."
   fi
 }
-if [ -n "$claim" ] && command -v openbot >/dev/null; then refuse_signed_in; fi
+if [ -n "$claim" ] && { command -v openbot >/dev/null || command -v dani-dex >/dev/null; }; then refuse_signed_in; fi
 
 missing=()
 for command in curl openssl; do command -v "$command" >/dev/null || missing+=("$command"); done
@@ -131,10 +139,10 @@ bash "$setup" "$service_user" "$work/squashfs-root" "$auth_api_url" ${display_si
 if [ -n "$claim" ]; then
   refuse_signed_in
   echo
-  printf '%s\n' "$claim" | openbot login --claim ${server_name:+--name "$server_name"}
-  status=$(openbot status)
+  printf '%s\n' "$claim" | server_cmd login --claim ${server_name:+--name "$server_name"}
+  status=$(server_cmd status)
   grep -q '^Server: \(.* (\)\{0,1\}online)\{0,1\}$' <<<"$status" ||
-    fail "The server is not online. Run \"openbot status\" and \"openbot logs\" to see why."
+    fail "The server is not online. Run \"dani-dex status\" and \"dani-dex logs\" to see why."
   echo
   echo "dani-dex is connected to your account."
   exit 0
@@ -144,7 +152,7 @@ cat <<'EOF'
 
 Next, sign in with your dani-dex account:
 
-  sudo openbot login
+  sudo dani-dex login
 
-Other commands: openbot status, openbot logs, sudo openbot update. Run "openbot help" for all.
+Other commands: dani-dex status, dani-dex logs, sudo dani-dex update. Run "dani-dex help" for all.
 EOF

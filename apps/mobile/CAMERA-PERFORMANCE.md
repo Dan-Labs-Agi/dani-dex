@@ -1,7 +1,7 @@
 # Camera transitions
 
-Related to [#427](https://github.com/nightly-labs/openbot/issues/427) and
-[#428](https://github.com/nightly-labs/openbot/issues/428).
+Related to [#427](https://github.com/somdipto/dani-dex/issues/427) and
+[#428](https://github.com/somdipto/dani-dex/issues/428).
 
 ## Decision
 

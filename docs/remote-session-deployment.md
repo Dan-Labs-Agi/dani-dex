@@ -234,7 +234,7 @@ change, and each one needs its own approval.
    Apply D1 migration `0044_remote_signal_homes.sql` before the Worker deploy. Until a desktop release
    that asks for a home, all hosts stay on the entry.
 6. Entry failover: set the TTL of the `signal.openbot.run` A record to 60 seconds (it is 300). Make a
-   Cloudflare API token with only `Zone.DNS:Edit` on `openbot.run`, and set it as the Worker secret
+   Cloudflare API token with only `Zone.DNS:Edit` on `dani.danlab.dev`, and set it as the Worker secret
    `SIGNAL_ENTRY_DNS_TOKEN` (`wrangler secret put`, never in a file or a log). `SIGNAL_ENTRY_ZONE_ID`
    is in `wrangler.jsonc`. The cron `*/1 * * * *` then runs the check
    (`apps/auth-api/src/server/signal-entry-failover.ts`); without the token, it does nothing.
@@ -313,7 +313,7 @@ Setup of each machine (Ubuntu 26.04):
    and `coturn`, and start the project. Before the start, set `{"dns": ["1.1.1.1", "1.0.0.1"]}` in
    `/etc/docker/daemon.json` and restart Docker. The Leaseweb resolver keeps the NXDOMAIN answer for
    the challenge name for 30 minutes, so each certificate attempt fails, and after 5 failures Let's
-   Encrypt blocks the name for an hour. Cloudflare serves the `openbot.run` zone, so `1.1.1.1` sees the
+   Encrypt blocks the name for an hour. Cloudflare serves the `dani.danlab.dev` zone, so `1.1.1.1` sees the
    record at once. This is also necessary for each renewal.
 5. Nginx: the `signal2` vhost with `server_name signal.openbot.run signal-<home>.openbot.run` and
    `proxy_pass http://127.0.0.1:8081`, plus the `openbot-remote-nginx-reload` path and service units.

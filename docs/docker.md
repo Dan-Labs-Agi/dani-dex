@@ -2,7 +2,7 @@
 
 The dani-dex image is the Linux release, run as a [self-hosted server](self-hosted-server.md) in a
 container. It is a normal Remote host of your account. You use it from the desktop app, the iPhone
-app or `openbot.run/app`. The image is `ghcr.io/nightly-labs/openbot`, for `linux/amd64` and
+app or `dani.danlab.dev/app`. The image is `ghcr.io/somdipto/dani-dex`, for `linux/amd64` and
 `linux/arm64`.
 
 ## Run
@@ -10,8 +10,8 @@ app or `openbot.run/app`. The image is `ghcr.io/nightly-labs/openbot`, for `linu
 With Docker Compose:
 
 ```sh
-curl -fsSLO https://raw.githubusercontent.com/nightly-labs/openbot/main/docker/compose.yaml
-curl -fsSLO https://raw.githubusercontent.com/nightly-labs/openbot/main/docker/seccomp.json
+curl -fsSLO https://raw.githubusercontent.com/somdipto/dani-dex/main/docker/compose.yaml
+curl -fsSLO https://raw.githubusercontent.com/somdipto/dani-dex/main/docker/seccomp.json
 docker compose up -d
 docker compose exec openbot openbot login
 ```
@@ -19,12 +19,12 @@ docker compose exec openbot openbot login
 With `docker run`:
 
 ```sh
-curl -fsSLO https://raw.githubusercontent.com/nightly-labs/openbot/main/docker/seccomp.json
+curl -fsSLO https://raw.githubusercontent.com/somdipto/dani-dex/main/docker/seccomp.json
 docker run -d --name openbot --restart unless-stopped \
   --security-opt seccomp=seccomp.json --security-opt no-new-privileges:true \
   --shm-size 1g --stop-timeout 60 \
   -v openbot-data:/data \
-  ghcr.io/nightly-labs/openbot:latest
+  ghcr.io/somdipto/dani-dex:latest
 docker exec -it openbot openbot login
 ```
 
@@ -57,7 +57,7 @@ The container publishes no port. dani-dex only connects out: to the account serv
 and to Signal and TURN for remote use. The Team API listens on `127.0.0.1` in the container.
 The container does not serve a web interface, except the setup page of
 `OPENBOT_SETUP_PAGE_PORT` (see [Umbrel](umbrel.md#the-setup-page)). After `openbot login`, use
-[`openbot.run/app`](https://openbot.run/app) with the same account to select the server. A web
+[`dani.danlab.dev/app`](https://dani.danlab.dev/app) with the same account to select the server. A web
 client at your own origin is not included in this image. The
 [self-hosted account service](self-hosting.md#what-changes) is a separate deployment with its own
 client limits.
@@ -135,7 +135,7 @@ protect a home folder. To back it up, stop the container and copy the volume. An
 
 ## Commands
 
-In the container, `openbot status`, `login`, `mobile-connect`, `logout`, `name` and `version` work as on a
+In the container, `dani-dex status`, `login`, `mobile-connect`, `logout`, `name` and `version` work as on a
 [self-hosted server](self-hosted-server.md#commands). Do the other tasks with Docker on the host:
 
 | Task | Command |
@@ -396,7 +396,7 @@ is the machine-readable source for the newest full release. For example, this re
 prints its tag:
 
 ```sh
-gh api repos/nightly-labs/openbot/releases/latest --jq '.tag_name'
+gh api repos/somdipto/dani-dex/releases/latest --jq '.tag_name'
 ```
 
 Automation can poll that metadata and download an image. Installation needs these checks:
@@ -420,7 +420,7 @@ Automation can poll that metadata and download an image. Installation needs thes
    instance of `docker/instances`, set `OPENBOT_TAG` in its env file and run
    `openbot-instance upgrade <name>`. This command takes the lock of the instance, so no backup,
    restore or update from the app runs at the same time. A manual replacement does not take the
-   lock. Check `openbot status` and the container log before the upgrade is reported as complete.
+   lock. Check `dani-dex status` and the container log before the upgrade is reported as complete.
 
 An unattended image watcher does not perform these checks or make a consistent backup. Keep the
 installation step under operator control unless your own job implements them. A failed upgrade
@@ -436,7 +436,7 @@ message from a person starts first. The browser opens no new tab and unloads idl
 The memory ceiling is the smaller of the memory of the host and the memory limit of the container
 (`--memory`, or `mem_limit` in Compose). Without a limit, the ceiling is the memory of the host. A
 fixed number of turns run at the same time: 2 up to 5 GiB of ceiling, 8 up to 10 GiB, and 16 above.
-`/dev/shm` and the `tmpfs` folders count toward the limit too. `docker exec openbot openbot status`
+`/dev/shm` and the `tmpfs` folders count toward the limit too. `docker exec openbot dani-dex status`
 shows the ceiling, the free memory, the level (`ok`, `low` or `critical`) and the turn limit.
 
 The guard reads cgroup v2, which current Docker hosts use. On a host with cgroup v1, the container
@@ -479,7 +479,7 @@ environment of dani-dex, so they can read these values.
 - **Check the image.** Each release image has a build provenance attestation:
 
   ```sh
-  gh attestation verify oci://ghcr.io/nightly-labs/openbot:<version> --repo nightly-labs/openbot
+  gh attestation verify oci://ghcr.io/somdipto/dani-dex:<version> --repo somdipto/dani-dex
   ```
 
 ## How it works
@@ -515,7 +515,7 @@ does not use systemd.
 ## Not confirmed
 
 - Tested on Docker Desktop 4.45 (Docker Engine 28.3, `linux/arm64`) with the 0.29.0 AppImage and the
-  scripts of this image: the start with the sandbox on, `openbot status`, a restart, a new container
+  scripts of this image: the start with the sandbox on, `dani-dex status`, a restart, a new container
   on the same volume after a kill, a stop that exits with 0, and the messages for a missing seccomp
   profile and for a volume that the user cannot write. The release workflow also starts each image.
 - Not tested: a sign-in with `openbot login` in a container, remote use of a container from the app,

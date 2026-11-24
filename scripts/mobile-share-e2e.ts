@@ -136,7 +136,7 @@ async function main(): Promise<void> {
 
   const cases: ShareCase[] = [
     { name: "text", coldStart: false, text: [{ type: "text", value: "dani-dex share E2E text" }] },
-    { name: "link", coldStart: false, text: [{ type: "url", value: "https://openbot.run/" }] },
+    { name: "link", coldStart: false, text: [{ type: "url", value: "https://dani.danlab.dev/" }] },
     {
       name: "image",
       coldStart: false,

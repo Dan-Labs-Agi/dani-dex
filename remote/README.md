@@ -178,7 +178,7 @@ service before Signal.
   ufw: `ufw allow 16384:65535/udp comment 'dani-dex TURN relay UDP'`. coturn uses host networking,
   so ufw applies to it. Without this rule, the firewall drops the first packets that a peer sends to
   a relay address, and relay connections become slow or fail.
-- A Cloudflare token scoped to DNS edit for the `openbot.run` zone.
+- A Cloudflare token scoped to DNS edit for the `dani.danlab.dev` zone.
 
 The `signal.openbot.run` and `turn.openbot.run` records must be in **DNS only** mode. Do not enable the
 Cloudflare proxy for them. `api.openbot.run` stays a Cloudflare Worker.

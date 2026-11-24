@@ -631,11 +631,11 @@ export const messages = {
   "server.update.path.hosted":
     "Il servizio ospitato scarica gli aggiornamenti in background. Un aggiornamento scaricato parte al prossimo avvio del server. Attendi la fine del lavoro in corso prima di fermare e riprendere il server. Se resta su una versione vecchia, contatta l'amministratore dell'host.",
   "server.update.path.system":
-    "Sull'host, esegui sudo openbot update per installare l'ultima versione. Questo comando ferma dani-dex. Attendi prima la fine del lavoro in corso. Gli aggiornamenti scaricati automaticamente si installano al prossimo avvio.",
+    "Sull'host, esegui sudo dani-dex update per installare l'ultima versione. Questo comando ferma dani-dex. Attendi prima la fine del lavoro in corso. Gli aggiornamenti scaricati automaticamente si installano al prossimo avvio.",
   "server.update.path.container":
     "Sull'host Docker, scarica la nuova immagine di dani-dex e crea di nuovo il container con gli stessi volumi di dati. Attendi prima la fine del lavoro in corso. Mantieni i volumi esistenti per conservare i tuoi dati.",
   "server.update.path.manual":
-    "Questa installazione non può aggiornarsi da sola. Chiedi all'amministratore dell'host di installare la versione compatibile da github.com/nightly-labs/openbot/releases. Mantieni i dati di dani-dex esistenti.",
+    "Questa installazione non può aggiornarsi da sola. Chiedi all'amministratore dell'host di installare la versione compatibile da github.com/somdipto/dani-dex/releases. Mantieni i dati di dani-dex esistenti.",
   "server.update.path.unavailable":
     "Questa è una build di sviluppo. Usa una versione di dani-dex installata per cercare aggiornamenti.",
   "server.update.check": "Cerca aggiornamenti",

@@ -1,4 +1,4 @@
-export const OPENBOT_AGENT_TEMPLATE_ORIGIN = "https://openbot.run";
+export const OPENBOT_AGENT_TEMPLATE_ORIGIN = "https://dani.danlab.dev";
 export const OPENBOT_AGENT_TEMPLATE_PATH_PREFIX = "/agents/";
 export const OPENBOT_AGENT_TEMPLATE_HOST = "agents";
 export const WEB_APP_AGENT_TEMPLATE_PARAM = "agent";

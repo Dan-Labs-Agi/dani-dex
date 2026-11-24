@@ -41,7 +41,7 @@ body:
         - App Store
         - TestFlight
         - Google Play
-        - APK from openbot.run
+        - APK from dani.danlab.dev
         - Built from source
         - Other
     validations:

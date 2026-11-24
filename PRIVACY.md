@@ -223,7 +223,7 @@ send only lengths, times, counts, the chosen voice (for example `F1`), whether t
 remote, and whether speech recognition runs on the computer or in the cloud. They never send what
 the user said, the reply, a transcript, or audio.
 
-The production browser client at `/app` on `https://openbot.run` records the same product events
+The production browser client at `/app` on `https://dani.danlab.dev` records the same product events
 as the desktop app, with the same limits, and labels them as web. When its **Link analytics to my
 account** setting in account settings is off, these events and the error reports are anonymous. They
 carry only the random install ID that "Install ID" describes, and no name, email or account. When the
@@ -268,27 +268,27 @@ platform name (or unknown), and the referring domain when available. A recognize
 takes precedence over the referring domain for platform classification; unrecognized tags are not
 sent. Attribution excludes referrer paths, query parameters, fragments, credentials, ports, and
 campaign URLs other than the allowlisted tags described above. Website page and article events carry
-the path of a news article, guide or comparison published on openbot.run, together with the collection name, the
+the path of a news article, guide or comparison published on dani.danlab.dev, together with the collection name, the
 reading position reached (start, half, or end), and the section of the page a link was clicked in.
 That path is a published article address and nothing else: it is matched against the site's own list
 of articles, so no other part of a visited URL can be reported through it. Reading position is taken
-from where the article sits on screen, never from how long it was open. Referrals from openbot.run and its subdomains are omitted.
+from where the article sits on screen, never from how long it was open. Referrals from dani.danlab.dev and its subdomains are omitted.
 The production website also saves the first visit of the browser in its `localStorage`: the source
 category, the platform name, the first website page, the day, and the allowlisted campaign tags.
 It saves no referrer, IP address or identifier. A later visit does not change it, and it is not used
 after 90 days. When you sign in on the web, or open the page after a desktop checkout in the same
 browser, the browser sends it to the account service. The account service keeps the first one that
 it gets on your account and sends it to OpenPanel with your account ID. To remove it from a
-browser, clear the site data of openbot.run. When you open a discount link (an openbot.run address
+browser, clear the site data of dani.danlab.dev. When you open a discount link (an dani.danlab.dev address
 with `?promo=CODE`), the website saves the code and the time in its `localStorage` for 30 days. When
 you pay on the web, the web client sends the code to the account service, which gives it to Stripe
-for that Checkout page. It is not sent to analytics. When you open an invite link (an openbot.run
+for that Checkout page. It is not sent to analytics. When you open an invite link (an dani.danlab.dev
 address with `?ref=CODE`), the website saves the code and the time in its `localStorage` for 30 days.
 When you sign in on the web, the web client sends the code to the account service and removes it from
 `localStorage`. On the desktop, on the web and on the phone, you can also type an invite link or code
 on the sign-in screen; the app sends only the code. The account service uses a code only for a new account. It is not sent to analytics. The invite page shows the first name from the profile of the account that made the link to anyone who opens the link. It shows no other name, picture or email. When you choose a language on the website, it saves
 the language code, and nothing else, in the `openbot_lang` cookie for one year, so that the next
-pages open in that language. The browser sends this cookie only to openbot.run. OpenPanel can also derive
+pages open in that language. The browser sends this cookie only to dani.danlab.dev. OpenPanel can also derive
 session, device, browser, operating-system, network, and approximate geographic metadata from a
 request. The analytics service runs on dani-dex's self-hosted infrastructure and receives events
 through `analytics.openbot.run`.
@@ -414,9 +414,9 @@ of the account, the email, the device name or the hardware, and dani-dex does no
 events to an account. The events and their limits are the same as above, with one exception: the
 local host sends the **Websites**, **Tools** and **Setup** records only when analytics is on.
 The desktop app and the local host keep the ID in a file in the app data folder, the browser app in
-the `localStorage` of openbot.run, and the mobile app in the phone's keychain. At the first start
+the `localStorage` of dani.danlab.dev, and the mobile app in the phone's keychain. At the first start
 after 13 months, a new ID replaces it. Deleting the desktop app data or the site data of
-openbot.run also makes a new ID. When the device cannot save the ID, it sends no events without an
+dani.danlab.dev also makes a new ID. When the device cannot save the ID, it sends no events without an
 account. OpenPanel still derives session, device, browser, operating-system, network, and approximate
 geographic metadata from each request, as for other events. Because the session comes from the
 network and the browser, on the day that you turn analytics off, OpenPanel can show the last events
@@ -559,7 +559,7 @@ in `openbot-remote-session-reuse-preference-v1.json`.
 The desktop app and the web client keep a copy of the agent and channel pictures that they loaded
 from a joined server, so that the agent pictures show while the server is offline, for example during its
 restart for an update. The desktop app keeps the copies in the `remote-pictures` folder of its data
-folder; the web client keeps the agent pictures in the Cache storage of openbot.run in your browser.
+folder; the web client keeps the agent pictures in the Cache storage of dani.danlab.dev in your browser.
 The copies stay on that computer or in that browser. They are deleted when you sign out, when
 another account signs in, when the server leaves your list, and when the server ends your access.
 
@@ -729,7 +729,7 @@ written. For the report, the phone also masks:
 - each server ID, which becomes `server-1`, `server-2`;
 - each network address, which keeps only its kind (`[private-ip]`, `[shared-ip]`, `[public-ip]`,
   `[ipv6]`);
-- each host name that is not an dani-dex service (`openbot.run`), which becomes `[host]`;
+- each host name that is not an dani-dex service (`dani.danlab.dev`), which becomes `[host]`;
 - each record ID and hash, which becomes `[id]`, and the name of a user folder.
 
 The message of an error is free text, so it can still hold a word that these rules do not know. The
@@ -874,18 +874,18 @@ removes the connection. Deleting an account removes its provider links and SCIM 
 
 ## Email delivery and infrastructure providers
 
-dani-dex sends sign-in, team invitation, and welcome messages from `no_reply@openbot.run` through the
-configured SMTP provider. A reply goes to `hello@openbot.run`. The provider receives the recipient address and the message content. A sign-in message contains the
+dani-dex sends sign-in, team invitation, and welcome messages from `no_reply@dani.danlab.dev` through the
+configured SMTP provider. A reply goes to `team@danlab.dev`. The provider receives the recipient address and the message content. A sign-in message contains the
 one-time code and its expiration time. A team invitation can contain the inviter address, team name,
 role, and invite URL. When the first cloud server plan of an account starts, a welcome message goes
 to the account address. It contains the plan name and the server name. License messages go to the
-account address from `no_reply@openbot.run` through the same provider, and a reply goes to
-`licenses@openbot.run`. When a license has its first
+account address from `no_reply@dani.danlab.dev` through the same provider, and a reply goes to
+`team@danlab.dev`. When a license has its first
 payment, the message contains the license tier, the number of users, the list price when no discount
 applies, the currency, the billing period, and the date of the next payment. When a renewal payment fails, the message contains
 the license tier, the number of users, the amount due, the currency, the date of the next payment
 try, and the link to the Stripe page of the invoice. When a paid license ends, the message contains
-the license tier, the number of users, and whether it ended after a failed payment. The HTML version of a message loads the dani-dex logo from `openbot.run` when
+the license tier, the number of users, and whether it ended after a failed payment. The HTML version of a message loads the dani-dex logo from `dani.danlab.dev` when
 the mail client shows images. The image address is the same in every message and identifies no
 recipient.
 
@@ -894,7 +894,7 @@ is spent, Cloudflare Email Service sends the same message instead. It then recei
 recipient address and message content as the SMTP provider. dani-dex does not use it after an
 unconfirmed SMTP send, so you do not get the same message twice.
 
-The contact form on `openbot.run/contact` sends your message to the dani-dex mailbox through the same
+The contact form on `dani.danlab.dev/contact` sends your message to the dani-dex mailbox through the same
 SMTP provider. The message contains the email address, topic and text that you enter, and the name and
 company when you enter them. The account service stores none of these values. To limit how many
 messages one address can send, it keeps a hash of your IP address in its rate-limit records. The dani-dex team receives the message
@@ -1276,9 +1276,9 @@ Network traffic can also occur when:
   `User-Agent: dani-dex/<version>` and, when a session starts, the client name `openbot`, the
   dani-dex version and the title `<agent name> (dani-dex)`, so the server can show which agent made a
   change. Nothing else about the user's agents, conversations or files is sent in those requests. The
-  registration names dani-dex's logo at `openbot.run`; an authorization service that shows it on its
-  sign-in page can make the browser load it from `openbot.run`. Meta Ads takes no loopback address,
-  so its sign-in page sends the browser to `https://openbot.run/oauth/mcp-callback` with the grant
+  registration names dani-dex's logo at `dani.danlab.dev`; an authorization service that shows it on its
+  sign-in page can make the browser load it from `dani.danlab.dev`. Meta Ads takes no loopback address,
+  so its sign-in page sends the browser to `https://dani.danlab.dev/oauth/mcp-callback` with the grant
   and the sign-in's random state. The account service keeps nothing and sends the browser on at once
   to `127.0.0.1` on the same computer. The grant cannot be used without a code that only dani-dex on
   that computer holds;
@@ -1426,7 +1426,7 @@ Network traffic can also occur when:
   [bug reports about the phone app](#bug-reports-about-the-phone-app)); the service refuses such a
   report without them. The service opens it as a public
   issue, or a comment on the issue that the agent chose, in the
-  `nightly-labs/openbot` repository on GitHub, as the dani-dex GitHub App, so the issue does not show
+  `somdipto/dani-dex` repository on GitHub, as the dani-dex GitHub App, so the issue does not show
   the account. The service does not store or log the text. It adds a hidden owner mark to the end of
   the text: a random value and a keyed hash of that value and the account ID. The mark does not name
   the account, and the service stores nothing for it. When the user removes the report (Fix or remove on the
@@ -1453,7 +1453,7 @@ Network traffic can also occur when:
   OpenCode and Cline, `x.ai/cli` for Grok, `raw.githubusercontent.com/agentclientprotocol/registry` and
   `downloads.cursor.com` (for the download size) for Cursor, `static.devin.ai` (the manifest, and the
   download size) for Devin, and it reads a list of blocked
-  versions from `raw.githubusercontent.com/nightly-labs/openbot`. These requests contain no account, agent,
+  versions from `raw.githubusercontent.com/somdipto/dani-dex`. These requests contain no account, agent,
   conversation or file data;
 - an agent shows a visual reply, an agent checks its page with `html_preview`, or a user opens an
   HTML attachment, shared file or workspace file in the file preview. The page is HTML that the
@@ -1586,7 +1586,7 @@ covers what Higgsfield keeps.
 A step with an dani-dex model uses dani-dex credits. When the computer is signed in to an dani-dex
 account, the credits of that account pay; a server pays with its own credits. The computer sends the
 prompt, the model, the size settings and the input pictures to the account service
-(`openbot.run`). The account service holds the credits, sends the same values to a media generation
+(`dani.danlab.dev`). The account service holds the credits, sends the same values to a media generation
 processor, and returns the result file to the computer, which keeps it. A processor can keep the
 input pictures for up to three days so that it can read them. The account service passes
 the prompt, the pictures and the file through in transit only: it does not store or log them. It
@@ -1761,7 +1761,7 @@ access the user gave them. A hosted server that sleeps starts for a message that
 Signal keeps that message in memory for at most 10 minutes, encrypted to a key that only that server
 has, so Signal cannot read it; a restart of Signal deletes it.
 
-Plugin pages on openbot.run show each listing's own icon. The page asks `openbot.run` for that
+Plugin pages on dani.danlab.dev show each listing's own icon. The page asks `dani.danlab.dev` for that
 picture, and the website fetches it there from the address the plugin catalog holds, so reading a
 plugin page does not connect your browser to the plugin developer's servers.
 
@@ -1882,7 +1882,7 @@ Review folders before deleting them and keep a backup of anything you need.
 
 ## Questions
 
-Use [GitHub Discussions](https://github.com/nightly-labs/openbot/discussions) for privacy questions.
+Use [GitHub Discussions](https://github.com/somdipto/dani-dex/discussions) for privacy questions.
 Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md), without attaching
 credentials, conversations, or unrelated private files.
 
@@ -1901,7 +1901,7 @@ secrets from these steps first. Command output can contain file contents. Reason
 attachment contents are not sent.
 
 Publishing an agent template from the chat makes its instructions, skills, and routines public to
-anyone with the link at `openbot.run/agents/<id>`, with your account name as the creator. dani-dex
+anyone with the link at `dani.danlab.dev/agents/<id>`, with your account name as the creator. dani-dex
 stops the publish when a text field looks like a secret. Workspace files and memories are not sent.
 An owner or admin of a server can also publish, update or unpublish an agent of that server from the
 browser client. The host sends the template content and the agent's avatar to that browser for the

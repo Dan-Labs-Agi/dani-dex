@@ -745,7 +745,7 @@
         "items": [
           "Ramifique uma conversa: clique com o botão direito na última mensagem do agente em um turno e selecione Ramificar daqui. Um novo tópico abre com a conversa até essa mensagem.",
           "As configurações do agente têm uma página Instruções que mostra o arquivo AGENTS.md do agente. Quando o agente altera as instruções, o chat mostra a mudança com Desfazer.",
-          "A Loja está em openbot.run. Cada agente e cada habilidade têm a própria página, e Copiar link compartilha essa página.",
+          "A Loja está em dani.danlab.dev. Cada agente e cada habilidade têm a própria página, e Copiar link compartilha essa página.",
           "Um agente pode responder a um alerta ou a uma confirmação de um site que a própria ação do navegador dele abriu.",
           "Uma tarefa de canal parada ou com falha tem um botão Cancelar tarefa."
         ]

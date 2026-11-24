@@ -1365,11 +1365,11 @@ export const messages = {
   "mobile.server.update.path.hosted":
     "ホスティングサービスはバックグラウンドでアップデートをダウンロードします。ダウンロードしたアップデートは、次にサーバーが起動したときに適用されます。サーバーを停止して再開する前に、実行中の作業が終わるのを待ってください。古いバージョンのままの場合は、ホストの管理者に連絡してください。",
   "mobile.server.update.path.system":
-    "ホストで sudo openbot update を実行して、最新のリリースをインストールしてください。このコマンドは dani-dex を停止します。先に実行中の作業が終わるのを待ってください。自動ダウンロードされたアップデートは次回の起動時にインストールされます。",
+    "ホストで sudo dani-dex update を実行して、最新のリリースをインストールしてください。このコマンドは dani-dex を停止します。先に実行中の作業が終わるのを待ってください。自動ダウンロードされたアップデートは次回の起動時にインストールされます。",
   "mobile.server.update.path.container":
     "Docker ホストで新しい dani-dex イメージを pull し、同じデータボリュームでコンテナーを再作成してください。先に実行中の作業が終わるのを待ってください。データを保持するため、既存のボリュームはそのまま残してください。",
   "mobile.server.update.path.manual":
-    "このインストールは自分自身を置き換えられません。github.com/nightly-labs/openbot/releases から互換性のあるリリースをインストールするよう、ホストの管理者に依頼してください。既存の dani-dex のデータは残してください。",
+    "このインストールは自分自身を置き換えられません。github.com/somdipto/dani-dex/releases から互換性のあるリリースをインストールするよう、ホストの管理者に依頼してください。既存の dani-dex のデータは残してください。",
   "mobile.server.update.path.unavailable":
     "これは開発ビルドです。アップデートを確認するには、インストール済みの dani-dex リリースを使用してください。",
   "mobile.server.update.check": "アップデートを確認",

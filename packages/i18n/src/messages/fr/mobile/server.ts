@@ -1406,11 +1406,11 @@ export const messages = {
   "mobile.server.update.path.hosted":
     "Le service hébergé télécharge les mises à jour en arrière-plan. Une mise à jour téléchargée s’applique au prochain démarrage du serveur. Attendez la fin du travail en cours avant d’arrêter puis de reprendre le serveur. S’il reste sur une ancienne version, contactez l’administrateur de l’hôte.",
   "mobile.server.update.path.system":
-    "Sur l’hôte, exécutez sudo openbot update pour installer la dernière version. Cette commande arrête dani-dex. Attendez d’abord la fin du travail en cours. Les téléchargements automatiques s’installent au prochain démarrage.",
+    "Sur l’hôte, exécutez sudo dani-dex update pour installer la dernière version. Cette commande arrête dani-dex. Attendez d’abord la fin du travail en cours. Les téléchargements automatiques s’installent au prochain démarrage.",
   "mobile.server.update.path.container":
     "Sur l’hôte Docker, récupérez la nouvelle image dani-dex et recréez le conteneur avec les mêmes volumes de données. Attendez d’abord la fin du travail en cours. Conservez les volumes existants pour préserver vos données.",
   "mobile.server.update.path.manual":
-    "Cette installation ne peut pas se remplacer elle-même. Demandez à l’administrateur de l’hôte d’installer la version compatible depuis github.com/nightly-labs/openbot/releases. Conservez les données dani-dex existantes.",
+    "Cette installation ne peut pas se remplacer elle-même. Demandez à l’administrateur de l’hôte d’installer la version compatible depuis github.com/somdipto/dani-dex/releases. Conservez les données dani-dex existantes.",
   "mobile.server.update.path.unavailable":
     "Ceci est un build de développement. Utilisez une version installée d’dani-dex pour rechercher des mises à jour.",
   "mobile.server.update.check": "Rechercher des mises à jour",

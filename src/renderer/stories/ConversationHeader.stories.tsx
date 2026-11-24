@@ -19,7 +19,7 @@ const STORY_PINS: PinnedMessageItem[] = [
     time: "17 Aug, 10:18",
     thread: "Staging review",
     pinnedBy: null,
-    body: "Staging is ready for review.\n\n- URL: `staging.openbot.run`\n- Test account: `launch-review@openbot.run`\n- Password: in the shared vault, item **Staging review**",
+    body: "Staging is ready for review.\n\n- URL: `staging.openbot.run`\n- Test account: `launch-review@dani.danlab.dev`\n- Password: in the shared vault, item **Staging review**",
   },
   {
     id: "pin-launch-date",
