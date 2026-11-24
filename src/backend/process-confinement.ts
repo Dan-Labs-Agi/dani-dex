@@ -89,7 +89,7 @@ export function kilocodeStatePaths(env: NodeJS.ProcessEnv = process.env, home = 
   };
 }
 
-export function kilocodeDataDirectory(env: NodeJS.ProcessEnv = process.env, home = homedir()): string {
+function kilocodeDataDirectory(env: NodeJS.ProcessEnv = process.env, home = homedir()): string {
   return join(env.XDG_DATA_HOME?.trim() || join(home, ".local/share"), "kilo");
 }
 

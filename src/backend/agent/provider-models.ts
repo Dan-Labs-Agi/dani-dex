@@ -293,7 +293,7 @@ export function modelsAfterOpenCodeDiscoveryFailure(previous: AgentModelOption[]
 
 const KILOCODE_FREE_REASONING = ["low", "medium", "high", "xhigh", "max"] as const;
 
-export const KILOCODE_FREE_MODEL_FALLBACKS: AgentModelOption[] = [
+const KILOCODE_FREE_MODEL_FALLBACKS: AgentModelOption[] = [
   {
     provider: "kilocode",
     id: "kilo/kilo-auto/free",
