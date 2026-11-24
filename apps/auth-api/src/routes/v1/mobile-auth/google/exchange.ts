@@ -15,7 +15,8 @@ export const Route = createFileRoute("/v1/mobile-auth/google/exchange")({
         runApiResponse(
           Effect.gen(function* () {
             const body = yield* readJsonObject(request);
-            if (!isString(body.idToken)) {
+            const idToken = body.idToken;
+            if (!isString(idToken)) {
               return apiError(400, "invalid_google_token", "The Google sign-in did not finish. Try again.");
             }
             if (
@@ -30,7 +31,7 @@ export const Route = createFileRoute("/v1/mobile-auth/google/exchange")({
               return apiError(503, "google_sign_in_unavailable", "Google sign-in is not available.");
             }
             const email = yield* Effect.tryPromise({
-              try: () => verifyGoogleIdToken(body.idToken, clientIds),
+              try: () => verifyGoogleIdToken(idToken, clientIds),
               catch: (error) => error,
             }).pipe(
               Effect.mapError((error) =>

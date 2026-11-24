@@ -33,7 +33,7 @@ interface JwksCache {
 
 let jwksCache: JwksCache | null = null;
 
-function base64UrlToBytes(value: string): Uint8Array {
+function base64UrlToBytes(value: string): Uint8Array<ArrayBuffer> {
   const base64 = value.replace(/-/gu, "+").replace(/_/gu, "/");
   const padded = base64 + "=".repeat((4 - (base64.length % 4)) % 4);
   const binary = atob(padded);
