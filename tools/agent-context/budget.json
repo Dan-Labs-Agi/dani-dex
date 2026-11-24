@@ -1,11 +1,11 @@
 {
   "bytes": {
-    "catalog.descriptions": 44157,
-    "catalog.schemas": 80585,
-    "guidance": 26798,
-    "instructions.claude": 16939,
-    "instructions.codex": 17002,
+    "catalog.descriptions": 44202,
+    "catalog.schemas": 80601,
+    "guidance": 26814,
+    "instructions.claude": 16968,
+    "instructions.codex": 17031,
     "list-models.fixture": 2430,
-    "visible-tools": 17477
+    "visible-tools": 17487
   }
 }
