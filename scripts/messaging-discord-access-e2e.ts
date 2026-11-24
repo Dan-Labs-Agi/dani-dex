@@ -1083,7 +1083,7 @@ try {
         await received(id);
         assert.match(
           await promptOf(services, GUILD_ONE, id, CHANNEL_ONE),
-          /--- the message this one replies to \(context\) ---\n\[2026-10-19T11:40:00\.000Z\] Ticket Tool: @Bob Welcome\n\(Embed\)\nSupport will be with you shortly\. Opened by @Kamil\.\nFooter: TicketTool\.xyz - Ticketing without clutter\n\(Embed\)\nWhat do you need\?: ```Bug```\nOpenBot version: ```0\.59\.0```\n--- message ---\nplease look at this ticket/u,
+          /--- the message this one replies to \(context\) ---\n\[2026-10-19T11:40:00\.000Z\] Ticket Tool: @Bob Welcome\n\(Embed\)\nSupport will be with you shortly\. Opened by @Kamil\.\nFooter: TicketTool\.xyz - Ticketing without clutter\n\(Embed\)\nWhat do you need\?: ```Bug```\ndani-dex version: ```0\.59\.0```\n--- message ---\nplease look at this ticket/u,
         );
 
         channelOne.push({
