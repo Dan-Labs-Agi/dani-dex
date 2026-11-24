@@ -8,7 +8,7 @@ import { z } from "zod";
 const ROOT = resolve(import.meta.dirname, "..");
 const WORK = join(ROOT, ".openbot-build", "released-schema-fixtures");
 const OUTPUT = join(ROOT, "src", "backend", "released-schemas", "releases.json");
-const SCHEMA_MODULE = "src/backend/openbot-database-schema.ts";
+const SCHEMA_MODULES = ["src/backend/openbot-database-schema.ts", "src/backend/dani-dex-database-schema.ts"];
 const FIRST_DATABASE_TAG = "v0.1.12";
 const APPLIED_AT = "2026-01-01T00:00:00.000Z";
 
@@ -26,12 +26,13 @@ const childModule = argumentValue("dump");
 const childDatabase = argumentValue("db");
 if (childModule && childDatabase) {
   const source = await readFile(childModule, "utf8");
-  const schema: { migrateOpenBotDatabase: (db: DatabaseSync, options: unknown) => void } = await import(childModule);
+  const schema: Record<string, unknown> = await import(childModule);
+  const migrate = (schema.migrateOpenBotDatabase ?? schema.migrateDaniDexDatabase) as
+    | ((db: DatabaseSync, options: unknown) => void)
+    | undefined;
+  if (!migrate) throw new Error(`No migrate function in ${childModule}.`);
   const db = new DatabaseSync(childDatabase);
-  schema.migrateOpenBotDatabase(
-    db,
-    source.includes("OpenBotMigrationOptions") ? { appliedAt: APPLIED_AT } : APPLIED_AT,
-  );
+  migrate(db, source.includes("MigrationOptions") ? { appliedAt: APPLIED_AT } : APPLIED_AT);
   const shadowTables = new Set(
     db
       .prepare("SELECT name FROM pragma_table_list WHERE type = 'shadow'")
@@ -92,11 +93,19 @@ async function exportTag(tag: string): Promise<string> {
     maxBuffer: 512 * 1024 * 1024,
   });
   execFileSync("tar", ["-x", "-C", directory], { input: archive });
-  await mkdir(join(directory, "node_modules", "@openbot"), { recursive: true });
-  for (const name of git("ls-tree", "--name-only", `${tag}:packages`).split("\n").filter(Boolean)) {
-    await symlink(join(directory, "packages", name), join(directory, "node_modules", "@openbot", name), "dir");
+  for (const scope of ["@openbot", "@dani-dex"]) {
+    await mkdir(join(directory, "node_modules", scope), { recursive: true });
+    for (const name of git("ls-tree", "--name-only", `${tag}:packages`).split("\n").filter(Boolean)) {
+      await symlink(join(directory, "packages", name), join(directory, "node_modules", scope, name), "dir");
+    }
   }
-  return join(directory, SCHEMA_MODULE);
+  for (const candidate of SCHEMA_MODULES) {
+    try {
+      await readFile(join(directory, candidate), "utf8");
+      return join(directory, candidate);
+    } catch {}
+  }
+  throw new Error(`No database schema module in ${tag}: ${SCHEMA_MODULES.join(", ")}`);
 }
 
 function dumpDatabase(schemaModule: string, database: string): Dump {
