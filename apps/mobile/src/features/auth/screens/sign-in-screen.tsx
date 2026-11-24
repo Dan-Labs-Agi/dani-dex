@@ -364,6 +364,7 @@ export function SignInScreen({ notice }: { notice?: SignInNotice }) {
             onToggleHelp={() => undefined}
             onScan={() => undefined}
             onEmail={() => undefined}
+            onGoogle={signIn.googleAvailable ? () => undefined : undefined}
             onLayout={setOptionsHeight}
             onHelpLayout={setHelpHeight}
             reduced={reduced}
@@ -389,6 +390,7 @@ export function SignInScreen({ notice }: { notice?: SignInNotice }) {
               onToggleHelp={() => setHelpOpen((open) => !open)}
               onScan={openScanner}
               onEmail={signIn.openEmail}
+              onGoogle={signIn.googleAvailable ? signIn.startGoogle : undefined}
               reduced={reduced}
             />
           </Animated.View>

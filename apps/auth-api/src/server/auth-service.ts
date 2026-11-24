@@ -324,6 +324,53 @@ export class AuthService {
     (operation) => operation.pipe(Effect.mapError(authFailure), Effect.provide(this.#layer)),
   ).bind(this);
 
+  readonly exchangeMobileGoogleLogin = Effect.fn("AuthService.exchangeMobileGoogleLogin")(
+    function* (
+      this: AuthService,
+      input: {
+        email: string;
+        sourceIp: string;
+        device: MobileAuthDeviceIdentity;
+        referralCode?: string | null;
+      },
+    ): Effect.fn.Return<{ sessionToken: string; user: AuthUser }, AuthWorkflowFailure, AuthDependencies> {
+      const dependencies = yield* AuthDependencies;
+      const device = yield* authValidate(() => normalizeMobileDevice(input.device));
+      const now = dependencies.now();
+      yield* this.#enforceRateLimit(`google:ip:${normalizeSourceIp(input.sourceIp)}`, 30, now);
+      const email = normalizeEmailAddress(input.email);
+      if (!email) {
+        return yield* new AuthServiceError(400, "invalid_google_account", "The Google account has no usable email.");
+      }
+      const result = yield* dependencies.repository.verifyExternalEmailLogin({
+        email,
+        now,
+        session: {
+          id: crypto.randomUUID(),
+          token: randomToken(),
+          expiresAt: PERSISTENT_SESSION_EXPIRES_AT,
+        },
+        device,
+      });
+      if (result.created) {
+        dependencies.analytics.track(result.session.user.id, {
+          name: "account_created",
+          surface: "mobile",
+          firstTouch: null,
+        });
+        const { referrals } = dependencies;
+        if (input.referralCode && referrals) {
+          yield* referrals
+            .record(result.session.user.id, input.referralCode)
+            .pipe(Effect.catch(() => Effect.sync(() => console.warn("Invite link save failed."))));
+        }
+      }
+      yield* dependencies.flushSessionRevocations();
+      return result.session;
+    },
+    (operation) => operation.pipe(Effect.mapError(authFailure), Effect.provide(this.#layer)),
+  ).bind(this);
+
   readonly #verifyEmailChallenge = Effect.fn("AuthService.verifyEmailChallenge")(function* (
     this: AuthService,
     input: {

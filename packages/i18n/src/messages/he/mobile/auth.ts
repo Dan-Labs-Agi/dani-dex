@@ -32,6 +32,8 @@ export const messages = {
   "mobile.auth.signIn.helpStep2": "2. עוברים אל הגדרות ← Mobile Connect.",
   "mobile.auth.signIn.helpStep3": "3. בוחרים ביצירת קוד QR וסורקים אותו כאן.",
   "mobile.auth.signIn.emailButton": "המשך עם אימייל",
+  "mobile.auth.signIn.googleButton": "המשך עם Google",
+  "mobile.auth.signIn.googleFailed": "ההתחברות עם Google לא הושלמה. נסה שוב.",
   "mobile.auth.done.title": "מחובר",
   "mobile.auth.done.body": "התחברת בהצלחה.",
   "mobile.auth.email.title": "התחברות עם אימייל",

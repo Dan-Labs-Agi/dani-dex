@@ -9,7 +9,9 @@ import {
   type MobileEmailChallenge,
   MobileEmailSignInError,
   type MobileSession,
+  MOBILE_GOOGLE_SIGN_IN_AVAILABLE,
   signInMobileWithCompany,
+  signInMobileWithGoogle,
   startMobileEmailSignIn,
   verifyMobileEmailCode,
 } from "@/features/auth/api/mobile-auth";
@@ -64,7 +66,7 @@ export function useEmailSignIn({
   const [codeIssue, setCodeIssue] = useState<SignInIssue | null>(null);
   const [rejection, setRejection] = useState(0);
   const [notice, setNotice] = useState<string | null>(null);
-  const [pending, setPending] = useState<"send" | "resend" | "verify" | "company" | null>(null);
+  const [pending, setPending] = useState<"send" | "resend" | "verify" | "company" | "google" | null>(null);
   const [companyEmail, setCompanyEmail] = useState<string | null>(null);
   const [verified, setVerified] = useState(false);
   const [needsNewCode, setNeedsNewCode] = useState(false);
@@ -219,6 +221,38 @@ export function useEmailSignIn({
     }
   }
 
+  async function signInWithGoogle() {
+    setPending("google");
+    setEmailIssue(null);
+    const scope = mobileAnalytics.scope();
+    const started = performance.now();
+    try {
+      const session = await signInMobileWithGoogle().catch((error: unknown) => {
+        scope.track("account_sign_in_completed", {
+          method: "google",
+          result: "failed",
+          failure_code: "operation_failed",
+          cause_code: classifyFailure(error),
+          duration_ms: performance.now() - started,
+        });
+        throw error;
+      });
+      scope.track("account_sign_in_completed", {
+        method: "google",
+        result: session ? "succeeded" : "cancelled",
+        duration_ms: performance.now() - started,
+      });
+      if (session) await finish(session);
+    } catch (error) {
+      const issue = issueFrom(error, t("mobile.auth.signIn.googleFailed"));
+      if (issue.retryAfterSeconds) setBlockedUntil(Date.now() + issue.retryAfterSeconds * 1_000);
+      setEmailIssue(issue);
+      reject();
+    } finally {
+      setPending(null);
+    }
+  }
+
   async function verify(value: string) {
     if (!challenge || pending || verified || needsNewCode) return;
     setPending("verify");
@@ -246,7 +280,7 @@ export function useEmailSignIn({
 
   const leaving = useRef(false);
   async function back() {
-    if (pending === "send" || pending === "verify" || pending === "company" || verified || leaving.current) return;
+    if (pending === "send" || pending === "verify" || pending === "company" || pending === "google" || verified || leaving.current) return;
     const target = step === "code" ? "email" : "options";
     if (target === "options") {
       leaving.current = true;
@@ -286,6 +320,9 @@ export function useEmailSignIn({
     resendCode: () => void requestCode("resend"),
     sending: pending === "send" || pending === "company",
     companySignIn: pending === "company",
+    startGoogle: () => void signInWithGoogle(),
+    googleAvailable: MOBILE_GOOGLE_SIGN_IN_AVAILABLE,
+    googleSignIn: pending === "google",
     usesCompanySignIn: companyEmail !== null && companyEmail === normalizeEmailAddress(email),
     resending: pending === "resend",
     retryIn,

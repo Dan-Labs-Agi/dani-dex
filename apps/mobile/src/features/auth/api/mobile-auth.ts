@@ -50,7 +50,7 @@ export interface MobileSession {
   signIn?: AccountSignIn;
 }
 
-type AccountSignIn = "email" | "company";
+type AccountSignIn = "email" | "company" | "google";
 type MobileCredential = Pick<MobileSession, "apiUrl" | "sessionToken">;
 
 export function redeemMobileConnectUrl(value: string): Promise<MobileSession> {
@@ -244,6 +244,102 @@ export function signInMobileWithCompany(email: string): Promise<MobileSession | 
 
 function randomToken(): string {
   return bytesToBase64Url(Crypto.getRandomBytes(32));
+}
+
+// iOS-type OAuth client ID whose reversed scheme the app registers as a deep
+// link. Empty hides the Google button until the EAS keystore and the OAuth
+// client exist.
+const GOOGLE_MOBILE_CLIENT_ID = "";
+export const MOBILE_GOOGLE_SIGN_IN_AVAILABLE = GOOGLE_MOBILE_CLIENT_ID.length > 0;
+
+const GOOGLE_AUTHORIZE_URL = "https://accounts.google.com/o/oauth2/v2/auth";
+const GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token";
+
+function googleRedirectUri(): string {
+  const prefix = GOOGLE_MOBILE_CLIENT_ID.replace(/\.apps\.googleusercontent\.com$/u, "");
+  return `com.googleusercontent.apps.${prefix}:/oauth2redirect`;
+}
+
+function queryString(params: Record<string, string>): string {
+  return Object.entries(params)
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join("&");
+}
+
+function returnParam(url: string, name: string): string | null {
+  const query = url.split("#")[0]?.split("?")[1] ?? "";
+  for (const pair of query.split("&")) {
+    if (!pair) continue;
+    const [key, ...rest] = pair.split("=");
+    if (key === name) return decodeURIComponent(rest.join("=").replace(/\+/gu, " "));
+  }
+  return null;
+}
+
+function googleSignInFailed(): MobileEmailSignInError {
+  return new MobileEmailSignInError(currentText().t("mobile.auth.signIn.googleFailed"), "google_sign_in_failed");
+}
+
+export function signInMobileWithGoogle(): Promise<MobileSession | null> {
+  return exclusiveSignIn(async () => {
+    if (!MOBILE_GOOGLE_SIGN_IN_AVAILABLE) {
+      throw new MobileEmailSignInError(
+        currentText().t("mobile.auth.signIn.googleFailed"),
+        "google_sign_in_unavailable",
+      );
+    }
+    void retryMobileSessionRevocations();
+    const current = await serializeMobileSessionStorage(() => readStoredSessionAndRevokeInvalid(true));
+    if (current) throw new Error(currentText().t("mobile.auth.error.alreadySignedIn"));
+    const verifier = randomToken();
+    const clientState = randomToken();
+    const challenge = base64Url(
+      await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, verifier, {
+        encoding: Crypto.CryptoEncoding.BASE64,
+      }),
+    );
+    const redirectUri = googleRedirectUri();
+    const authorizationUrl = `${GOOGLE_AUTHORIZE_URL}?${queryString({
+      client_id: GOOGLE_MOBILE_CLIENT_ID,
+      redirect_uri: redirectUri,
+      response_type: "code",
+      scope: "openid email profile",
+      state: clientState,
+      code_challenge: challenge,
+      code_challenge_method: "S256",
+    })}`;
+    const result = await openAuthSessionAsync(authorizationUrl, redirectUri);
+    if (result.type !== "success") return null;
+    if (returnParam(result.url, "state") !== clientState) throw googleSignInFailed();
+    const code = returnParam(result.url, "code");
+    if (!code) throw googleSignInFailed();
+    const token = await fetch(GOOGLE_TOKEN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: queryString({
+        client_id: GOOGLE_MOBILE_CLIENT_ID,
+        code,
+        code_verifier: verifier,
+        redirect_uri: redirectUri,
+        grant_type: "authorization_code",
+      }),
+    }).catch(() => null);
+    const tokenBody: unknown = token ? await token.json().catch(() => null) : null;
+    const idToken = isDynamicRecord(tokenBody) && isString(tokenBody.id_token) ? tokenBody.id_token : null;
+    if (!token?.ok || !idToken) throw googleSignInFailed();
+    const device = await mobileDeviceIdentity();
+    const apiUrl = mobileAccountApiUrl();
+    const { response, body } = await mobileEmailRequest("/v1/mobile-auth/google/exchange", {
+      idToken,
+      deviceId: device.id,
+      deviceName: device.name,
+      platform: device.platform,
+    });
+    if (!response.ok) throw mobileEmailError(response, body, "mobile.auth.signIn.googleFailed");
+    const session = decodeMobileSession(body, apiUrl, "google");
+    await saveMobileSession(session);
+    return session;
+  });
 }
 
 function base64Url(base64: string): string {
