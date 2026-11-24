@@ -64,11 +64,11 @@ export const messages = defineMessages("mobile.marketplace", {
   "mobile.marketplace.facts.accessMac": "Mac only",
   "mobile.marketplace.permission.admin": "Only owners and admins can install from the Marketplace.",
   "mobile.marketplace.permission.unavailable":
-    "This server is offline, or its OpenBot is too old for this. Update OpenBot on the computer that runs it.",
-  "mobile.marketplace.error.agentUnsupported": "Update OpenBot on the server to add agents from the Marketplace.",
+    "This server is offline, or its dani-dex is too old for this. Update dani-dex on the computer that runs it.",
+  "mobile.marketplace.error.agentUnsupported": "Update dani-dex on the server to add agents from the Marketplace.",
   "mobile.marketplace.error.agentUpdateUnsupported":
-    "Update OpenBot on the server to update agents from the Marketplace.",
-  "mobile.marketplace.error.signInUnsupported": "Update OpenBot on the server to sign in to apps from the phone.",
+    "Update dani-dex on the server to update agents from the Marketplace.",
+  "mobile.marketplace.error.signInUnsupported": "Update dani-dex on the server to sign in to apps from the phone.",
   "mobile.marketplace.agent.add": "Add agent",
   "mobile.marketplace.agent.adding": "Adding agent",
   "mobile.marketplace.agent.update": "Update agent",
@@ -110,10 +110,10 @@ export const messages = defineMessages("mobile.marketplace", {
   "mobile.marketplace.app.connectFailed": "The app did not connect.",
   "mobile.marketplace.app.linkInvalid": "Use an https link on {hostname}.",
   "mobile.marketplace.app.docs": "Get a key",
-  "mobile.marketplace.app.local": "This app runs on the computer with OpenBot. Set it up on that computer.",
-  "mobile.marketplace.app.needsMac": "This app works only on a Mac that runs OpenBot, and this server is not a Mac.",
+  "mobile.marketplace.app.local": "This app runs on the computer with dani-dex. Set it up on that computer.",
+  "mobile.marketplace.app.needsMac": "This app works only on a Mac that runs dani-dex, and this server is not a Mac.",
   "mobile.marketplace.app.relayUnsupported":
-    "This app needs a browser sign-in. Update OpenBot on the server, or connect the app on the computer.",
+    "This app needs a browser sign-in. Update dani-dex on the server, or connect the app on the computer.",
   "mobile.marketplace.app.waiting": "Waiting for the sign-in page…",
   "mobile.marketplace.app.openAgain": "Open the sign-in page again",
   "mobile.marketplace.app.pasteHint":

@@ -1,10 +1,10 @@
 Pod::Spec.new do |s|
   s.name           = 'OpenBotShortcuts'
   s.version        = '1.0.0'
-  s.summary        = 'The link between the OpenBot shortcuts and JavaScript'
+  s.summary        = 'The link between the dani-dex shortcuts and JavaScript'
   s.description    = 'Gives the requests of the App Intents to JavaScript and the card of a shortcut session to the snippet.'
   s.license        = 'PolyForm-Noncommercial-1.0.0'
-  s.author         = 'OpenBot'
+  s.author         = 'dani-dex'
   s.homepage       = 'https://openbot.run'
   s.platforms      = { :ios => '16.4' }
   s.swift_version  = '5.9'

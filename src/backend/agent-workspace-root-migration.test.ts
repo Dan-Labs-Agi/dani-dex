@@ -21,14 +21,14 @@ function databaseAt(version: number): DatabaseSync {
 
 const posixUuid = "1b4e28ba-2fa1-41d2-883f-0016d3cca427";
 const windowsUuid = "6fa459ea-ee8a-4ca4-894e-db77e160355e";
-const posixWorkspace = `/Users/user/OpenBot/Bots/bot-${posixUuid}`;
-const windowsWorkspace = `C:\\Users\\user\\OpenBot\\Bots\\bot-${windowsUuid}`;
+const posixWorkspace = `/Users/user/dani-dex/Bots/bot-${posixUuid}`;
+const windowsWorkspace = `C:\\Users\\user\\dani-dex\\Bots\\bot-${windowsUuid}`;
 
 const quotedPaths = [
   `${posixWorkspace}/notes.md`,
   `${windowsWorkspace}\\plan.md`,
-  "/Users/user/OpenBot/Botsy/keep.md",
-  "/Users/user/Projects/OpenBot/Bots/repo/README.md",
+  "/Users/user/dani-dex/Botsy/keep.md",
+  "/Users/user/Projects/dani-dex/Bots/repo/README.md",
 ];
 
 function seed(db: DatabaseSync): void {
@@ -47,7 +47,7 @@ function seed(db: DatabaseSync): void {
     "chief",
     "openbot-thread-chief",
     2,
-    JSON.stringify({ id: "chief", workspacePath: "/Users/user/OpenBot/Bots/chief" }),
+    JSON.stringify({ id: "chief", workspacePath: "/Users/user/dani-dex/Bots/chief" }),
   );
   db.exec(`INSERT INTO projection_threads
       (thread_id, agent_id, title, active_turn_id, created_at, updated_at, last_event_sequence)
@@ -86,7 +86,7 @@ function workspacePaths(db: DatabaseSync) {
 }
 
 describe("agent workspace root migration", () => {
-  it("moves each stored root from OpenBot/Bots to OpenBot/Agents once, in every form", () => {
+  it("moves each stored root from dani-dex/Bots to dani-dex/Agents once, in every form", () => {
     const db = databaseAt(12);
     seed(db);
     migrateOpenBotDatabase(db);
@@ -94,23 +94,23 @@ describe("agent workspace root migration", () => {
     const posixAgent = `agent-${posixUuid}`;
     const windowsAgent = `agent-${windowsUuid}`;
     expect(workspacePaths(db)).toEqual([
-      { agent_id: posixAgent, path: `/Users/user/OpenBot/Agents/${posixAgent}` },
-      { agent_id: windowsAgent, path: `C:\\Users\\user\\OpenBot\\Agents\\${windowsAgent}` },
-      { agent_id: "chief", path: "/Users/user/OpenBot/Agents/chief" },
+      { agent_id: posixAgent, path: `/Users/user/dani-dex/Agents/${posixAgent}` },
+      { agent_id: windowsAgent, path: `C:\\Users\\user\\dani-dex\\Agents\\${windowsAgent}` },
+      { agent_id: "chief", path: "/Users/user/dani-dex/Agents/chief" },
     ]);
     const message = db
       .prepare("SELECT json_extract(message_json, '$.text') AS text FROM projection_thread_messages")
       .get();
     expect(String(message?.text).split("\n")).toEqual([
-      `/Users/user/OpenBot/Agents/${posixAgent}/notes.md`,
-      `C:\\Users\\user\\OpenBot\\Agents\\${windowsAgent}\\plan.md`,
-      "/Users/user/OpenBot/Botsy/keep.md",
-      "/Users/user/Projects/OpenBot/Bots/repo/README.md",
+      `/Users/user/dani-dex/Agents/${posixAgent}/notes.md`,
+      `C:\\Users\\user\\dani-dex\\Agents\\${windowsAgent}\\plan.md`,
+      "/Users/user/dani-dex/Botsy/keep.md",
+      "/Users/user/Projects/dani-dex/Bots/repo/README.md",
     ]);
     expect(contents(db).attachments).toEqual([
-      { owner_id: windowsAgent, path: `C:\\Users\\user\\OpenBot\\Agents\\${windowsAgent}\\plan.md` },
+      { owner_id: windowsAgent, path: `C:\\Users\\user\\dani-dex\\Agents\\${windowsAgent}\\plan.md` },
     ]);
-    expect(contents(db).outbox).toEqual([{ path: `/Users/user/OpenBot/Agents/${posixAgent}/old.md` }]);
+    expect(contents(db).outbox).toEqual([{ path: `/Users/user/dani-dex/Agents/${posixAgent}/old.md` }]);
     expect(db.prepare("SELECT MAX(version) AS version FROM schema_migrations").get()).toEqual({ version: 68 });
     expect(db.prepare("PRAGMA foreign_keys").get()).toEqual({ foreign_keys: 1 });
     expect(db.prepare("PRAGMA foreign_key_check").all()).toEqual([]);
@@ -131,9 +131,9 @@ describe("agent workspace root migration", () => {
     db.exec("DROP TRIGGER fail_marker");
     migrateOpenBotDatabase(db);
     expect(workspacePaths(db)).toEqual([
-      { agent_id: `agent-${posixUuid}`, path: `/Users/user/OpenBot/Agents/agent-${posixUuid}` },
-      { agent_id: `agent-${windowsUuid}`, path: `C:\\Users\\user\\OpenBot\\Agents\\agent-${windowsUuid}` },
-      { agent_id: "chief", path: "/Users/user/OpenBot/Agents/chief" },
+      { agent_id: `agent-${posixUuid}`, path: `/Users/user/dani-dex/Agents/agent-${posixUuid}` },
+      { agent_id: `agent-${windowsUuid}`, path: `C:\\Users\\user\\dani-dex\\Agents\\agent-${windowsUuid}` },
+      { agent_id: "chief", path: "/Users/user/dani-dex/Agents/chief" },
     ]);
   });
 });

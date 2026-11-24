@@ -621,7 +621,7 @@ export class RemoteTeamDirectoryClient {
                     ? { Authorization: `Bearer ${this.#authentication.token}` }
                     : {}),
                   ...(browser
-                    ? { "X-OpenBot-Browser": "1", "Content-Type": "application/json" }
+                    ? { "X-dani-dex-Browser": "1", "Content-Type": "application/json" }
                     : options.body
                       ? { "Content-Type": "application/json" }
                       : {}),

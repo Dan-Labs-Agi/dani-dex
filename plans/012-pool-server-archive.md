@@ -67,7 +67,7 @@
 | A dispute in the first 30 days of the subscription | `canceled`; the server is deleted (`deleteForRefund`) | Deleted | Never; an earlier archive is deleted |
 | A dispute of a plan 30 days or older | `canceled` (the webhook cancels it) | Stops, keeps its disk | At once, kept 14 days |
 | Cancelled and refunded, in either order | `canceled`; the server is deleted (`deleteForRefund`) | Deleted | Never; an earlier archive is deleted |
-| The owner renews while the archive runs | new subscription | The archive job sees `desired_state = 'running'`, stops, deletes the partial upload, keeps the machine and starts OpenBot | No |
+| The owner renews while the archive runs | new subscription | The archive job sees `desired_state = 'running'`, stops, deletes the partial upload, keeps the machine and starts dani-dex | No |
 | The owner renews after the archive | new subscription | Restore on a free machine | Read, then deleted after a restore that signed in |
 | An `unpaid`, `past_due` or `paused` plan that Stripe keeps open | open | As today: stays on the machine with no limit, the operator decides | No |
 
@@ -119,7 +119,7 @@ in the GitHub `cloudflare-production` Environment, and the deploy makes them Wor
   warned about).
 - **Done (2026-11-19)**: `scripts/hosting/pool-archive-e2e.ts` on `pool-test-01` (12727743, DE):
   prepare, seed, export, reinstall, import, start. 6 of 6 checks pass: same archive sha256, 446 facts
-  (file sha256, type, mode, owner, link, crontab) with none missing or added, OpenBot runs after the
+  (file sha256, type, mode, owner, link, crontab) with none missing or added, dani-dex runs after the
   import. Archive 116 MB; export 56 s, upload and import 39 s, reinstall and prepare 202 s. Report:
   `.openbot-build/pool-archive-e2e.json`.
 - **Timing (2026-11-19, `--extra-gb=5`)**: 5.75 GB server, 5.80 GB archive in 56 parts, 9 of 9 checks
@@ -153,7 +153,7 @@ in the GitHub `cloudflare-production` Environment, and the deploy makes them Wor
 
 ### 3. Archive job in `leaseweb-pool.ts sync`
 
-- **Evidence**: `sync` already stops OpenBot after a plan ends and reinstalls a machine after a delete
+- **Evidence**: `sync` already stops dani-dex after a plan ends and reinstalls a machine after a delete
   (`docs/hosted-servers.md` "Reuse a pool machine").
 - **Change**: for a stopped row with an ended plan (fresh Stripe read) and no verified archive: run
   `export - | age -r <recipient> | split --filter=<upload part>` on the machine over SSH, with
@@ -180,10 +180,10 @@ in the GitHub `cloudflare-production` Environment, and the deploy makes them Wor
   (`docs/hosted-servers.md:1158`).
 - **Change**: a renewal of an archived server takes a ready machine as a payment does, and the answer
   gets a `restore` part: a presigned URL, the unwrapped key and the checksum. `openbot-pool-wait`
-  downloads, decrypts, checks, runs `import`, then starts OpenBot. A machine that does not send a new
+  downloads, decrypts, checks, runs `import`, then starts dani-dex. A machine that does not send a new
   `restoreVersion` field gets no restore assignment.
 - **No ready machine** (decision 5): the Worker makes a boat sandbox as for a new server, and its
-  setup script downloads, decrypts and imports the archive before OpenBot starts. This needs a
+  setup script downloads, decrypts and imports the archive before dani-dex starts. This needs a
   sandbox mode of `import` (item 1b). The Worker sends one alert to
   `HOSTED_POOL_ALERT_WEBHOOK_URL`, so the operator can move the server to a VPS later.
 - **Not confirmed**: that an archive from a pool machine imports into the boat image: agent CLIs and
@@ -202,7 +202,7 @@ in the GitHub `cloudflare-production` Environment, and the deploy makes them Wor
     clears the token of that machine and alerts "prepare it again".
   - The machine sends `restored: <serverId>` after `import`. The Worker sets `restored_at`,
     `observed_state = 'running'`, clears the machine token and sends `ready` (reason `restart`).
-    Then the machine starts OpenBot, which signs in with the session from the archive.
+    Then the machine starts dani-dex, which signs in with the session from the archive.
   - A restore with no report after `POOL_RESTORE_LOST_AFTER_MS` (3 hours) goes back to
     `awaiting_payment`; the machine leaves the pool with an alert: it can hold customer data.
   - `sync` does not start a restoring server (`start` query) and deletes the archive after
@@ -216,7 +216,7 @@ in the GitHub `cloudflare-production` Environment, and the deploy makes them Wor
     `B2_WORKER_APPLICATION_KEY_EU`.
   - Machine: `openbot-pool-wait` sends `restoreVersion: 1` when `move-from-boat.sh` and `age` are
     present, gives the key and the URL to `move-from-boat.sh restore <sha256>` on stdin, reports
-    `restored`, then starts OpenBot.
+    `restored`, then starts dani-dex.
   - Clients: start step `restore` ("Restoring data") in the connection notice of the desktop and the
     web client; the badge "Restoring data" in settings and billing; mobile shows the same state. An
     ended pool server shows the date until which its data is kept.

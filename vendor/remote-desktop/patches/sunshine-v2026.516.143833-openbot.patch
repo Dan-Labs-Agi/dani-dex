@@ -20,12 +20,12 @@ index ccfb8d7a..8b0b6c33 100644
      list(APPEND SUNSHINE_DEFINITIONS EGL_NO_X11=1)
  endif()
  
-+# OpenBot: the prebuilt FFmpeg needs vaMapBuffer2 also when libva is older than 2.21.
++# dani-dex: the prebuilt FFmpeg needs vaMapBuffer2 also when libva is older than 2.21.
 +if(NOT FREEBSD)
 +    list(APPEND PLATFORM_TARGET_FILES "${CMAKE_SOURCE_DIR}/src/platform/linux/openbot_libva_compat.cpp")
 +endif()
 +
-+# OpenBot: graphics.cpp and misc.cpp call libcap on every Linux build, also when DRM is disabled.
++# dani-dex: graphics.cpp and misc.cpp call libcap on every Linux build, also when DRM is disabled.
 +if(NOT FREEBSD AND NOT LIBCAP_FOUND)
 +    find_package(LIBCAP REQUIRED)
 +    include_directories(SYSTEM ${LIBCAP_INCLUDE_DIRS})
@@ -2814,7 +2814,7 @@ index 00000000..fb0ca3b7
 @@ -0,0 +1,403 @@
 +/**
 + * @file src/platform/linux/input/openbot_xtest.cpp
-+ * @brief Definitions for the OpenBot XTest input fallback.
++ * @brief Definitions for the dani-dex XTest input fallback.
 + */
 +// standard includes
 +#include <cstdlib>
@@ -3223,7 +3223,7 @@ index 00000000..7fb4c41a
 @@ -0,0 +1,42 @@
 +/**
 + * @file src/platform/linux/input/openbot_xtest.h
-+ * @brief Declarations for the OpenBot XTest input fallback.
++ * @brief Declarations for the dani-dex XTest input fallback.
 + */
 +#pragma once
 +
@@ -3271,7 +3271,7 @@ index 00000000..24572465
 @@ -0,0 +1,16 @@
 +/**
 + * @file src/platform/linux/openbot_libva_compat.cpp
-+ * @brief OpenBot: vaMapBuffer2 for a libva older than 2.21.
++ * @brief dani-dex: vaMapBuffer2 for a libva older than 2.21.
 + *
 + * The prebuilt FFmpeg calls vaMapBuffer2, which libva adds in 2.21. Ubuntu 24.04 has libva 2.20,
 + * so without this definition Sunshine does not link there. vaMapBuffer maps the buffer with the
@@ -3348,7 +3348,7 @@ index 00000000..3821983e
 --- /dev/null
 +++ b/src/platform/macos/openbot_setup.h
 @@ -0,0 +1,12 @@
-+// OpenBot additions to Sunshine, distributed under GPL-3.0.
++// dani-dex additions to Sunshine, distributed under GPL-3.0.
 +#pragma once
 +#include <functional>
 +#include <ApplicationServices/ApplicationServices.h>
@@ -3366,7 +3366,7 @@ index 00000000..c31c8cf0
 --- /dev/null
 +++ b/src/platform/macos/openbot_setup.mm
 @@ -0,0 +1,201 @@
-+// OpenBot additions to Sunshine, distributed under GPL-3.0.
++// dani-dex additions to Sunshine, distributed under GPL-3.0.
 +#import <AppKit/AppKit.h>
 +#import <CoreGraphics/CoreGraphics.h>
 +#include <mutex>
@@ -3402,7 +3402,7 @@ index 00000000..c31c8cf0
 +  [[NSColor windowBackgroundColor] setFill];
 +  NSRectFill(self.bounds);
 +  NSDictionary *attributes = @{NSFontAttributeName: [NSFont systemFontOfSize:20], NSForegroundColorAttributeName: [NSColor labelColor]};
-+  [@"OpenBot remote desktop test" drawAtPoint:NSMakePoint(24, 240) withAttributes:attributes];
++  [@"dani-dex remote desktop test" drawAtPoint:NSMakePoint(24, 240) withAttributes:attributes];
 +  [@"Click the target through the remote connection." drawAtPoint:NSMakePoint(24, 198) withAttributes:attributes];
 +  [[NSColor controlAccentColor] setFill];
 +  NSRectFill(NSMakeRect(24, 110, 390, 60));
@@ -3498,7 +3498,7 @@ index 00000000..c31c8cf0
 +      panel = [[NSWindow alloc] initWithContentRect:NSMakeRect(0, 0, 480, 290) styleMask:NSWindowStyleMaskTitled backing:NSBackingStoreBuffered defer:NO];
 +      panel.releasedWhenClosed = NO;
 +      panel.movable = NO;
-+      panel.title = @"OpenBot remote desktop test";
++      panel.title = @"dani-dex remote desktop test";
 +      panel.level = NSFloatingWindowLevel;
 +      panel.contentView = [[OpenBotTestView alloc] initWithFrame:NSMakeRect(0, 0, 480, 290)];
 +      NSScreen *target = NSScreen.screens.firstObject;
@@ -3868,7 +3868,7 @@ index 984481f6..f8118465 100644
      list(APPEND TEST_SOURCES ${MACOS_TEST_SOURCES})
  endif ()
  
-+# Compile only the backported security regressions for OpenBot's runtime build.
++# Compile only the backported security regressions for dani-dex's runtime build.
 +if(OPENBOT_SECURITY_TESTS)
 +    set(TEST_SOURCES
 +        "${CMAKE_SOURCE_DIR}/tests/tests_main.cpp"
@@ -4878,7 +4878,7 @@ index 00000000..ee8c32dd
 --- /dev/null
 +++ b/tests/unit/test_openbot_setup.mm
 @@ -0,0 +1,90 @@
-+// OpenBot additions to Sunshine, distributed under GPL-3.0.
++// dani-dex additions to Sunshine, distributed under GPL-3.0.
 +#import <AppKit/AppKit.h>
 +#include <stdexcept>
 +#include "../../src/platform/macos/openbot_setup.mm"

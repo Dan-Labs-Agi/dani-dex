@@ -1,6 +1,6 @@
-# OpenBot Auth API
+# dani-dex Auth API
 
-This TanStack Start and Solid 2 package is the central OpenBot account API. It
+This TanStack Start and Solid 2 package is the central dani-dex account API. It
 runs on Cloudflare Workers, stores account and authentication records in D1,
 and stores account avatars in R2. Users sign in with an eight-character
 one-time email code. D1 stores hashes instead of plaintext codes, session tokens,
@@ -107,7 +107,7 @@ not the Stripe test clock.
 The `portal` scenario prints a Customer Portal cancel page and waits until you use it. Then it checks
 that the plan change flow of an old app opens the Portal home, and that the Portal has no plan change. The report goes to `.openbot-build/stripe-flows-e2e.json`.
 
-The `boat` scenario runs only when you name it. It pays for a server, waits until OpenBot in the VM
+The `boat` scenario runs only when you name it. It pays for a server, waits until dani-dex in the VM
 signs in and publishes the host, restarts the service to check the stored session, and deletes the
 server. It needs the real `BOAT_API_KEY`, a template from `bun run hosting:template` whose
 `--auth-api-url` reaches your Worker (for example a `cloudflared tunnel --url` to its port), and
@@ -233,7 +233,7 @@ write-only server client. Keep both in the encrypted `.env.production` for local
 the `cloudflare-production` GitHub Environment for CI. Both deployment paths check these values
 before remote changes. Test deployments do not send account analytics.
 
-`GITHUB_APP_PRIVATE_KEY` is the OpenBot GitHub App's private key as a PKCS #8 PEM. GitHub gives a
+`GITHUB_APP_PRIVATE_KEY` is the dani-dex GitHub App's private key as a PKCS #8 PEM. GitHub gives a
 PKCS #1 key; convert it with `openssl pkcs8 -topk8 -nocrypt -in <key>.pem`. With the key, the
 Worker gives the desktop installation tokens, so GitHub shows `openbotgit[bot]` as the author of an
 agent's work. The key also lets `POST /v1/feedback` open an approved bug report or feature idea from the app as
@@ -277,7 +277,7 @@ change it, change it in both places and deploy the Worker.
 Use `bun run api:deploy:test` for the isolated `openbot-auth-api-test` Worker
 and the `openbot-auth-test` D1 database.
 
-As a fallback, set `EMAIL_DELIVERY_WEBHOOK_URL` to an HTTPS endpoint. OpenBot
+As a fallback, set `EMAIL_DELIVERY_WEBHOOK_URL` to an HTTPS endpoint. dani-dex
 sends this JSON:
 
 ```json
@@ -338,7 +338,7 @@ code.
 
 ## Hosted sites
 
-`/v1/sites` takes two optional headers: `OpenBot-Host-Id` and `OpenBot-Host-Token`, the machine token
+`/v1/sites` takes two optional headers: `dani-dex-Host-Id` and `dani-dex-Host-Token`, the machine token
 of a registered server. With them, a request sees only that server's sites, and a new site counts
 against the server's limit: a `server_site_limits` row, else its plan's limit, else the account's shared
 pool (3 sites for each license user, else 1), within an account cap of 300. A wrong token gets 401
@@ -424,13 +424,13 @@ To deploy your own copy of this Worker with your own Signal, see
 host to Apple Push Notification service. The host seals the content for the phone, so the Worker
 cannot read it. The Worker checks the host credential and `LIVE_ACTIVITY_RATE_LIMITER`, makes the
 APNs payload itself, and stores and logs nothing. An update that shows an event that notifies the
-member has an `alert` with the sound of the phone and "OpenBot" as its only text (iOS shows the text
+member has an `alert` with the sound of the phone and "dani-dex" as its only text (iOS shows the text
 on Apple Watch only); a host cannot give the text.
 
 `POST /v2/remote/hosts/:hostId/notification` forwards a sealed iPhone notification in the same way.
 It has its own key in `LIVE_ACTIVITY_RATE_LIMITER`, and it sends nothing for a device session that
 has ended (`RemoteControlPlane.sessionOpen`), because the host does not learn about the end. The
-alert has "OpenBot" as its only text and `mutable-content`; the app opens the sealed bytes.
+alert has "dani-dex" as its only text and `mutable-content`; the app opens the sealed bytes.
 
 The relay is off until `APNS_PRIVATE_KEY` (the `.p8` key text) and `APNS_KEY_ID` are set. Create
 the key in Apple Developer > Keys with the Apple Push Notifications service, then add both to the

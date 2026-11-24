@@ -122,7 +122,7 @@ function landingAgents(at: (minutesAgo: number) => string): ClientAgentSummary[]
     ...fields,
     notifications: true,
     threadId: `thread-${fields.id}`,
-    workspacePath: `/mock/OpenBot/Agents/${fields.id}`,
+    workspacePath: `/mock/dani-dex/Agents/${fields.id}`,
     updatedAt: at(minutesAgo),
     avatarSeed: fields.id,
     avatarHue: hue,
@@ -275,7 +275,7 @@ function landingServers(): ServerSummary[] {
     },
     {
       id: "team",
-      name: "OpenBot team",
+      name: "dani-dex team",
       logoUrl: productionLogoUrl,
       notificationsMuted: false,
       notificationsMutedUntil: null,

@@ -2,7 +2,7 @@
 set -eu
 export PATH=/usr/bin:/bin:/usr/sbin:/sbin LC_ALL=C
 [ "${3:-/}" = / ] || { echo 'Install the Host package on the running startup volume.' >&2; exit 1; }
-ROOT='/Library/Application Support/OpenBot/HostManager'
+ROOT='/Library/Application Support/dani-dex/HostManager'
 check_existing() {
   [ ! -L "$1" ] || exit 1
   if [ -e "$1" ]; then
@@ -12,7 +12,7 @@ check_existing() {
     if ls -lde "$1" | grep -Eq '[0-9]+:.*allow.*(write|append|add_file|add_subdirectory|delete|chown)'; then exit 1; fi
   fi
 }
-for path in / /Library '/Library/Application Support' '/Library/Application Support/OpenBot' "$ROOT" \
+for path in / /Library '/Library/Application Support' '/Library/Application Support/dani-dex' "$ROOT" \
   /Library/LaunchAgents /Library/LaunchDaemons /usr /usr/local /usr/local/bin; do
   check_existing "$path"
   [ ! -e "$path" ] || [ -d "$path" ] || exit 1

@@ -19,10 +19,10 @@ const PLUGIN_INDEX_ROUTE = "/plugins";
 export const PLUGIN_DETAIL_ROUTE = "/plugins/$slug";
 
 export const PLUGINS_DESCRIPTION =
-  "Apps and skills an OpenBot agent can use. Open a plugin in the app, and decide there what it connects to.";
+  "Apps and skills an dani-dex agent can use. Open a plugin in the app, and decide there what it connects to.";
 export const PLUGIN_PAGE_SOCIAL_IMAGE: PageSocialImage = {
   path: "/social/plugin.jpg",
-  alt: "Plant an idea. Your agents do the rest. OpenBot agents among paper trees",
+  alt: "Plant an idea. Your agents do the rest. dani-dex agents among paper trees",
 };
 
 export const SITE_PLUGINS: readonly SitePlugin[] = PLUGIN_CATALOG_INDEX.plugins.flatMap((entry) => {

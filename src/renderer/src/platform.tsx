@@ -28,7 +28,7 @@ const Platform = createSimpleContext({
           })
           .catch(() =>
             setAppInfo({
-              name: "OpenBot",
+              name: "dani-dex",
               version: "unavailable",
               platform: "darwin",
               variant: "production",

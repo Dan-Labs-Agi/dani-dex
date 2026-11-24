@@ -1,7 +1,7 @@
 ### Changed
 
 - When the browser comes back from a sign-in page that is no longer active, the page now tells you to
-  go back to OpenBot and start the sign-in again. Before, it said only "No sign-in is waiting for
+  go back to dani-dex and start the sign-in again. Before, it said only "No sign-in is waiting for
   this. It may have ended."
 
 ### Fixed

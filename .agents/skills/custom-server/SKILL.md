@@ -1,11 +1,11 @@
 ---
 name: custom-server
-description: Set up a Leaseweb VPS as the OpenBot server of one customer (an enterprise or custom server), with the customer as the owner. Use when asked to set up, assign or give a VPS or a dedicated server to a customer or an email, to find a Leaseweb VPS that was just bought, or to continue a custom server setup that stopped.
+description: Set up a Leaseweb VPS as the dani-dex server of one customer (an enterprise or custom server), with the customer as the owner. Use when asked to set up, assign or give a VPS or a dedicated server to a customer or an email, to find a Leaseweb VPS that was just bought, or to continue a custom server setup that stopped.
 ---
 
 # Custom server
 
-A custom server is a Leaseweb VPS that runs OpenBot for one customer. It is not in the hosted pool,
+A custom server is a Leaseweb VPS that runs dani-dex for one customer. It is not in the hosted pool,
 and the Worker does not manage it. `scripts/hosting/leaseweb-pool.ts custom` does all the steps.
 [Leaseweb VPS](../../../docs/hosted-servers.md#leaseweb-vps) is the source for the commands and what
 they do. This skill adds the rules for an agent.
@@ -44,7 +44,7 @@ they do. This skill adds the rules for an agent.
      SSH connection before the greeting.
 
    Stop and tell the developer when the command says that another account is signed in.
-5. Report the reference, the OpenBot version, and the result of the online check and of the D1
+5. Report the reference, the dani-dex version, and the result of the online check and of the D1
    owner check. The owner signs in to the app with that email, sees the server, and invites the
    other members.
 

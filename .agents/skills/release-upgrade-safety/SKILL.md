@@ -1,6 +1,6 @@
 ---
 name: release-upgrade-safety
-description: Audit a pending OpenBot release for upgrade and data-loss hazards before the version is bumped or tagged. Use when asked to cut a release, create or bump a version, prepare a tag, or check whether a change is safe to ship to installed users.
+description: Audit a pending dani-dex release for upgrade and data-loss hazards before the version is bumped or tagged. Use when asked to cut a release, create or bump a version, prepare a tag, or check whether a change is safe to ship to installed users.
 ---
 
 # Release upgrade safety
@@ -189,7 +189,7 @@ bun run pin:opencode-runtime
 Ask two questions and report the answers with the table:
 
 - **Has the pinned version a published security fix?** If so, moving the pin is part of this
-  release, not the next one. A user cannot update Bun themselves: OpenBot downloaded it, OpenBot
+  release, not the next one. A user cannot update Bun themselves: dani-dex downloaded it, dani-dex
   owns it.
 - **Did the range move a pin?** Then read the diff as a dependency change. A moved `assetSha256`
   with an unmoved `version` is a stop and needs a human: the registry does not rewrite a published

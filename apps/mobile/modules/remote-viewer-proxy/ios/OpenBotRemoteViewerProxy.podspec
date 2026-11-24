@@ -1,10 +1,10 @@
 Pod::Spec.new do |s|
   s.name           = 'OpenBotRemoteViewerProxy'
   s.version        = '1.0.0'
-  s.summary        = 'Loopback HTTP and WebSocket server for the OpenBot remote desktop viewer'
+  s.summary        = 'Loopback HTTP and WebSocket server for the dani-dex remote desktop viewer'
   s.description    = 'Listens on 127.0.0.1 and gives each HTTP request and WebSocket message to JavaScript, which sends it to the host.'
   s.license        = 'PolyForm-Noncommercial-1.0.0'
-  s.author         = 'OpenBot'
+  s.author         = 'dani-dex'
   s.homepage       = 'https://openbot.run'
   s.platforms      = { :ios => '16.4' }
   s.swift_version  = '5.9'

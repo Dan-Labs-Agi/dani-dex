@@ -53,7 +53,7 @@ The cut is a **whole turn**: the turn of the chosen agent message, through its l
   results after an assistant boundary (`hermes_state_mutation_branch.py`, `_branch_boundary`). So the
   user never picks a point inside a turn.
 - As in Hermes, the source thread must be **idle**. Hermes refuses with "Stop the current turn before
-  branching this chat." (`require_idle` on source and target). In OpenBot the item is disabled while
+  branching this chat." (`require_idle` on source and target). In dani-dex the item is disabled while
   the source thread has a running turn. Codex refuses a fork of a turn in progress, and an idle source
   gives Claude a stable session file to fork.
 
@@ -109,7 +109,7 @@ which removes its mailbox messages and the files that no other mailbox record us
 shows "file gone". Main-chat files and generated files survive a thread delete.
 
 Decision: copy the files at branch time. Hermes makes the branch "an independent copy"
-(`_clone_message_rows`), and so does OpenBot.
+(`_clone_message_rows`), and so does dani-dex.
 
 - Clone each file of the kept rows with `fs.copyFile(src, dst, COPYFILE_FICLONE)`: no disk cost on
   APFS; a full copy on ext4 and NTFS.
@@ -127,17 +127,17 @@ The branch uses the agent's **current** provider, model and account. The first m
 sends in the branch starts its session.
 
 Hermes runs its own model loop, so it copies the parent's exact system prompt and wire content and
-"the branch's first turn replay[s] the parent's exact wire bytes (warm cache)". OpenBot runs provider
+"the branch's first turn replay[s] the parent's exact wire bytes (warm cache)". dani-dex runs provider
 CLIs, so the same result comes from a native provider fork: the provider keeps its full context
 (reasoning, tool results, images) and its prompt cache. The handoff is the fallback, as Hermes
 `session.create` with plain messages is its fallback for an old backend.
 
-Hermes resets file-edit approval to "ask" in a branch. OpenBot does not: permissions are one agent
+Hermes resets file-edit approval to "ask" in a branch. dani-dex does not: permissions are one agent
 setting (#2337), and a branch keeps the agent as it is.
 
 | Provider | Fork at a point | v1 strategy | Evidence |
 |---|---|---|---|
-| Claude | Yes, any chain entry | **Native**: `forkSession(sourceSessionId, { upToMessageId })`, or `resume` + `forkSession: true` + `resumeSessionAt`. Fork at the last chain entry of the kept turn, found with `getSessionMessages` (OpenBot sends the turn id as the prompt uuid, `claude-client.ts:1034`). | `sdk.d.ts:847-879, 2124-2186` in SDK 0.3.309 (node_modules). **Not confirmed** for CLI 2.1.263 in `native-runtime.lock.json`. |
+| Claude | Yes, any chain entry | **Native**: `forkSession(sourceSessionId, { upToMessageId })`, or `resume` + `forkSession: true` + `resumeSessionAt`. Fork at the last chain entry of the kept turn, found with `getSessionMessages` (dani-dex sends the turn id as the prompt uuid, `claude-client.ts:1034`). | `sdk.d.ts:847-879, 2124-2186` in SDK 0.3.309 (node_modules). **Not confirmed** for CLI 2.1.263 in `native-runtime.lock.json`. |
 | Codex | Yes, through a turn | **Native**: `thread/fork { threadId, lastTurnId }`. Stored `turn_id` values are Codex turn ids (`turn-lifecycle.ts:540-566`). | `ThreadForkParams.lastTurnId` "Optional last turn id to fork through, inclusive" in the schema from `codex app-server generate-json-schema`, Codex 0.166.0. **Not confirmed** for the locked 0.160.1 (no binary on disk; strings of 0.153.4 have it). |
 | Pi, Inception, DeepSeek, OpenRouter | Yes, before a user entry (`fork`), or whole branch (`clone`) | Handoff in v1; native later. | Pi `docs/rpc-commands.md:610-680` in installed 1.4.0. **Not confirmed** for locked 1.1.0. |
 | Grok | Maybe (`x.ai/session/fork`, `targetPromptIndex`) | Handoff. | Undocumented extension in installed 1.0.70. **Not confirmed**. |
@@ -165,7 +165,7 @@ history (`history-tools.ts:46-52` reads the thread's own rows).
 When the fork happens: at branch time (eager) for Claude `forkSession`, which is a file copy, and on
 the first turn (lazy) for Codex, which needs the app-server running.
 
-**Workspace files are not rolled back.** OpenBot has no checkpoint or rewind (no
+**Workspace files are not rolled back.** dani-dex has no checkpoint or rewind (no
 `enableFileCheckpointing`, `rewindFiles` or `thread/revert` call in `src/`). The branch works on the
 files as they are now. The first message of the branch tells the provider so, in the handoff header
 or as a short developer note for a native fork. Rewind is a separate feature.
@@ -243,7 +243,7 @@ Reverse action: delete the branch thread (existing delete with Undo). The source
 Hermes desktop: a `GitFork` icon button "Branch in new chat" in the hover action bar of the last text
 message of each turn, and the same item in "More actions" on touch
 (`assistant-message.tsx:1373-1446`). The sidebar row menu has "Branch from here" for the whole chat
-(`sidebar/session-actions-menu.tsx:429`). OpenBot keeps the developer's entry point, the message
+(`sidebar/session-actions-menu.tsx:429`). dani-dex keeps the developer's entry point, the message
 menu, and takes the rest from Hermes:
 
 - `MessageMenu` (`packages/ui/src/features/conversation/MessageRendering.tsx:886-978`): a new optional
@@ -263,7 +263,7 @@ menu, and takes the rest from Hermes:
 - In the branch: a divider after `branch_through_message_id`: "Branched from {source title}". A click
   opens the source thread at the source message (reuse the jump of #2383, "Open the original message
   from the quote"). If the source is gone: "Branched from a deleted thread", no link. Hermes has no
-  divider; OpenBot needs one because the copied history and the new messages are in one view.
+  divider; dani-dex needs one because the copied history and the new messages are in one view.
 - Analytics: `agent_action` gets `action: "branch"` with `result` and
   `session: "fork" | "handoff"`. No content.
 - Storybook: `src/renderer/stories/MessageMenu.stories.tsx` (`MenuRow` passes `onBranch` for the last
@@ -274,7 +274,7 @@ menu, and takes the rest from Hermes:
 
 Source: `NousResearch/hermes-agent` at `6bb377a` (2026-10-30), clone in `/tmp/hermes-research/src`.
 
-| Topic | Hermes | OpenBot design |
+| Topic | Hermes | dani-dex design |
 |---|---|---|
 | Entry | `/branch [--here] [name]`, alias `/fork` (`hermes_cli/commands.py:108`); desktop "Branch in new chat" per turn; sidebar "Branch from here" | Message menu "Branch from here", once per turn |
 | Storage | New `sessions` row, `parent_session_id`, `model_config._branched_from`; rows copied with `_clone_message_rows` through `through_message_id` (`hermes_state_mutation_branch.py`) | New side thread, `branch_source_*` columns, rows copied with new ids |

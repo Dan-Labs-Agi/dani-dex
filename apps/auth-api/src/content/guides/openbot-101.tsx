@@ -11,18 +11,18 @@ export function OpenBot101() {
   return (
     <>
       <p>
-        I built OpenBot because I wanted teammates that could keep their work between tasks. An agent keeps its
+        I built dani-dex because I wanted teammates that could keep their work between tasks. An agent keeps its
         workspace, saved conversations and identity after a restart, and when you change its model or provider.
       </p>
       <p>
-        This is the page I would send someone who has never opened the app. It covers what OpenBot is, what an agent
+        This is the page I would send someone who has never opened the app. It covers what dani-dex is, what an agent
         actually owns, and how to get one doing work you can check.
       </p>
 
-      <h2>What OpenBot is</h2>
+      <h2>What dani-dex is</h2>
       <p>
-        OpenBot is a workspace for AI agents that run on your computer or a server you connect to. You can use providers
-        such as{" "}
+        dani-dex is a workspace for AI agents that run on your computer or a server you connect to. You can use
+        providers such as{" "}
         <a href={OPENBOT_LINKS.codex} target="_blank" rel={EXTERNAL_LINK_REL}>
           ChatGPT through Codex
         </a>
@@ -30,12 +30,12 @@ export function OpenBot101() {
         <a href={OPENBOT_LINKS.claude} target="_blank" rel={EXTERNAL_LINK_REL}>
           Claude Code
         </a>
-        , Gemini, Grok and OpenCode, or connect a supported API endpoint. OpenBot handles the provider tools behind the
+        , Gemini, Grok and OpenCode, or connect a supported API endpoint. dani-dex handles the provider tools behind the
         scenes. Each agent gets its own workspace, saved conversations and identity.
       </p>
       <p>
-        OpenBot saves conversations and application records in a local database called <code>openbot.db</code>. The
-        files your agents create live in their workspace folders. The computer or server running OpenBot holds the main
+        dani-dex saves conversations and application records in a local database called <code>openbot.db</code>. The
+        files your agents create live in their workspace folders. The computer or server running dani-dex holds the main
         copy of this work. If you connect the mobile app, your phone also keeps an encrypted copy of recently loaded
         chats.
       </p>
@@ -51,8 +51,8 @@ export function OpenBot101() {
       <ul>
         <li>
           <strong>A workspace.</strong> A folder for its files, by default at{" "}
-          <code>~/OpenBot/Agents/&lt;agent-id&gt;</code>. Agents on the same computer or server can also exchange files
-          through <code>~/OpenBot/Shared</code>.
+          <code>~/dani-dex/Agents/&lt;agent-id&gt;</code>. Agents on the same computer or server can also exchange files
+          through <code>~/dani-dex/Shared</code>.
         </li>
         <li>
           <strong>Saved conversations.</strong> A main chat and any separate task threads. You can return to earlier
@@ -63,18 +63,18 @@ export function OpenBot101() {
         </li>
         <li>
           <strong>A provider session.</strong> The session used by the selected provider. It is separate from your saved
-          OpenBot conversation and can be replaced when the provider or account changes.
+          dani-dex conversation and can be replaced when the provider or account changes.
         </li>
       </ul>
       <p>
-        Move an agent from Codex to Claude and its files, saved conversations and name stay put. OpenBot gives the new
+        Move an agent from Codex to Claude and its files, saved conversations and name stay put. dani-dex gives the new
         session relevant conversation history. The previous provider's internal state does not transfer with it, and the
         full saved history is not automatically included in every request.
       </p>
 
       <h2>Install it, then connect a provider</h2>
       <p>
-        OpenBot runs on macOS 13 or newer on Apple silicon or Intel, Windows 10 or newer on x64, and x64 or arm64 Linux
+        dani-dex runs on macOS 13 or newer on Apple silicon or Intel, Windows 10 or newer on x64, and x64 or arm64 Linux
         as an AppImage. Grab the installer from{" "}
         <a href={OPENBOT_LINKS.releases} target="_blank" rel={EXTERNAL_LINK_REL}>
           GitHub Releases
@@ -89,21 +89,21 @@ export function OpenBot101() {
       </p>
       <p>
         Then pick a provider. In onboarding, in Settings or in the model picker, select one and press{" "}
-        <strong>Download</strong> if it needs a provider tool. OpenBot can download and manage that tool for you and
+        <strong>Download</strong> if it needs a provider tool. dani-dex can download and manage that tool for you and
         checks for updates automatically. It can also use a compatible installation already on the computer running the
         agent. The provider settings show which version is running.
       </p>
       <p>
-        Follow the provider's sign-in steps in OpenBot, or add an API key if that provider uses one. Some providers can
+        Follow the provider's sign-in steps in dani-dex, or add an API key if that provider uses one. Some providers can
         reuse a sign-in already present on the computer running the agent. You do not need an existing terminal setup to
-        use the providers that OpenBot can install for you.
+        use the providers that dani-dex can install for you.
       </p>
       <ArticleImage
         src={providers}
-        alt="OpenBot Providers settings with ChatGPT selected as the default provider and the Connected list below."
+        alt="dani-dex Providers settings with ChatGPT selected as the default provider and the Connected list below."
         width={1415}
         height={1111}
-        mountOn="How to Use OpenBot: Set Up Your First AI Agent"
+        mountOn="How to Use dani-dex: Set Up Your First AI Agent"
         caption="Open Providers in Settings to see which providers are connected and choose the default for new agents."
       />
 
@@ -127,10 +127,10 @@ export function OpenBot101() {
         support.
       </p>
       <p>
-        Ask first keeps approval requests for OpenBot tools and site publishing visible, along with requests from the
+        Ask first keeps approval requests for dani-dex tools and site publishing visible, along with requests from the
         provider. Full access lets the agent act without routine approvals and change files your operating-system
         account can reach. Questions, sign-in and some browser steps can still need your input. Computer Use and the
-        OpenBot browser are not limited to the workspace; Computer Use has its own switch.
+        dani-dex browser are not limited to the workspace; Computer Use has its own switch.
       </p>
       <p>
         What the application sends, and what it never sends, is written down in{" "}
@@ -144,7 +144,7 @@ export function OpenBot101() {
         alt="Agent Permissions with the Access menu open, showing Workspace only, Ask first and Full access."
         width={724}
         height={1184}
-        mountOn="How to Use OpenBot: Set Up Your First AI Agent"
+        mountOn="How to Use dani-dex: Set Up Your First AI Agent"
         caption="The Access menu sets the permissions for this agent. Computer Use has its own switch below."
       />
 
@@ -169,7 +169,7 @@ export function OpenBot101() {
         alt="A channel called Launch room. Chief assigns the release note to Launch, Research reports which performance claims it could verify, and Launch posts the finished draft as a linked file."
         width={2400}
         height={1090}
-        mountOn="How to Use OpenBot: Set Up Your First AI Agent"
+        mountOn="How to Use dani-dex: Set Up Your First AI Agent"
         caption="One conversation shows who took each task and the results they returned."
       />
       <p>
@@ -181,7 +181,7 @@ export function OpenBot101() {
         alt="Developer's chat showing a message from Boss, updates about a page built from shared files, and a report sent to Boss and Designer."
         width={1587}
         height={991}
-        mountOn="How to Use OpenBot: Set Up Your First AI Agent"
+        mountOn="How to Use dani-dex: Set Up Your First AI Agent"
         caption="The Developer chat shows messages between agents, links to shared files and the latest status."
       />
 
@@ -193,27 +193,27 @@ export function OpenBot101() {
       </p>
       <p>
         Make “nothing to report” an acceptable result when there is no new information. The computer or server running
-        OpenBot needs to be available when the routine runs.
+        dani-dex needs to be available when the routine runs.
       </p>
       <ArticleImage
         src={aRoutine}
         alt="A routine in a thread. Two invoked routine markers sit above their instructions, and a side panel shows the schedule, on weekdays at 9:00 AM, with a successful run yesterday."
         width={1696}
         height={664}
-        mountOn="How to Use OpenBot: Set Up Your First AI Agent"
+        mountOn="How to Use dani-dex: Set Up Your First AI Agent"
         caption="The thread marks which turns a routine started, so a scheduled answer never reads as one you asked for."
       />
 
       <h2>Your team, on your own computer</h2>
       <p>
-        You can invite people to connect to the same OpenBot computer or server. Sharing access does not start a second
+        You can invite people to connect to the same dani-dex computer or server. Sharing access does not start a second
         instance. Chats and files travel through an encrypted connection to that computer, directly when possible or
         through an encrypted relay. For this connection, Signal handles the setup.
       </p>
       <p>
-        OpenBot's account service stores account details, avatars, host configuration, memberships, invitations and
+        dani-dex's account service stores account details, avatars, host configuration, memberships, invitations and
         logical session records. Its database does not store the chats, files or commands sent through the connection to
-        your OpenBot computer or server.
+        your dani-dex computer or server.
       </p>
 
       <h2>What is next</h2>
@@ -229,7 +229,9 @@ export function OpenBot101() {
         </a>{" "}
         holds every build.
       </p>
-      <p>If a step does not match what you see, tell me which OpenBot version you are using and where you got stuck.</p>
+      <p>
+        If a step does not match what you see, tell me which dani-dex version you are using and where you got stuck.
+      </p>
     </>
   );
 }

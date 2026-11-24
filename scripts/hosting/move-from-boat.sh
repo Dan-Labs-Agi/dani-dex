@@ -10,10 +10,10 @@ MANIFEST=$KEYRING_HOME/move-manifest
 IMPORT_STATE=/var/lib/openbot-move-import
 OFFER=/etc/openbot-pool
 OFFER_INSTALL=/usr/local/lib/openbot-pool
-DATABASE=$USER_HOME/.config/OpenBot/openbot.db
+DATABASE=$USER_HOME/.config/dani-dex/openbot.db
 CHECKED=(
   "$DATABASE"
-  "$USER_HOME/OpenBot/Shared/Data/agent-data.db"
+  "$USER_HOME/dani-dex/Shared/Data/agent-data.db"
   "$USER_HOME/.config/openbot-hosted/keyring-password"
   "$KEYRING_HOME/keyrings/login.keyring"
 )
@@ -36,13 +36,13 @@ for browser in $BROWSER_HOMES; do
   done
 done
 for cache in "${BROWSER_CACHES[@]}"; do
-  EXCLUDED+=("--exclude=./home/$SERVICE_USER/.config/OpenBot/$cache"
-    "--exclude=./home/$SERVICE_USER/.config/OpenBot/Partitions/*/$cache")
+  EXCLUDED+=("--exclude=./home/$SERVICE_USER/.config/dani-dex/$cache"
+    "--exclude=./home/$SERVICE_USER/.config/dani-dex/Partitions/*/$cache")
 done
 MANAGED_PROVIDERS="codex claude grok opencode antigravity cursor cline kimi devin copilot mistral pi muse"
-EXCLUDED+=("--exclude=./home/$SERVICE_USER/.config/OpenBot/provider-runtimes/.downloads")
+EXCLUDED+=("--exclude=./home/$SERVICE_USER/.config/dani-dex/provider-runtimes/.downloads")
 for provider in $MANAGED_PROVIDERS; do
-  EXCLUDED+=("--exclude=./home/$SERVICE_USER/.config/OpenBot/provider-runtimes/$provider")
+  EXCLUDED+=("--exclude=./home/$SERVICE_USER/.config/dani-dex/provider-runtimes/$provider")
 done
 unset browser cache provider
 BASE_IMAGES=" c4ed68db-513f-4b6d-a61a-64b99b0c2a2c 5f37c910-7706-423d-b524-5c66b09885d2
@@ -54,7 +54,7 @@ BASE_IMAGES=" c4ed68db-513f-4b6d-a61a-64b99b0c2a2c 5f37c910-7706-423d-b524-5c66b
   f27f3eeb-e2f4-4d96-9619-d72f13e35dd7 f48f0fb0-3c59-43b4-b447-f69aa4080ea9 f7702e0a-1a08-481c-b8d1-54c52cc43712
   fba0e34a-35a6-453a-b95d-ba4a2eda10db "
 BASE_OPT=" actions-runner ascii ascii-agent ascii-baremetal-setup cmake-3.31.3-linux-x86_64 containerd cursor-agent
-  google gradle-8.12 kimi-code kotlinc moonlight-web OpenBot prime-agent sbt scala3 scala3-3.3.8
+  google gradle-8.12 kimi-code kotlinc moonlight-web dani-dex prime-agent sbt scala3 scala3-3.3.8
   scrcpy-linux-x86_64-v3.1 "
 BASE_LOCAL=" bin cargo etc games go include lib lib64 libexec man rustup sbin share src "
 BASE_LIB=" ascii ascii-harnesses hermes-agent node_modules pkgconfig python3.12 R ruby "
@@ -97,11 +97,11 @@ openbot_runs() {
 }
 
 installed_version() {
-  sed -n 's/^X-AppImage-Version=//p' /opt/OpenBot/app/*.desktop 2>/dev/null | head -n 1
+  sed -n 's/^X-AppImage-Version=//p' /opt/dani-dex/app/*.desktop 2>/dev/null | head -n 1
 }
 
 is_hosted_install() {
-  [ "$(cat /opt/OpenBot/hosted/service-user 2>/dev/null)" = "$SERVICE_USER" ] && [ ! -e /opt/OpenBot/hosted/mode ]
+  [ "$(cat /opt/dani-dex/hosted/service-user 2>/dev/null)" = "$SERVICE_USER" ] && [ ! -e /opt/dani-dex/hosted/mode ]
 }
 
 system_clis() {
@@ -386,11 +386,11 @@ offer() {
   [[ $token =~ ^[A-Za-z0-9_-]{32,128}$ ]] || fail "Standard input has no token."
   stop_offer
   is_hosted_install || fail "This machine is not prepared. Run \"$0 prepare\" first."
-  openbot_is_off || fail "OpenBot is enabled or runs on this machine. It is not a prepared pool server."
-  [ ! -e "$USER_HOME/.config/OpenBot" ] && [ ! -e "$USER_HOME/.config/openbot-hosted" ] &&
+  openbot_is_off || fail "dani-dex is enabled or runs on this machine. It is not a prepared pool server."
+  [ ! -e "$USER_HOME/.config/dani-dex" ] && [ ! -e "$USER_HOME/.config/openbot-hosted" ] &&
     [ ! -e "$KEYRING_HOME/keyrings" ] && [ ! -e "$IMPORT_STATE" ] ||
     fail "This machine has the data of a server. It cannot take a new one."
-  grep -q '^OPENBOT_AUTH_API_URL=https://' /opt/OpenBot/hosted/openbot.env ||
+  grep -q '^OPENBOT_AUTH_API_URL=https://' /opt/dani-dex/hosted/openbot.env ||
     fail "This machine names no account service."
   install -d -m 0755 "$OFFER_INSTALL"
   install -m 0755 "$source/openbot-pool-wait" "$OFFER_INSTALL/openbot-pool-wait"
@@ -414,7 +414,7 @@ prepare() {
     fail "The user and group IDs must be numbers above 0."
   source=$(cd "$(dirname "$0")" && pwd)
   [ -f "$source/provision.sh" ] || fail "Run this file from a copy of scripts/hosting."
-  [ ! -e /opt/OpenBot ] || fail "OpenBot is installed on this machine. Use a free pool server."
+  [ ! -e /opt/dani-dex ] || fail "dani-dex is installed on this machine. Use a free pool server."
   [ ! -e "$USER_HOME" ] && [ ! -e "$KEYRING_HOME" ] ||
     fail "This machine has data in $USER_HOME or $KEYRING_HOME."
   ! id "$SERVICE_USER" >/dev/null 2>&1 || fail "This machine has a user $SERVICE_USER."
@@ -435,8 +435,8 @@ prepare() {
   bash "$copy/provision.sh" "$SERVICE_USER" "$appimage_url" "$appimage_sha256" "$auth_api_url"
   is_hosted_install || fail "The install is not a hosted server of the user $SERVICE_USER."
   systemctl disable --quiet openbot.service
-  if openbot_runs; then fail "OpenBot runs. Stop it."; fi
-  echo "Installed OpenBot $(installed_version) on $hostname for the user $SERVICE_USER ($uid:$gid). It is disabled."
+  if openbot_runs; then fail "dani-dex runs. Stop it."; fi
+  echo "Installed dani-dex $(installed_version) on $hostname for the user $SERVICE_USER ($uid:$gid). It is disabled."
   echo "Next: run leaseweb-bootstrap.sh, restart this machine one time, and then export the sandbox."
 }
 
@@ -447,9 +447,9 @@ upgrade() {
   [ -f "$source/provision.sh" ] || fail "Run this file from a copy of scripts/hosting."
   stop_offer
   is_hosted_install || fail "This machine is not prepared. Run \"$0 prepare\" first."
-  [ ! -e "$USER_HOME/.config/OpenBot" ] && [ ! -e "$KEYRING_HOME/keyrings" ] && [ ! -e "$IMPORT_STATE" ] ||
+  [ ! -e "$USER_HOME/.config/dani-dex" ] && [ ! -e "$KEYRING_HOME/keyrings" ] && [ ! -e "$IMPORT_STATE" ] ||
     fail "This machine has the data of a server. Do not upgrade it here."
-  if openbot_runs; then fail "OpenBot runs. Stop it."; fi
+  if openbot_runs; then fail "dani-dex runs. Stop it."; fi
   copy=$(mktemp -d /run/openbot-move.XXXXXX)
   # shellcheck disable=SC2064
   trap "rm -rf '$copy'" EXIT
@@ -457,8 +457,8 @@ upgrade() {
   chmod -R u=rwX,go=rX "$copy"
   bash "$copy/provision.sh" "$SERVICE_USER" "$1" "$2" "$3"
   systemctl disable --quiet openbot.service
-  if openbot_runs; then fail "OpenBot runs. Stop it."; fi
-  echo "Installed OpenBot $(installed_version). It is disabled."
+  if openbot_runs; then fail "dani-dex runs. Stop it."; fi
+  echo "Installed dani-dex $(installed_version). It is disabled."
 }
 
 packages() {
@@ -493,7 +493,7 @@ export_data() {
   fi
   id "$SERVICE_USER" >/dev/null 2>&1 || fail "This machine has no user $SERVICE_USER. It is not a boat sandbox."
   is_hosted_install || fail "This machine is not a hosted server of the user $SERVICE_USER."
-  [ -s "$USER_HOME/.config/OpenBot/openbot.db" ] || fail "The home of $SERVICE_USER has no OpenBot database."
+  [ -s "$USER_HOME/.config/dani-dex/openbot.db" ] || fail "The home of $SERVICE_USER has no dani-dex database."
   [ -s "$USER_HOME/.config/openbot-hosted/keyring-password" ] && [ -s "$KEYRING_HOME/keyrings/login.keyring" ] ||
     fail "The server keyring or its password file is missing. The server could not sign in after the move."
   local waited=0
@@ -505,12 +505,12 @@ export_data() {
   done
   [ "$waited" -eq 0 ] || find "$USER_HOME" -xdev -printf '' 2>/dev/null || true
   version=$(installed_version)
-  [ -n "$version" ] || fail "The version of the installed OpenBot is not known."
+  [ -n "$version" ] || fail "The version of the installed dani-dex is not known."
 
   touch /run/openbot-pre-stop
   systemctl stop openbot-pre-stop-restart.timer 2>/dev/null || true
   systemctl stop openbot.service
-  if openbot_runs; then fail "OpenBot still runs. Nothing was archived."; fi
+  if openbot_runs; then fail "dani-dex still runs. Nothing was archived."; fi
 
   local tree trees="" members=() commands name notes
   while read -r tree; do
@@ -564,12 +564,12 @@ export_data() {
       "${excluded[@]}" "./${MANIFEST#/}" "./${USER_HOME#/}" "./${KEYRING_HOME#/}" "${members[@]}" || created=$?
   fi
   [ "$created" -eq 0 ] ||
-    fail "The archive is not complete. OpenBot stays stopped. Delete $copy and run the export again."
-  if openbot_runs; then fail "OpenBot started during the archive. Delete $copy and run the export again."; fi
+    fail "The archive is not complete. dani-dex stays stopped. Delete $copy and run the export again."
+  if openbot_runs; then fail "dani-dex started during the archive. Delete $copy and run the export again."; fi
   if [ "$archive" = - ]; then
-    echo "Archived OpenBot $version to standard output."
+    echo "Archived dani-dex $version to standard output."
   else
-    echo "Archived OpenBot $version to $archive ($(du -h "$archive" | cut -f1))."
+    echo "Archived dani-dex $version to $archive ($(du -h "$archive" | cut -f1))."
   fi
   if [ -n "$trees" ]; then
     echo "The archive has these directories that the customer added outside the home:"
@@ -579,7 +579,7 @@ export_data() {
   if ! listed "$(cat "$USER_HOME/.base-image-version" 2>/dev/null)" "$BASE_IMAGES"; then
     echo "This sandbox has a boat image that the lists of this script do not know. Make sure that the directories above are not from the image."
   fi
-  echo "OpenBot stays stopped until this sandbox stops. Do not start it here after the VPS runs."
+  echo "dani-dex stays stopped until this sandbox stops. Do not start it here after the VPS runs."
 }
 
 restore_commands() {
@@ -698,16 +698,16 @@ add_node_command() {
   # shellcheck disable=SC2016
   runuser -u "$SERVICE_USER" -- bash -c 'umask 022 && cat >"$1" && chmod 0755 "$1"' _ "$node" <<'EOF'
 #!/bin/bash
-# The move from boat added this command. It starts the Bun of OpenBot as Node.
-bun=$(printf '%s\n' "$HOME"/.config/OpenBot/provider-runtimes/bun/*/*/bin/bun | sort -V | tail -n 1)
+# The move from boat added this command. It starts the Bun of dani-dex as Node.
+bun=$(printf '%s\n' "$HOME"/.config/dani-dex/provider-runtimes/bun/*/*/bin/bun | sort -V | tail -n 1)
 if [ ! -x "$bun" ]; then
-  echo "node: OpenBot has not downloaded Bun. OpenBot downloads it when an MCP server is on." >&2
+  echo "node: dani-dex has not downloaded Bun. dani-dex downloads it when an MCP server is on." >&2
   exit 127
 fi
 exec -a node "$bun" "$@"
 EOF
-  if ! compgen -G "$USER_HOME/.config/OpenBot/provider-runtimes/bun/*/*/bin/bun" >/dev/null; then
-    echo "The moved npm commands need Bun, and OpenBot did not download Bun in the sandbox. OpenBot downloads it when an MCP server is on."
+  if ! compgen -G "$USER_HOME/.config/dani-dex/provider-runtimes/bun/*/*/bin/bun" >/dev/null; then
+    echo "The moved npm commands need Bun, and dani-dex did not download Bun in the sandbox. dani-dex downloads it when an MCP server is on."
   fi
 }
 
@@ -790,10 +790,10 @@ import_data() {
   local archive=$1 folder manifest version installed sums clis groups missing line trees present members group
   stop_offer
   is_hosted_install || fail "This machine is not prepared. Run \"$0 prepare\" first."
-  openbot_is_off || fail "OpenBot is enabled or runs on this machine. It is not a prepared pool server."
+  openbot_is_off || fail "dani-dex is enabled or runs on this machine. It is not a prepared pool server."
   [ ! -e "$IMPORT_STATE" ] ||
     fail "An import did not get to its start on this machine. Run \"$0 discard $(hostname)\", then run the import again."
-  [ ! -e "$USER_HOME/.config/OpenBot" ] && [ ! -e "$KEYRING_HOME/keyrings" ] ||
+  [ ! -e "$USER_HOME/.config/dani-dex" ] && [ ! -e "$KEYRING_HOME/keyrings" ] ||
     fail "This machine has the data of a server."
   shift
   for folder in "$@"; do
@@ -810,7 +810,7 @@ import_data() {
   installed=$(installed_version)
   if [ "$installed" != "$version" ] &&
     [ "$(printf '%s\n%s\n' "$installed" "$version" | sort -V | tail -n 1)" = "$version" ]; then
-    fail "This machine has OpenBot ${installed:-of no known version}, and the sandbox had $version. Install $version or newer."
+    fail "This machine has dani-dex ${installed:-of no known version}, and the sandbox had $version. Install $version or newer."
   fi
 
   trees="" present=""
@@ -843,20 +843,20 @@ import_data() {
     fail "The archive was not restored. Run \"$0 discard $(hostname)\", then run the import again."
   rm -f "$MANIFEST"
   sha256sum --check --quiet <<<"$sums" ||
-    fail "A restored file is not the file of the sandbox. Do not start OpenBot. Run \"$0 discard $(hostname)\"."
-  if openbot_runs; then fail "OpenBot runs, and the import is not complete. Stop it."; fi
+    fail "A restored file is not the file of the sandbox. Do not start dani-dex. Run \"$0 discard $(hostname)\"."
+  if openbot_runs; then fail "dani-dex runs, and the import is not complete. Stop it."; fi
   restore_commands "$manifest"
   remove_boat_config || echo "The boat configuration was not removed from the home."
   install_packages_of "$manifest"
   if grep -q '^/usr/local/lib/node_modules/' <<<"$trees" && ! command -v node >/dev/null; then add_node_command; fi
-  if openbot_runs; then fail "OpenBot runs, and the import is not complete. Stop it."; fi
+  if openbot_runs; then fail "dani-dex runs, and the import is not complete. Stop it."; fi
   {
     echo imported
     printf 'database=%s\n' "$(sha256sum "$DATABASE" | cut -d' ' -f1)"
     printf '%s' "$trees" | sed 's/^/tree=/'
     for folder in "$@"; do echo "folder=$folder"; done
   } >"$IMPORT_STATE"
-  echo "Restored the server of OpenBot $version. This machine has OpenBot $installed, and it does not run."
+  echo "Restored the server of dani-dex $version. This machine has dani-dex $installed, and it does not run."
   echo "Next: when the row of the server names this machine and the sandbox is stopped, run: $0 start"
   echo "Delete $archive on each machine that has a copy."
   if [ -n "$present" ]; then
@@ -881,7 +881,7 @@ import_data() {
   done <<<"$clis"
   if [ -n "$missing" ]; then
     printf 'The sandbox had these commands from npm, and this machine does not have them:\n%s' "$missing"
-    echo "At start, OpenBot downloads the CLI of each provider that an agent uses. The customer downloads the CLI of another provider in OpenBot."
+    echo "At start, dani-dex downloads the CLI of each provider that an agent uses. The customer downloads the CLI of another provider in dani-dex."
   fi
   groups=$(sed -n 's/^group=//p' <<<"$manifest" | grep -E '^[a-z_][a-z0-9_-]*$' || true)
   missing=""
@@ -899,11 +899,11 @@ start() {
   is_hosted_install || fail "This machine is not prepared. Run \"$0 prepare\" first."
   [ "$(import_state)" = imported ] ||
     fail "This machine has no complete import that waits for its start."
-  openbot_is_off || fail "OpenBot is enabled or runs on this machine."
-  database_is_unchanged || fail "The database is not the file that the import checked. Do not start OpenBot."
+  openbot_is_off || fail "dani-dex is enabled or runs on this machine."
+  database_is_unchanged || fail "The database is not the file that the import checked. Do not start dani-dex."
   rm -f "$IMPORT_STATE"
   systemctl enable --now openbot.service
-  echo "OpenBot $(installed_version) is enabled and started. The host is online when its first sign-in ends."
+  echo "dani-dex $(installed_version) is enabled and started. The host is online when its first sign-in ends."
 }
 
 discard() {
@@ -914,7 +914,7 @@ discard() {
   state=$(import_state)
   [ "$state" = importing ] || [ "$state" = imported ] ||
     fail "This machine has no import that waits for its start. To erase a server that ran here, reinstall the machine."
-  openbot_is_off || fail "OpenBot is enabled or runs on this machine. Nothing was removed."
+  openbot_is_off || fail "dani-dex is enabled or runs on this machine. Nothing was removed."
   if [ "$state" = imported ] && ! database_is_unchanged; then
     fail "The database changed after the import. Nothing was removed. To erase this server, reinstall the machine."
   fi
@@ -944,7 +944,7 @@ restore() {
   [[ $url =~ ^https://[A-Za-z0-9.-]+/[^[:space:]]+$ ]] || fail "Standard input has no archive URL."
   command -v age >/dev/null || fail "This machine has no age. Run leaseweb-bootstrap.sh again."
   is_hosted_install || fail "This machine is not prepared. Run \"$0 prepare\" first."
-  openbot_is_off || fail "OpenBot is enabled or runs on this machine. It is not a prepared pool server."
+  openbot_is_off || fail "dani-dex is enabled or runs on this machine. It is not a prepared pool server."
   dir=$(mktemp -d /var/tmp/openbot-restore.XXXXXX)
   key=$(mktemp /run/openbot-restore-key.XXXXXX)
   trap "rm -rf '$dir' '$key'" EXIT

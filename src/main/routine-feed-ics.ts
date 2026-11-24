@@ -15,7 +15,7 @@ export function routineFeedIcs(calendar: RoutineCalendar, text: RoutineFeedText,
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
-    "PRODID:-//OpenBot//Routines//EN",
+    "PRODID:-//dani-dex//Routines//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     `NAME:${icsText(text.calendarName)}`,

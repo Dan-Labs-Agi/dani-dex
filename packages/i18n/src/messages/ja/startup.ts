@@ -2,33 +2,33 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/startup";
 
 export const messages = {
-  "startup.failedTitle": "OpenBot を起動できませんでした",
+  "startup.failedTitle": "dani-dex を起動できませんでした",
   "startup.failedBody":
     "{message}\n\nお使いのデータは初期化も上書きもされていません。復旧の手順はトラブルシューティングガイドをご覧ください。",
-  "startup.archiveChangedTitle": "OpenBot のファイルが変更されました",
+  "startup.archiveChangedTitle": "dani-dex のファイルが変更されました",
   "startup.archiveChangedBody":
-    "別のプログラムが OpenBot のファイル app.asar を変更しました。OpenBot は今は動作していますが、終了すると次は起動しません。\n\n修復するには、OpenBot をもう一度インストールしてください。ローカルのデータはそのまま残ります。",
-  "startup.archiveChangedDownload": "OpenBot をダウンロード",
+    "別のプログラムが dani-dex のファイル app.asar を変更しました。dani-dex は今は動作していますが、終了すると次は起動しません。\n\n修復するには、dani-dex をもう一度インストールしてください。ローカルのデータはそのまま残ります。",
+  "startup.archiveChangedDownload": "dani-dex をダウンロード",
   "startup.filesDamagedBody":
-    "OpenBot の一部のファイルが破損しているか、見つかりません。\n\n修復するには、OpenBot をもう一度インストールしてください。ローカルのデータはそのまま残ります。",
-  "startup.newerDataUpdatingTitle": "OpenBot を更新しています",
+    "dani-dex の一部のファイルが破損しているか、見つかりません。\n\n修復するには、dani-dex をもう一度インストールしてください。ローカルのデータはそのまま残ります。",
+  "startup.newerDataUpdatingTitle": "dani-dex を更新しています",
   "startup.newerDataUpdatingBody":
-    "新しいバージョンの OpenBot がデータを保存しました。OpenBot は最新バージョンをインストールしてから、もう一度開きます。\n\nローカルデータはリセットも上書きもされていません。",
-  "startup.newerDataTitle": "最新の OpenBot をインストールしてください",
+    "新しいバージョンの dani-dex がデータを保存しました。dani-dex は最新バージョンをインストールしてから、もう一度開きます。\n\nローカルデータはリセットも上書きもされていません。",
+  "startup.newerDataTitle": "最新の dani-dex をインストールしてください",
   "startup.newerDataBody":
-    "新しいバージョンの OpenBot がデータを保存したため、このバージョン ({version}) では開けません。データを開くには最新バージョンをインストールしてください。\n\nローカルデータはリセットも上書きもされていません。",
-  "startup.newerDataDownload": "OpenBot をダウンロード",
+    "新しいバージョンの dani-dex がデータを保存したため、このバージョン ({version}) では開けません。データを開くには最新バージョンをインストールしてください。\n\nローカルデータはリセットも上書きもされていません。",
+  "startup.newerDataDownload": "dani-dex をダウンロード",
   "startup.newerDataGuide": "ガイドを開く",
   "startup.newerDataQuit": "終了",
-  "startup.newerDataLoopTitle": "最新の OpenBot が開きませんでした",
+  "startup.newerDataLoopTitle": "最新の dani-dex が開きませんでした",
   "startup.newerDataLoopBody":
-    "新しいバージョンの OpenBot がデータを保存したため、このバージョン ({version}) では開けません。OpenBot {loopVersion} は開く前に何度も続けて停止したため、再インストールしません。\n\n{loopVersion} より新しいバージョンが公開されたら、それをインストールしてください。サポートが必要な場合は、ガイドを開いてください。\n\nローカルデータはリセットも上書きもされていません。",
+    "新しいバージョンの dani-dex がデータを保存したため、このバージョン ({version}) では開けません。dani-dex {loopVersion} は開く前に何度も続けて停止したため、再インストールしません。\n\n{loopVersion} より新しいバージョンが公開されたら、それをインストールしてください。サポートが必要な場合は、ガイドを開いてください。\n\nローカルデータはリセットも上書きもされていません。",
   "startup.newerDataReleases": "リリースを表示",
-  "startup.recoveryWindowTitle": "OpenBot の復旧",
-  "startup.recoveryTitle": "OpenBot を開けませんでした",
+  "startup.recoveryWindowTitle": "dani-dex の復旧",
+  "startup.recoveryTitle": "dani-dex を開けませんでした",
   "startup.recoveryBody": {
     other:
-      "OpenBot {version} は開く前に {count} 回続けて停止しました。ローカルデータはリセットも上書きもされていません。",
+      "dani-dex {version} は開く前に {count} 回続けて停止しました。ローカルデータはリセットも上書きもされていません。",
   },
   "startup.recoveryHint":
     "もう一度試すか、最後に開けたバージョンをインストールしてください。サポートが必要な場合は、診断情報を書き出し、そのファイルをレポートと一緒に送ってください。",
@@ -41,5 +41,5 @@ export const messages = {
   "startup.recoveryOpenDataFolder": "データフォルダを開く",
   "startup.recoveryQuit": "終了",
   "startup.recoveryDiagnosticsSaved": "診断ファイルを保存しました。",
-  "startup.recoveryActionFailed": "OpenBot はこの操作を実行できませんでした。",
+  "startup.recoveryActionFailed": "dani-dex はこの操作を実行できませんでした。",
 } as const satisfies PartialTranslation<typeof source>;

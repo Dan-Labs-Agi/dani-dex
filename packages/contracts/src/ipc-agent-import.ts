@@ -12,10 +12,10 @@ export const HERMES_EXPORT_SKILL_ID = "nightly-labs/openbot/resources/agent-impo
 
 export const HERMES_SKILL_COMMAND = `/skills install ${HERMES_EXPORT_SKILL_ID}`;
 
-export const AGENT_IMPORT_PROMPT = "Export my agents for OpenBot";
+export const AGENT_IMPORT_PROMPT = "Export my agents for dani-dex";
 export const HERMES_EXPORT_PROMPT = "/openbot-export";
 
-export const AGENT_IMPORT_EXPORT_AGENT_NAME = "OpenBot export";
+export const AGENT_IMPORT_EXPORT_AGENT_NAME = "dani-dex export";
 
 export const AGENT_IMPORT_LIMITS = {
   files: 200_000,

@@ -121,7 +121,7 @@ the user removes the activity, so until the app runs again such an event shows n
 The host sends it to `POST /v2/remote/hosts/:hostId/notification` with its machine credential and the
 account session of the phone. The Worker checks the credential and a per-host rate limit, and sends
 nothing for a session that has ended, a revoked membership, or a signed-out device, because the host
-does not learn about these. It makes the APNs alert itself, with "OpenBot" as the only text,
+does not learn about these. It makes the APNs alert itself, with "dani-dex" as the only text,
 `mutable-content`, the sound, and the sealed bytes. It stores and logs nothing. A `410` answer, from
 the Worker or Apple, removes the registration.
 
@@ -147,7 +147,7 @@ read the choice. The level, the mute, the preview and the Live Activity check ap
 agent's chat, but the Live Activity shows the replies and the failed turn of the agent's own chat
 only, so it never replaces the notification of a side thread turn. The desktop notification and the
 completion sound still use routine thread turns only. So for the turn of another side thread, the
-phone stays quiet only while the member uses OpenBot: the window of the host's desktop app has focus,
+phone stays quiet only while the member uses dani-dex: the window of the host's desktop app has focus,
 or the member sent, answered, or typed from another session in the last 30 seconds. Input in another
 app on a computer does not count for it, because no desktop then tells about that turn. A host does
 not keep such a turn for a phone that does not take it.
@@ -282,7 +282,7 @@ the user. `list_channels` lists the open channels with their lead and members.
 `send_to_channel` posts one request (`ChannelService.handoff`): a complete brief, optional
 recipient agents, and optional file paths that the channel copies as attachments. The message has
 the sending agent as a member author with the id `agent:<agentId>`. The assignment of a root task
-from it starts with "Request from OpenBot teammate <name> (<agentId>)" (`assignmentText`), so the
+from it starts with "Request from dani-dex teammate <name> (<agentId>)" (`assignmentText`), so the
 member does not read the agent's words as the user's. A follow-up under that line names its
 sender, such as "Follow-up from the user". Routing is the same as for a person's request: each named recipient and each opening @mention gets a root task, and with none the
 lead routes it. A channel without a lead refuses a request that names nobody
@@ -300,7 +300,7 @@ the lead) to that agent, with `replyToMessageId` set to the channel request id a
 `expectsReply: false`. The text names the channel and gives the `channel_result` of the newest
 assignment of the task, or else the newest completed answer after the request, with its attachments.
 A failed or cancelled task gives a blocked note with the task error. A paused task (a person
-stopped it, or OpenBot paused it) gives a paused note that tells the agent not to send the request
+stopped it, or dani-dex paused it) gives a paused note that tells the agent not to send the request
 again: when the task continues and finishes, a new result comes back. A paused note is not sent
 when the task already sent a note and did not run again, so archive or Stop on a failed or paused
 task sends nothing. When a person continues the task, its request message changes, so the return
@@ -523,7 +523,7 @@ the person asks for another member or for help, or when a part clearly needs ano
   agents unload their loaded threads, as for an agent folder change. A row that does not decode gives
   no folders. The packet gives the folders in the channel facts with a rule line, and a line when the
   last folder is removed. `src/main/channel-folders.ts` checks a folder as the
-  agent folder picker does: it refuses the app data, the OpenBot folder, a disk root, and a folder that
+  agent folder picker does: it refuses the app data, the dani-dex folder, a disk root, and a folder that
   holds the shared folder or a member workspace. A save of the channel draft keeps the folders. The
   Team API channel records do not send the paths. The instance transfer and the agent import archive
   do not move them, because the paths belong to the old computer; agent folders do the same.
@@ -664,10 +664,10 @@ No account API, Signal, IPC contract, or database migration changes are required
 The agents of a computer can answer in an external chat platform: Slack, Discord (see **Discord**
 below), Telegram and WhatsApp (see **WhatsApp** below). [messaging.md](../messaging.md) has the setup, the limits and how to add a
 platform. Every workspace
-installs the one OpenBot Slack app (`apps/slack-app`), and the workspace is linked to the host that
-connected it. People mention @OpenBot or send it a direct message. The workspace's Slack Orchestrator,
+installs the one dani-dex Slack app (`apps/slack-app`), and the workspace is linked to the host that
+connected it. People mention @dani-dex or send it a direct message. The workspace's Slack Orchestrator,
 an agent that the connect dialog adds, receives each new conversation, asks its teammates and posts
-the answer. Every answer comes from OpenBot.
+the answer. Every answer comes from dani-dex.
 
 - **Install.** The desktop asks `POST /v2/slack/authorize` for Slack's install URL, with a one-use host
   key. The Worker exchanges the code at `/v2/slack/callback`, because the app's client secret lives
@@ -698,7 +698,7 @@ the answer. Every answer comes from OpenBot.
   nothing. Reconnect opens the Slack install page, which links the workspace to this host. A new
   workspace opens a new socket before its connection starts, so an older list does not judge it.
 
-Telegram uses the same socket with one difference: one OpenBot bot serves every user, so its token
+Telegram uses the same socket with one difference: one dani-dex bot serves every user, so its token
 must not reach any host. Only Signal has it (`TELEGRAM_BOT_TOKENS`), and the contract is
 `@openbot/contracts/signal-protocol/telegram-route`.
 
@@ -810,7 +810,7 @@ transport for its events. `messaging-types.ts` is the seam; the core never reads
   also after the link exists: the first one skips the workflows and goes to the orchestrator with the
   post as its `replyTo`. An answer in such a thread that pings people records them too
   (`MessagingThreads.recordPings`). Deleting an agent deletes the pings of its threads and its pings of threads
-  that no reply opened. A thread `message` event that mentions OpenBot is
+  that no reply opened. A thread `message` event that mentions dani-dex is
   left to its `app_mention` event, so the order of the two events does not decide the route.
 - **Quiet answer.** In Slack threads the guidance lets the agent answer only `NO_REPLY` when a
   message needs no answer. In WhatsApp chats it does so when the agent must not answer, for example
@@ -820,10 +820,10 @@ transport for its events. `messaging-types.ts` is the seam; the core never reads
 - **Quiet end.** On a personal WhatsApp number, a post in another person's chat shows as the
   owner's own message (`WhatsAppConnect.postsAsOwner`). There a request that fails or stops keeps
   its reaction and posts no "could not finish" or "Stopped." text, also when a restart ends the
-  request. The status post is deleted, and the failure shows in OpenBot. When the answer cannot be
+  request. The status post is deleted, and the failure shows in dani-dex. When the answer cannot be
   sent there, the status post is deleted too. But when a later part fails, the WhatsApp adapter
-  reports `WhatsAppAnswerPartlySent`: the status post holds the first part, so OpenBot leaves it.
-  The owner's "Message yourself" chat, a number only for OpenBot, Slack, Telegram and Discord still
+  reports `WhatsAppAnswerPartlySent`: the status post holds the first part, so dani-dex leaves it.
+  The owner's "Message yourself" chat, a number only for dani-dex, Slack, Telegram and Discord still
   get the text.
 - **Order.** The external conversations of an agent run one turn at a time in `MESSAGING_LANE`, beside
   its own chat. On a provider that runs one turn at a time (`concurrentTurns: false`) they keep the own
@@ -836,27 +836,27 @@ transport for its events. `messaging-types.ts` is the seam; the core never reads
 - **Approvals and stop.** An approval of a messaging thread is also posted with buttons. Only the
   Slack user whose message started the turn can answer or stop it; the host can always answer. The
   button value is a random token that exists only in memory.
-- **Channels.** When a connection starts, OpenBot joins every public channel it is not in
+- **Channels.** When a connection starts, dani-dex joins every public channel it is not in
   (`conversations.list`, `conversations.join`, scope `channels:join`), so people can mention it with
   no invitation. It joins each new public channel on `channel_created`. A private channel needs
   `/invite`.
 - **Deduplication.** An in-memory set drops a redelivered event at once; the mailbox idempotency key
   covers a restart, and a kept event that Signal sends again. Events that arrive while no socket is
   open are lost after Slack's retries, except for a hosted server that starts. A message that does
-  not address OpenBot gets 200 from Signal and is lost at once; other events get 503. Slack turns
+  not address dani-dex gets 200 from Signal and is lost at once; other events get 503. Slack turns
   off events for the whole app when more than 95% of deliveries fail for 60 minutes, and a computer
   that is off would otherwise fail every channel message of its workspace.
 - **Screen.** **Marketplace → Apps → Slack** on the computer that runs the agents shows
   each workspace and its orchestrator, and a two-step dialog connects the workspace and adds the
   orchestrator on the model the user picks (`messaging:*`). A remote server shows no Slack page,
   because the install returns to the host's own browser. A live connection does not count as use:
-  a hosted server sleeps, and Signal starts it for the next message that addresses OpenBot and keeps
+  a hosted server sleeps, and Signal starts it for the next message that addresses dani-dex and keeps
   that message, sealed to the host, until the host connects
   ([Connector events](../hosted-servers.md#connector-events)). **Apps → Discord** is the same page for Discord
   (`SlackIntegrationPanel` with `platform="discord"`). **Apps → Telegram** has its own page
   (`TelegramIntegrationPanel`), with one row per chat and one orchestrator for all chats.
 
-**Discord.** Every guild installs the one OpenBot Discord app (`apps/discord-app`), and a guild is a
+**Discord.** Every guild installs the one dani-dex Discord app (`apps/discord-app`), and a guild is a
 connection with its own Discord Orchestrator (`discord-orchestrator.ts`). Discord pushes a bot's
 messages only over its Gateway WebSocket, and the bot token cannot go to each host, so Signal holds
 the token and does the platform work for the hosts:
@@ -868,7 +868,7 @@ the token and does the platform work for the hosts:
   Another account gets `discord_guild_taken`.
 - **Events.** Signal keeps one Gateway connection (`@discordjs/ws`) with the guilds, guild messages
   and direct messages intents, and no privileged intent. It passes on only a guild message that
-  mentions the bot or the bot's own role, and a press of an OpenBot button, which it acknowledges to
+  mentions the bot or the bot's own role, and a press of an dani-dex button, which it acknowledges to
   Discord at once. Discord makes that role, with the bot's name, when the bot joins a guild, and its
   autocomplete can choose it instead of the bot. Signal finds the role by its `tags.bot_id` in the
   guild and role events, and keeps only its ID in memory. It normalizes each message into
@@ -894,16 +894,16 @@ the token and does the platform work for the hosts:
   of that guild, and makes the call with `@discordjs/rest`. A new text post allows only user mentions,
   so it pings each user that it mentions, never a role or `@everyone`. Other posts and edits ping
   nobody. Attachments are signed CDN addresses, which the host downloads directly.
-- **Conversations.** A conversation is a reply chain, keyed by its first message. Every OpenBot post
-  replies to that message, so a reply to an OpenBot post names the conversation through the replied
+- **Conversations.** A conversation is a reply chain, keyed by its first message. Every dani-dex post
+  replies to that message, so a reply to an dani-dex post names the conversation through the replied
   post's own reference. A direct message has no guild, so Signal answers it once with a fixed line.
 
 **WhatsApp.** A WhatsApp number links as a device of the host, so the host holds its own session and
-no OpenBot service takes part: no Signal route, no account service row, no route ticket. A connection
+no dani-dex service takes part: no Signal route, no account service row, no route ticket. A connection
 is one linked number (`workspace_id` is the number in digits).
 
 - **Client.** `packages/whatsapp` vendors Baileys v7.0.0-rc14 (MIT) without its copyleft parts
-  (`libsignal`, `whatsapp-rust-bridge`); `src/signal/` is OpenBot's clean-room Signal code, and
+  (`libsignal`, `whatsapp-rust-bridge`); `src/signal/` is dani-dex's clean-room Signal code, and
   `signal-repository.ts` gives it to Baileys as its `SignalRepository`. See
   [packages/whatsapp/README.md](../../packages/whatsapp/README.md). The main bundle includes the
   vendor; type checks read it only through its generated declarations.
@@ -938,8 +938,8 @@ is one linked number (`workspace_id` is the number in digits).
   connection starts.
 - **Senders.** `whatsapp-senders.ts` applies the rules before anything shows that a message was seen.
   The owner's own chat always counts. On the owner's personal number (the default) nobody else counts
-  unless the owner allowed them, and OpenBot never writes to anyone first. On a number used only by
-  OpenBot, an unknown direct sender gets one pairing code; at most three requests wait, for an hour,
+  unless the owner allowed them, and dani-dex never writes to anyone first. On a number used only by
+  dani-dex, an unknown direct sender gets one pairing code; at most three requests wait, for an hour,
   in memory. Groups count only when allowed (migration 51, `projection_messaging_allowed_senders`).
 - **Messages.** `whatsapp-events.ts` turns a message into an `InboundMessage`: a direct chat is
   keyed by the phone number (LID forms are mapped through `remoteJidAlt`, `participantAlt` and the

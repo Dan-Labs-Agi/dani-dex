@@ -291,7 +291,7 @@ async function main(): Promise<void> {
     });
     if (instanceId !== sharedEnvironment.OPENBOT_DEV_INSTANCE_ID) {
       sharedEnvironment.OPENBOT_DEV_INSTANCE_ID = instanceId;
-      logger.info("This worktree opens its own dev profile. Pass --shared to open the shared OpenBot Dev profile.");
+      logger.info("This worktree opens its own dev profile. Pass --shared to open the shared dani-dex Dev profile.");
     }
     const allocated = await allocateDevelopmentPorts(
       services,
@@ -638,12 +638,12 @@ function isPrivateIpv4(address: string): boolean {
 async function waitForDevelopmentApi(portValue: string | undefined, child: ChildProcess): Promise<void> {
   const port = readPort(portValue);
   if (!port) throw new Error("The development API port is missing.");
-  const deadline = Date.now() + 30_000;
+  const deadline = Date.now() + 120_000;
   while (Date.now() < deadline) {
     if (child.exitCode !== null) throw new Error("The development Auth API stopped before it became ready.");
     try {
       const response = await fetch(`http://127.0.0.1:${port}/health/live`, {
-        signal: AbortSignal.timeout(1_000),
+        signal: AbortSignal.timeout(30_000),
       });
       if (response.ok) return;
     } catch {}

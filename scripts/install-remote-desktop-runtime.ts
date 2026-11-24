@@ -57,7 +57,7 @@ export async function installRemoteDesktopRuntime(
     {
       headers: {
         Accept: "application/vnd.github+json",
-        "User-Agent": "OpenBot-runtime-installer",
+        "User-Agent": "dani-dex-runtime-installer",
         ...(githubToken ? { Authorization: `Bearer ${githubToken}` } : {}),
       },
     },

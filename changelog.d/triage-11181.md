@@ -1,7 +1,7 @@
 ### Fixed
 
 - Agents can now see who answered a card. Before, a click in the desktop app on the computer that
-  runs OpenBot did not save who answered, and agents could not read the name from any card, so an
+  runs dani-dex did not save who answered, and agents could not read the name from any card, so an
   agent asked again in chat for an approval that you already gave. On a joined server, the server
   must also be on this version.
 

@@ -108,7 +108,7 @@ const MORE_SKILLS: readonly MarketplaceSkillSummary[] = SKILL_WORDS.flatMap(([ca
     name,
     description: `${name.replace(/^\S+/, (verb) => `${verb}s`)} and reports what it found, one line for each.`,
     category,
-    creatorName: index % 3 === 0 ? "OpenBot" : "Priya Raman",
+    creatorName: index % 3 === 0 ? "dani-dex" : "Priya Raman",
     version: 1 + (index % 4),
     installs: 900 - index * 17,
     featured: index % 9 === 0,

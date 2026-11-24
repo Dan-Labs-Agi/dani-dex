@@ -59,16 +59,16 @@ export const ChooseAccount: Story = {
 };
 
 export const Connected: Story = {
-  args: args({ state: "connected", setup: READY, vaultNames: ["Shared with OpenBot"], loginCount: 3 }),
+  args: args({ state: "connected", setup: READY, vaultNames: ["Shared with dani-dex"], loginCount: 3 }),
 };
 
 export const ConnectedLoading: Story = {
-  args: args({ state: "connected", setup: READY, vaultNames: ["Shared with OpenBot"], loginCount: null }),
+  args: args({ state: "connected", setup: READY, vaultNames: ["Shared with dani-dex"], loginCount: null }),
 };
 
 export const InstallFailed: Story = {
   args: args({
-    error: "OpenBot could not install the 1Password CLI. Check the connection to the internet, then try again.",
+    error: "dani-dex could not install the 1Password CLI. Check the connection to the internet, then try again.",
   }),
 };
 
@@ -80,7 +80,7 @@ export const HostTokenRejected: Story = {
 
 export const HostConnected: Story = {
   args: {
-    ...args({ state: "connected", vaultNames: ["Shared with OpenBot"], loginCount: 3 }),
+    ...args({ state: "connected", vaultNames: ["Shared with dani-dex"], loginCount: 3 }),
     hostName: "Studio",
   },
 };

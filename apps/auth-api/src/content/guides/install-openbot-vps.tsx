@@ -5,25 +5,25 @@ export function InstallOpenBotVPS() {
   return (
     <>
       <p>
-        Installing OpenBot on a VPS gives your agents a computer that can stay running when you close your laptop. Their
-        files, conversations and tools live on the server, and you connect from the OpenBot app or your browser.
+        Installing dani-dex on a VPS gives your agents a computer that can stay running when you close your laptop.
+        Their files, conversations and tools live on the server, and you connect from the dani-dex app or your browser.
       </p>
 
       <p>
-        You can install OpenBot directly on Ubuntu or run the official Docker image. Both methods connect the server to
-        your OpenBot account. Choose one, then follow the same steps to open the server and set up your first agent.
+        You can install dani-dex directly on Ubuntu or run the official Docker image. Both methods connect the server to
+        your dani-dex account. Choose one, then follow the same steps to open the server and set up your first agent.
       </p>
 
       <h2>What you need</h2>
 
       <p>
         For the Ubuntu method, use a 64-bit VPS running <strong>Ubuntu 24.04 LTS</strong>, with <strong>systemd</strong>{" "}
-        and access to <strong>sudo</strong>. OpenBot provides builds for x86_64 and arm64. Ubuntu 24.04 is the baseline
+        and access to <strong>sudo</strong>. dani-dex provides builds for x86_64 and arm64. Ubuntu 24.04 is the baseline
         used for the full installation tests in the project's documentation.
       </p>
 
       <p>
-        Have your SSH login details ready, plus access to the email address you use for OpenBot. You will also need
+        Have your SSH login details ready, plus access to the email address you use for dani-dex. You will also need
         access to an AI provider when you create an agent. The server installation does not include an AI subscription.
       </p>
 
@@ -66,20 +66,20 @@ export function InstallOpenBotVPS() {
             <td>
               <strong>Ubuntu installer</strong>
             </td>
-            <td>You want OpenBot to run as a system service on the VPS.</td>
+            <td>You want dani-dex to run as a system service on the VPS.</td>
           </tr>
           <tr>
             <td>
               <strong>Docker Compose</strong>
             </td>
-            <td>You already manage services with Docker, or prefer to keep OpenBot in a container.</td>
+            <td>You already manage services with Docker, or prefer to keep dani-dex in a container.</td>
           </tr>
         </tbody>
       </table>
 
       <h3>Option A: Install directly on Ubuntu</h3>
 
-      <p>Run the official OpenBot server installer:</p>
+      <p>Run the official dani-dex server installer:</p>
 
       <pre>
         <code>
@@ -90,19 +90,19 @@ export function InstallOpenBotVPS() {
       </pre>
 
       <p>
-        The installer downloads the latest released Linux build, verifies its checksum and sets up the OpenBot service.
-        On a fresh installation, it creates a separate <code>openbot</code> service user and starts OpenBot in the
+        The installer downloads the latest released Linux build, verifies its checksum and sets up the dani-dex service.
+        On a fresh installation, it creates a separate <code>openbot</code> service user and starts dani-dex in the
         background.
       </p>
 
       <p>Sign in and give the server a name you will recognize in the app:</p>
 
       <pre>
-        <code>{'sudo openbot login --name "OpenBot VPS"'}</code>
+        <code>{'sudo openbot login --name "dani-dex VPS"'}</code>
       </pre>
 
       <p>
-        Enter the email address for your OpenBot account, then the code sent to it. Use the same account when you open
+        Enter the email address for your dani-dex account, then the code sent to it. Use the same account when you open
         the app later.
       </p>
 
@@ -113,13 +113,13 @@ export function InstallOpenBotVPS() {
       </pre>
 
       <p>
-        Look for your installed version, account and server state. If the command cannot reach OpenBot yet, check the
+        Look for your installed version, account and server state. If the command cannot reach dani-dex yet, check the
         service log using the troubleshooting section below.
       </p>
 
-      <p>OpenBot runs as a system service, so closing the SSH session does not stop it. Continue to step 3.</p>
+      <p>dani-dex runs as a system service, so closing the SSH session does not stop it. Continue to step 3.</p>
 
-      <h3>Option B: Run OpenBot with Docker Compose</h3>
+      <h3>Option B: Run dani-dex with Docker Compose</h3>
 
       <p>
         This option needs Docker Engine and the Docker Compose plugin on the VPS. If they are not installed, follow the{" "}
@@ -151,18 +151,18 @@ export function InstallOpenBotVPS() {
         agents to use.
       </p>
 
-      <p>Sign in to OpenBot and check the server:</p>
+      <p>Sign in to dani-dex and check the server:</p>
 
       <pre>
         <code>
           {
-            'sudo docker compose exec openbot openbot login --name "OpenBot VPS"\nsudo docker compose exec openbot openbot status'
+            'sudo docker compose exec openbot openbot login --name "dani-dex VPS"\nsudo docker compose exec openbot openbot status'
           }
         </code>
       </pre>
 
       <p>
-        Enter your OpenBot account email and its sign-in code. Run later Compose commands from this same deployment
+        Enter your dani-dex account email and its sign-in code. Run later Compose commands from this same deployment
         folder.
       </p>
 
@@ -171,16 +171,16 @@ export function InstallOpenBotVPS() {
         step 3.
       </p>
 
-      <h2>3. Open the server in OpenBot</h2>
+      <h2>3. Open the server in dani-dex</h2>
 
       <p>
-        Open the OpenBot desktop app or <Link to="/app">OpenBot in your browser</Link> and sign in to the same account.
-        Find <strong>OpenBot VPS</strong> in the server list and select it.
+        Open the dani-dex desktop app or <Link to="/app">dani-dex in your browser</Link> and sign in to the same
+        account. Find <strong>dani-dex VPS</strong> in the server list and select it.
       </p>
 
       <p>
-        The standard setup connects through OpenBot's existing account and remote-access services. You use the app to
-        reach the VPS; the OpenBot container publishes no web port of its own.
+        The standard setup connects through dani-dex's existing account and remote-access services. You use the app to
+        reach the VPS; the dani-dex container publishes no web port of its own.
       </p>
 
       <p>
@@ -191,12 +191,12 @@ export function InstallOpenBotVPS() {
       <h2>4. Connect a provider and create an agent</h2>
 
       <p>
-        Choose the provider you want to use on the server and follow its sign-in or API-key flow in OpenBot. A provider
+        Choose the provider you want to use on the server and follow its sign-in or API-key flow in dani-dex. A provider
         connection on your laptop is not automatically a working connection on the VPS.
       </p>
 
       <p>
-        If this is a new server with no agents, OpenBot offers provider setup before the first-agent form. Once
+        If this is a new server with no agents, dani-dex offers provider setup before the first-agent form. Once
         connected, create an agent, give it clear instructions and start with a small task.
       </p>
 
@@ -225,8 +225,8 @@ export function InstallOpenBotVPS() {
       <h3>Use Hermes Agent on the server</h3>
 
       <p>
-        Open the server's provider settings and select Download on the Hermes row. OpenBot installs Hermes Agent for its
-        service user, then the row shows Connect.
+        Open the server's provider settings and select Download on the Hermes row. dani-dex installs Hermes Agent for
+        its service user, then the row shows Connect.
       </p>
 
       <p>
@@ -282,7 +282,7 @@ export function InstallOpenBotVPS() {
             </td>
           </tr>
           <tr>
-            <td>Restart OpenBot</td>
+            <td>Restart dani-dex</td>
             <td>
               <code>sudo openbot restart</code>
             </td>
@@ -297,7 +297,7 @@ export function InstallOpenBotVPS() {
       </table>
 
       <p>
-        An update restarts OpenBot, so run it when an interruption is acceptable. Back up the server data first. The
+        An update restarts dani-dex, so run it when an interruption is acceptable. Back up the server data first. The
         native service also checks for updates and can stage them for installation; <code>openbot status</code> shows a
         staged update.
       </p>
@@ -323,7 +323,7 @@ export function InstallOpenBotVPS() {
       </p>
 
       <p>
-        OpenBot can migrate its database during an upgrade. Use a compatible release with your backup when recovering;
+        dani-dex can migrate its database during an upgrade. Use a compatible release with your backup when recovering;
         switching an upgraded live volume to an older image is not a safe rollback.
       </p>
 
@@ -335,7 +335,7 @@ export function InstallOpenBotVPS() {
         another service user, back up that user's actual home instead.
       </p>
 
-      <p>Stop OpenBot before making a consistent copy, then start it again when the copy is complete:</p>
+      <p>Stop dani-dex before making a consistent copy, then start it again when the copy is complete:</p>
 
       <pre>
         <code>{"sudo openbot stop"}</code>
@@ -388,17 +388,17 @@ export function InstallOpenBotVPS() {
       <h2>Frequently asked questions</h2>
 
       <p>
-        <strong>Will agents keep working when I close my laptop?</strong> Yes, while OpenBot is running on the VPS and
+        <strong>Will agents keep working when I close my laptop?</strong> Yes, while dani-dex is running on the VPS and
         the required services remain available. Your laptop is the client; the VPS runs the agents.
       </p>
 
       <p>
-        <strong>Do I need a domain for this setup?</strong> The standard setup uses OpenBot's existing account services
+        <strong>Do I need a domain for this setup?</strong> The standard setup uses dani-dex's existing account services
         and app. A custom domain is not required for this installation.
       </p>
 
       <p>
-        <strong>Does the VPS include model access?</strong> You connect a provider in OpenBot. VPS costs and provider
+        <strong>Does the VPS include model access?</strong> You connect a provider in dani-dex. VPS costs and provider
         access are separate.
       </p>
 
@@ -407,7 +407,7 @@ export function InstallOpenBotVPS() {
         <strong>Transfer</strong> in <strong>Server settings</strong> in the desktop app and choose{" "}
         <strong>Copy to another server</strong>. Pick the server that has the agents and choose this VPS as the
         destination. You can copy the agents in one step without handling a file. ZIP import still works. To read a
-        local Hermes folder, use the OpenBot desktop app on the computer where the folder is stored.
+        local Hermes folder, use the dani-dex desktop app on the computer where the folder is stored.
       </p>
     </>
   );

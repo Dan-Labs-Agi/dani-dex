@@ -1284,7 +1284,7 @@ async function creditActivity(database: DatabaseSync, credits: CreditService) {
   setActor.run(MEMBER.id);
   const refund = kinds(owner.entries, "refund")[0];
   check(
-    "a generation of a deleted account shows a member, and only OpenBot entries show OpenBot",
+    "a generation of a deleted account shows a member, and only dani-dex entries show dani-dex",
     afterDelete?.actor === "member" &&
       afterDelete.actorName === undefined &&
       refund?.actor === "openbot" &&

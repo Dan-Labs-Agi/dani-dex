@@ -31,10 +31,10 @@ end
 Pod::Spec.new do |s|
   s.name           = 'OpenBotSpeech'
   s.version        = '1.0.0'
-  s.summary        = 'Reads replies aloud for OpenBot'
+  s.summary        = 'Reads replies aloud for dani-dex'
   s.description    = 'Reads replies aloud with Supertonic 3 through sherpa-onnx on the phone, and plays speech audio.'
   s.license        = 'PolyForm-Noncommercial-1.0.0'
-  s.author         = 'OpenBot'
+  s.author         = 'dani-dex'
   s.homepage       = 'https://openbot.run'
   s.platforms      = { :ios => '16.4' }
   s.swift_version  = '5.9'

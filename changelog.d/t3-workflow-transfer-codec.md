@@ -5,4 +5,4 @@
 
 ### Changed
 
-- Workflows that you move with an OpenBot transfer file are paused. A step from a newer version of OpenBot is kept as a locked note, and the workflow is not skipped.
+- Workflows that you move with an dani-dex transfer file are paused. A step from a newer version of dani-dex is kept as a locked note, and the workflow is not skipped.

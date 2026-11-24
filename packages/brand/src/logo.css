@@ -6,6 +6,7 @@
   overflow: hidden;
   border-radius: var(--openbot-radius-logo);
   isolation: isolate;
+  object-fit: cover;
 }
 
 .app-logo[data-interactive="true"]:focus {

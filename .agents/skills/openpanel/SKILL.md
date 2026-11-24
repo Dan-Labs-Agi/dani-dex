@@ -1,6 +1,6 @@
 ---
 name: openpanel
-description: Query OpenBot product analytics (events, sessions, profiles, funnels, retention, active users, Search Console, and SQL percentiles such as p50/p90/p99) from the self-hosted OpenPanel server, and make or change its dashboards and reports. Use when debugging with real usage data, checking whether an event fires, counting affected users, answering a product or growth question, or building a dashboard.
+description: Query dani-dex product analytics (events, sessions, profiles, funnels, retention, active users, Search Console, and SQL percentiles such as p50/p90/p99) from the self-hosted OpenPanel server, and make or change its dashboards and reports. Use when debugging with real usage data, checking whether an event fires, counting affected users, answering a product or growth question, or building a dashboard.
 ---
 
 # OpenPanel analytics
@@ -139,7 +139,7 @@ the same secrets and tunnel. Its state cache is `release-health-state-*`, an HMA
 
 ## Rotate the token
 
-In OpenPanel, open the OpenBot project, then Settings, Clients. Make a new `root` client. Encrypt
+In OpenPanel, open the dani-dex project, then Settings, Clients. Make a new `root` client. Encrypt
 `base64(<client id>:<client secret>)` as `OPENPANEL_MCP_TOKEN` into both `apps/auth-api/.env.dev`
 and `apps/auth-api/.env.production` with `dotenvx set ... -fk <main checkout>/.env.keys`. Then delete
 the old client.

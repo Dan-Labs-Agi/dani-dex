@@ -2,10 +2,10 @@
 ARG BASE=ubuntu:24.04@sha256:a853f94d226358a79c740cfc7bce0c289748f3fe3488d921d038ccd752c61b60
 
 FROM ${BASE} AS release
-COPY OpenBot.AppImage /tmp/OpenBot.AppImage
+COPY dani-dex.AppImage /tmp/dani-dex.AppImage
 WORKDIR /tmp
-RUN chmod 0700 OpenBot.AppImage \
-  && ./OpenBot.AppImage --appimage-extract >/dev/null \
+RUN chmod 0700 dani-dex.AppImage \
+  && ./dani-dex.AppImage --appimage-extract >/dev/null \
   && chmod -R u+rwX,go=rX squashfs-root \
   && test -x squashfs-root/resources/hosting/openbot-container
 
@@ -21,14 +21,14 @@ RUN userdel --remove ubuntu \
   && useradd --uid 1000 --user-group --home-dir /data --create-home --shell /bin/bash openbot \
   && install -d -o openbot -g openbot -m 0700 /run/openbot
 RUN install -d -m 0755 /var/lib/openbot-update/requests /var/lib/openbot-update/status
-COPY --from=release /tmp/squashfs-root /opt/OpenBot/app
-RUN install -d -m 0755 /opt/OpenBot/hosted \
-  && printf 'container\n' >/opt/OpenBot/hosted/mode \
-  && ln -s /opt/OpenBot/app/resources/hosting/openbot /usr/local/bin/openbot
+COPY --from=release /tmp/squashfs-root /opt/dani-dex/app
+RUN install -d -m 0755 /opt/dani-dex/hosted \
+  && printf 'container\n' >/opt/dani-dex/hosted/mode \
+  && ln -s /opt/dani-dex/app/resources/hosting/openbot /usr/local/bin/openbot
 
 ARG VERSION=unknown
 ARG REVISION=unknown
-LABEL org.opencontainers.image.title=OpenBot \
+LABEL org.opencontainers.image.title=dani-dex \
   org.opencontainers.image.source=https://github.com/nightly-labs/openbot \
   org.opencontainers.image.licenses=PolyForm-Noncommercial-1.0.0 \
   org.opencontainers.image.version=${VERSION} \
@@ -39,4 +39,4 @@ USER openbot
 WORKDIR /data
 VOLUME /data
 STOPSIGNAL SIGTERM
-ENTRYPOINT ["/usr/bin/tini", "--", "/opt/OpenBot/app/resources/hosting/openbot-container"]
+ENTRYPOINT ["/usr/bin/tini", "--", "/opt/dani-dex/app/resources/hosting/openbot-container"]

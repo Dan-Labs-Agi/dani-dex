@@ -93,13 +93,13 @@ const DYNAMIC_TOOLS = [
   {
     type: "namespace",
     name: "openbot",
-    description: "OpenBot tools",
+    description: "dani-dex tools",
     tools: [{ type: "function", name: "send_message", description: "Send a message", inputSchema: { type: "object" } }],
   },
   {
     type: "namespace",
     name: "openbot_browser",
-    description: "OpenBot browser",
+    description: "dani-dex browser",
     tools: [{ type: "function", name: "navigate", description: "Open a page", inputSchema: { type: "object" } }],
   },
 ];
@@ -186,7 +186,7 @@ try {
   assert.deepEqual(
     confined.cards,
     OTHER_CALLS.map((call) => call.title),
-    "Only the requests that are not OpenBot tools or sandboxed commands show a card.",
+    "Only the requests that are not dani-dex tools or sandboxed commands show a card.",
   );
 
   const unconfined = await run("unconfined", false);
@@ -214,7 +214,7 @@ try {
   report.kimi = kimi;
   assert.equal(kimi.status, "completed", "The confined Kimi turn completes.");
   assert.equal(kimi.outcomes["kimi-bash"], "allow", "A Kimi command runs in the sandbox without a card.");
-  assert.equal(kimi.outcomes["kimi-openbot-tool"], "allow", "A Kimi call of an OpenBot tool runs without a card.");
+  assert.equal(kimi.outcomes["kimi-openbot-tool"], "allow", "A Kimi call of an dani-dex tool runs without a card.");
   assert.deepEqual(
     kimi.requests,
     [

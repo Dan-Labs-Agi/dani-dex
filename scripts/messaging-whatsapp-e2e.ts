@@ -537,7 +537,7 @@ async function leadReply(
   const request = mailbox.unresolvedMessagingDeliveries(link.linkId)[0];
   assert.ok(request, "No request waits in the lead's chat.");
   const prepared = await runCauseEffect(messaging.prepare({ delivery: request.delivery, managedAttachments: [] }));
-  assert.equal(phone.textsTo(jid).length, 1, "OpenBot wrote more than the agent's post to the lead.");
+  assert.equal(phone.textsTo(jid).length, 1, "dani-dex wrote more than the agent's post to the lead.");
   return { agentId: link.agentId, prompt: prepared?.text ?? "" };
 }
 
@@ -619,7 +619,7 @@ try {
       assert.equal(started.status, "waiting");
       const waiting = await linkState(messaging, (state) => state.qr !== null, "a QR code");
       assert.match(waiting.qr ?? "", /^2@fake-qr-/u);
-      assert.equal(phone.current().config.browser?.[1], "OpenBot", "A QR link does not show as OpenBot.");
+      assert.equal(phone.current().config.browser?.[1], "dani-dex", "A QR link does not show as dani-dex.");
       const early = message({ chat: OWNER_JID, fromMe: true, text: "first message after the link" });
       phone.onOpen = early;
       phone.current().scan();
@@ -664,7 +664,7 @@ try {
         () => phone.textsTo(OWNER_JID).filter((text) => text.includes("No agent can answer")).length > ownBefore,
         "the notice in the owner's own chat",
       );
-      assert.equal(phone.textsTo(friendJid).length, 0, "OpenBot wrote setup text to an allowed contact.");
+      assert.equal(phone.textsTo(friendJid).length, 0, "dani-dex wrote setup text to an allowed contact.");
       await runCauseEffect(messaging.removeWhatsAppSender(OWNER, input.sender.id));
       return { contactPosts: 0 };
     });
@@ -682,7 +682,7 @@ try {
       const post = "Hello, do you still need the offer?";
       const reply = await leadReply(agents, mailbox, LEAD, sales.id, post);
       assert.equal(reply.agentId, sales.id, "The reply did not reach the agent that posted.");
-      assert.ok(reply.prompt.includes(`OpenBot, a post of yours: ${post}`), "The agent does not see its own post.");
+      assert.ok(reply.prompt.includes(`dani-dex, a post of yours: ${post}`), "The agent does not see its own post.");
       await runCauseEffect(messaging.removeWhatsAppSender(OWNER, LEAD));
       await postAs(agents, sales.id, OWNER_JID, "Your morning report.");
       const notices = () => phone.textsTo(OWNER_JID).filter((text) => text.includes("No agent can answer")).length;
@@ -717,7 +717,7 @@ try {
         "The orchestrator lost the conversation.",
       );
       assert.ok(
-        reply.prompt.includes(`OpenBot, a post by your teammate Sales: ${post}`),
+        reply.prompt.includes(`dani-dex, a post by your teammate Sales: ${post}`),
         "The orchestrator does not know which teammate wrote to the lead.",
       );
       await runCauseEffect(messaging.removeWhatsAppSender(OWNER, OTHER_LEAD));
@@ -734,7 +734,7 @@ try {
       return { linkId: link.linkId };
     });
 
-    await step("echo guard: OpenBot's own post in the owner's chat is not a new request", async () => {
+    await step("echo guard: dani-dex's own post in the owner's chat is not a new request", async () => {
       const own = phone.sent.at(-1);
       assert.ok(own);
       phone.current().receive([message({ chat: OWNER_JID, fromMe: true, text: "👀", id: own.id })]);
@@ -747,9 +747,10 @@ try {
       await until(() => received(agents, OWNER_JID, later.key.id ?? ""), "the later message");
       assert.equal(received(agents, OWNER_JID, own.id), false, "An own post was read as a request.");
       for (const other of [otherStatus, otherAnswer])
-        assert.equal(received(agents, OWNER_JID, other.key.id ?? ""), false, "Another OpenBot's post was a request.");
-      const told = () => phone.textsTo(OWNER_JID).filter((text) => text.startsWith("Another OpenBot is linked")).length;
-      await until(() => told() === 1, "one notice about the other OpenBot");
+        assert.equal(received(agents, OWNER_JID, other.key.id ?? ""), false, "Another dani-dex's post was a request.");
+      const told = () =>
+        phone.textsTo(OWNER_JID).filter((text) => text.startsWith("Another dani-dex is linked")).length;
+      await until(() => told() === 1, "one notice about the other dani-dex");
       return { echoId: own.id, otherOpenBotNotices: told() };
     });
 
@@ -855,13 +856,13 @@ try {
       assert.ok(!texts().some((text) => text.includes("/home/ana")), "The provider's own text reached WhatsApp.");
       const otherReason = message({ chat: OWNER_JID, fromMe: true, text: signIn });
       phone.current().receive([otherReason]);
-      const later = message({ chat: OWNER_JID, fromMe: true, text: "after the other OpenBot's reason" });
+      const later = message({ chat: OWNER_JID, fromMe: true, text: "after the other dani-dex's reason" });
       phone.current().receive([later]);
       await until(() => received(agents, OWNER_JID, later.key.id ?? ""), "the message after the other reason");
       assert.equal(
         received(agents, OWNER_JID, otherReason.key.id ?? ""),
         false,
-        "Another OpenBot's reason was a request.",
+        "Another dani-dex's reason was a request.",
       );
       for (let index = 1; mailbox.unresolvedMessagingDeliveries(link.linkId).length < 2; index += 1) {
         const again = message({ chat: OWNER_JID, fromMe: true, text: `request again ${index}` });
@@ -933,9 +934,9 @@ try {
         await until(() => phone.reactedTo(marker.key.id), "the marker");
         assert.equal(received(agents, `${STRANGER}@s.whatsapp.net`, personal.key.id ?? ""), false);
         assert.equal(received(agents, GROUP, groupChat.key.id ?? ""), false);
-        assert.equal(phone.textsTo(`${STRANGER}@s.whatsapp.net`).length, 0, "OpenBot wrote to a personal contact.");
+        assert.equal(phone.textsTo(`${STRANGER}@s.whatsapp.net`).length, 0, "dani-dex wrote to a personal contact.");
         assert.equal(messaging.whatsappOverview().accounts[0]?.pendingRequests.length, 0);
-        assert.equal(elsewhere(), before, "OpenBot posted outside the owner's own chat.");
+        assert.equal(elsewhere(), before, "dani-dex posted outside the owner's own chat.");
         return { ignored: 3 };
       },
     );
@@ -985,23 +986,23 @@ try {
             ?.text ?? "";
         const dedicated = await prompt();
         assert.ok(dedicated.includes("Place: a direct message to you."), "A dedicated number lost its own framing.");
-        assert.ok(!dedicated.includes("message from the OpenBot user"), "A dedicated number answers as the owner.");
+        assert.ok(!dedicated.includes("message from the dani-dex user"), "A dedicated number answers as the owner.");
         await runCauseEffect(messaging.setWhatsAppOwnNumber(OWNER, true));
         try {
           const personal = await prompt();
           assert.ok(
-            personal.includes("The person writes to the OpenBot user, not to you."),
+            personal.includes("The person writes to the dani-dex user, not to you."),
             "The agent reads a message to the owner as a message to itself.",
           );
           assert.ok(
-            personal.includes("WhatsApp shows your answer as a message from the OpenBot user."),
+            personal.includes("WhatsApp shows your answer as a message from the dani-dex user."),
             "The agent does not know that its answer shows as the owner.",
           );
           assert.ok(!personal.includes("Place: a direct message to you."), "The personal number kept the bot framing.");
         } finally {
           await runCauseEffect(messaging.setWhatsAppOwnNumber(OWNER, false));
         }
-        return { dedicated: "direct message to you", personal: "writes to the OpenBot user" };
+        return { dedicated: "direct message to you", personal: "writes to the dani-dex user" };
       },
     );
 
@@ -1754,7 +1755,7 @@ try {
       "loop guard: a loop in the owner's own chat pauses it, a burst does not, and stop goes through",
       async () => {
         const paused = () =>
-          phone.textsTo(OWNER_JID).filter((text) => text.startsWith("OpenBot stopped answering here")).length;
+          phone.textsTo(OWNER_JID).filter((text) => text.startsWith("dani-dex stopped answering here")).length;
         const handle = runtime.get(credentials.get(connectionId(agents))?.storeId ?? "");
         assert.ok(handle, "No open store.");
         const journaled = (chat: string, id: string | null | undefined) =>
@@ -1883,7 +1884,7 @@ try {
         await until(() => connection(messaging)?.state === "connected", "connected after the second link");
         await until(
           () => phone.textsTo(OWNER_JID).some((text) => text.includes("can now write to this number")),
-          "the welcome message of a number only for OpenBot",
+          "the welcome message of a number only for dani-dex",
         );
         const account = messaging.whatsappOverview().accounts[0];
         assert.ok(

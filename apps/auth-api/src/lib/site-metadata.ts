@@ -2,7 +2,7 @@ import { faqStructuredData, type LandingQuestion } from "./landing-faq";
 import { OPENBOT_ALTERNATE_DOWNLOAD_LINKS, OPENBOT_DOWNLOAD_LINKS, OPENBOT_LINKS } from "./landing-links";
 
 export const OPENBOT_SITE_URL = "https://openbot.run/";
-export const OPENBOT_SITE_TITLE = "OpenBot: Run a team of AI agents on your computer";
+export const OPENBOT_SITE_TITLE = "dani-dex: Run a team of AI agents on your computer";
 export const OPENBOT_SITE_DESCRIPTION =
   "A free desktop app that runs AI agents as a team on your own computer, with the ChatGPT, Claude, Gemini or Grok plan you already pay for, or your own model.";
 export const OPENBOT_SOCIAL_IMAGE_URL = `${OPENBOT_SITE_URL}openbot-social.png`;
@@ -15,7 +15,7 @@ const OPENBOT_ORGANIZATION_ID = `${OPENBOT_SITE_URL}#organization`;
 const OPENBOT_WEBSITE_ID = `${OPENBOT_SITE_URL}#website`;
 const OPENBOT_APPLICATION_ID = `${OPENBOT_SITE_URL}#app`;
 export const OPENBOT_LOGO_URL = `${OPENBOT_SITE_URL}icon-512x512.png`;
-export const OPENBOT_SOCIAL_IMAGE_ALT = "Meet OpenBot on a dark grid background";
+export const OPENBOT_SOCIAL_IMAGE_ALT = "Meet dani-dex on a dark grid background";
 
 export const OPENBOT_SOCIAL_IMAGE_META = [
   { property: "og:image", content: OPENBOT_SOCIAL_IMAGE_URL },
@@ -40,7 +40,7 @@ export interface PageSocialImage {
 
 export const OPENBOT_LEGAL_SOCIAL_IMAGE: PageSocialImage = {
   path: "/social/legal.jpg",
-  alt: "Plain terms. No surprises. OpenBot agents beside a paper map",
+  alt: "Plain terms. No surprises. dani-dex agents beside a paper map",
 };
 
 export function pageSocialImageMeta(image: PageSocialImage, siteUrl: string) {
@@ -76,7 +76,7 @@ export function openBotSoftwareApplication(facts: OpenBotApplicationFacts) {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     "@id": OPENBOT_APPLICATION_ID,
-    name: "OpenBot",
+    name: "dani-dex",
     url: OPENBOT_SITE_URL,
     image: OPENBOT_SOCIAL_IMAGE_URL,
     description: OPENBOT_SITE_DESCRIPTION,
@@ -123,7 +123,7 @@ const OPENBOT_ORGANIZATION = {
   "@context": "https://schema.org",
   "@type": "Organization",
   "@id": OPENBOT_ORGANIZATION_ID,
-  name: "OpenBot",
+  name: "dani-dex",
   url: OPENBOT_SITE_URL,
   logo: OPENBOT_LOGO_URL,
   sameAs: [
@@ -143,7 +143,7 @@ const OPENBOT_WEBSITE = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   "@id": OPENBOT_WEBSITE_ID,
-  name: "OpenBot",
+  name: "dani-dex",
   url: OPENBOT_SITE_URL,
   publisher: { "@id": OPENBOT_ORGANIZATION_ID },
 } as const;
@@ -163,7 +163,7 @@ export function openBotRootHead(interLatinFont: string) {
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: OPENBOT_SITE_TITLE },
       { name: "description", content: OPENBOT_SITE_DESCRIPTION },
-      { name: "application-name", content: "OpenBot" },
+      { name: "application-name", content: "dani-dex" },
       { name: "color-scheme", content: "dark" },
       { name: "theme-color", content: "#1a1a1a" },
     ],
@@ -185,7 +185,7 @@ export function openBotRootHead(interLatinFont: string) {
 
 const OPENBOT_HOME_SOCIAL_IMAGE: PageSocialImage = {
   path: "/social/home.jpg",
-  alt: "Models come and go. Your team stays. OpenBot agents on a paper planet",
+  alt: "Models come and go. Your team stays. dani-dex agents on a paper planet",
 };
 
 export interface HomePageHead {
@@ -209,7 +209,7 @@ export function openBotHomeHead(application: OpenBotSoftwareApplication, siteUrl
       { "script:ld+json": OPENBOT_ORGANIZATION },
       { "script:ld+json": OPENBOT_WEBSITE },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "OpenBot" },
+      { property: "og:site_name", content: "dani-dex" },
       { property: "og:locale", content: page.openGraphLocale },
       { property: "og:url", content: url },
       { property: "og:title", content: page.title },

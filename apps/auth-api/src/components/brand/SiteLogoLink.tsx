@@ -56,7 +56,7 @@ export function SiteLogoLink() {
           onKeyDown={handleKeyDown}
         >
           <AppLogo variant="production" class="landing-brand-logo" />
-          <span>OpenBot</span>
+          <span>dani-dex</span>
         </Link>
       </ContextMenu.Trigger>
       <ContextMenu.Content class="site-logo-menu" aria-label={text().logo.menu}>

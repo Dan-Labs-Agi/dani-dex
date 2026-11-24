@@ -1054,7 +1054,9 @@ export class MessagingService {
       yield* live.adapter
         .post(
           { platformChannelId: chatId, replyThreadId: null },
-          { text: sourceText("status.messaging.telegramLinked", { bot: botUsername ? `@${botUsername}` : "OpenBot" }) },
+          {
+            text: sourceText("status.messaging.telegramLinked", { bot: botUsername ? `@${botUsername}` : "dani-dex" }),
+          },
         )
         .pipe(Effect.catch((failure) => Effect.sync(() => this.#warn(failure.cause))));
   }, Effect.uninterruptible);
@@ -1508,9 +1510,9 @@ export class MessagingService {
   }
 
   #pingAuthor(record: MessagingConnectionRecord, agentId: string): string {
-    if (agentId === (this.#orchestrator(record) ?? agentId)) return "OpenBot, a post of yours";
+    if (agentId === (this.#orchestrator(record) ?? agentId)) return "dani-dex, a post of yours";
     const name = this.#agents.listAgents().find((agent) => agent.id === agentId)?.name;
-    return name ? `OpenBot, a post by your teammate ${name}` : "OpenBot";
+    return name ? `dani-dex, a post by your teammate ${name}` : "dani-dex";
   }
 
   #orchestrator(record: MessagingConnectionRecord): string | null {
@@ -2375,27 +2377,27 @@ const WHATSAPP_NOT_CONNECTED =
 const WHATSAPP_LOCAL_REFUSALS = new Map([
   [
     "place_not_allowed",
-    "OpenBot sent nothing: the user did not allow this WhatsApp chat. Tell the user to open Marketplace, then Apps, then WhatsApp, and to use Add contact or Add group for this chat. Then the post can go to it.",
+    "dani-dex sent nothing: the user did not allow this WhatsApp chat. Tell the user to open Marketplace, then Apps, then WhatsApp, and to use Add contact or Add group for this chat. Then the post can go to it.",
   ],
   ["not_connected", WHATSAPP_NOT_CONNECTED],
   ["not_linked", WHATSAPP_NOT_CONNECTED],
   [
     "not_confirmed",
-    "The WhatsApp connection dropped before WhatsApp confirmed the message, also after OpenBot sent it again. It can be in the chat already. Do not post it again only because of this error: tell the user to check the chat.",
+    "The WhatsApp connection dropped before WhatsApp confirmed the message, also after dani-dex sent it again. It can be in the chat already. Do not post it again only because of this error: tell the user to check the chat.",
   ],
 ]);
 
 const DISCORD_NOT_LINKED =
-  "This Discord server is not linked to this OpenBot server now. Another OpenBot server of the user may answer there. Tell the user to open Marketplace, then Apps, then Discord, and to select Reconnect for this Discord server if this server must answer there.";
+  "This Discord server is not linked to this dani-dex server now. Another dani-dex server of the user may answer there. Tell the user to open Marketplace, then Apps, then Discord, and to select Reconnect for this Discord server if this server must answer there.";
 
 const TELEGRAM_RELAY_REFUSALS = new Map([
   [
     "telegram_503 relay_unavailable",
-    "OpenBot on this computer is not connected to the OpenBot service now. Telegram calls go through that service, so Telegram did not refuse this call, and the connection and place ids are not the cause. OpenBot connects again by itself. When a Telegram call fails again in a few minutes, tell the user that OpenBot on this computer cannot connect to its service, and that the computer must be online and signed in to OpenBot.",
+    "dani-dex on this computer is not connected to the dani-dex service now. Telegram calls go through that service, so Telegram did not refuse this call, and the connection and place ids are not the cause. dani-dex connects again by itself. When a Telegram call fails again in a few minutes, tell the user that dani-dex on this computer cannot connect to its service, and that the computer must be online and signed in to dani-dex.",
   ],
   [
     "telegram_504 timeout",
-    "The OpenBot service did not answer this Telegram call in time. Telegram did not refuse it, and the connection and place ids are not the cause.",
+    "The dani-dex service did not answer this Telegram call in time. Telegram did not refuse it, and the connection and place ids are not the cause.",
   ],
 ]);
 

@@ -1,8 +1,8 @@
 appId: app.openbot.desktop
-productName: OpenBot
+productName: dani-dex
 copyright: Copyright © 2026 Synthetify Labs spółka z ograniczoną odpowiedzialnością
 protocols:
-  - name: OpenBot invitations
+  - name: dani-dex invitations
     schemes:
       - openbot
 asar: true
@@ -114,14 +114,14 @@ mac:
   extendInfo:
     CFBundleIconName: Icon
     ElectronTeamID: ZTRDTUL87R
-    NSMicrophoneUsageDescription: OpenBot uses the microphone to transcribe voice prompts locally on this Mac.
-    NSScreenCaptureUsageDescription: OpenBot captures the screen so an agent can see the app windows you ask it to control.
-    NSAppleEventsUsageDescription: OpenBot sends Automation events so an agent can control the apps you ask it to control.
-    NSCalendarsFullAccessUsageDescription: OpenBot lets the commands that an agent runs read and change your calendar events.
-    NSCalendarsWriteOnlyAccessUsageDescription: OpenBot lets the commands that an agent runs add events to your calendars.
-    NSCalendarsUsageDescription: OpenBot lets the commands that an agent runs use your calendars.
-    NSRemindersFullAccessUsageDescription: OpenBot lets the commands that an agent runs read and change your reminders.
-    NSRemindersUsageDescription: OpenBot lets the commands that an agent runs use your reminders.
+    NSMicrophoneUsageDescription: dani-dex uses the microphone to transcribe voice prompts locally on this Mac.
+    NSScreenCaptureUsageDescription: dani-dex captures the screen so an agent can see the app windows you ask it to control.
+    NSAppleEventsUsageDescription: dani-dex sends Automation events so an agent can control the apps you ask it to control.
+    NSCalendarsFullAccessUsageDescription: dani-dex lets the commands that an agent runs read and change your calendar events.
+    NSCalendarsWriteOnlyAccessUsageDescription: dani-dex lets the commands that an agent runs add events to your calendars.
+    NSCalendarsUsageDescription: dani-dex lets the commands that an agent runs use your calendars.
+    NSRemindersFullAccessUsageDescription: dani-dex lets the commands that an agent runs read and change your reminders.
+    NSRemindersUsageDescription: dani-dex lets the commands that an agent runs use your reminders.
     NSUserActivityTypes:
       - NSUserActivityTypeBrowsingWeb
   target:

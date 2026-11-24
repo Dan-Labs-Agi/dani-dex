@@ -1,5 +1,5 @@
 {
-  description = "OpenBot: a local-first multi-agent desktop workspace";
+  description = "dani-dex: a local-first multi-agent desktop workspace";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 

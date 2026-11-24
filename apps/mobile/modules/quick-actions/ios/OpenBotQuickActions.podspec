@@ -1,10 +1,10 @@
 Pod::Spec.new do |s|
   s.name           = 'OpenBotQuickActions'
   s.version        = '1.0.0'
-  s.summary        = 'Home Screen quick actions for OpenBot'
+  s.summary        = 'Home Screen quick actions for dani-dex'
   s.description    = 'Sets the quick actions of the app icon and gives each chosen action to JavaScript.'
   s.license        = 'PolyForm-Noncommercial-1.0.0'
-  s.author         = 'OpenBot'
+  s.author         = 'dani-dex'
   s.homepage       = 'https://openbot.run'
   s.platforms      = { :ios => '16.4' }
   s.swift_version  = '5.9'

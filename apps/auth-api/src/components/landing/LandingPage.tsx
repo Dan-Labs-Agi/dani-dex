@@ -138,7 +138,7 @@ function LandingPageContent() {
                 )}
               </Show>
               <AppLogo variant="production" animation="blink" interactive class="landing-hero-logo" />{" "}
-              <span>OpenBot</span>
+              <span>dani-dex</span>
               <Show when={hero().title.after}>
                 {(after) => (
                   <>

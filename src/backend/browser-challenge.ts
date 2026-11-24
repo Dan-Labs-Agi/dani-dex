@@ -254,7 +254,7 @@ export function describeChallenge(
       vendor: clearedVendor,
       status: "cleared",
       waitedMs,
-      next: "The security check passed while OpenBot waited. Continue with this snapshot.",
+      next: "The security check passed while dani-dex waited. Continue with this snapshot.",
     };
   return undefined;
 }

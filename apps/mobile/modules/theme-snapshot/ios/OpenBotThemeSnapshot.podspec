@@ -1,10 +1,10 @@
 Pod::Spec.new do |s|
   s.name           = 'OpenBotThemeSnapshot'
   s.version        = '1.0.0'
-  s.summary        = 'Window picture for the OpenBot theme change'
+  s.summary        = 'Window picture for the dani-dex theme change'
   s.description    = 'Draws the whole window, sheets included, so the theme change can show the old theme over the new one.'
   s.license        = 'PolyForm-Noncommercial-1.0.0'
-  s.author         = 'OpenBot'
+  s.author         = 'dani-dex'
   s.homepage       = 'https://openbot.run'
   s.platforms      = { :ios => '16.4' }
   s.swift_version  = '5.9'

@@ -1,6 +1,6 @@
 ### Added
 
-- OpenBot credits. Buy credits for yourself or for a server from the Credits button in the page rail,
+- dani-dex credits. Buy credits for yourself or for a server from the Credits button in the page rail,
   or from Settings > Billing. The buy page has a slider and six packs in three tiers (Basic, Plus and Max), and the
   selector in the window corner sets who gets the credits. A server owner can move credits from their own balance to
   a server and back. This works in the desktop app and in the web client. Before checkout, a
@@ -22,7 +22,7 @@
   show all activity, only used credits, or only added credits. A server owner or admin also sees the
   activity of the server's members, with their names; a member sees only their own server activity.
   This works in the desktop app, with a joined server and in the web client.
-- OpenBot models in workflows. An image or video step can use an OpenBot model, which OpenBot
+- dani-dex models in workflows. An image or video step can use an dani-dex model, which dani-dex
   credits pay for, with no other sign-in. The model list shows the logo of the company that made each
   model, and the price of each step in credits. On a
   server, the server's credits pay. On a computer that hosts a server, that server's credits pay too.
@@ -32,7 +32,7 @@
   When the network fails, the step shows the error at once. Retry then gets the same generation, so
   you do not pay again, unless you changed the step. When a server signs in to an account during a
   generation, it still gets the file and does not pay a second time.
-  A batch makes up to 4 results with an OpenBot model at the same time. Each result is a separate
+  A batch makes up to 4 results with an dani-dex model at the same time. Each result is a separate
   charge, and a failed result uses no credits. A result in progress shows its time in the result
   list, and you can select it to see its progress.
   When your credits do not pay for the full batch, you cannot start the step.

@@ -331,7 +331,7 @@ Measured on 2026-11-18 on a read-only copy of one real desktop profile (the deve
   clean. 2 of 22 `thread-message` attachment rows have no message. These rows have an empty `path`
   by design (`conversation-writer.ts`).
 - **A transfers sweep is not safe.** The desktop app and every dev profile use the same
-  `~/OpenBot/Shared/Transfers` (`openbotRoot` in `agent-store.ts`). On the measured computer, 391
+  `~/dani-dex/Shared/Transfers` (`openbotRoot` in `agent-store.ts`). On the measured computer, 391
   profile databases use it and 330 name entries in it. The production profile names none of the
   11,462 `generated/` entries; dev profiles name 4,280 of them. A sweep that deletes the entries one
   database does not name deletes files that another profile uses. No `.tmp-*` folder was left.

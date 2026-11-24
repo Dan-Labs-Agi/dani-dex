@@ -6,7 +6,7 @@ const DEVIN_DOCS = "https://docs.devin.ai";
 export const DEVIN_COMPARISON: Comparison = {
   rival: { name: "Devin", mark: "devin" },
   answer:
-    "Choose OpenBot if you want coding agents on your own computer that use the AI plans you already pay for, such as ChatGPT, Claude, Gemini or Grok: the app is free. Choose Devin if you want an autonomous software engineer that works in Cognition's cloud, with no computer of yours on, and starts from Slack, GitHub, Linear or Jira.",
+    "Choose dani-dex if you want coding agents on your own computer that use the AI plans you already pay for, such as ChatGPT, Claude, Gemini or Grok: the app is free. Choose Devin if you want an autonomous software engineer that works in Cognition's cloud, with no computer of yours on, and starts from Slack, GitHub, Linear or Jira.",
   chooseOpenBot: [
     "You already pay for ChatGPT, Claude, Gemini, Grok, Cursor, Cline or Muse Code, and want your agents to use that plan.",
     "Your code and chats must stay on your own computer, not in Cognition's cloud.",
@@ -32,7 +32,7 @@ export const DEVIN_COMPARISON: Comparison = {
     {
       icon: "laptop",
       topic: "Where agents work",
-      openbot: "On the computer that runs OpenBot.",
+      openbot: "On the computer that runs dani-dex.",
       rival:
         "In virtual machines in Cognition's cloud, or on your computer with Devin Desktop or the Devin CLI. The agent's planning always runs in Cognition's cloud.",
     },
@@ -128,7 +128,7 @@ export const DEVIN_COMPARISON: Comparison = {
     },
   ],
   intro:
-    "Devin is Cognition's autonomous AI software engineer: it can write, run and test code, and open the pull request. In 2025 Cognition acquired Windsurf, and in June 2026 Windsurf became Devin Desktop. Devin now has four parts: Devin Cloud, Devin Desktop, the Devin CLI and Devin Review. OpenBot's agents are coding agents too. The difference is where they run and whose plan pays for them. Devin works mainly in Cognition's cloud, paid through a Devin plan. OpenBot runs a team of agents on your own computer, with the AI plans you choose.",
+    "Devin is Cognition's autonomous AI software engineer: it can write, run and test code, and open the pull request. In 2025 Cognition acquired Windsurf, and in June 2026 Windsurf became Devin Desktop. Devin now has four parts: Devin Cloud, Devin Desktop, the Devin CLI and Devin Review. dani-dex's agents are coding agents too. The difference is where they run and whose plan pays for them. Devin works mainly in Cognition's cloud, paid through a Devin plan. dani-dex runs a team of agents on your own computer, with the AI plans you choose.",
   sections: [
     {
       title: "Models and the plans you pay for",
@@ -158,7 +158,7 @@ export const DEVIN_COMPARISON: Comparison = {
     {
       title: "Data and privacy",
       openbot:
-        "OpenBot keeps workspaces, conversations, attachments and browser data in a SQLite database on the computer that runs it. OpenBot keeps no other copy. On a hosted OpenBot server, the database is on that server in the EU. An account holds your profile, team memberships, invitations, sign-in sessions, the settings that let devices find each other, and any agent templates that you publish. Product analytics, which never include chat content, are on by default and linked to your account when you sign in; you can turn them off in Settings.",
+        "dani-dex keeps workspaces, conversations, attachments and browser data in a SQLite database on the computer that runs it. dani-dex keeps no other copy. On a hosted dani-dex server, the database is on that server in the EU. An account holds your profile, team memberships, invitations, sign-in sessions, the settings that let devices find each other, and any agent templates that you publish. Product analytics, which never include chat content, are on by default and linked to your account when you sign in; you can turn them off in Settings.",
       rival:
         "Devin processes your code and sessions in Cognition's cloud on AWS, and keeps the data for as long as you are a customer. By default, Cognition can use your data for model training; on a paid plan you can opt out, and on Enterprise it trains only with your written consent. Cognition is SOC 2 Type II certified. A deployment in your own cloud is only for Enterprise.",
       better: "openbot",
@@ -166,17 +166,17 @@ export const DEVIN_COMPARISON: Comparison = {
   ],
   faq: [
     {
-      question: "Is OpenBot an alternative to Devin?",
+      question: "Is dani-dex an alternative to Devin?",
       answer:
-        "Yes, if you want your coding agents on your own computer. Both give you agents that write, run and test code. OpenBot runs a team of agents on your computer with the AI plans you choose. Devin is an autonomous software engineer that works mainly in Cognition's cloud, paid through a Devin plan.",
+        "Yes, if you want your coding agents on your own computer. Both give you agents that write, run and test code. dani-dex runs a team of agents on your computer with the AI plans you choose. Devin is an autonomous software engineer that works mainly in Cognition's cloud, paid through a Devin plan.",
     },
     {
-      question: "Why choose OpenBot over Devin?",
+      question: "Why choose dani-dex over Devin?",
       answer:
-        "Your agents use the AI plans you already pay for, such as ChatGPT, Claude, Gemini or Grok, or your own model. OpenBot keeps your code, chats and files on your own computer, and OpenBot does not train models on them. It has native apps for iPhone and Android. The app is free, and its source code is on GitHub. Devin is the better fit when you want agents in the cloud that start from Slack, GitHub or Jira.",
+        "Your agents use the AI plans you already pay for, such as ChatGPT, Claude, Gemini or Grok, or your own model. dani-dex keeps your code, chats and files on your own computer, and dani-dex does not train models on them. It has native apps for iPhone and Android. The app is free, and its source code is on GitHub. Devin is the better fit when you want agents in the cloud that start from Slack, GitHub or Jira.",
     },
     {
-      question: "Can I use my ChatGPT, Claude or Gemini subscription with OpenBot?",
+      question: "Can I use my ChatGPT, Claude or Gemini subscription with dani-dex?",
       answer: OPENBOT_TEXT.plansFaq,
     },
     {
@@ -192,17 +192,17 @@ export const DEVIN_COMPARISON: Comparison = {
     {
       question: "Does Devin train on my code?",
       answer:
-        "It can. Cognition's terms say that it may use customer data for model training, and that customers on a paid plan can opt out. On Enterprise, Cognition trains only with your written consent. OpenBot does not train models; your provider's own terms apply to the requests you send it.",
+        "It can. Cognition's terms say that it may use customer data for model training, and that customers on a paid plan can opt out. On Enterprise, Cognition trains only with your written consent. dani-dex does not train models; your provider's own terms apply to the requests you send it.",
     },
     {
       question: "Do agents keep working when my laptop is closed?",
       answer:
-        "Yes, with both. Devin Cloud works in Cognition's cloud, so no computer of yours must stay on. OpenBot agents work on the computer or server that runs OpenBot: keep that computer on, or use a hosted OpenBot server, and connect from your laptop or phone.",
+        "Yes, with both. Devin Cloud works in Cognition's cloud, so no computer of yours must stay on. dani-dex agents work on the computer or server that runs dani-dex: keep that computer on, or use a hosted dani-dex server, and connect from your laptop or phone.",
     },
     {
-      question: "How much do OpenBot and Devin cost?",
+      question: "How much do dani-dex and Devin cost?",
       answer:
-        "OpenBot is free for noncommercial use, commercial use needs a separate license, and your agents use the plans you already pay for. Devin has a free plan with a light quota; Pro costs $20 a month, Max $200 a month, and Teams $80 a month plus $40 for each full seat. Extra use is billed at API prices.",
+        "dani-dex is free for noncommercial use, commercial use needs a separate license, and your agents use the plans you already pay for. Devin has a free plan with a light quota; Pro costs $20 a month, Max $200 a month, and Teams $80 a month plus $40 for each full seat. Extra use is billed at API prices.",
     },
   ],
   sources: [
@@ -238,8 +238,8 @@ export const DEVIN_COMPARISON: Comparison = {
     { label: "Devin with your ChatGPT plan", url: "https://docs.devin.ai/admin/billing/chatgpt" },
     { label: "Devin secrets and site cookies", url: "https://docs.devin.ai/product-guides/secrets" },
     { label: "Devin voice mode", url: "https://docs.devin.ai/work-with-devin/voice-mode" },
-    { label: "OpenBot privacy notes", url: OPENBOT_LINKS.privacy },
-    { label: "OpenBot source code", url: OPENBOT_LINKS.repository },
+    { label: "dani-dex privacy notes", url: OPENBOT_LINKS.privacy },
+    { label: "dani-dex source code", url: OPENBOT_LINKS.repository },
   ],
   checkedAt: "2026-10-02",
 };

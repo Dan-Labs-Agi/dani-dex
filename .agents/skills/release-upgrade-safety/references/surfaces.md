@@ -28,7 +28,7 @@ any of them before an upgrade. A renamed constant means the old file is never re
 | `remote/connection-<stack pid>.json` in the dev runtime directory | `developmentRemoteConnectionPath`, `src/main/development-runtime-directory.ts` | development only |
 | `bots.json` | `LEGACY_AGENTS_STATE_FILE`, `src/backend/agent-store.ts` | permanent name; imported once under command id `legacy-import:bots:v1` |
 | `mailbox.json` | `src/backend/mailbox-store.ts` | permanent name |
-| `sunshine-credentials.json`, `sunshine-state.json`, `sunshine-apps.json`, `moonlight-config.json`, `moonlight-data.json` | `src/main/sunshine-moonlight-runtime.ts` | written by the vendored runtimes, not by OpenBot |
+| `sunshine-credentials.json`, `sunshine-state.json`, `sunshine-apps.json`, `moonlight-config.json`, `moonlight-data.json` | `src/main/sunshine-moonlight-runtime.ts` | written by the vendored runtimes, not by dani-dex |
 | `avatars/agents/`, `agent-duplications/` | `src/backend/agent-store.ts` | directories under `userData` |
 | `legacy-backup-v1/` | `DatabaseCore.backupLegacyFile` | one copy per named legacy file, `COPYFILE_EXCL`; **not** a general backup |
 
@@ -88,19 +88,19 @@ The paired-phones note under `## [0.5.0]` in `CHANGELOG.md` is what this surface
 it breaks: agent identifiers changed, the phone still held the old ones, and the only remedy was for
 the user to re-pair. Gate B is what should catch the next one before gate G has to apologise for it.
 
-## `~/OpenBot`
+## `~/dani-dex`
 
 Built in the `AgentStore` constructor, `src/backend/agent-store.ts`:
 
 | Directory | Note |
 | --- | --- |
-| `~/OpenBot/Agents/<agent-id>` | the current workspace root |
-| `~/OpenBot/Bots/<bot-id>` | the pre-rename root; permanent, still live after a v13-less restore |
-| `~/OpenBot/Shared` | |
-| `~/OpenBot/Downloads` | |
+| `~/dani-dex/Agents/<agent-id>` | the current workspace root |
+| `~/dani-dex/Bots/<bot-id>` | the pre-rename root; permanent, still live after a v13-less restore |
+| `~/dani-dex/Shared` | |
+| `~/dani-dex/Downloads` | |
 
-`src/backend/workspace-paths.ts` resolves four permanent prefixes — `~/OpenBot/Agents/<id>/`,
-`OpenBot/Agents/<id>/`, `~/OpenBot/Bots/<legacy-id>/`, `OpenBot/Bots/<legacy-id>/` — and
+`src/backend/workspace-paths.ts` resolves four permanent prefixes — `~/dani-dex/Agents/<id>/`,
+`dani-dex/Agents/<id>/`, `~/dani-dex/Bots/<legacy-id>/`, `dani-dex/Bots/<legacy-id>/` — and
 `rebaseLegacyWorkspacePath` rebases in both directions, because migration v13's directory move gives
 up on `EXDEV` or a permission error while the message paths have already been rewritten.
 

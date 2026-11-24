@@ -831,7 +831,7 @@ async function createMessagingServices({
   const messagingCredentialLoadError = await Effect.runPromise(messagingCredentials.load());
   if (messagingCredentialLoadError)
     logger.warn(
-      `OpenBot could not read the messaging token file (${messagingCredentialLoadError.name}). It was left unchanged.`,
+      `dani-dex could not read the messaging token file (${messagingCredentialLoadError.name}). It was left unchanged.`,
     );
   const signalIngress = new SignalIngress({
     hostId: readHostId,
@@ -855,7 +855,7 @@ async function createMessagingServices({
     resolveProxy: (url) =>
       Effect.tryPromise(() => session.defaultSession.resolveProxy(url)).pipe(
         Effect.tapError(() =>
-          Effect.sync(() => logger.warn("OpenBot could not read the proxy settings. Signal connects directly.")),
+          Effect.sync(() => logger.warn("dani-dex could not read the proxy settings. Signal connects directly.")),
         ),
         Effect.orElseSucceed(() => "DIRECT"),
       ),
@@ -1695,7 +1695,7 @@ export async function createApplicationServices({
   performance.mark("openbot:services.provider-detection");
   const credentialLoadError = await Effect.runPromise(providerCredentials.load());
   if (credentialLoadError) {
-    logger.warn(`OpenBot could not read the provider key file (${credentialLoadError.name}). It was left unchanged.`);
+    logger.warn(`dani-dex could not read the provider key file (${credentialLoadError.name}). It was left unchanged.`);
   }
   const providerEnvironmentSetting = providerEnvironmentControl(providerEnvironment, providerCredentials, (provider) =>
     service.providerSpawnSettingsChanged(provider).pipe(
@@ -1711,7 +1711,7 @@ export async function createApplicationServices({
   const mcpOAuthStore = new McpOAuthStore(join(app.getPath("userData"), MCP_OAUTH_FILE), secretCipher);
   const mcpOAuthLoadError = await Effect.runPromise(mcpOAuthStore.load());
   if (mcpOAuthLoadError) {
-    logger.warn(`OpenBot could not read the MCP sign-in file (${mcpOAuthLoadError.name}). It was left unchanged.`);
+    logger.warn(`dani-dex could not read the MCP sign-in file (${mcpOAuthLoadError.name}). It was left unchanged.`);
   }
   const mcpOAuthProxySettings = new McpOAuthProxySettingsFile(
     join(app.getPath("userData"), MCP_OAUTH_PROXY_FILE),
@@ -1720,7 +1720,7 @@ export async function createApplicationServices({
   const mcpOAuthProxyLoadError = await Effect.runPromise(mcpOAuthProxySettings.load());
   if (mcpOAuthProxyLoadError) {
     logger.warn(
-      `OpenBot could not read the MCP sign-in proxy file (${mcpOAuthProxyLoadError.name}). A new port is used.`,
+      `dani-dex could not read the MCP sign-in proxy file (${mcpOAuthProxyLoadError.name}). A new port is used.`,
     );
   }
   let mcpOAuthAuthority: McpOAuth | null = null;
@@ -1756,7 +1756,7 @@ export async function createApplicationServices({
     },
   }).catch((error: unknown) => {
     logger.warn(
-      "OpenBot could not listen for MCP sign-ins on this machine, so the openbot:// link is used instead. Servers that refuse it cannot be signed in to:",
+      "dani-dex could not listen for MCP sign-ins on this machine, so the openbot:// link is used instead. Servers that refuse it cannot be signed in to:",
       toLogValue(error),
     );
     return null;
@@ -2217,7 +2217,7 @@ export async function createApplicationServices({
       { prefix: "", name: PASSWORD_MANAGER_BRANDS.onepassword, vault: onePasswordConnector },
       { prefix: "bitwarden:", name: PASSWORD_MANAGER_BRANDS.bitwarden, vault: bitwardenConnector },
       ...passwordManagers.routes(),
-      { prefix: "openbot:", name: "the OpenBot Vault", vault: vault.logins },
+      { prefix: "openbot:", name: "the dani-dex Vault", vault: vault.logins },
     ]),
     vaultItems: vault.items,
     linkWallet: linkAccount,
@@ -3777,7 +3777,7 @@ export async function createApplicationServices({
       : new LocalServers({
           registryPath: join(app.getPath("userData"), LOCAL_SERVERS_FILE),
           userDataRoot: join(app.getPath("userData"), "local-servers"),
-          agentRoot: join(homedir(), "OpenBot", "Servers"),
+          agentRoot: join(homedir(), "dani-dex", "Servers"),
           runtimeRoot: providerRuntimesRoot,
           cipher: safeStorageCipher("error.app.macSecureStorageUnavailable"),
           remoteServers,
@@ -4021,7 +4021,7 @@ export async function createApplicationServices({
     (hostedInstaller || (supportsInstalledUpdates(process.platform) && updateMetadataAvailable)) &&
     isValidSemver(currentVersion);
   if (app.isPackaged && updateMetadataAvailable && !isValidSemver(currentVersion)) {
-    logger.warn(`OpenBot updates are disabled because the application version is not valid SemVer: ${currentVersion}`);
+    logger.warn(`dani-dex updates are disabled because the application version is not valid SemVer: ${currentVersion}`);
   }
   let updateAdapter: UpdateAdapter = createDisabledUpdateAdapter();
   let updaterEnabled = updatesEnabled;
@@ -4062,7 +4062,7 @@ export async function createApplicationServices({
                   if (siblings.length === 0) return;
                   const list = siblings.map(({ pid, uid }) => `pid ${pid} (uid ${uid})`).join(", ");
                   logger.warn(
-                    `OpenBot update install refused: other OpenBot processes run from this application: ${list}`,
+                    `dani-dex update install refused: other dani-dex processes run from this application: ${list}`,
                   );
                 }),
               ),
@@ -4282,7 +4282,7 @@ export async function createApplicationServices({
     const setupPagePort = serverModeEnvironment?.setupPagePort ?? null;
     let setupPage: ServerSetupPage | null = null;
     if (setupPagePort !== null && installationMode !== "container") {
-      logger.warn("OPENBOT_SETUP_PAGE_PORT works only in the OpenBot container. The setup page did not start.");
+      logger.warn("OPENBOT_SETUP_PAGE_PORT works only in the dani-dex container. The setup page did not start.");
     } else if (setupPagePort !== null) {
       const page = new ServerSetupPage({
         port: setupPagePort,

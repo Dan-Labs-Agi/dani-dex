@@ -694,14 +694,14 @@ try {
     );
     assert.equal(
       answer.secureInput,
-      "OpenBot could not finish entering the value. Authentication submit button is not ready. The page went to the user.",
+      "dani-dex could not finish entering the value. Authentication submit button is not ready. The page went to the user.",
     );
     return answer;
   });
 
   await step("a failed fill with another error tells the agent no page text", async () => {
     const answer = await failedFill("turn-10", new Error(`ERR_ABORTED loading https://example.test/?code=${SECRET}`));
-    assert.equal(answer.secureInput, "OpenBot could not finish entering the value. The page went to the user.");
+    assert.equal(answer.secureInput, "dani-dex could not finish entering the value. The page went to the user.");
     return answer;
   });
 

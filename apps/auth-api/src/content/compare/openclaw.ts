@@ -6,12 +6,12 @@ const OPENCLAW_DOCS = "https://docs.openclaw.ai";
 export const OPENCLAW_COMPARISON: Comparison = {
   rival: { name: "OpenClaw", mark: "openclaw" },
   answer:
-    "OpenBot and OpenClaw are close: both run AI agents on your own computer, use the AI plans you already pay for, and have apps for desktop, iPhone and Android. Choose OpenBot if you want Codex, Claude Code, Gemini and Grok CLI to work as a team of separate agents, and to reach them from your phone anywhere with no VPN. Choose OpenClaw if you want one personal assistant that talks to you in WhatsApp, Signal or iMessage, under the MIT license.",
+    "dani-dex and OpenClaw are close: both run AI agents on your own computer, use the AI plans you already pay for, and have apps for desktop, iPhone and Android. Choose dani-dex if you want Codex, Claude Code, Gemini and Grok CLI to work as a team of separate agents, and to reach them from your phone anywhere with no VPN. Choose OpenClaw if you want one personal assistant that talks to you in WhatsApp, Signal or iMessage, under the MIT license.",
   chooseOpenBot: [
     "You want Codex, Claude Code, Gemini, Grok CLI, Cursor CLI, Cline, Pi and Muse Code as separate agents in one team, each with its own job.",
     "You want your phone to reach your agents from anywhere, with no VPN, tunnel or public address to set up.",
     "You pay for Google AI Pro or Ultra and want your agents to use that plan.",
-    "You want your agents to work 24/7 with no VPS to set up: use a hosted OpenBot server.",
+    "You want your agents to work 24/7 with no VPS to set up: use a hosted dani-dex server.",
   ],
   rivalPlans:
     "OpenClaw signs in with ChatGPT or Codex, a Claude Code login, SuperGrok or X Premium, and GitHub Copilot, or uses API keys and local models. Gemini needs an API key or Vertex AI: OpenClaw does not offer a new Google sign-in.",
@@ -32,7 +32,7 @@ export const OPENCLAW_COMPARISON: Comparison = {
     {
       icon: "laptop",
       topic: "Where agents work",
-      openbot: "On the computer that runs OpenBot.",
+      openbot: "On the computer that runs dani-dex.",
       rival: "On the computer that runs the OpenClaw Gateway: your own computer, a home server or a VPS that you rent.",
     },
     {
@@ -123,7 +123,7 @@ export const OPENCLAW_COMPARISON: Comparison = {
     },
   ],
   intro:
-    "OpenClaw started as Warelay, a WhatsApp gateway, then was called Clawdbot and Moltbot, and took its current name in January 2026. Like OpenBot, it runs AI agents on a computer that you choose, keeps your data there, works with the AI plans you pay for, and has apps for desktop and phone. The difference is how the agents are organised and how you reach them. In OpenBot, each provider's coding tool is its own agent in a team, and your phone connects from anywhere. OpenClaw is a personal assistant that runs in a Gateway: it can run its turns through Codex, Claude Code or Gemini CLI, and it talks to you through messaging apps.",
+    "OpenClaw started as Warelay, a WhatsApp gateway, then was called Clawdbot and Moltbot, and took its current name in January 2026. Like dani-dex, it runs AI agents on a computer that you choose, keeps your data there, works with the AI plans you pay for, and has apps for desktop and phone. The difference is how the agents are organised and how you reach them. In dani-dex, each provider's coding tool is its own agent in a team, and your phone connects from anywhere. OpenClaw is a personal assistant that runs in a Gateway: it can run its turns through Codex, Claude Code or Gemini CLI, and it talks to you through messaging apps.",
   sections: [
     {
       title: "Models and the plans you pay for",
@@ -153,16 +153,16 @@ export const OPENCLAW_COMPARISON: Comparison = {
     {
       title: "Data and privacy",
       openbot:
-        "OpenBot keeps workspaces, conversations, attachments and browser data in a SQLite database on the computer that runs it. OpenBot keeps no other copy. On a hosted OpenBot server, the database is on that server in the EU. An account holds your profile, team memberships, invitations, sign-in sessions, the settings that let devices find each other, and any agent templates that you publish. Product analytics, which never include chat content, are on by default and linked to your account when you sign in; you can turn them off in Settings.",
+        "dani-dex keeps workspaces, conversations, attachments and browser data in a SQLite database on the computer that runs it. dani-dex keeps no other copy. On a hosted dani-dex server, the database is on that server in the EU. An account holds your profile, team memberships, invitations, sign-in sessions, the settings that let devices find each other, and any agent templates that you publish. Product analytics, which never include chat content, are on by default and linked to your account when you sign in; you can turn them off in Settings.",
       rival:
         "OpenClaw keeps settings, sessions and memory under ~/.openclaw on the computer that runs the Gateway, with session history in SQLite and memory in Markdown files. A daily update check is on by default and sends the app version and system details; anonymous feature statistics are off until you turn them on. OpenClaw says that third-party skills and inbound messages are untrusted input.",
     },
   ],
   faq: [
     {
-      question: "Is OpenBot an alternative to OpenClaw?",
+      question: "Is dani-dex an alternative to OpenClaw?",
       answer:
-        "Yes. Both run AI agents on your own computer and keep your data there. OpenBot runs the coding tools of the providers you pay for, such as Codex and Claude Code, as a team, and your phone reaches them from anywhere. OpenClaw is a personal assistant that runs in a Gateway and talks to you in messaging apps.",
+        "Yes. Both run AI agents on your own computer and keep your data there. dani-dex runs the coding tools of the providers you pay for, such as Codex and Claude Code, as a team, and your phone reaches them from anywhere. OpenClaw is a personal assistant that runs in a Gateway and talks to you in messaging apps.",
     },
     {
       question: "Is OpenClaw the same as Clawdbot or ClawBot?",
@@ -170,12 +170,12 @@ export const OPENCLAW_COMPARISON: Comparison = {
         "OpenClaw started as Warelay and was then called Clawdbot. It became Moltbot in January 2026 and OpenClaw a few days later. ClawBot by Ipsion AI is a different, hosted product, and it says it is not part of the OpenClaw project.",
     },
     {
-      question: "What is the main difference between OpenBot and OpenClaw?",
+      question: "What is the main difference between dani-dex and OpenClaw?",
       answer:
-        "How the agents are organised and how you reach them. In OpenBot, each provider's coding tool, such as Codex with your ChatGPT plan or Claude Code with your Claude plan, is its own agent, and the agents work as a team. OpenClaw is one assistant that can run its turns through Codex, Claude Code or Gemini CLI, and you reach it through messaging apps or its own apps on your network.",
+        "How the agents are organised and how you reach them. In dani-dex, each provider's coding tool, such as Codex with your ChatGPT plan or Claude Code with your Claude plan, is its own agent, and the agents work as a team. OpenClaw is one assistant that can run its turns through Codex, Claude Code or Gemini CLI, and you reach it through messaging apps or its own apps on your network.",
     },
     {
-      question: "Can I use my ChatGPT, Claude or Gemini subscription with OpenBot?",
+      question: "Can I use my ChatGPT, Claude or Gemini subscription with dani-dex?",
       answer: OPENBOT_TEXT.plansFaq,
     },
     {
@@ -186,12 +186,12 @@ export const OPENCLAW_COMPARISON: Comparison = {
     {
       question: "Can I reach my agents from my phone?",
       answer:
-        "Yes, with both. The OpenBot apps connect from anywhere over an encrypted connection between your devices, with no VPN. The OpenClaw apps connect over your local network, a tailnet, an SSH tunnel or a public HTTPS address that you set up, and you can also talk to OpenClaw in messaging apps such as WhatsApp or Telegram.",
+        "Yes, with both. The dani-dex apps connect from anywhere over an encrypted connection between your devices, with no VPN. The OpenClaw apps connect over your local network, a tailnet, an SSH tunnel or a public HTTPS address that you set up, and you can also talk to OpenClaw in messaging apps such as WhatsApp or Telegram.",
     },
     {
       question: "Is OpenClaw open source?",
       answer:
-        "Yes. OpenClaw is on GitHub under the MIT License, which also allows commercial use. OpenBot's source code is on GitHub under the PolyForm Noncommercial License 1.0.0, and commercial use needs a separate license.",
+        "Yes. OpenClaw is on GitHub under the MIT License, which also allows commercial use. dani-dex's source code is on GitHub under the PolyForm Noncommercial License 1.0.0, and commercial use needs a separate license.",
     },
     {
       question: "Do my chats leave my computer?",
@@ -201,12 +201,12 @@ export const OPENCLAW_COMPARISON: Comparison = {
     {
       question: "Do agents keep working when my laptop is closed?",
       answer:
-        "Yes, with both, when they run on a computer that stays on. With OpenBot, run it on a desktop, a server or a hosted OpenBot server, and connect from your laptop or phone. OpenClaw recommends a VPS or a home server for its Gateway.",
+        "Yes, with both, when they run on a computer that stays on. With dani-dex, run it on a desktop, a server or a hosted dani-dex server, and connect from your laptop or phone. OpenClaw recommends a VPS or a home server for its Gateway.",
     },
     {
-      question: "How much do OpenBot and OpenClaw cost?",
+      question: "How much do dani-dex and OpenClaw cost?",
       answer:
-        "Both apps are free. OpenBot is free for noncommercial use, and commercial use needs a separate license. OpenClaw is free under the MIT License, with no subscription and no hosted tier. With both, you pay your model provider.",
+        "Both apps are free. dani-dex is free for noncommercial use, and commercial use needs a separate license. OpenClaw is free under the MIT License, with no subscription and no hosted tier. With both, you pay your model provider.",
     },
   ],
   sources: [
@@ -237,8 +237,8 @@ export const OPENCLAW_COMPARISON: Comparison = {
     { label: "OpenClaw browser login", url: "https://docs.openclaw.ai/tools/browser-login" },
     { label: "OpenClaw 1Password", url: "https://docs.openclaw.ai/gateway/1password" },
     { label: "OpenClaw Talk mode", url: "https://docs.openclaw.ai/nodes/talk" },
-    { label: "OpenBot privacy notes", url: OPENBOT_LINKS.privacy },
-    { label: "OpenBot source code", url: OPENBOT_LINKS.repository },
+    { label: "dani-dex privacy notes", url: OPENBOT_LINKS.privacy },
+    { label: "dani-dex source code", url: OPENBOT_LINKS.repository },
   ],
   checkedAt: "2026-10-02",
 };

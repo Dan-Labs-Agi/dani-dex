@@ -16,12 +16,12 @@ async function agentTemplateHead(template: AgentTemplateDetail, siteUrl: string)
   const { AGENT_TEMPLATE_CARD } = await import("@openbot/contracts/ipc");
   const { markdownPreviewText } = await import("@openbot/contracts/markdown-preview-text");
   const url = new URL(agentTemplatePath(template.id), siteUrl).toString();
-  const title = `${template.name} — OpenBot agent`;
+  const title = `${template.name} — dani-dex agent`;
   const description = template.title || markdownPreviewText(template.description).slice(0, 200);
   const card = template.cardUrl
     ? {
         url: new URL(template.cardUrl, siteUrl).toString(),
-        alt: `${template.name}, an OpenBot agent by ${template.creatorName}`,
+        alt: `${template.name}, an dani-dex agent by ${template.creatorName}`,
       }
     : { url: OPENBOT_SOCIAL_IMAGE_URL, alt: OPENBOT_SOCIAL_IMAGE_ALT };
   return {
@@ -30,7 +30,7 @@ async function agentTemplateHead(template: AgentTemplateDetail, siteUrl: string)
       { name: "description", content: description },
       { name: "robots", content: "noindex, nofollow" },
       { property: "og:type", content: "website" },
-      { property: "og:site_name", content: "OpenBot" },
+      { property: "og:site_name", content: "dani-dex" },
       { property: "og:url", content: url },
       { property: "og:title", content: title },
       { property: "og:description", content: description },
@@ -54,7 +54,7 @@ async function agentTemplateHead(template: AgentTemplateDetail, siteUrl: string)
 }
 
 const NOT_SHARED_HEAD = {
-  meta: [{ title: "Agent no longer shared — OpenBot" }, { name: "robots", content: "noindex, nofollow" }],
+  meta: [{ title: "Agent no longer shared — dani-dex" }, { name: "robots", content: "noindex, nofollow" }],
 };
 
 export const Route = createFileRoute("/agents/$templateId")({

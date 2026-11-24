@@ -6,9 +6,9 @@ export const PI_PROVIDER: ProviderPage = {
   provider: "pi",
   name: "Pi",
   answer:
-    "OpenBot runs Pi as one agent of a team, on macOS, Windows or Linux, with the providers that you sign in to in Pi. You get shared channels with agents on other providers, and an app on your phone.",
+    "dani-dex runs Pi as one agent of a team, on macOS, Windows or Linux, with the providers that you sign in to in Pi. You get shared channels with agents on other providers, and an app on your phone.",
   connect:
-    "Choose Pi, and OpenBot downloads and pins its own copy of Pi. To sign in, run `/login` in Pi on the computer that runs OpenBot, connect a subscription or an API key, and close Pi. OpenBot shows Pi as connected soon after.",
+    "Choose Pi, and dani-dex downloads and pins its own copy of Pi. To sign in, run `/login` in Pi on the computer that runs dani-dex, connect a subscription or an API key, and close Pi. dani-dex shows Pi as connected soon after.",
   adds: [
     {
       icon: "cpu",
@@ -39,22 +39,22 @@ export const PI_PROVIDER: ProviderPage = {
     {
       question: "Is there a GUI for Pi?",
       answer:
-        "Pi has no official desktop or web app: it works in the terminal. OpenBot is a desktop app that runs Pi as one agent of a team, with agents on other providers and an app on your phone.",
+        "Pi has no official desktop or web app: it works in the terminal. dani-dex is a desktop app that runs Pi as one agent of a team, with agents on other providers and an app on your phone.",
     },
     {
-      question: "How do I sign in to Pi in OpenBot?",
+      question: "How do I sign in to Pi in dani-dex?",
       answer:
-        "Run /login in Pi on the computer that runs OpenBot, and connect a subscription or an API key. Then close Pi, and OpenBot shows Pi as connected.",
+        "Run /login in Pi on the computer that runs dani-dex, and connect a subscription or an API key. Then close Pi, and dani-dex shows Pi as connected.",
     },
     {
       question: "Is Pi free?",
       answer:
-        "Pi is open source under the MIT license, and OpenBot downloads it for you. You pay the providers that you sign in to.",
+        "Pi is open source under the MIT license, and dani-dex downloads it for you. You pay the providers that you sign in to.",
     },
     {
       question: "Does Pi run Inception's Mercury models?",
       answer:
-        "Yes. In OpenBot, Inception runs in the copy of Pi that OpenBot downloads, with an Inception API key that OpenBot keeps encrypted. Pi's own settings do not change.",
+        "Yes. In dani-dex, Inception runs in the copy of Pi that dani-dex downloads, with an Inception API key that dani-dex keeps encrypted. Pi's own settings do not change.",
     },
   ],
   sources: [

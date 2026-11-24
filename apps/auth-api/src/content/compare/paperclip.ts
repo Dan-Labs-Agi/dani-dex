@@ -7,7 +7,7 @@ const PAPERCLIP_DOCS = "https://docs.paperclip.ing";
 export const PAPERCLIP_COMPARISON: Comparison = {
   rival: { name: "Paperclip", mark: "paperclip" },
   answer:
-    "Choose OpenBot if you want an app that you download and open, agents that you chat with as a team, and iPhone and Android apps that reach them from anywhere with no VPN: the app is free. Choose Paperclip if you want to run agents as a company, with an org chart, goals, budgets and approval stages, on a Node.js server that you set up, under the MIT license.",
+    "Choose dani-dex if you want an app that you download and open, agents that you chat with as a team, and iPhone and Android apps that reach them from anywhere with no VPN: the app is free. Choose Paperclip if you want to run agents as a company, with an org chart, goals, budgets and approval stages, on a Node.js server that you set up, under the MIT license.",
   chooseOpenBot: [
     "You want a desktop app for macOS, Windows or Linux, with no server, Node.js or database to set up.",
     "You want iPhone and Android apps that reach your agents from anywhere, with no Tailscale, VPN or public address.",
@@ -33,7 +33,7 @@ export const PAPERCLIP_COMPARISON: Comparison = {
     {
       icon: "laptop",
       topic: "Where agents work",
-      openbot: "On the computer that runs OpenBot.",
+      openbot: "On the computer that runs dani-dex.",
       rival:
         "On the computer that runs the Paperclip server, or in remote sandboxes and cloud agents that you connect to it. The Paperclip server runs on your laptop, a server, Docker, or a cloud host that you set up.",
     },
@@ -126,7 +126,7 @@ export const PAPERCLIP_COMPARISON: Comparison = {
     },
   ],
   intro:
-    'Paperclip says: "If OpenClaw is an employee, Paperclip is the company." It is a Node.js server with a web UI that runs agent tools such as Claude Code and Codex as a company: an org chart, goals, tickets, budgets and approval stages. OpenBot also runs a team of agents, on a computer that you choose, with the AI plans you already pay for. The difference is how you set it up and how you work with the agents. Paperclip is a server that you start from a terminal and reach in a browser, and you manage tickets. OpenBot is an app that you download. You chat with your agents, and your phone reaches them from anywhere.',
+    'Paperclip says: "If OpenClaw is an employee, Paperclip is the company." It is a Node.js server with a web UI that runs agent tools such as Claude Code and Codex as a company: an org chart, goals, tickets, budgets and approval stages. dani-dex also runs a team of agents, on a computer that you choose, with the AI plans you already pay for. The difference is how you set it up and how you work with the agents. Paperclip is a server that you start from a terminal and reach in a browser, and you manage tickets. dani-dex is an app that you download. You chat with your agents, and your phone reaches them from anywhere.',
   sections: [
     {
       title: "Models and the plans you pay for",
@@ -144,7 +144,7 @@ export const PAPERCLIP_COMPARISON: Comparison = {
     {
       title: "Setup",
       openbot:
-        "Download OpenBot for macOS, Windows or Linux, open it, and sign in to the provider tools that you want to use. OpenBot downloads and pins its own copy of each provider tool, or uses the one you installed. You set up no server, runtime or database: the app keeps its data in a SQLite database on your computer.",
+        "Download dani-dex for macOS, Windows or Linux, open it, and sign in to the provider tools that you want to use. dani-dex downloads and pins its own copy of each provider tool, or uses the one you installed. You set up no server, runtime or database: the app keeps its data in a SQLite database on your computer.",
       rival:
         "You install Node.js 24.11 or later and run npx paperclipai onboard in a terminal. Paperclip then runs as a local server, and you open its web UI in a browser. By default it is in local trusted mode: no sign-in, and it listens only on the computer itself. For other people or devices, you change the deployment mode on the server and claim ownership with a one-time link from the server log.",
       better: "openbot",
@@ -159,58 +159,58 @@ export const PAPERCLIP_COMPARISON: Comparison = {
     {
       title: "How agents work as a team",
       openbot:
-        "In OpenBot, each agent is a full coding agent: Codex, Claude Code, Gemini, Grok CLI, Cursor CLI, Cline, OpenCode, Pi, Muse Code or an agent of your own, each with its own job and workspace. A lead agent can give parts of a task to other agents in a shared channel. You chat with them, follow their work and step in when a decision needs you. For a team of people, one computer runs the host and the others join it; the chats and files stay on the host. Roles set which agents each member can view, chat with or manage.",
+        "In dani-dex, each agent is a full coding agent: Codex, Claude Code, Gemini, Grok CLI, Cursor CLI, Cline, OpenCode, Pi, Muse Code or an agent of your own, each with its own job and workspace. A lead agent can give parts of a task to other agents in a shared channel. You chat with them, follow their work and step in when a decision needs you. For a team of people, one computer runs the host and the others join it; the chats and files stay on the host. Roles set which agents each member can view, chat with or manage.",
       rival:
         "Paperclip organises agents as a company. Each agent has a boss, a title and a job in an org chart, and work is in tickets that trace back to the company goals. Agents wake on a schedule or when a task comes to them, and give work up and down the org chart. You approve new agents and set a budget for each one; at the limit, Paperclip pauses the agent. One deployment can run several companies, each with its own agents and data. Agent Chat is experimental.",
     },
     {
       title: "Data and privacy",
       openbot:
-        "OpenBot keeps workspaces, conversations, attachments and browser data in a SQLite database on the computer that runs it. OpenBot keeps no other copy. On a hosted OpenBot server, the database is on that server in the EU. An account holds your profile, team memberships, invitations, sign-in sessions, the settings that let devices find each other, and any agent templates that you publish. Product analytics, which never include chat content, are on by default and linked to your account when you sign in; you can turn them off in Settings.",
+        "dani-dex keeps workspaces, conversations, attachments and browser data in a SQLite database on the computer that runs it. dani-dex keeps no other copy. On a hosted dani-dex server, the database is on that server in the EU. An account holds your profile, team memberships, invitations, sign-in sessions, the settings that let devices find each other, and any agent templates that you publish. Product analytics, which never include chat content, are on by default and linked to your account when you sign in; you can turn them off in Settings.",
       rival:
         "Paperclip keeps tasks, agents, comments and files in a Postgres database and in files on the computer that runs it, and needs no Paperclip account. Usage telemetry is on by default; its rules exclude prompts, model output, secrets and private paths. You turn it off with PAPERCLIP_TELEMETRY_DISABLED=1, DO_NOT_TRACK=1, or its config file.",
     },
   ],
   faq: [
     {
-      question: "Is OpenBot an alternative to Paperclip?",
+      question: "Is dani-dex an alternative to Paperclip?",
       answer:
-        "Yes. Both run a team of AI agents on a computer that you choose, with agent tools such as Codex and Claude Code. OpenBot is an app that you download. You chat with your agents, and your phone reaches them from anywhere. Paperclip is a server with a web UI, and you manage your agents through tickets, an org chart and budgets.",
+        "Yes. Both run a team of AI agents on a computer that you choose, with agent tools such as Codex and Claude Code. dani-dex is an app that you download. You chat with your agents, and your phone reaches them from anywhere. Paperclip is a server with a web UI, and you manage your agents through tickets, an org chart and budgets.",
     },
     {
-      question: "What is the main difference between OpenBot and Paperclip?",
+      question: "What is the main difference between dani-dex and Paperclip?",
       answer:
-        "How you work with the agents. In OpenBot, you chat with a team of agents, and they give work to each other in shared channels. In Paperclip, you run the agents as a company: you set goals, approve new agents and budgets, and follow their work in tickets.",
+        "How you work with the agents. In dani-dex, you chat with a team of agents, and they give work to each other in shared channels. In Paperclip, you run the agents as a company: you set goals, approve new agents and budgets, and follow their work in tickets.",
     },
     {
       question: "Does Paperclip have an app for iPhone or Android?",
       answer:
-        "Paperclip lists no app for iPhone or Android. Its web UI works in a phone's browser, when your phone can reach the server. OpenBot has apps for iPhone and Android that connect from anywhere.",
+        "Paperclip lists no app for iPhone or Android. Its web UI works in a phone's browser, when your phone can reach the server. dani-dex has apps for iPhone and Android that connect from anywhere.",
     },
     {
       question: "Do I need Tailscale or a VPN to reach my agents from my phone?",
       answer:
-        "With OpenBot, no: the apps connect over an encrypted connection between your devices, with no VPN or tunnel. With Paperclip, the server listens only on its own computer by default; you switch it to authenticated mode, and reach it through Tailscale, a VPN, your local network or a public deployment.",
+        "With dani-dex, no: the apps connect over an encrypted connection between your devices, with no VPN or tunnel. With Paperclip, the server listens only on its own computer by default; you switch it to authenticated mode, and reach it through Tailscale, a VPN, your local network or a public deployment.",
     },
     {
       question: "Is there a Paperclip cloud?",
       answer:
-        "Paperclip Cloud has a waitlist, with no published date or price. Until then, you run Paperclip on your own computer or server. If you do not want to keep a computer on for OpenBot, a hosted OpenBot server in the EU is available today, from €30 or $36 a month.",
+        "Paperclip Cloud has a waitlist, with no published date or price. Until then, you run Paperclip on your own computer or server. If you do not want to keep a computer on for dani-dex, a hosted dani-dex server in the EU is available today, from €30 or $36 a month.",
     },
     {
       question: "Do agents keep working when my laptop is closed?",
       answer:
-        "Yes, with both, when they run on a computer that stays on. With OpenBot, run it on a desktop, a server or a hosted OpenBot server, and connect from your laptop or phone. With Paperclip, run the server on a computer or a cloud host that stays on.",
+        "Yes, with both, when they run on a computer that stays on. With dani-dex, run it on a desktop, a server or a hosted dani-dex server, and connect from your laptop or phone. With Paperclip, run the server on a computer or a cloud host that stays on.",
     },
     {
-      question: "How much do OpenBot and Paperclip cost?",
+      question: "How much do dani-dex and Paperclip cost?",
       answer:
-        "Both are free. OpenBot is free for noncommercial use, and commercial use needs a separate license. Paperclip is free under the MIT License. With both, you pay for the agent tools or the model provider, and for a server if you rent one.",
+        "Both are free. dani-dex is free for noncommercial use, and commercial use needs a separate license. Paperclip is free under the MIT License. With both, you pay for the agent tools or the model provider, and for a server if you rent one.",
     },
     {
       question: "Is Paperclip open source?",
       answer:
-        "Yes. Paperclip is on GitHub under the MIT License, which also allows commercial use. OpenBot's source code is on GitHub under the PolyForm Noncommercial License 1.0.0, and commercial use needs a separate license.",
+        "Yes. Paperclip is on GitHub under the MIT License, which also allows commercial use. dani-dex's source code is on GitHub under the PolyForm Noncommercial License 1.0.0, and commercial use needs a separate license.",
     },
   ],
   sources: [
@@ -236,8 +236,8 @@ export const PAPERCLIP_COMPARISON: Comparison = {
     { label: "Paperclip Cloud waitlist", url: "https://paperclip.ing/waitlist/" },
     { label: "Paperclip Claude adapter", url: "https://docs.paperclip.ing/adapters/claude-local" },
     { label: "Paperclip secrets", url: "https://docs.paperclip.ing/deploy/secrets" },
-    { label: "OpenBot privacy notes", url: OPENBOT_LINKS.privacy },
-    { label: "OpenBot source code", url: OPENBOT_LINKS.repository },
+    { label: "dani-dex privacy notes", url: OPENBOT_LINKS.privacy },
+    { label: "dani-dex source code", url: OPENBOT_LINKS.repository },
   ],
   checkedAt: "2026-10-23",
 };

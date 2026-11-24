@@ -13,7 +13,7 @@ import { Button } from "../ui/button";
 import { ArticleGradient } from "./ArticleGradient";
 import { ArticleImage } from "./ArticleMedia";
 
-const ARTICLE_TITLE = "How to Use OpenBot: Set Up Your First AI Agent";
+const ARTICLE_TITLE = "How to Use dani-dex: Set Up Your First AI Agent";
 const GUIDE = GUIDES_COLLECTION.articles.find((article) => article.slug === "openbot-101");
 if (!GUIDE) throw new Error("The openbot-101 guide must be in the guides registry.");
 
@@ -27,9 +27,9 @@ type Story = StoryObj<typeof meta>;
 function StoryHeader() {
   return (
     <header class="landing-header">
-      <a class="landing-brand" href="/" aria-label="OpenBot home">
+      <a class="landing-brand" href="/" aria-label="dani-dex home">
         <AppLogo variant="production" class="landing-brand-logo" />
-        <span>OpenBot</span>
+        <span>dani-dex</span>
       </a>
       <div class="site-header-actions">
         <Button
@@ -99,7 +99,7 @@ export const InTheArticle: Story = {
           </div>
           <div class="post-prose">
             <p>
-              I built OpenBot because I wanted teammates, not chats. A chat window forgets. A teammate keeps the folder
+              I built dani-dex because I wanted teammates, not chats. A chat window forgets. A teammate keeps the folder
               it works in, the history of what it did, and a name you can call it by.
             </p>
             <p>
@@ -126,8 +126,8 @@ export const InTheArticle: Story = {
             <h2>Install it, then connect a provider</h2>
             <p>
               Take the installer from GitHub Releases. Then give it a provider. In onboarding, in Settings or in the
-              model picker, select a provider and press Download: OpenBot installs and pins its own managed copy of that
-              command-line tool.
+              model picker, select a provider and press Download: dani-dex installs and pins its own managed copy of
+              that command-line tool.
             </p>
             <ArticleImage
               src={pickAModel}
@@ -209,8 +209,8 @@ export const ColourFamilies: Story = {
   render: () => (
     <ProseColumn>
       {[
-        "How to Use OpenBot: Set Up Your First AI Agent",
-        "What Is OpenBot? Models, Providers and Agents Explained",
+        "How to Use dani-dex: Set Up Your First AI Agent",
+        "What Is dani-dex? Models, Providers and Agents Explained",
         "One agent, many providers",
         "Run the team server yourself",
       ].map((title) => (

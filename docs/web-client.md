@@ -57,7 +57,7 @@ mock. The separate web preview implements the browser runtime with that same moc
   account's hosted site list/delete
   (`v1/sites`), which the web client no longer calls: sites are in Server settings > Sites, through
   the host's `hosted-sites-v1`. It is not a general account or host proxy.
-  Every write needs the same origin and `X-OpenBot-Browser: 1`; all send JSON except the avatar
+  Every write needs the same origin and `X-dani-dex-Browser: 1`; all send JSON except the avatar
   upload, which sends the image bytes. A site delete also needs an `Idempotency-Key`. A host logo is
   given to a member of that host, for its current `logoKey` only.
 - The page rail is the same as on desktop: Agents, the pinned pages, More, Marketplace, Settings,

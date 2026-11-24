@@ -449,7 +449,7 @@ const CREDITS_IMAGE_MODEL: WorkflowCatalogs["imageModels"][number] = {
   credits: true,
   kinds: ["image"],
   voices: false,
-  subscription: "OpenBot",
+  subscription: "dani-dex",
   aspects: ["1:1", "16:9"],
 };
 

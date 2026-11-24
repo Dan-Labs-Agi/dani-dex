@@ -173,7 +173,7 @@ export class WhatsAppSession {
   #socket: WhatsAppSocket | null = null;
   #state: WhatsAppSessionState = "stopped";
   #started = false;
-  #browserName = "OpenBot";
+  #browserName = "dani-dex";
   #attempt = 0;
   #restartedOnce = false;
   #codeShown = false;
@@ -238,7 +238,7 @@ export class WhatsAppSession {
     if (this.#started) return;
     this.#started = true;
     this.#historySent = this.#store.linked;
-    this.#browserName = options.codeLink ? "Chrome" : "OpenBot";
+    this.#browserName = options.codeLink ? "Chrome" : "dani-dex";
     this.#attempt = 0;
     this.#stalls = [];
     this.#setState("connecting");

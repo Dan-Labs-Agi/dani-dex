@@ -327,7 +327,7 @@ function clientInfo(client: McpOAuthProxyClient, agentKey: string | null): Clien
     : null;
   return {
     name: "openbot",
-    title: name ? `${name} (OpenBot)` : "OpenBot",
+    title: name ? `${name} (dani-dex)` : "dani-dex",
     version: client.version,
     websiteUrl: "https://openbot.run",
   };

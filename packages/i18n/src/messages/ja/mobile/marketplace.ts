@@ -65,13 +65,13 @@ export const messages = {
   "mobile.marketplace.facts.accessMac": "Mac のみ",
   "mobile.marketplace.permission.admin": "マーケットプレイスからインストールできるのはオーナーと管理者のみです。",
   "mobile.marketplace.permission.unavailable":
-    "このサーバーはオフラインか、OpenBot が古すぎます。サーバーを実行しているコンピューターで OpenBot をアップデートしてください。",
+    "このサーバーはオフラインか、dani-dex が古すぎます。サーバーを実行しているコンピューターで dani-dex をアップデートしてください。",
   "mobile.marketplace.error.agentUnsupported":
-    "マーケットプレイスからエージェントを追加するには、サーバーの OpenBot をアップデートしてください。",
+    "マーケットプレイスからエージェントを追加するには、サーバーの dani-dex をアップデートしてください。",
   "mobile.marketplace.error.agentUpdateUnsupported":
-    "マーケットプレイスからエージェントを更新するには、サーバーの OpenBot を更新してください。",
+    "マーケットプレイスからエージェントを更新するには、サーバーの dani-dex を更新してください。",
   "mobile.marketplace.error.signInUnsupported":
-    "電話からアプリにサインインするには、サーバーの OpenBot をアップデートしてください。",
+    "電話からアプリにサインインするには、サーバーの dani-dex をアップデートしてください。",
   "mobile.marketplace.agent.add": "エージェントを追加",
   "mobile.marketplace.agent.adding": "エージェントを追加中",
   "mobile.marketplace.agent.update": "エージェントをアップデート",
@@ -117,11 +117,11 @@ export const messages = {
   "mobile.marketplace.app.linkInvalid": "{hostname} の https リンクを使ってください。",
   "mobile.marketplace.app.docs": "キーを取得",
   "mobile.marketplace.app.local":
-    "このアプリは OpenBot が動作するコンピューターで実行されます。そのコンピューターで設定してください。",
+    "このアプリは dani-dex が動作するコンピューターで実行されます。そのコンピューターで設定してください。",
   "mobile.marketplace.app.needsMac":
-    "このアプリは OpenBot を実行している Mac でのみ動作します。このサーバーは Mac ではありません。",
+    "このアプリは dani-dex を実行している Mac でのみ動作します。このサーバーは Mac ではありません。",
   "mobile.marketplace.app.relayUnsupported":
-    "このアプリにはブラウザーでのサインインが必要です。サーバーの OpenBot をアップデートするか、コンピューターでアプリを接続してください。",
+    "このアプリにはブラウザーでのサインインが必要です。サーバーの dani-dex をアップデートするか、コンピューターでアプリを接続してください。",
   "mobile.marketplace.app.waiting": "サインインページを待っています…",
   "mobile.marketplace.app.openAgain": "サインインページをもう一度開く",
   "mobile.marketplace.app.pasteHint":

@@ -47,7 +47,7 @@ export async function recoverFromNewerDatabase(options: NewerDatabaseRecoveryOpt
   }
   if (loopVersion) {
     logger.warn(
-      `An older OpenBot started over newer data, and OpenBot ${loopVersion} did not start. Not installing it.`,
+      `An older dani-dex started over newer data, and dani-dex ${loopVersion} did not start. Not installing it.`,
     );
     await showLatestDidNotStart(options.translate, loopVersion);
   } else {
@@ -117,7 +117,7 @@ async function installLatest(
   updater.start(false);
   const downloaded = nextPhase(updater, ["ready", "up-to-date", "unsupported", "error"]);
   const checked = await Effect.runPromise(updater.checkForUpdates());
-  logger.info(`An older OpenBot started over newer data. Update check: ${checked.phase}.`);
+  logger.info(`An older dani-dex started over newer data. Update check: ${checked.phase}.`);
   if (checked.phase !== "available" && checked.phase !== "downloading" && checked.phase !== "ready") {
     downloaded.cancel();
     return;

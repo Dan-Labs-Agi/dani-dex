@@ -253,7 +253,7 @@ function GiftCard(props: { text: ReferralPageText; invite: ReferralInvite; forma
         <div class="referral-card-top">
           <span class="referral-card-brand">
             <AppLogo variant="production" animation="blink" />
-            OpenBot
+            dani-dex
           </span>
           <Show
             when={props.invite.inviterName}

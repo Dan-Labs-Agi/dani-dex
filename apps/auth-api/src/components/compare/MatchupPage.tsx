@@ -145,7 +145,7 @@ export function MatchupPage(props: MatchupPageProps) {
               {(setup) => (
                 <li>
                   <Link to="/providers/$slug" params={{ slug: setup.slug }}>
-                    Set up {setup.name} in OpenBot
+                    Set up {setup.name} in dani-dex
                     <LandingIcon name="arrow-right" class="provider-step-arrow provider-related-arrow" />
                   </Link>
                 </li>

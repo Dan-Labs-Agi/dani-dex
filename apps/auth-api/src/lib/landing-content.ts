@@ -108,7 +108,7 @@ export const LANDING_NETWORK_AGENTS: readonly { teammate: LandingTeammate; provi
   { teammate: GRACE, provider: "antigravity" },
 ];
 
-export const LANDING_NETWORK_HUB = "OpenBot";
+export const LANDING_NETWORK_HUB = "dani-dex";
 
 export interface LandingProvider {
   provider: ProviderLogoVariant;

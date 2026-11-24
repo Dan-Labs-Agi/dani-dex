@@ -120,13 +120,13 @@ enum ShortcutText {
   static let fallback: [String: String] = [
     "mobile.settings.shortcuts.card.agents": "Agents",
     "mobile.settings.shortcuts.card.noAgents": "No agents yet",
-    "mobile.settings.shortcuts.card.setUp.title": "Open OpenBot to set up shortcuts",
-    "mobile.settings.shortcuts.card.setUp.action": "Open OpenBot",
+    "mobile.settings.shortcuts.card.setUp.title": "Open dani-dex to set up shortcuts",
+    "mobile.settings.shortcuts.card.setUp.action": "Open dani-dex",
     "mobile.settings.shortcuts.card.noAgent.title": "Choose an agent for shortcuts",
     "mobile.settings.shortcuts.card.noAgent.detail": "Shortcuts send to one agent.",
     "mobile.settings.shortcuts.card.noAgent.action": "Choose agent",
-    "mobile.settings.shortcuts.card.locked.title": "OpenBot is locked",
-    "mobile.settings.shortcuts.card.locked.action": "Open OpenBot",
+    "mobile.settings.shortcuts.card.locked.title": "dani-dex is locked",
+    "mobile.settings.shortcuts.card.locked.action": "Open dani-dex",
     "mobile.settings.shortcuts.card.message": "Message {name}",
     "mobile.settings.shortcuts.card.messagePrompt": "Message to {name}",
   ]

@@ -1,8 +1,5 @@
-import { BloubBot } from "@norbert_bodziony/bloub";
-import { bloubAvatarProfile } from "@openbot/brand/bloub-avatar";
 import type { AvatarColor, AvatarHue } from "@openbot/contracts/ipc";
-import { render } from "@solidjs/web";
-import { flush } from "solid-js";
+import { characterFaceUrl } from "./features/agents/character-faces";
 
 export type AvatarMotion = "hover" | "always" | "idle";
 export {
@@ -37,51 +34,14 @@ export function createStaticAvatarSvg(
   hue: AvatarHue | null,
   color: AvatarColor | null = null,
 ): SVGSVGElement {
-  const host = document.createElement("span");
-  const dispose = mountStaticAvatar(host, seed, hue, color);
-  const svg = host.querySelector("svg");
-  if (!svg) {
-    dispose();
-    throw new Error("Bloub did not render an SVG avatar.");
-  }
-  const result = svg.cloneNode(true);
-  if (!(result instanceof SVGSVGElement)) {
-    dispose();
-    throw new Error("Bloub did not clone an SVG avatar.");
-  }
-  dispose();
-  return result;
-}
-
-function mountStaticAvatar(
-  host: HTMLElement,
-  seed: string,
-  hue: AvatarHue | null,
-  color: AvatarColor | null,
-): () => void {
-  const profile = bloubAvatarProfile(seed, hue, color);
-  const dispose = render(
-    () => (
-      <BloubBot
-        size={100}
-        shape={profile.shape}
-        color={profile.color}
-        expression={profile.expression}
-        frozenAt={0}
-        ariaLabel=""
-      />
-    ),
-    host,
-  );
-  flush();
-  const svg = host.querySelector("svg");
-  if (!svg) {
-    dispose();
-    throw new Error("Bloub did not render an SVG avatar.");
-  }
-  svg.removeAttribute("role");
-  svg.removeAttribute("aria-label");
-  svg.setAttribute("aria-hidden", "true");
-  svg.setAttribute("focusable", "false");
-  return dispose;
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 100 100");
+  const image = document.createElementNS("http://www.w3.org/2000/svg", "image");
+  image.setAttribute("href", characterFaceUrl(seed));
+  image.setAttribute("width", "100");
+  image.setAttribute("height", "100");
+  svg.appendChild(image);
+  void hue;
+  void color;
+  return svg;
 }

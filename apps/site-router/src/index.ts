@@ -280,25 +280,25 @@ const siteErrors = {
     status: 503,
     text: "Site hosting is temporarily unavailable",
     title: "Site hosting is paused",
-    detail: "OpenBot sites are temporarily unavailable. Try again later.",
+    detail: "dani-dex sites are temporarily unavailable. Try again later.",
   },
   siteNotFound: {
     status: 404,
     text: "Site not found",
     title: "Site not found",
-    detail: "No OpenBot site uses this address. Make sure that the address is correct.",
+    detail: "No dani-dex site uses this address. Make sure that the address is correct.",
   },
   siteBlocked: {
     status: 451,
     text: "Site unavailable",
     title: "Site unavailable",
-    detail: "OpenBot blocked this site. You cannot open it.",
+    detail: "dani-dex blocked this site. You cannot open it.",
   },
   siteFailed: {
     status: 500,
     text: "Site unavailable",
     title: "Site unavailable",
-    detail: "OpenBot could not load this site. Try again in a few minutes.",
+    detail: "dani-dex could not load this site. Try again in a few minutes.",
   },
   siteGone: {
     status: 410,
@@ -372,7 +372,7 @@ function errorPage(request: Request, env: SiteRouterEnv, error: SiteError, nonce
   const home = accountUrl(env, "/");
   const links = [
     error === "pageNotFound" ? `<a href="/">Open the site home page</a>` : "",
-    home ? `<a href="${escapeHtml(home.toString())}">Go to OpenBot</a>` : "",
+    home ? `<a href="${escapeHtml(home.toString())}">Go to dani-dex</a>` : "",
   ].join("");
   return `<!doctype html>
 <html lang="en">
@@ -380,12 +380,12 @@ function errorPage(request: Request, env: SiteRouterEnv, error: SiteError, nonce
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>${escapeHtml(title)} - OpenBot</title>
+<title>${escapeHtml(title)} - dani-dex</title>
 <style nonce="${nonce}">${errorPageStyle}</style>
 </head>
 <body>
 <main>
-<p class="brand">OpenBot</p>
+<p class="brand">dani-dex</p>
 <p class="meta">Error ${status} - ${escapeHtml(hostname)}</p>
 <h1>${escapeHtml(title)}</h1>
 <p>${escapeHtml(detail)}</p>

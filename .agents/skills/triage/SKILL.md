@@ -12,7 +12,7 @@ behavior, do not build it: assess it and score it (Step 2a).
 
 ## Who we build for
 
-Most OpenBot users are casual users, not developers. A casual user does
+Most dani-dex users are casual users, not developers. A casual user does
 not read logs, open a terminal, edit a config file, write JSON, set up a
 webhook, or know provider names. They use the app through its windows,
 buttons, and chat. Judge each issue by what this user sees and can do:
@@ -71,7 +71,7 @@ Issue labels do not change this workflow. Labels such as `from-x`, `from-app` an
    - **Expected**: what the reporter expects.
    - **Surface**: desktop renderer, main process, backend, mobile, public
      web, Signal, Team API, provider, or plugin.
-   - **Version**: the OpenBot version or commit, and the provider CLI version.
+   - **Version**: the dani-dex version or commit, and the provider CLI version.
    - **Reporter**: a casual user or a developer, from the words and the
      data in the issue. A casual user often describes the screen, not the
      cause. Read the symptom as what the app shows them.
@@ -97,7 +97,7 @@ an issue, a `path:line`, or a command output.
 | `already fixed` | A commit on `origin/main` that fixes it, or that adds the requested feature, from `git log origin/main --grep` or `git log -S`. Give the first release tag that holds it: `git tag --contains <sha> --list 'v*' --sort=v:refname \| head -n 1`. |
 | `works as intended` | The code, a test, or a doc that defines the current behavior as correct, **and** a casual user can understand the behavior and continue without help. When the behavior is correct but confusing (a silent failure, a technical error text, a control that they cannot find, a dead end), the verdict is `valid`: the bug is the UX. For a feature request: the feature exists, a casual user can find and use it, and it was in the release that the reporter used. Show where it is. |
 | `out of scope` | A product constraint or a non-negotiable rule in `AGENTS.md` that the requested change breaks. Example: chats or files that leave the user's computer, or a change to a released Team API meaning. |
-| `environment` | The cause is outside OpenBot: provider CLI version, OS setting, network, or a third-party service, **and** the app tells the user what happened and what to do. When the app fails silently or shows only a technical error, the missing guidance is `valid`. |
+| `environment` | The cause is outside dani-dex: provider CLI version, OS setting, network, or a third-party service, **and** the app tells the user what happened and what to do. When the app fails silently or shows only a technical error, the missing guidance is `valid`. |
 | `feature request` | The issue asks for new behavior, not a fix for broken behavior. Go to Step 2a. |
 | `needs info` | The data that is missing, and why you cannot get it from the code or the history. |
 | `valid` | None of the above holds. Continue to Step 2b. |
@@ -113,7 +113,7 @@ Step 2a, and assess only the parts that are missing.
 
 ## Step 2a — Assess a feature request
 
-Do not implement the feature in this skill. Decide if it makes OpenBot
+Do not implement the feature in this skill. Decide if it makes dani-dex
 better, and how important it is. Each finding needs evidence. Do not
 score from the reporter's tone or from how sure the request sounds.
 
@@ -128,7 +128,7 @@ Write, in one line each:
   (`git tag --contains`). Search the `@openbot/i18n` catalog
   (`packages/i18n/src/messages/en`), settings, workflows, webhooks, agent
   tools, and `marketplace/production-catalog`. Text that starts with `/`
-  goes to the provider; OpenBot has no local slash commands. Give
+  goes to the provider; dani-dex has no local slash commands. Give
   `path:line` for each match.
 - **Casual path**: how a casual user gets to **Today**: the clicks, from
   the main window. When **Today** needs a terminal, a config file, JSON,
@@ -207,7 +207,7 @@ of evidence.
   not add cost.
 
 **Value score** = Impact + Reach + Fit + UX + Cost, from 0 to 15. It answers
-"does this make OpenBot better for its cost".
+"does this make dani-dex better for its cost".
 
 **Priority** answers "how important is it now":
 

@@ -232,7 +232,7 @@ export const startAcpAuthentication = Effect.fnUntraced(function* (options: {
             terminal: false,
             ...(options.onSignInUrl ? { _meta: { [options.methodId]: true } } : {}),
           },
-          clientInfo: { name: "openbot", title: "OpenBot", version: "0.1.0" },
+          clientInfo: { name: "openbot", title: "dani-dex", version: "0.1.0" },
         },
       });
       return Effect.sync(() => {

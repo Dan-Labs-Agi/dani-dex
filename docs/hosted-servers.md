@@ -1,11 +1,11 @@
 # Hosted servers
 
-A hosted server is an OpenBot server that runs in a [boat](https://boat.dev) sandbox, so it works
+A hosted server is an dani-dex server that runs in a [boat](https://boat.dev) sandbox, so it works
 when the user's computer is off. Each server is one boat sandbox for one account. The sandbox runs
-the Linux build of OpenBot on the boat desktop. The server runs while it is in use. After 15 minutes with no
+the Linux build of dani-dex on the boat desktop. The server runs while it is in use. After 15 minutes with no
 use, the Worker stops it and keeps its data. The next client starts it again, the Worker cron
 starts it before its next routine run, and Signal starts it for a Slack, Discord or Telegram message
-that addresses OpenBot (see [Connector events](#connector-events)). A connected client counts as use for 5 minutes after its
+that addresses dani-dex (see [Connector events](#connector-events)). A connected client counts as use for 5 minutes after its
 last user action (`CLIENT_USE_WINDOW_MS`): a request that changes data, or a typing event. Reads and
 the requests that a client sends with no user action (polls, previews, mark-read) do not count
 (`src/main/team-api/client-use.ts`). An app that has focus (a focused desktop window, a visible and
@@ -98,13 +98,13 @@ when a server is idle or boat stops a sandbox; and `error` and `deleted`. The Wo
    lowercase, and each group of characters that are not letters or digits becomes one `-`. The name is only a label; a plan change
    renames the sandbox.
 3. **Env handoff.** boat puts the sandbox env in the setup script, not in systemd. The Worker sends
-   `setupScript: exec /opt/OpenBot/hosted/openbot-hosted-env`. That helper writes the two values to
+   `setupScript: exec /opt/dani-dex/hosted/openbot-hosted-env`. That helper writes the two values to
    `~/.config/openbot-hosted/env` (mode 0600). `openbot.service` waits for this file.
-4. **First boot.** OpenBot starts with `OPENBOT_HOSTED_SERVER=1`. It redeems the claim at
+4. **First boot.** dani-dex starts with `OPENBOT_HOSTED_SERVER=1`. It redeems the claim at
    `POST /v2/hosting/claims/redeem`, signs in as the owner, keeps the host ID, and publishes the
    host. `registerHost` refuses the host ID for any other account. This claim is not the operator's
    [server claim](self-hosted-server.md#sign-in-with-a-server-claim) of a self-hosted server.
-5. **In use.** OpenBot checks each minute whether the server is in use: an agent works, a remote
+5. **In use.** dani-dex checks each minute whether the server is in use: an agent works, a remote
    desktop view is open, a file moves, or a remote client is connected (an open Team API event
    stream) and sent a user action, a typing event or a focus ping in the last 5 minutes. A key press or pointer
    input in a browser view is a user action. An open browser view with no input does not count,
@@ -146,7 +146,7 @@ when a server is idle or boat stops a sandbox; and `error` and `deleted`. The Wo
    **Scheduled start.** The cron starts an idle server when its `next_run_at` is less than 10 minutes
    away (one cron interval and the start time), with the wake reason `schedule`. It clears
    `next_run_at` in the same update, so a server that does not report again starts only once for
-   that run. After the start, OpenBot runs each routine that is due, and each run that it missed
+   that run. After the start, dani-dex runs each routine that is due, and each run that it missed
    becomes one run.
 
    **Keep-alive start.** boat deletes the disk of a stopped sandbox 14 days after the stop (it
@@ -170,28 +170,28 @@ when a server is idle or boat stops a sandbox; and `error` and `deleted`. The Wo
 
    **Disk save at a stop.** boat saves the disk of a running server file by file, with no pause,
    and a file that changes during its copy is restored torn. A SQLite checkpoint during the save
-   gave a damaged database ("OpenBot database failed its integrity check"). Thus a hosted server
-   stops OpenBot before the save. boat runs `/home/user/.boat/pre-stop` as `user` when a stop
+   gave a damaged database ("dani-dex database failed its integrity check"). Thus a hosted server
+   stops dani-dex before the save. boat runs `/home/user/.boat/pre-stop` as `user` when a stop
    starts, waits for it to end (at most 60 seconds), and then saves the disk. boat supports this
    hook, but its documentation does not show it yet. `openbot-hosted-update` installs `scripts/hosting/openbot-boat-pre-stop` there
    (`install_hosting`, and `trigger` at each start, so a server that an older release updated gets
-   it). The hook makes `/run/openbot-pre-stop` and runs `systemctl stop openbot.service`: OpenBot
+   it). The hook makes `/run/openbot-pre-stop` and runs `systemctl stop openbot.service`: dani-dex
    gets `SIGTERM`, stops its services and closes `openbot.db` last. After 40 seconds the hook kills
    the unit, which leaves a database that SQLite recovers. The file makes the unit condition
    `ConditionPathExists=!/run/openbot-pre-stop` fail, so `Restart=` and the end of an update request
-   do not start OpenBot during the save. `/run` is empty at each boot. boat can also keep a stopped
+   do not start dani-dex during the save. `/run` is empty at each boot. boat can also keep a stopped
    machine in memory and continue it at a resume with no boot: the resume answers `"status":
    "running"`, and the file stays. Then the Worker runs a command on the machine that removes the
    file and starts `openbot.service` (`HELD_RESUME_START_COMMAND`). With no file the command does
    nothing. boat can also cancel the stop after the hook, for example when it cannot pause a Docker
    container that restarts ("Final snapshot failed; stop aborted"). The machine then runs with the
-   file, and OpenBot stays stopped. Two paths start it again, both only for a file older than 5
+   file, and dani-dex stays stopped. Two paths start it again, both only for a file older than 5
    minutes: boat runs the hook again before each new try of the stop, so a newer file can belong to a
    save that still runs. The hook sets a transient systemd timer (`openbot-pre-stop-restart`) that
    fires 15 minutes after the last hook. A client wake or a connector event for a server that boat
    reports as running makes the Worker run `FAILED_STOP_START_COMMAND` after the reply. boat tries
-   the stop again every 4 to 10 minutes (seen on 2026-11-05), and each try stops OpenBot again. Thus
-   the timer fires only after boat stops its tries, and a wake keeps OpenBot running only until the
+   the stop again every 4 to 10 minutes (seen on 2026-11-05), and each try stops dani-dex again. Thus
+   the timer fires only after boat stops its tries, and a wake keeps dani-dex running only until the
    next try. boat reports these tries as `stop.status: "failing"` and keeps the sandbox state
    `idle`. On 2026-11-05 a save failed this way for 18 hours, while the restore of the disk stalled,
    and the start command failed with `sandbox_restoring`. Thus the Worker reads a failing stop as
@@ -200,15 +200,15 @@ when a server is idle or boat stops a sandbox; and `error` and `deleted`. The Wo
    the failing stop. Each client wake and connector event still sends `FAILED_STOP_START_COMMAND`. The Worker does not end the stop. Only a resume ends it
    (`superseded`), but boat does not say if that resume keeps the disk or restores the last saved
    disk. A forced stop keeps only the last saved disk and loses what was written after it. An
-   operator decides: compare `snapshotCompletedAt` with the last writes of OpenBot before a force,
+   operator decides: compare `snapshotCompletedAt` with the last writes of dani-dex before a force,
    then wake the server. A machine that stopped
-   runs no timer. A hook that OpenBot did not write stays, and a self-hosted server gets
+   runs no timer. A hook that dani-dex did not write stays, and a self-hosted server gets
    no hook.
 
    **Check at a start.** `PRAGMA quick_check` reads every page of `openbot.db`: on a 15.7 GB file
    it stopped the main thread for 77 seconds to about 4 minutes. A clean close removes
-   `openbot.db-wal`. Thus OpenBot runs the check at a start only when that file is there (a crash,
-   a kill, or a save while OpenBot ran) or when a migration ran. After a stop that did not close the
+   `openbot.db-wal`. Thus dani-dex runs the check at a start only when that file is there (a crash,
+   a kill, or a save while dani-dex ran) or when a migration ran. After a stop that did not close the
    file, the check runs in a separate database host process, so the main thread stays free. When that
    process cannot start or run the check, the main thread runs it as before. The check after a
    migration still runs on the main thread.
@@ -228,12 +228,12 @@ when a server is idle or boat stops a sandbox; and `error` and `deleted`. The Wo
    once a minute for each host, and wakes only the selected server while the app has focus. After a
    wake, it connects again every 5 seconds, and reads the status every 30 seconds to show the step:
    the machine starts (`waking`, `starting`, `stopping`, or `stopped` with no error, which also gets a
-   wake), OpenBot starts (`running`), or the provider refused the start (`waking` with
+   wake), dani-dex starts (`running`), or the provider refused the start (`waking` with
    `provider_limit`). The client waits with no limit while the
    machine starts. When the machine is `running` and its host does not connect in 15 minutes, the
    client shows that the server did not start in time, as it does after 10 status reads in a row
    that fail. Restart is not available while the machine starts. It is available when the machine
-   runs and OpenBot does not answer. The web client does the same for its one server, and checks a
+   runs and dani-dex does not answer. The web client does the same for its one server, and checks a
    sleeping server again every 5 minutes. The mobile app has no status check: it wakes the selected server while the app is in
    the foreground, with the same limit for a `running` server. A server whose plan ended answers
    `402 plan_required`.
@@ -290,7 +290,7 @@ when a server is idle or boat stops a sandbox; and `error` and `deleted`. The Wo
    so it never deletes the server. After an inquiry or a later dispute the server stops with
    `plan_ended` and keeps its disk for 14 days. The Worker finds the plan through
    the invoice of the PaymentIntent (`GET /v1/invoice_payments`). A refund or dispute of a payment
-   that is not an OpenBot plan invoice changes nothing.
+   that is not an dani-dex plan invoice changes nothing.
 8. **Plan change.** The Customer Portal has no plan change (`subscription_update` is off), so only an
    operator changes a plan, in the Stripe Dashboard. A portal request with `flow: "update"` from an
    older app opens the Portal home. The owner of a server on a VPS can buy more storage: see
@@ -321,7 +321,7 @@ when a server is idle or boat stops a sandbox; and `error` and `deleted`. The Wo
 
 ## Providers
 
-OpenBot ships no AI subscription, so a new server has no provider connected. When its owner or an
+dani-dex ships no AI subscription, so a new server has no provider connected. When its owner or an
 admin opens a server with no agent, the app shows a provider step before the first-agent form. The
 sandbox browser is on Xvfb, where nobody can see it, so each sign-in finishes on the user's own device
 over `providers-v3` and `providers-v4`: Codex, Grok and Cline show a device code, Claude shows a page
@@ -418,7 +418,7 @@ Worker, and all worktrees share it, so you sign in one time.
 Each developer who has `DOTENV_PRIVATE_KEY_DEV` can create a server with any account.
 The command decrypts
 `HOSTED_SERVERS_DEVELOPER_KEY` from `.env.dev`, and main sends it in the
-`OpenBot-Hosting-Developer-Key` header of each hosted server request. The test Worker has the same
+`dani-dex-Hosting-Developer-Key` header of each hosted server request. The test Worker has the same
 key and lets the account create servers. A clone of the repository cannot decrypt the key. Main
 removes the key from its environment at the start, so agents do not get it, and a packaged build
 never sends it. To change the key, update `HOSTED_SERVERS_DEVELOPER_KEY` in `.env.dev` with a
@@ -520,7 +520,7 @@ snapshots automatically. For a separate test template, build one from a release:
 
 ```sh
 BOAT_TEMPLATE_API_KEY=... bun run hosting:template --version=0.9.0 \
-  --appimage-url=https://.../OpenBot-0.9.0-x86_64.AppImage --appimage-sha256=<hex> \
+  --appimage-url=https://.../dani-dex-0.9.0-x86_64.AppImage --appimage-sha256=<hex> \
   --auth-api-url=https://<test Worker origin>
 ```
 
@@ -530,13 +530,13 @@ named snapshot access. The script:
 1. creates a builder sandbox with `noEnv`;
 2. uploads `scripts/hosting/` and runs `provision.sh` with `sudo`. It installs the packages in
    `packages.txt` (Xvfb, D-Bus, gnome-keyring, the Electron libraries and the remote desktop runtime
-   libraries), checks the AppImage SHA-256, unpacks the AppImage to `/opt/OpenBot/app`, adds an
+   libraries), checks the AppImage SHA-256, unpacks the AppImage to `/opt/dani-dex/app`, adds an
    AppArmor profile that lets Chromium make user namespaces, and enables `openbot.service` and the
    [update](#updates) units;
-3. checks the installed version, that OpenBot did not start, and that no profile or claim exists;
+3. checks the installed version, that dani-dex did not start, and that no profile or claim exists;
 4. saves the builder as `openbot-server-<version>` (or `--name=<snapshot>`) and deletes the builder.
 
-The builder never starts OpenBot, so the template has no host identity and no session. A retry
+The builder never starts dani-dex, so the template has no host identity and no session. A retry
 reuses a ready snapshot with the same name or waits for a save in progress. It refuses a failed
 snapshot and never replaces an existing name. Automatic production releases reserve the prefix
 `openbot-server-production-` to avoid test snapshots in the same account. Keep each name tied to
@@ -555,20 +555,20 @@ from a removed snapshot keep running.
 
 Server Settings > Updates has the same controls as on a computer that updates itself: download,
 **Update when idle**, **Restart now**, automatic updates, and the switch that lets members update.
-OpenBot runs as the service user from a release that root owns, so it asks root to do the work
+dani-dex runs as the service user from a release that root owns, so it asks root to do the work
 (`src/main/hosted-update-adapter.ts`). It makes an empty file in its runtime directory:
 `/run/openbot/update-stage` to download, and `/run/openbot/update-install` to install.
 `openbot-update-request.path` then starts `openbot-update-request.service`, which runs
 `openbot-hosted-update request` as root. That removes the file without reading it and runs `stage`.
-For an install, it then stops OpenBot, runs `apply` and starts OpenBot again, also after a failure.
-A request that comes during a timer download waits for it while OpenBot runs. While a request runs,
-root writes the step to `/run/openbot-update.state` and changes its time every 5 seconds. OpenBot
+For an install, it then stops dani-dex, runs `apply` and starts dani-dex again, also after a failure.
+A request that comes during a timer download waits for it while dani-dex runs. While a request runs,
+root writes the step to `/run/openbot-update.state` and changes its time every 5 seconds. dani-dex
 reads each change as download progress, so the download deadline finds a request that root never
 takes or that stops.
 
 The release that an older script moves into place has these units, but that script installs only
-the units it knows. So `openbot.service` runs `openbot-hosted-update trigger` as root before OpenBot
-starts; it installs and starts the request units when they are missing. OpenBot offers the controls
+the units it knows. So `openbot.service` runs `openbot-hosted-update trigger` as root before dani-dex
+starts; it installs and starts the request units when they are missing. dani-dex offers the controls
 only when `/etc/systemd/system/openbot-update-request.path` is there at its start. Otherwise, and on
 hosts older than this release, the panel checks the release (`host-release-v1`) and shows the
 host-managed update path. A container has no request units. A container of `docker/instances` uses
@@ -585,8 +585,8 @@ On a server, root runs `openbot-hosted-update`:
    latest GitHub release, the manifest that the Linux desktop updater reads. When that version is newer than the installed one, it downloads the
    AppImage, checks its SHA-512 against the manifest, unpacks it in `/var/tmp`, checks that it has
    all hosting files, installs the packages in the `packages.txt` of that release, and copies it
-   to `/opt/OpenBot/staged`.
-   `staged.ready` comes after the last file. OpenBot keeps running. The download and unpack use
+   to `/opt/dani-dex/staged`.
+   `staged.ready` comes after the last file. dani-dex keeps running. The download and unpack use
    idle CPU and disk priority.
 2. `apply` copies `staged` to `app`, and then installs the scripts, AppArmor profile and units of
    the new release. `.applying` and `staged` stay until all of this is complete, so after a stop or
@@ -596,7 +596,7 @@ On a server, root runs `openbot-hosted-update`:
    require it, so it starts after a failure too: with the old release, or with a partial copy after
    a failed copy, until the next start. On a self-installed server, the new release starts at the
    next boot, or when idle if the automatic update switch is on (it is off by default). A hosted
-   server installs it itself: when the release is staged, OpenBot asks root to
+   server installs it itself: when the release is staged, dani-dex asks root to
    install it when idle, and when no connected client changed data or typed for 5 minutes and the
    start was 5 minutes ago. Reading is not use. Server Settings shows this wait as "other work",
    because `host-update-v1` has no reason for it. The automatic update switch of a hosted server
@@ -609,21 +609,21 @@ with a probe; not in boat documentation.]
 
 boat resumes a server on a machine that booted before, restores the disk lazily, and starts the
 units before the restore ends. The restore takes about 3.5 minutes. `stage` waits until it ends (at
-most 4 minutes), and OpenBot asks for `stage` before each install, so an install never stops
-OpenBot for the restore. `boot` waits only for an interrupted copy, because OpenBot starts after
+most 4 minutes), and dani-dex asks for `stage` before each install, so an install never stops
+dani-dex for the restore. `boot` waits only for an interrupted copy, because dani-dex starts after
 it. During a restore it skips a staged release and recovers an incomplete one.
 
 boat starts the desktop (`lightdm`) about 8 s after the resume, and then the enabled units of
 `multi-user.target` again, about 16 s after it. `openbot.service` is also wanted by
 `lightdm.service`, so it starts with the desktop. The second start of `openbot-update-apply.service`
-does nothing: the unit stays active (`RemainAfterExit`), and `boot` does nothing while OpenBot runs
+does nothing: the unit stays active (`RemainAfterExit`), and `boot` does nothing while dani-dex runs
 (after a failed `boot`). [Observed on a boat VM on 2026-10-11; not in boat
 documentation.]
 [Not confirmed in boat documentation: the `active` and `hydration-done` files in
 `/var/lib/ascii-lazy` that mark the restore. Observed on a boat VM.] `apply` never removes a staged
 release that is not complete.
 
-A server only moves to a newer version: an older OpenBot cannot open a database that a newer one
+A server only moves to a newer version: an older dani-dex cannot open a database that a newer one
 migrated. `stage` stops when it cannot read the installed version, and `provision.sh` stops when the
 installed version is newer. A staged release that is no longer the latest one, for example a
 withdrawn release, is removed at the next `stage` run. A server that starts before that run applies
@@ -635,7 +635,7 @@ A server has no window for the recovery window of the desktop. A server whose st
 failed started again each 10 seconds, without an end, in earlier releases. Now main stops the loop
 (`src/main/server-start-halt.ts`):
 
-- at the first failure when the database is from a newer OpenBot (`newer_database`): a restart
+- at the first failure when the database is from a newer dani-dex (`newer_database`): a restart
   cannot help;
 - for all other failures, at the third failed start in a row of the same version (`start_failed`).
   A failed migration rolls back and counts as a failed start, because its cause can be temporary
@@ -653,7 +653,7 @@ When the safe mode cannot start (no team, or no host credential), main exits wit
 `openbot.service` has `RestartPreventExitStatus=78`, so systemd does not start it again.
 
 The next start reads and removes the file, logs the reason, and tries once more. A failure of that
-start stops the loop again. These start OpenBot again:
+start stops the loop again. These start dani-dex again:
 
 - a restart or a resume of the server, or `sudo openbot restart` or `start`;
 - `sudo openbot update`;
@@ -664,7 +664,7 @@ start stops the loop again. These start OpenBot again:
   once more. It reads only the state of the unit (`ActiveState`, `ExecMainStatus`) and the
   existence of the empty safe-mode file, never the content of a file of the service user.
 
-When OpenBot is not running or runs its safe mode, `openbot` commands that need the control socket
+When dani-dex is not running or runs its safe mode, `openbot` commands that need the control socket
 say that the start loop stopped it, and name `openbot logs`, `sudo openbot update` and
 `sudo openbot restart`. The safe mode has no control socket.
 
@@ -683,14 +683,14 @@ https://api.openbot.run` as a detached command, and start the service again. The
 folder and in `/srv` stays.
 
 On a server, `openbot-hosted-server` starts a D-Bus session, unlocks a gnome-keyring with a
-random password for each server (so `safeStorage` can keep the account session), and runs OpenBot
+random password for each server (so `safeStorage` can keep the account session), and runs dani-dex
 with `--password-store=gnome-libsecret`. The agents use the boat desktop: the lightdm session of the
-sandbox user on `:0`, with openbox. So boat's desktop viewer and OpenBot remote desktop show the same
+sandbox user on `:0`, with openbox. So boat's desktop viewer and dani-dex remote desktop show the same
 screen, and a click moves the keyboard focus to another window. After a resume, the script waits up
-to 2 minutes for that session. OpenBot shows its own windows on a 1280x800 Xvfb display that
+to 2 minutes for that session. dani-dex shows its own windows on a 1280x800 Xvfb display that
 `xvfb-run` starts. `xvfb-run` adds the key of that display to `~/.Xauthority`, which has the key of
 `:0`, and lightdm keeps the other keys when it writes the file. The script names `:0` in
-`OPENBOT_AGENT_DISPLAY`, so an agent's screenshot and remote desktop do not show the OpenBot window
+`OPENBOT_AGENT_DISPLAY`, so an agent's screenshot and remote desktop do not show the dani-dex window
 (see [Computer Use and remote desktop](architecture/computer-use.md#agent-display-on-a-server)). With
 no desktop session, the server starts two Xvfb displays and Openbox on the agent display, as a
 [self-hosted server](self-hosted-server.md#how-it-works) does. The keyring files are in
@@ -704,7 +704,7 @@ no desktop session, the server starts two Xvfb displays and Openbox on the agent
   them through the slow mount for 25 s. boat keeps changes in `/srv` (not in `/var/lib`), and `/srv`
   is on the disk before the service starts.
 
-OpenBot redeems the claim only when `safeStorage` works. After the first redeem the claim works
+dani-dex redeems the claim only when `safeStorage` works. After the first redeem the claim works
 for 10 more minutes, so a server whose response was lost can redeem it again; each redeem revokes the
 session of the one before. After that, a session that is only in memory would leave the server
 signed out after its next start.
@@ -723,10 +723,10 @@ again with backoff (30 s to 10 min) and then publishes the host.
 
 ## Watchdog
 
-Before it starts OpenBot, `openbot-hosted-server` starts itself again with `--watchdog` in the
-background. Main rewrites `~/.config/OpenBot/openbot-run-marker-v1.json` every 60 s from its event
+Before it starts dani-dex, `openbot-hosted-server` starts itself again with `--watchdog` in the
+background. Main rewrites `~/.config/dani-dex/openbot-run-marker-v1.json` every 60 s from its event
 loop (`src/main/run-marker.ts`). The watchdog reads the file every 30 s. When the content does not
-change in 20 reads (10 minutes) after it changed once in this run, the watchdog logs "OpenBot did not
+change in 20 reads (10 minutes) after it changed once in this run, the watchdog logs "dani-dex did not
 update its heartbeat for 600 seconds" and sends `SIGKILL` to the process in
 `/run/openbot/openbot.pid`. `Restart=always` starts the service again 10 s later. The watchdog does
 nothing:
@@ -742,7 +742,7 @@ nothing:
 - when the process in the pid file is not `openbot` in the cgroup of the service.
 
 The watchdog counts reads and does not compare clock times, so a boat resume, which moves the clock
-forward, does not stop OpenBot. It does not help when the whole machine stops responding; that needs a
+forward, does not stop dani-dex. It does not help when the whole machine stops responding; that needs a
 reboot of the VM.
 
 On 2026-11-21 a Standard server on Leaseweb (0.75.0) ran out of memory: agent dev servers, browser
@@ -757,7 +757,7 @@ their start, that quit, or that are not `openbot`.
 
 ## Memory
 
-One systemd unit holds OpenBot, its browser tabs and every agent process: one `claude` process for
+One systemd unit holds dani-dex, its browser tabs and every agent process: one `claude` process for
 each thread, one set of MCP servers for each ACP session, and one set for each loaded Codex thread.
 A Starter server has 4 GB. The guards are on a hosted server, a
 [self-hosted server](self-hosted-server.md#memory) and a [container](docker.md#memory); the desktop
@@ -856,7 +856,7 @@ holds it:
    waits at most 3 seconds. With `wake`, the server then starts in the background (`waitUntil`) as for
    a client (`last_wake_reason = 'message'`). A plan that ended starts nothing. Signal asks at most
    once a minute for each hosted route, and once in 10 minutes for another route.
-2. `wake` is true only for an event that addresses OpenBot: a Slack button press, mention, direct
+2. `wake` is true only for an event that addresses dani-dex: a Slack button press, mention, direct
    message or thread reply from a person; a Discord mention or button press; a Telegram message or
    button press.
 3. For such an event and a server that starts, Signal keeps the delivery frame, sealed to the host's
@@ -870,7 +870,7 @@ holds it:
    Telegram or Discord event is lost. This is accepted: it happens only to the events that arrive
    before the host connects again. Signal keeps the keys of at most 100,000 hosts.
 4. Another Slack event of a hosted server gets 200 and is dropped: the host keeps only messages that
-   address OpenBot, and joins the public channels again when its connection starts.
+   address dani-dex, and joins the public channels again when its connection starts.
 5. When the host's socket connects again, Signal sends each kept event of the routes that the socket
    holds, in order, as `queued-delivery` with an `id`. The host opens it with its private key, handles
    it as a normal delivery, and sends `queued-delivery-ack`. Signal keeps the event until that ack, and
@@ -908,13 +908,13 @@ The `boat` scenario of `scripts/stripe-flows-e2e.ts` (see `apps/auth-api/README.
 - the builder user has passwordless `sudo`, and AppArmor is enabled in the boat VM;
 - boat runs `setupScript` for a sandbox created from a named snapshot, and systemd starts
   `openbot.service` after a create;
-- OpenBot redeems its claim, publishes the host with the server name, and signs in again from the
+- dani-dex redeems its claim, publishes the host with the server name, and signs in again from the
   stored session after a restart (`safeStorage` with gnome-keyring under Xvfb);
 - a delete through the Worker removes the sandbox.
 
 A resume test on 2026-09-28 (one sandbox with the 0.24.0 AppImage, 6 resumes, each on another
 machine) confirmed that systemd starts `openbot.service` again after a resume, and that a keyring
-secret in `/srv` stays. From the resume call to the OpenBot start took 7 to 34 s; the keyring start
+secret in `/srv` stays. From the resume call to the dani-dex start took 7 to 34 s; the keyring start
 took 40 ms. Most of the time is boat: it restores the disk and then starts the enabled units, 5 to
 20 s after the sandbox is `idle`.
 
@@ -983,10 +983,10 @@ the hook before it saves the disk.
 
 An install test on the same sandbox put the new `openbot-hosted-update`, `openbot.service` and hook
 in place, as an older release does when it updates. At the next start, `trigger` installed the hook
-as `user` with mode 0755. It did not change a current hook, kept a hook that OpenBot did not write
-(a file, a link or a FIFO, with no wait), and replaced a changed OpenBot hook. At a stop of the real OpenBot, the hook
+as `user` with mode 0755. It did not change a current hook, kept a hook that dani-dex did not write
+(a file, a link or a FIFO, with no wait), and replaced a changed dani-dex hook. At a stop of the real dani-dex, the hook
 stopped `openbot.service` in 0.3 seconds and ended with 0. After the resume (a new boot ID), the
-flag was gone, OpenBot ran, and `openbot.db` passed `quick_check`.
+flag was gone, dani-dex ran, and `openbot.db` passed `quick_check`.
 
 ## Leaseweb VPS
 
@@ -1037,7 +1037,7 @@ server that runs already, see [The plan of a custom server](#the-plan-of-a-custo
   operator keys sign in, so one operator key must be a key of this computer.
 - It makes the claim just before the install, because a claim works for 15 minutes.
 - At the end it runs `leaseweb-bootstrap-e2e.ts`, which restarts the server, and then checks that
-  OpenBot is online and that D1 shows the owner as the active owner of the server.
+  dani-dex is online and that D1 shows the owner as the active owner of the server.
 - A run that stops can run again with the same arguments: it continues with the same reference,
   does not install again when the owner is signed in, and stops when another account is signed in.
 - Its output has no email and no key. The report of the checks is in
@@ -1047,10 +1047,10 @@ The steps of the command:
 
 1. Order a VPS with Ubuntu 24.04 or 26.04. The order takes no SSH key and no user data. The root password
    comes from `GET /publicCloud/v1/vps/{id}/credentials`.
-2. Install OpenBot with `install-server.sh` and a [server claim](self-hosted-server.md#sign-in-with-a-server-claim)
+2. Install dani-dex with `install-server.sh` and a [server claim](self-hosted-server.md#sign-in-with-a-server-claim)
    for the customer's email.
 3. Run `scripts/hosting/leaseweb-bootstrap.sh` as root, with the public keys of the operators. Each
-   release also has it in `/opt/OpenBot/app/resources/hosting`.
+   release also has it in `/opt/dani-dex/app/resources/hosting`.
 
    ```sh
    ssh root@<address> bash -s "$(ssh <core server> cat /root/.ssh/authorized_keys | base64 | tr -d '\n')" \
@@ -1061,23 +1061,23 @@ The steps of the command:
    again, and a boot fault must show now. `leaseweb-bootstrap-e2e.ts --restart=yes` does this and
    checks the result.
 
-The bootstrap does not restart OpenBot, and a second run gives the same state:
+The bootstrap does not restart dani-dex, and a second run gives the same state:
 
 | Part | Result | Files |
 | --- | --- | --- |
 | SSH | Keys only, no forwarding. The operator keys sign in as root, and as no other user. | `/etc/ssh/sshd_config.d/00-openbot-hardening.conf`, `/etc/ssh/openbot-operator-keys/root` |
 | Egress rules | The service user cannot connect to the CloudStack router (the DHCP server, which gives metadata and a reset root password to each process that asks), nor to private, link-local and multicast addresses. No user can connect to TCP port 25. | `/usr/local/sbin/openbot-egress-firewall`, `/etc/openbot/egress-router`, `openbot-egress-firewall.service`, `openbot.service.d/10-egress-firewall.conf` |
-| Updates | Security updates each day. They restart neither the server nor OpenBot. Ubuntu (`needrestart`) restarts each other service that uses an updated library. | `/etc/apt/apt.conf.d/20auto-upgrades`, `52openbot-unattended`, `/etc/needrestart/conf.d/50-openbot.conf` |
+| Updates | Security updates each day. They restart neither the server nor dani-dex. Ubuntu (`needrestart`) restarts each other service that uses an updated library. | `/etc/apt/apt.conf.d/20auto-upgrades`, `52openbot-unattended`, `/etc/needrestart/conf.d/50-openbot.conf` |
 | Kernel | A new kernel gets a boot entry: the bootstrap installs `grub-pc` when the image has no `update-grub`. The boot arguments of the image stay. | `/etc/default/grub.d/50-openbot.cfg` |
 
 The rules load before the network starts, with the router of the last run, and again before each
-start of OpenBot, with the router of the current DHCP lease. `openbot.service` requires the rules
-unit, so OpenBot does not run without them. The rules also refuse the service user a container
+start of dani-dex, with the router of the current DHCP lease. `openbot.service` requires the rules
+unit, so dani-dex does not run without them. The rules also refuse the service user a container
 network in 172.16.0.0/12 and a VPN in 100.64.0.0/10; change `PRIVATE4` in the helper for a server
 that needs one. They do not filter incoming connections: a port that an agent opens on all
 addresses is open to the internet.
 
-OpenBot thus keeps its old libraries until the operator restarts the service, and the server runs
+dani-dex thus keeps its old libraries until the operator restarts the service, and the server runs
 its old kernel until the operator restarts the server. Plan those restarts.
 
 A server has three names, and each one can change later:
@@ -1085,11 +1085,11 @@ A server has three names, and each one can change later:
 | Name | Command | Notes |
 | --- | --- | --- |
 | Leaseweb reference | `PUT /publicCloud/v1/vps/{id}` with `{"reference": "<name>"}` | At most 255 characters; `@`, `+`, a space and letters outside ASCII are kept. `GET /publicCloud/v1/vps?reference=<text>` finds each server that has the text in its reference, with no difference between capital and small letters. |
-| OpenBot server name | `openbot name <name>` as the service user | 6 to 32 characters. No restart. The customer sees this name. |
-| Linux hostname | `hostnamectl set-hostname <name>` | Set it before OpenBot starts, or restart OpenBot after it. |
+| dani-dex server name | `openbot name <name>` as the service user | 6 to 32 characters. No restart. The customer sees this name. |
+| Linux hostname | `hostnamectl set-hostname <name>` | Set it before dani-dex starts, or restart dani-dex after it. |
 
 The X authorization of the virtual display has the hostname in it. After a hostname change, a new
-program of a running OpenBot cannot open the display ("Authorization required") until OpenBot
+program of a running dani-dex cannot open the display ("Authorization required") until dani-dex
 restarts.
 
 #### Leaseweb references
@@ -1101,7 +1101,7 @@ Leaseweb accounts use one scheme:
 | --- | --- | --- |
 | None (no reference, or an empty one) | Not used. **Only a VPS with no reference can be taken for a new use.** | |
 | `pool` | In the hosted pool. It does not tell whether a server has the VPS: a purchase gives a VPS to a server in D1 and does not change the reference. `leaseweb-pool.ts status` shows the free ones. Only `leaseweb-pool.ts` and [Move a server from boat](#move-a-server-from-boat) use a pool VPS. Before 2026-11-13 a free pool VPS had `pool-free`; the script reads it as `pool`. | `pool` |
-| `<owner email> <first 8 characters of the OpenBot server ID>` | In the hosted pool, with a hosted server. `move` sets it for a moved server, and `sync` for a server that started on the machine. A label for the Leaseweb panel only: `sync` sets `pool` again on a free pool VPS that still has one. Do not decide from it whether a VPS is free. | `jane@example.com 1a2b3c4d` |
+| `<owner email> <first 8 characters of the dani-dex server ID>` | In the hosted pool, with a hosted server. `move` sets it for a moved server, and `sync` for a server that started on the machine. A label for the Leaseweb panel only: `sync` sets `pool` again on a free pool VPS that still has one. Do not decide from it whether a VPS is free. | `jane@example.com 1a2b3c4d` |
 | `custom-<NN> <customer> <owner email>` | A server for one customer, not in the pool. `<NN>` is the next number after the highest on all accounts; `leaseweb-pool.ts custom` sets it. `<customer>` is one word in small letters. | `custom-01 acme jane@example.com` |
 | `openbot-signal-<home>` | A Signal machine (see `docs/remote-session-deployment.md`). | `openbot-signal-us` |
 | `pool-test-<NN>` | A test machine of the operator. | `pool-test-01` |
@@ -1134,7 +1134,7 @@ A pool VPS and a custom VPS also use these names:
 | Name | Value | Example |
 | --- | --- | --- |
 | Linux hostname | `lsw-<Leaseweb VPS ID>`; it never changes | `lsw-12728110` |
-| OpenBot server name | The customer's choice | |
+| dani-dex server name | The customer's choice | |
 
 The operator keys are a file with one public key for each operator, in the format of
 `authorized_keys`, with no options. The fixed place of the list is `/root/.ssh/authorized_keys` of
@@ -1185,7 +1185,7 @@ plans page does. Subscribe stays off until the owner selects the checkbox. The W
 of the request to `openbot_early_start_at` on the Checkout Session and the subscription.
 
 `custom --plan=...` sets the plan at the setup. `custom-plan` shows, sets, changes or removes the
-plan of a server that runs already. It takes the OpenBot server ID, which is the last line of the
+plan of a server that runs already. It takes the dani-dex server ID, which is the last line of the
 `custom` command and the `host_id` in D1, not the VPS ID:
 
 ```sh
@@ -1202,7 +1202,7 @@ $env bun scripts/hosting/leaseweb-pool.ts custom-plan <server ID> --remove --app
 
 | Flag | Value |
 | --- | --- |
-| `--plan` | The plan name that the owner sees, 1 to 60 characters. Stripe shows it as `OpenBot <plan name>`. |
+| `--plan` | The plan name that the owner sees, 1 to 60 characters. Stripe shows it as `dani-dex <plan name>`. |
 | `--price` | The price of one period, before tax, for example `499` or `499.50`. |
 | `--currency` | `eur` (default), `usd`, `pln` or `brl`. |
 | `--interval` | `month` (default) or `year`. |
@@ -1234,7 +1234,7 @@ sandbox when none is. A server that starts on boat moves to a VPS later
 
 The Worker cannot connect to a machine, and it has no Leaseweb key. So the machine asks:
 
-1. `leaseweb-pool.ts prepare <VPS ID>... --apply` installs the newest OpenBot, disabled,
+1. `leaseweb-pool.ts prepare <VPS ID>... --apply` installs the newest dani-dex, disabled,
    on each free machine, as for a move. Then it offers the machine: it makes a random token, stores the
    SHA-256 of the token in `operator_hosts.assign_token_hash` (migration 0055), and runs
    `move-from-boat.sh offer leaseweb:<VPS ID>` on the machine with the token on standard input. `offer`
@@ -1259,8 +1259,8 @@ The Worker cannot connect to a machine, and it has no Leaseweb key. So the machi
 5. The next request of the machine gets `{"state":"assigned","serverId":…,"claim":…}`. The unit runs
    `openbot-hosted-env` as the service user with the two values (the same helper as in the boat setup
    script), enables and starts `openbot.service`, then removes the token and disables itself. The
-   answer is the same until OpenBot signs in, so a machine that restarts in this step asks again.
-6. OpenBot redeems the claim (`POST /v2/hosting/claims/redeem`). The Worker then sets the row to
+   answer is the same until dani-dex signs in, so a machine that restarts in this step asks again.
+6. dani-dex redeems the claim (`POST /v2/hosting/claims/redeem`). The Worker then sets the row to
    `running` and clears the token hash of the machine. From here the server is the same as a moved server: the tables of
    [Move a server from boat](#move-a-server-from-boat) apply, but it has no `retired_sandbox_id`, so a
    delete sends no call to boat.
@@ -1274,7 +1274,7 @@ When a step fails, the customer still gets a server:
 | Fault | Result |
 | --- | --- |
 | No ready machine of the product, or the pool query fails | The Worker makes the boat sandbox in the same request, as before, and sends a [pool alert](#pool-alerts). |
-| The machine does not start OpenBot, or OpenBot does not sign in, in 4 minutes (`POOL_START_LOST_AFTER_MS`) | The cron takes the server off the machine and makes a boat sandbox for it. The claim of the machine stops working. The machine loses its token, because its disk can have the start of a server; `status` shows it as not ready. Run `prepare --reinstall` for it. |
+| The machine does not start dani-dex, or dani-dex does not sign in, in 4 minutes (`POOL_START_LOST_AFTER_MS`) | The cron takes the server off the machine and makes a boat sandbox for it. The claim of the machine stops working. The machine loses its token, because its disk can have the start of a server; `status` shows it as not ready. Run `prepare --reinstall` for it. |
 | The plan ends before the sign-in | The row gets `error` and no machine. A renewal sets the server up again. |
 | The owner deletes the server before the sign-in | The delete is the usual one. `sync` reinstalls the machine. |
 
@@ -1292,17 +1292,17 @@ A machine of the pool is not the boat image:
 
 - It has no agent CLI for all users (`claude`, `codex`, `pi`) and no `node`. At start, a hosted
   server downloads the CLI of each provider that an agent uses and that is not off. The user
-  downloads the CLI of another provider in OpenBot.
-- It has no Docker and no boat desktop. OpenBot uses its own virtual displays.
+  downloads the CLI of another provider in dani-dex.
+- It has no Docker and no boat desktop. dani-dex uses its own virtual displays.
 - It shows the storage of the plan (25, 75 and 150 GB), the same numbers as the pricing page
   (`storageTierGb`).
 - The clients show no restart action, and the server does not stop when it is not in use.
 
 Measured on the test Worker with a real Leaseweb VPS 2 (smoke, 2026-11-13): `prepare` of a clean
-machine takes about 3 minutes. OpenBot on the machine signed in 9 seconds after the payment, and the
+machine takes about 3 minutes. dani-dex on the machine signed in 9 seconds after the payment, and the
 server was online after 13 seconds. A start on boat took 25 seconds to the sign-in. A server whose
-machine did not start OpenBot went to boat 270 seconds after the payment and signed in 15 seconds
-later; the late start of OpenBot on that machine got "The server claim is invalid or used."
+machine did not start dani-dex went to boat 270 seconds after the payment and signed in 15 seconds
+later; the late start of dani-dex on that machine got "The server claim is invalid or used."
 `prepare --reinstall` made that machine ready again in 213 seconds, and after `remove` the unit on
 the machine stopped at its next question.
 
@@ -1326,7 +1326,7 @@ The machines of the pool are in `operator_hosts` (migration 0053). A machine of 
 of `hosted_servers` names is free. See [Reuse a pool machine](#reuse-a-pool-machine).
 
 For a row with `operator_host`, the Worker sends no call to boat, with one exception (the delete).
-It writes what it wants in `desired_state`; the operator starts and stops OpenBot on the machine and
+It writes what it wants in `desired_state`; the operator starts and stops dani-dex on the machine and
 writes `observed_state`:
 
 | Event | The Worker | The operator |
@@ -1348,7 +1348,7 @@ The Worker sends no message to the operator, and it connects to no machine. Run
 Never write `desired_state = 'idle'` on such a row: the next client request changes it to `running`,
 and the cron query for a server with a routine does not look at the machine.
 
-The server on the VPS stays a hosted server (no `/opt/OpenBot/hosted/mode` file), so OpenBot signs
+The server on the VPS stays a hosted server (no `/opt/dani-dex/hosted/mode` file), so dani-dex signs
 in, reports its use and installs updates as it did on boat. `provision.sh` installs it and does not
 start it, so the data is in place before the first start. `scripts/hosting/move-from-boat.sh` does
 the parts of a move that run on the two machines, as root.
@@ -1360,7 +1360,7 @@ token of the machine away, so that no new server gets it. Use `auto`: new custom
 each moment, so a VPS that you selected earlier can have a server when the move starts. `auto` selects
 a ready machine first, in the locations of the currency of the server, as the account service does
 for a new server. When a new customer gets it before the token is away, it takes the next one. After the
-row changes and before the export, it checks the same IDs of `user` on the two machines, an OpenBot
+row changes and before the export, it checks the same IDs of `user` on the two machines, an dani-dex
 on the machine that is not older than that of the sandbox, and an ssh from the sandbox to the machine.
 When a step before the export fails, it gives the row back to the sandbox, and the customer sees no
 downtime. After the export starts, it stops and names the step; then finish or roll back by
@@ -1372,7 +1372,7 @@ bunx dotenvx run -f apps/auth-api/.env.production -f apps/auth-api/.env.dev -fk 
 ```
 
 Tested on 2026-11-12 with the test Worker: one Standard server from a boat sandbox to a VPS 2 in
-`AMS-01` (OpenBot 0.68.0). The sandbox had an npm package, an apt package, a command in `/opt`, a
+`AMS-01` (dani-dex 0.68.0). The sandbox had an npm package, an apt package, a command in `/opt`, a
 crontab line, an MCP server, an Inception key and sign-in files of Claude and Codex. `prepare` of a
 new VPS took 140 s. The move took 69 s, and the downtime was 49 s: the export and the copy 28 s, the
 import 20 s, the start 2 s. After the move, the web client showed the old chats, the Inception agent
@@ -1381,7 +1381,7 @@ there. A first run waited for a sandbox state that boat does not use; it stopped
 and gave the row back, and the server had no downtime.
 
 The order of the steps keeps the downtime short. The work that does not need the data (the install
-of OpenBot, the bootstrap, the restart and the apt packages of the customer) runs while the customer
+of dani-dex, the bootstrap, the restart and the apt packages of the customer) runs while the customer
 still uses the sandbox. The downtime is the export, the copy, the import and the start. The steps:
 
 1. Deploy the Worker with migration 0052 before the first move. An older Worker does not know the
@@ -1391,7 +1391,7 @@ still uses the sandbox. The downtime is the export, the copy, the import and the
    The IDs are those of `id user` in the sandbox (1000 and 1000 in the boat image). The release is the
    one that the sandbox has, or a newer one. The command sets the hostname, makes the user `user`
    with the home `/home/user`, runs `provision.sh`, and disables `openbot.service`, so a restart does
-   not start OpenBot with no data. `leaseweb-pool.ts prepare <VPS ID>... --apply` does
+   not start dani-dex with no data. `leaseweb-pool.ts prepare <VPS ID>... --apply` does
    steps 2 and 3 on free machines before a move, with the newest release.
 3. Run `leaseweb-bootstrap.sh` with the operator keys. Restart the VPS one time. A new or reinstalled
    VPS has no key of an operator: `leaseweb-pool.ts` then signs in one time with the root password of
@@ -1413,7 +1413,7 @@ still uses the sandbox. The downtime is the export, the copy, the import and the
 
    From this statement, the Worker sends no call to boat for the server, and the customer still uses
    the sandbox. The order is necessary: while the row has the sandbox and `desired_state = 'running'`,
-   the Worker resumes a stopped sandbox in some seconds, and a resume starts OpenBot there again. The
+   the Worker resumes a stopped sandbox in some seconds, and a resume starts dani-dex there again. The
    Worker can also stop the sandbox for no use during the export, and the next client request then
    starts it. In each case the sandbox gets data that the archive does not have. When the sandbox is
    stopped at this step, start it at boat.
@@ -1433,15 +1433,15 @@ still uses the sandbox. The downtime is the export, the copy, the import and the
    disk of the sandbox, and the copy has no separate step. The downtime of the customer starts here.
    The command sets `/run/openbot-pre-stop`, stops `openbot.service`, and archives, with numeric
    owners, the home of `user` and `/srv/openbot-hosted`. The home has each provider sign-in, API key
-   and MCP server. The archive does not have the provider CLIs that OpenBot downloaded
-   (`~/.config/OpenBot/provider-runtimes`, but `bun` stays) or the caches: at start, a hosted server
+   and MCP server. The archive does not have the provider CLIs that dani-dex downloaded
+   (`~/.config/dani-dex/provider-runtimes`, but `bun` stays) or the caches: at start, a hosted server
    downloads the CLI of each provider that an agent uses. The archive also has what the customer installed
    outside the home, and not what the boat image has (the lists at the top of the script, from image
    `c4ed68db` and `5f37c910`):
    - each directory that the customer added in `/opt`, `/usr/local` and `/usr/local/lib`, and each
      npm package for all users. A directory that programs of root read, such as
      `/usr/local/lib/systemd` or `/usr/local/lib/python3.12`, stays out, and the report names it.
-   - the Hermes CLI of the image when its sign-in file in the home has a sign-in. OpenBot does not
+   - the Hermes CLI of the image when its sign-in file in the home has a sign-in. dani-dex does not
      download Hermes as it downloads the other provider CLIs. An empty file, a file with only `{}`, or
      the `.env` that the image writes for Hermes is not a sign-in.
    - each program in `/usr/local/bin` that the image does not have, each link there into a moved
@@ -1467,7 +1467,7 @@ still uses the sandbox. The downtime is the export, the copy, the import and the
    have the folder; the move checks this before the downtime. The operator gives this list, not the
    archive, because an agent of the customer can get root in the sandbox. `discard` removes these
    folders. A server with another such folder, such as `/var/lib/syncthing` or a file directly in `/srv`,
-   stays on boat: a copy by hand cannot work, because `move` starts OpenBot on the VPS right after the
+   stays on boat: a copy by hand cannot work, because `move` starts dani-dex on the VPS right after the
    sandbox stops.
    A file that the customer made as root is not found.
 
@@ -1490,15 +1490,15 @@ still uses the sandbox. The downtime is the export, the copy, the import and the
    with `docker compose up -d`. The containers connect through a process of `user`, so the egress rules
    also apply to them: they cannot connect to the router or to the metadata address.
    It refuses, before it changes anything, a sandbox whose stop at boat is failing
-   (`stop.status: "failing"`): each new try of boat stops OpenBot, and a try during the downtime looks
+   (`stop.status: "failing"`): each new try of boat stops dani-dex, and a try during the downtime looks
    like a stop that ended. On 2026-11-13 a move of a sandbox with a Docker container that restarted
-   started OpenBot on the VPS while boat cancelled the stop, and the sandbox started OpenBot again. It
+   started dani-dex on the VPS while boat cancelled the stop, and the sandbox started dani-dex again. It
    was rolled back.
 
    The archive also has the SHA-256 of `openbot.db`, `agent-data.db`, `login.keyring` and
    `keyring-password`, the names of the npm commands and groups of the sandbox, and the Ubuntu
    version. It does not have:
-   - `/opt/OpenBot`, `~/.boat`, `~/.boatignore`, `~/.ascii`, `~/.config/ascii`, `~/.Xauthority*` and
+   - `/opt/dani-dex`, `~/.boat`, `~/.boatignore`, `~/.ascii`, `~/.config/ascii`, `~/.Xauthority*` and
      `~/.npm/_cacache`.
    - the cache folders in each profile of Chromium, Chrome and Brave in `~/.config` (`Cache`,
      `Code Cache`, `GPUCache`, `GrShaderCache`, `ShaderCache`, the four Dawn caches,
@@ -1518,7 +1518,7 @@ still uses the sandbox. The downtime is the export, the copy, the import and the
    these two, it says so: then make sure that no directory of the list is from the image. The
    archive holds the account session and each provider sign-in and key of the customer: copy it only
    over SSH.
-6. On the VPS: `move-from-boat.sh import <archive>`. The command refuses an OpenBot that is older
+6. On the VPS: `move-from-boat.sh import <archive>`. The command refuses an dani-dex that is older
    than that of the sandbox, restores the archive, and compares the four SHA-256 values. An agent
    of the customer can get root in the sandbox, and the service user has no root on the VPS. So the
    service user restores the files, and only `/home/user`, `/srv/openbot-hosted` and the moved
@@ -1528,8 +1528,8 @@ still uses the sandbox. The downtime is the export, the copy, the import and the
    user as its owner. When the archive has a member that the service user cannot restore, the import
    fails. Then, as `user`, the import puts the moved commands in `~/.local/bin` (a command that is
    there already stays) and installs the crontab. When it moved an npm package and the VPS has no
-   `node`, it adds `~/.local/bin/node`, which starts the Bun that OpenBot downloaded to the home: Bun
-   runs a Node script when it starts with the name `node`. OpenBot downloads Bun at its first start
+   `node`, it adds `~/.local/bin/node`, which starts the Bun that dani-dex downloaded to the home: Bun
+   runs a Node script when it starts with the name `node`. dani-dex downloads Bun at its first start
    and when an MCP server is on; when the sandbox had no Bun, the report says so. As root, the import
    installs the apt packages of the customer. It does not install a package that changes
    the firewall, SSH or root access, such as `docker.io` or `ufw`. At the end it names each command in
@@ -1538,7 +1538,7 @@ still uses the sandbox. The downtime is the export, the copy, the import and the
    a program for Ubuntu 24.04 can fail on 26.04, such as a Python virtual environment. Delete each
    copy of the archive. When the import fails, run `move-from-boat.sh discard lsw-<VPS ID>` and then
    the import again: `discard` removes the restored data, the moved directories and the crontab (the
-   apt packages stay), and it refuses a machine on which OpenBot started.
+   apt packages stay), and it refuses a machine on which dani-dex started.
 
    The import also removes the parts of the boat desktop from the home: `~/.ascii` and `~/.config/ascii`
    (with the token of the desktop), their links in `~/.local/bin`, the `boat` skill of each agent, the
@@ -1551,7 +1551,7 @@ still uses the sandbox. The downtime is the export, the copy, the import and the
    runs: two hosts would have one ID.
 8. On the VPS: `move-from-boat.sh start`. It refuses when the import is not complete or when
    `openbot.db` changed after the import, then enables and starts `openbot.service`. A machine with
-   no display manager does not wait for the boat desktop: OpenBot uses two virtual displays at once.
+   no display manager does not wait for the boat desktop: dani-dex uses two virtual displays at once.
    Confirm in the web client that the server is online and that an agent answers. Set the Leaseweb
    reference.
 9. Keep the stopped sandbox for the rollback. A delete of the server by its owner also deletes it.
@@ -1562,7 +1562,7 @@ The VPS is not the same machine as the sandbox:
   2026-11-11). The VPS has none. The move copies only the Hermes CLI of the image, and `import` names each other one that
   is missing. At start, a hosted server downloads the CLI of each
   provider that an agent uses and that is not off. The user downloads the CLI of another provider in
-  OpenBot.
+  dani-dex.
 - `prepare` makes only the primary group of `user`, and the VPS has no Docker. `import` names each
   group that `user` had in the sandbox (`docker` and `ascii-streaming-audio` on 2026-11-11). An
   agent of the customer that used Docker does not have it after the move.
@@ -1605,19 +1605,19 @@ The VPS is not the same machine as the sandbox:
   Standard server shows 75 GB on a 100 GB disk. Move it to a VPS 2 soon.
 - Settings shows the vCPU and the memory of the row `size`, and the upgrade dialog shows the memory of the
   boat size of the plan (`HOSTED_BOAT_PLAN_SIZE`), also for a moved server. A VPS has more: the VPS 2 in FRA-01 showed 6 vCPU and 16 GiB.
-- After the owner deletes the server, OpenBot still runs on the VPS with a session that is ended. It
+- After the owner deletes the server, dani-dex still runs on the VPS with a session that is ended. It
   cannot connect, and it has the data until the operator reinstalls the machine.
 
 Rollback, while the sandbox exists: run `systemctl disable --now openbot.service` on the VPS, so that
 no restart of the VPS starts a second host. Make sure that the sandbox is stopped at boat. Then give
-the row back to boat. The next client request resumes the sandbox, and the resume starts OpenBot
+the row back to boat. The next client request resumes the sandbox, and the resume starts dani-dex
 there. The work that the server did on the VPS is not in the sandbox.
 
-When the export failed before the import, the sandbox still runs with OpenBot stopped and
+When the export failed before the import, the sandbox still runs with dani-dex stopped and
 `/run/openbot-pre-stop` set. Delete `/root/openbot-move` and the marker, and start `openbot.service`
 in the sandbox. Delete `/root/openbot-move.tar` on the VPS. Then give the row back with the statement
 below, but with `desired_state` and `observed_state` of before the move. On 2026-11-12 an export of
-24 GB took 9 minutes; a restart timer of boat started OpenBot during it, and tar stopped the export.
+24 GB took 9 minutes; a restart timer of boat started dani-dex during it, and tar stopped the export.
 The export now stops that timer. On 2026-11-19 the `.bash_logout` of a sandbox wrote `\e[3J` after
 each boat command, and `move` read it as the status of an export that had not ended. `move` now
 reads only the output between two markers that the command writes.
@@ -1653,7 +1653,7 @@ boat still stop and start. The migration has
 its data fixture in `apps/auth-api/test/hosted-server-operator-host-migration.test.ts`.
 
 Tested on 2026-11-11 with one test server, two times (test Worker, boat sandbox with 4 vCPU and
-8 GB, VPS in AMS-01 with Ubuntu 26.04, OpenBot 0.68.0, web client):
+8 GB, VPS in AMS-01 with Ubuntu 26.04, dani-dex 0.68.0, web client):
 
 - `user` in the sandbox had the UID 1000 and the GID 1000. ID 1000 is free on the Leaseweb image.
 - `prepare` took 83 seconds. For a home of 1.1 GB, the export took 8 seconds and made an archive of
@@ -1671,7 +1671,7 @@ Tested on 2026-11-11 with one test server, two times (test Worker, boat sandbox 
   rollback. With a Worker from before `restartAvailable`, it showed the message of the Worker.
 - A plan end set `desired_state = 'stopped'`, and a renewal set `running` again.
 - Rollback: the client request resumed the sandbox in 15 seconds, and the host registered from the
-  sandbox. A restart of the VPS started no OpenBot.
+  sandbox. A restart of the VPS started no dani-dex.
 - A delete of the moved server through the Worker deleted the retired sandbox at boat.
 
 Not confirmed:
@@ -1685,14 +1685,14 @@ Not confirmed:
 - the cause of five `turn.openbot.run` resolve errors on the first start on the VPS in the first
   test. The second test did not look for them.
 
-Tested on 2026-11-11 on one VPS (FRA-01, 6 vCPU, 16 GiB, Ubuntu 24.04, OpenBot 0.67.1):
+Tested on 2026-11-11 on one VPS (FRA-01, 6 vCPU, 16 GiB, Ubuntu 24.04, dani-dex 0.67.1):
 
 - `bun scripts/hosting/leaseweb-bootstrap-e2e.ts --host=root@<address> --restart=yes` passed its 75
   checks. It runs the bootstrap two times, connects as the service user and as root, stops the rules,
   and restarts the server. The report is in `.openbot-build/leaseweb-bootstrap/`.
 - Rescue: `attachIso` with `GRML` and then `reboot` started the GRML system. Its console gave a root
   shell with no password, and `mount -o ro,noload /dev/sda2` showed the files of the server. After
-  `detachIso` and `reboot`, Ubuntu started 173 seconds after the call, and OpenBot was online 55
+  `detachIso` and `reboot`, Ubuntu started 173 seconds after the call, and dani-dex was online 55
   seconds later.
 
 An order test through the Leaseweb API on 2026-11-11, with an API key of an account of the German
@@ -1746,7 +1746,7 @@ sales organization (locations FRA-01, FRA-10 and FRA-14), did not order a server
   `grub-pc`, which writes GRUB to the disk and adds `update-grub` to the kernel hooks. With the
   package removed again, the E2E ran the bootstrap and restarted the server: it ran 7.0.0-43 with
   the arguments `ro net.ifnames=0 quiet splash`, SSH answered 23 seconds after the restart command,
-  and OpenBot was online 5 seconds later.
+  and dani-dex was online 5 seconds later.
 - The three names of the test VPS changed: the reference through the API, the server name with
   `openbot name`, and the hostname, which stayed after a restart of the server.
 
@@ -1760,7 +1760,7 @@ Not confirmed for Leaseweb:
 - another distribution than Ubuntu 24.04 and 26.04, and a network that does not use `systemd-networkd` (the
   helper reads the DHCP server from its lease files);
 - a router address that changes while the server runs. The rules change at the next start of
-  OpenBot;
+  dani-dex;
 - `resetPassword`, which needs the guest agent, and a custom image for a VPS;
 - why the start after `detachIso` took 173 seconds;
 - WebRTC with a rule set that also filters incoming connections.
@@ -1820,7 +1820,7 @@ A pool machine has one server at a time. When the server ends, the machine gets 
 system and goes back to the pool for the next new server or the next move. The Worker and the operator share the work:
 
 1. The plan ends. The Worker sets `desired_state = 'stopped'` and `plan_ended_at`. `sync` stops
-   OpenBot on the machine. The data stays, so the owner can renew.
+   dani-dex on the machine. The data stays, so the owner can renew.
 2. 14 days after `plan_ended_at`, the cron of the Worker deletes the server when its newest
    subscription is not open and Stripe reports it `canceled`. The delete is the one of the owner: the
    old sandbox, the Remote host and the session go, and `observed_state = 'deleted'`. A subscription
@@ -1832,7 +1832,7 @@ system and goes back to the pool for the next new server or the next move. The W
    to `pool`, and sets `operator_host = NULL` on the deleted row. The machine is free.
    Leaseweb shows the state `RUNNING` for the whole reinstall, so `sync` waits until SSH shows new
    host keys.
-4. `prepare` installs OpenBot on the free machine again and offers it for a new server
+4. `prepare` installs dani-dex on the free machine again and offers it for a new server
    ([A new server on a pool machine](#a-new-server-on-a-pool-machine)).
 
 ### Archive of an ended pool server
@@ -1881,7 +1881,7 @@ run after the deploy deletes each server whose plan ended 14 to 30 days before.
 Tested on 2026-11-12 with the test Worker, its D1 and one VPS in `AMS-01`: `add`, `status`, `sync`
 stop and start, the cron delete of a server whose plan ended 31 days before with a `canceled` Stripe
 test subscription, then `sync`. The reinstall took 51 seconds: the machine started 26 seconds after
-the request, and `sync` returned 25 seconds later. A file in `/root` and `/opt/OpenBot` were gone.
+the request, and `sync` returned 25 seconds later. A file in `/root` and `/opt/dani-dex` were gone.
 Then `remove` and `add`.
 
 `operator_hosts` has one row for each machine that was in the pool:
@@ -1911,8 +1911,8 @@ bunx dotenvx run -f apps/auth-api/.env.production -fk <root>/.env.keys -- \
 | `boat` | Read only. Each server on boat with a paid plan that does not end: `move` it. Also the number of servers on boat whose plan ends, is past due, or ended. A customer who takes back a cancel, or pays a past-due plan, comes back on this list. |
 | `add <VPS ID>...` | Adds bought machines. It reads the location and the product from Leaseweb, and sets the reference `pool` when the machine has none. It refuses a machine with another reference. |
 | `remove <VPS ID>...` | Takes a free machine out of the pool, for example before its contract ends. It refuses a machine that a server has. |
-| `sync` | Stops OpenBot where a plan ended, starts it where the owner renewed, and reinstalls each machine of a deleted server. It reinstalls only a machine of the pool. It also sets the reference of each machine on which a new server started, and `pool` on each free machine with the old `pool-free` or an owner reference. It changes no other reference. |
-| `prepare <VPS ID>... [--keys=<file>] [--reinstall]` | Installs the newest release, disabled, on free machines, runs the bootstrap with the operator keys of the core server and of `<file>`, restarts each machine, and offers it for a new server. A prepared machine with no server data and an older OpenBot gets the newest release (`move-from-boat.sh upgrade`); `move` does the same. A disabled OpenBot does not update itself, so run `prepare` again after each release. A free machine that has the data of a server (a start that failed) is skipped; `--reinstall` erases it first. |
+| `sync` | Stops dani-dex where a plan ended, starts it where the owner renewed, and reinstalls each machine of a deleted server. It reinstalls only a machine of the pool. It also sets the reference of each machine on which a new server started, and `pool` on each free machine with the old `pool-free` or an owner reference. It changes no other reference. |
+| `prepare <VPS ID>... [--keys=<file>] [--reinstall]` | Installs the newest release, disabled, on free machines, runs the bootstrap with the operator keys of the core server and of `<file>`, restarts each machine, and offers it for a new server. A prepared machine with no server data and an older dani-dex gets the newest release (`move-from-boat.sh upgrade`); `move` does the same. A disabled dani-dex does not update itself, so run `prepare` again after each release. A free machine that has the data of a server (a start that failed) is skipped; `--reinstall` erases it first. |
 | `move <server ID> <VPS ID \| auto> [--keys=<file>]` | Moves one server from boat to a free machine. See [Move a server from boat](#move-a-server-from-boat). It prepares the machine when necessary. The machine takes no new server from then on. `auto` selects the machine when the move starts, and takes the next one when a new customer gets it first. |
 
 `sync` connects as root over SSH with the key of the operator. Not confirmed: SSH from a server of the
@@ -2054,16 +2054,16 @@ These were not tested on boat. Test them before a user gets access:
 - whether boat runs the pre-stop hook for a stop that it starts by itself: maintenance (the
   `updating` state) or the end of `ttlSeconds`. A crash of the machine restores the last periodic
   save, which also copies files while they change;
-- that OpenBot closes `openbot.db` at a `systemctl stop` on a server. The install test used a release
-  without the `SIGTERM` handler. The `ExecStop` of the unit stops OpenBot before its Xvfb displays
+- that dani-dex closes `openbot.db` at a `systemctl stop` on a server. The install test used a release
+  without the `SIGTERM` handler. The `ExecStop` of the unit stops dani-dex before its Xvfb displays
   (see [Computer Use](architecture/computer-use.md#agent-display-on-a-server)). This was tested in a
-  container with a stand-in for OpenBot, not with systemd. When OpenBot does not close the database,
+  container with a stand-in for dani-dex, not with systemd. When dani-dex does not close the database,
   it is as after a crash, which SQLite recovers, because the save starts after the stop;
 - the agent display on boat with a release build. On 2026-10-16 one boat server ran a 0.42.0 build
-  with this change, from `openbot.service`: OpenBot was on Xvfb `:99` at 1280x800, and `:0` had no
-  OpenBot window. In an agent turn, the agent shell and `cua-driver` had `DISPLAY=:0`, and Computer
+  with this change, from `openbot.service`: dani-dex was on Xvfb `:99` at 1280x800, and `:0` had no
+  dani-dex window. In an agent turn, the agent shell and `cua-driver` had `DISPLAY=:0`, and Computer
   Use saw a 1920x1080 screen with only the panel and the dock. A local remote desktop session
-  captured `:0`. The session reported the size of the OpenBot display, 1280x800. The first start
+  captured `:0`. The session reported the size of the dani-dex display, 1280x800. The first start
   after a resume, with this script in `/opt`, was not tested.
 
 

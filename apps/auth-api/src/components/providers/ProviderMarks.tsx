@@ -9,7 +9,7 @@ export function ProviderMarks(props: { page: Pick<ProviderPage, "provider" | "na
       <span class="compare-mark">
         <AppLogo variant="production" animation={props.small ? "none" : "blink"} class="compare-mark-logo" />
         <Show when={!props.small}>
-          <span class="compare-mark-name">OpenBot</span>
+          <span class="compare-mark-name">dani-dex</span>
         </Show>
       </span>
       <span class="compare-vs">runs</span>

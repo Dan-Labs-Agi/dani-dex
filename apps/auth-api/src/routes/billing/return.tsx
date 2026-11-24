@@ -46,7 +46,7 @@ function sendCheckoutAttribution(): void {
     cache: "no-store",
     keepalive: true,
     referrerPolicy: "same-origin",
-    headers: { "Content-Type": "application/json", "X-OpenBot-Browser": "1" },
+    headers: { "Content-Type": "application/json", "X-dani-dex-Browser": "1" },
     body: JSON.stringify({ sessionId, firstTouch }),
   }).catch(() => undefined);
 }

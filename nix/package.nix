@@ -13,7 +13,7 @@ let
   pname = "openbot";
   inherit (sources) version;
   system = stdenvNoCC.hostPlatform.system;
-  asset = sources.assets.${system} or (throw "OpenBot has no release for ${system}");
+  asset = sources.assets.${system} or (throw "dani-dex has no release for ${system}");
 
   src = fetchurl {
     url = "https://github.com/nightly-labs/openbot/releases/download/v${version}/${asset.name}";
@@ -82,8 +82,8 @@ let
     installPhase = ''
       runHook preInstall
       mkdir -p $out/Applications
-      cp -R OpenBot.app $out/Applications/
-      makeWrapper $out/Applications/OpenBot.app/Contents/MacOS/OpenBot $out/bin/openbot
+      cp -R dani-dex.app $out/Applications/
+      makeWrapper $out/Applications/dani-dex.app/Contents/MacOS/dani-dex $out/bin/openbot
       runHook postInstall
     '';
   };

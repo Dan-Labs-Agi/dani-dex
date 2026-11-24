@@ -109,7 +109,7 @@ restart ICE. Do it in a quiet hour, one machine at a time, and only with approva
    gets ports before the firewall allows them, the firewall drops the first packets of the peers:
 
    ```sh
-   ufw allow 16384:65535/udp comment 'OpenBot TURN relay UDP'
+   ufw allow 16384:65535/udp comment 'dani-dex TURN relay UDP'
    ```
 
    A narrower older rule, such as `49152:65535/udp`, is then not necessary. Remove it after both

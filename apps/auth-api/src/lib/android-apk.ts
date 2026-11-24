@@ -13,7 +13,7 @@ const VERSION_PATTERN = /^\d+\.\d+\.\d+$/u;
 export function androidApkRelease(version: string): AndroidApkRelease {
   if (!VERSION_PATTERN.test(version)) throw new Error(`${version} is not a store version of the Android app.`);
   const tag = `android-v${version}`;
-  const asset = `OpenBot-${version}.apk`;
+  const asset = `dani-dex-${version}.apk`;
   return { tag, asset, url: `${OPENBOT_LINKS.releases}/download/${tag}/${asset}` };
 }
 

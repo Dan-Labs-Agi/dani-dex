@@ -104,21 +104,21 @@ export function WhatAreAIAgents() {
         action.
       </p>
 
-      <h2>AI Agents in OpenBot</h2>
+      <h2>AI Agents in dani-dex</h2>
       <p>
-        OpenBot gives each agent a role, workspace, and conversation. Agents can hand work and files to one another
-        while the project stays together. OpenBot organizes the work around the connected provider; that provider still
+        dani-dex gives each agent a role, workspace, and conversation. Agents can hand work and files to one another
+        while the project stays together. dani-dex organizes the work around the connected provider; that provider still
         handles the model requests.
       </p>
       <p>
-        OpenBot is local-first, but that does not necessarily mean the model runs on your computer. The workspace can be
-        local while a connected provider handles the requests. For a closer look, see{" "}
+        dani-dex is local-first, but that does not necessarily mean the model runs on your computer. The workspace can
+        be local while a connected provider handles the requests. For a closer look, see{" "}
         <Link to="/guides/$slug" params={{ slug: "openbot-101" }}>
-          How to Use OpenBot
+          How to Use dani-dex
         </Link>
         . To see how this differs from an agent app that runs in the cloud, read{" "}
         <Link to="/compare/$slug" params={{ slug: "grok-bot" }}>
-          OpenBot vs Grok Bot
+          dani-dex vs Grok Bot
         </Link>
         .
       </p>

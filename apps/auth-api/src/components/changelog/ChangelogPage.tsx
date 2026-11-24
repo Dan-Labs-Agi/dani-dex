@@ -17,7 +17,7 @@ import { ChangelogRelease } from "./ChangelogRelease";
 import { ChangelogStores } from "./ChangelogStores";
 import { ChangelogSwap, createPlatformSwap } from "./ChangelogSwap";
 
-const HERO_GRADIENT_SEED = "OpenBot releases";
+const HERO_GRADIENT_SEED = "dani-dex releases";
 
 const ACTIVE_LINE = 0.3;
 
@@ -32,8 +32,8 @@ interface ReleaseMonth {
 }
 
 const PRODUCT_NAMES: Record<ChangelogPlatform, string> = {
-  desktop: "OpenBot",
-  mobile: "OpenBot Mobile",
+  desktop: "dani-dex",
+  mobile: "dani-dex Mobile",
 };
 
 function releaseMonths(releases: readonly Release[]): ReleaseMonth[] {
@@ -137,7 +137,7 @@ export function ChangelogPage(props: ChangelogPageProps) {
             <div class="changelog-hero-copy" data-enter="post-copy">
               <p class="changelog-eyebrow">Changelog</p>
               <h1 class="changelog-title" id="changelog-title">
-                What's new in OpenBot
+                What's new in dani-dex
               </h1>
               <p class="changelog-lede">
                 New providers, new ways to work as a team, and the fixes that make each release steadier. Every release

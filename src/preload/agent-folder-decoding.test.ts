@@ -10,8 +10,8 @@ import {
 import { describe, expect, it } from "vitest";
 
 const LIST = {
-  workspace: "/Users/sam/OpenBot/Agents/Chief",
-  shared: "/Users/sam/OpenBot/Shared",
+  workspace: "/Users/sam/dani-dex/Agents/Chief",
+  shared: "/Users/sam/dani-dex/Shared",
   folders: [
     { path: "/Users/sam/Projects/Leads", found: true },
     { path: "/Users/sam/Documents/Contracts", found: false },

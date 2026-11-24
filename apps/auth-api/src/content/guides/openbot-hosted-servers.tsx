@@ -6,33 +6,33 @@ export function OpenBotHostedServers() {
   return (
     <>
       <p>
-        Running OpenBot for a team on your own computer or VPS gives you control, but you’re also responsible for
-        maintaining that machine. An OpenBot hosted server gives your team a Linux machine to work on, without requiring
-        you to set up a VPS yourself. This guide covers the available plans, how to get started, and when self-hosting
-        might make more sense.
+        Running dani-dex for a team on your own computer or VPS gives you control, but you’re also responsible for
+        maintaining that machine. An dani-dex hosted server gives your team a Linux machine to work on, without
+        requiring you to set up a VPS yourself. This guide covers the available plans, how to get started, and when
+        self-hosting might make more sense.
       </p>
 
-      <h2>What Is an OpenBot Hosted Server?</h2>
+      <h2>What Is an dani-dex Hosted Server?</h2>
       <p>
-        An OpenBot hosted server is a Linux machine where your team’s OpenBot runs. OpenBot sets it up for you, so you
-        don’t need to prepare your own computer or VPS. Your agents’ workspaces, conversations, and files stay on the
-        server, and you can connect to your team from another device.
+        An dani-dex hosted server is a Linux machine where your team’s dani-dex runs. dani-dex sets it up for you, so
+        you don’t need to prepare your own computer or VPS. Your agents’ workspaces, conversations, and files stay on
+        the server, and you can connect to your team from another device.
       </p>
       <p>
-        A new hosted server can start on a virtual server that OpenBot rents from Leaseweb. The privacy notice names two
-        locations: Amsterdam, and near Washington, D.C. for a purchase in US dollars or Brazilian reais, with Amsterdam
-        as the fallback. When no Leaseweb server is free, the server starts in a boat sandbox, as before.
+        A new hosted server can start on a virtual server that dani-dex rents from Leaseweb. The privacy notice names
+        two locations: Amsterdam, and near Washington, D.C. for a purchase in US dollars or Brazilian reais, with
+        Amsterdam as the fallback. When no Leaseweb server is free, the server starts in a boat sandbox, as before.
       </p>
       <p>
-        The server provides a place for OpenBot to run; it doesn’t include AI model access. You connect a provider
+        The server provides a place for dani-dex to run; it doesn’t include AI model access. You connect a provider
         separately, and your agents use the models available through that provider.
       </p>
       <p>
-        Prefer a Mac as your server? That’s an option too. We can run OpenBot on a dedicated Mac mini. Get in touch, and
-        we can work out the details together.
+        Prefer a Mac as your server? That’s an option too. We can run dani-dex on a dedicated Mac mini. Get in touch,
+        and we can work out the details together.
       </p>
 
-      <h2>OpenBot Hosted Server Plans</h2>
+      <h2>dani-dex Hosted Server Plans</h2>
       <p>
         The plans differ mainly in how many team members can join, how much storage is available, and how quickly the
         server runs—not in the number of agents you can create.
@@ -66,11 +66,11 @@ export function OpenBotHostedServers() {
 
       <h2>Getting Started with a Hosted Server</h2>
       <p>
-        Once you choose a plan and complete payment, OpenBot provisions a Linux server and connects it to your app. It
+        Once you choose a plan and complete payment, dani-dex provisions a Linux server and connects it to your app. It
         then takes you straight to provider setup, so you don’t need to look for it in Server settings.
       </p>
       <p>
-        Connect an AI provider before creating your first agent. The server plan covers the machine OpenBot runs on;
+        Connect an AI provider before creating your first agent. The server plan covers the machine dani-dex runs on;
         model access comes from the provider you connect. After that, you can set up agents for your team and invite
         teammates to join.
       </p>
@@ -83,7 +83,7 @@ export function OpenBotHostedServers() {
         wake shortly before a scheduled routine so the routine runs at the right time.
       </p>
       <p>
-        Messages and webhooks wake the sandbox too. When someone mentions OpenBot or messages it in Slack, Discord or
+        Messages and webhooks wake the sandbox too. When someone mentions dani-dex or messages it in Slack, Discord or
         Telegram, the sandbox starts and answers once it is back online. A webhook routine works the same way: the first
         delivery gets a “try again later” answer and starts the sandbox, which takes a few minutes. A later try reaches
         it. Most webhook senders, such as Shopify and Stripe, try again on their own for hours.
@@ -91,16 +91,16 @@ export function OpenBotHostedServers() {
 
       <h2>Hosted Server or Self-Hosting?</h2>
       <p>
-        Many teams wonder whether to use an OpenBot hosted server or run one themselves. The main difference is who
+        Many teams wonder whether to use an dani-dex hosted server or run one themselves. The main difference is who
         provides and looks after the machine. Here’s what to consider when choosing between the two.
       </p>
       <p>
-        With a hosted server, OpenBot provides the Linux machine, so your team doesn’t need to set up or maintain its
-        own server computer. If you self-host, OpenBot runs on a machine you control. You have more control over the
+        With a hosted server, dani-dex provides the Linux machine, so your team doesn’t need to set up or maintain its
+        own server computer. If you self-host, dani-dex runs on a machine you control. You have more control over the
         hardware, but keeping it available and maintaining it are up to you.
       </p>
       <p>
-        A hosted server suits teams that want to use OpenBot without looking after a machine. Self-hosting makes more
+        A hosted server suits teams that want to use dani-dex without looking after a machine. Self-hosting makes more
         sense if you already have suitable hardware and want to manage the setup yourself. See our guide to{" "}
         <Link to="/news/$slug" params={{ slug: "run-the-team-server-yourself" }}>
           running the team server yourself
@@ -110,7 +110,7 @@ export function OpenBotHostedServers() {
 
       <h2>In Short</h2>
       <p>
-        If you want a team server without setting up and maintaining the machine yourself, an OpenBot hosted server
+        If you want a team server without setting up and maintaining the machine yourself, an dani-dex hosted server
         handles that part. If you’d rather use hardware you control and manage the setup, self-hosting is another
         option.
       </p>

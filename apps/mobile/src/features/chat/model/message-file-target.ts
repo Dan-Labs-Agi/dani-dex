@@ -20,9 +20,9 @@ export function webLink(href: string): string | null {
 function isSharedPath(path: string): boolean {
   const normalized = path.replaceAll("\\", "/");
   return (
-    normalized.startsWith("~/OpenBot/Shared/") ||
-    normalized.startsWith("OpenBot/Shared/") ||
-    normalized.includes("/OpenBot/Shared/")
+    normalized.startsWith("~/dani-dex/Shared/") ||
+    normalized.startsWith("dani-dex/Shared/") ||
+    normalized.includes("/dani-dex/Shared/")
   );
 }
 

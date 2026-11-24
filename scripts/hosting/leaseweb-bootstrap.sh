@@ -2,7 +2,7 @@
 set -euo pipefail
 export LC_ALL=C DEBIAN_FRONTEND=noninteractive
 
-INSTALL=/opt/OpenBot
+INSTALL=/opt/dani-dex
 HELPER=/usr/local/sbin/openbot-egress-firewall
 UNIT_DIRECTORY=/etc/systemd/system
 OPERATOR_KEYS=/etc/ssh/openbot-operator-keys
@@ -15,7 +15,7 @@ fail() {
 [ "$(id -u)" -eq 0 ] || fail "Run this as root."
 [ "$#" -le 1 ] || fail "usage: $0 [<operator keys in base64>]"
 [ -d /run/systemd/system ] || fail "This computer has no systemd."
-[ -r "$INSTALL/hosted/service-user" ] || fail "OpenBot is not installed. Run install-server.sh first."
+[ -r "$INSTALL/hosted/service-user" ] || fail "dani-dex is not installed. Run install-server.sh first."
 command -v nft >/dev/null || fail "This computer has no nft command."
 
 changed=0
@@ -65,14 +65,14 @@ systemctl try-reload-or-restart ssh.service
 install -d -m 0755 /etc/openbot
 write_file 0755 "$HELPER" <<'EOF'
 #!/bin/bash
-# Loads the egress rules of an OpenBot server on a Leaseweb VPS. leaseweb-bootstrap.sh installs
+# Loads the egress rules of an dani-dex server on a Leaseweb VPS. leaseweb-bootstrap.sh installs
 # this file and explains the rules.
 set -euo pipefail
 export LC_ALL=C
 STATE=/etc/openbot/egress-router
 PRIVATE4="0.0.0.0/8, 10.0.0.0/8, 100.64.0.0/10, 169.254.0.0/16, 172.16.0.0/12, 192.0.0.0/24, 192.168.0.0/16, 198.18.0.0/15, 224.0.0.0/4, 240.0.0.0/4"
 
-user=$(</opt/OpenBot/hosted/service-user)
+user=$(</opt/dani-dex/hosted/service-user)
 uid=$(id -u "$user")
 # The DHCP servers of the current leases of systemd-networkd. None before the network starts.
 routers=$(sed -n 's/^SERVER_ADDRESS=//p' /run/systemd/netif/leases/* 2>/dev/null | sort -u | paste -sd, - || true)
@@ -117,7 +117,7 @@ EOF
 changed=0
 write_file 0644 "$UNIT_DIRECTORY/openbot-egress-firewall.service" <<EOF
 [Unit]
-Description=OpenBot egress rules
+Description=dani-dex egress rules
 DefaultDependencies=no
 Wants=network-pre.target
 Before=network-pre.target shutdown.target openbot.service

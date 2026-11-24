@@ -274,7 +274,7 @@ function factSections(feedback: Feedback): Section[] {
   return [
     ["Platform", feedback.platform, true],
     ["Installation source", feedback.installSource, true],
-    ["OpenBot version", feedback.version, true],
+    ["dani-dex version", feedback.version, true],
     ["Operating system and hardware", feedback.os, true],
     ["Agent runs on", feedback.host, false],
     ["Seen in", feedback.surface, false],
@@ -330,8 +330,8 @@ function sectionsMarkdown(sections: readonly Section[], feedback: Feedback): str
 
 function feedbackFooter(feedback: Feedback) {
   return feedback.foundBy === "agent"
-    ? "Sent from the OpenBot app. The agent found this problem while it worked, and wrote this text. The user approved it before it was sent."
-    : "Sent from the OpenBot app. An agent wrote this text, and the user approved it before it was sent.";
+    ? "Sent from the dani-dex app. The agent found this problem while it worked, and wrote this text. The user approved it before it was sent."
+    : "Sent from the dani-dex app. An agent wrote this text, and the user approved it before it was sent.";
 }
 
 export function feedbackIssue(feedback: Feedback): { title: string; body: string; labels: string[] } {
@@ -351,7 +351,7 @@ export function feedbackIssue(feedback: Feedback): { title: string; body: string
 export function feedbackComment(feedback: Feedback): string {
   const sections = [["Title", feedback.title, true] as const, ...textSections(feedback), ...factSections(feedback)];
   return [
-    "Another report of this problem from the OpenBot app.",
+    "Another report of this problem from the dani-dex app.",
     ...sectionsMarkdown(sections, feedback),
     "---",
     feedbackFooter(feedback),
