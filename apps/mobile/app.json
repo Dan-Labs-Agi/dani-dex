@@ -153,7 +153,7 @@
             "enableShrinkResourcesInReleaseBuilds": false,
             "extraProguardRules": "-dontwarn org.webrtc.Dav1dDecoder$Natives",
             "gradleProperties": {
-              "org.gradle.jvmargs": "-Xmx5g -XX:MaxMetaspaceSize=1g",
+              "org.gradle.jvmargs": "-Xmx4g -XX:MaxMetaspaceSize=1g",
               "org.gradle.daemon": "false",
               "org.gradle.workers.max": "2",
               "kotlin.compiler.execution.strategy": "in-process"
