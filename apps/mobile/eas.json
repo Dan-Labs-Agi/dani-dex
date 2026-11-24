@@ -38,7 +38,8 @@
       "channel": "production",
       "environment": "production",
       "env": {
-        "EXPO_PUBLIC_APP_ENV": "production"
+        "EXPO_PUBLIC_APP_ENV": "production",
+        "NODE_OPTIONS": "--max-old-space-size=2048"
       },
       "android": {
         "buildType": "apk"
