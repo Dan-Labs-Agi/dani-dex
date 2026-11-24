@@ -302,10 +302,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "eeec730f-c8f4-42c0-a750-64df8af14940"
+        "projectId": "aae4c765-8e67-4d77-aa14-58fe4935e774"
       }
     },
-    "owner": "openbot",
     "runtimeVersion": {
       "policy": "fingerprint"
     },
