@@ -1,26 +1,36 @@
 {
   "project_info": {
-    "project_number": "1006722609038",
-    "project_id": "openbot-a3328",
-    "storage_bucket": "openbot-a3328.firebasestorage.app"
+    "project_number": "454615540313",
+    "project_id": "dani-dex",
+    "storage_bucket": "dani-dex.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1006722609038:android:e356f83f470297b6373edf",
+        "mobilesdk_app_id": "1:454615540313:android:8806bf9bf2cb3076de8748",
         "android_client_info": {
           "package_name": "dev.danlab.dex"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "454615540313-srf667aqmv5lendkuoje6mco7l5akjuk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyCyTWfak_PrBH6kst-oNmrEDKROGCF6gZw"
+          "current_key": "AIzaSyCov8fEnV2A5uNHEEj0Osx5-Da14lWjehg"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "454615540313-srf667aqmv5lendkuoje6mco7l5akjuk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
