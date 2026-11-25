@@ -492,6 +492,7 @@ const SPEECH_SPEED_CYCLE: readonly SpeechSpeed[] = [
 ];
 
 export function nextSpeechSpeed(speed: number): SpeechSpeed {
+  // biome-ignore lint/complexity/useIndexOf: indexOf takes a SpeechSpeed, but the input is a plain number.
   const index = SPEECH_SPEED_CYCLE.findIndex((candidate) => candidate === speed);
   return SPEECH_SPEED_CYCLE[(index + 1) % SPEECH_SPEED_CYCLE.length] ?? 1;
 }
