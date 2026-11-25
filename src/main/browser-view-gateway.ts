@@ -176,7 +176,6 @@ export class BrowserViewGateway {
     (operation) => this.#provide(operation),
   ).bind(this);
 
-  // biome-ignore lint/nursery/noMisleadingReturnType: public count of open view sockets
   activeViewCount(): number {
     let count = 0;
     for (const session of this.#sessions.values()) {
