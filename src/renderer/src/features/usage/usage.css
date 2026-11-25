@@ -137,6 +137,10 @@
   flex: 1;
 }
 
+.app-frame.app-frame-page-open .app-frame-panes * {
+  visibility: hidden;
+}
+
 .app-window > .app-loading {
   position: fixed;
 }

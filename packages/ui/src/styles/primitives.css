@@ -520,13 +520,6 @@
   outline-offset: 2px;
 }
 
-.ui-checkbox-visual svg {
-  width: var(--openbot-icon-xs);
-  height: var(--openbot-icon-xs);
-
-  stroke-width: 2.5;
-}
-
 :where(.ui-input, .ui-textarea, .ui-native-select) {
   width: 100%;
   min-width: 0;
@@ -1268,6 +1261,13 @@ html.ui-textarea-resizing {
   width: var(--openbot-icon-lg);
   height: var(--openbot-icon-lg);
   stroke-width: var(--openbot-icon-stroke-lg);
+}
+
+.ui-checkbox-visual svg {
+  width: var(--openbot-icon-xs);
+  height: var(--openbot-icon-xs);
+
+  stroke-width: 2.5;
 }
 
 .ui-item-content {
