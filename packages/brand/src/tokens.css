@@ -1,6 +1,15 @@
 :root {
   --openbot-provider-current: currentcolor;
 
+  --openbot-promo-top: #078bd5;
+  --openbot-promo-bottom: #0670ae;
+  --openbot-promo-accent: #d7ff67;
+  --openbot-promo-accent-hover: #c6f04f;
+  --openbot-promo-on-accent: #101416;
+  --openbot-promo-on-card: #fff;
+  --openbot-promo-dismiss: rgba(255, 255, 255, 0.7);
+  --openbot-promo-dismiss-hover: rgba(255, 255, 255, 0.16);
+
   --openbot-bg-native-canvas: #141414;
   --openbot-bg-native-sidebar: #141414;
   --openbot-bg-sheet: #141414;
