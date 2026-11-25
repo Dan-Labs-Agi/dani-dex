@@ -145,13 +145,13 @@ const CODE_LOGIN_POLL_MS = 3000;
 
 const WEB_EXTERNAL_DESTINATIONS: Partial<Record<ExternalDestination, string>> = {
   "opencode-auth": "https://opencode.ai/auth",
-  feedback: "https://x.com/intent/post?text=Feedback%20for%20OpenBot%20%40norbertbodziony%3A%20",
+  feedback: "https://github.com/Dan-Labs-Agi/dani-dex/issues/new",
   "report-problem": bugReportFormUrl({ platform: "Web client" }),
-  message: "https://x.com/norbertbodziony",
+  message: "https://dani.danlab.dev",
   changelog: "https://dani.danlab.dev/changelog",
   guides: "https://dani.danlab.dev/guides",
-  discord: "https://discord.openbot.run",
-  x: "https://x.com/OpenBot_",
+  discord: "https://dani.danlab.dev",
+  x: "https://dani.danlab.dev",
 };
 
 export function openWebDestination(destination: ExternalDestination): Promise<void> {
