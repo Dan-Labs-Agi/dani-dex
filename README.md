@@ -7,14 +7,17 @@
 <br>
 <br>
 
-<a href="https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-arm64.dmg"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-mac-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-mac-light.png"><img src="docs/assets/readme/btn-mac-light.png" width="226" alt="Download for macOS (Apple silicon)"></picture></a>&nbsp;
-<a href="https://dl.dani.danlab.dev/desktop/Dani-Dex-win-x64.exe"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-win-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-win-light.png"><img src="docs/assets/readme/btn-win-light.png" width="226" alt="Download for Windows (installer)"></picture></a>&nbsp;
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-lin-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-lin-light.png"><img src="docs/assets/readme/btn-lin-light.png" width="226" alt="Linux, coming soon"></picture>
+<a href="https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-x64.dmg"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-mac-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-mac-light.png"><img src="docs/assets/readme/btn-mac-light.png" width="210" alt="Download for Mac (Intel)"></picture></a>&nbsp;
+<a href="https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-arm64.dmg"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-macs-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-macs-light.png"><img src="docs/assets/readme/btn-macs-light.png" width="210" alt="Download for Mac (Apple silicon, M1 and newer)"></picture></a>&nbsp;
+<a href="https://dl.dani.danlab.dev/desktop/Dani-Dex-win-x64.exe"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-win-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-win-light.png"><img src="docs/assets/readme/btn-win-light.png" width="210" alt="Download for Windows (installer)"></picture></a>&nbsp;
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-lin-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-lin-light.png"><img src="docs/assets/readme/btn-lin-light.png" width="210" alt="Linux, coming soon"></picture>
 
-<a href="https://dl.dani.danlab.dev/android/dani-dex.apk"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-and-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-and-light.png"><img src="docs/assets/readme/btn-and-light.png" width="226" alt="Download for Android (APK)"></picture></a>&nbsp;
-<picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-ios-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-ios-light.png"><img src="docs/assets/readme/btn-ios-light.png" width="226" alt="iOS, coming soon"></picture>
+<a href="https://dl.dani.danlab.dev/android/dani-dex.apk"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-and-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-and-light.png"><img src="docs/assets/readme/btn-and-light.png" width="210" alt="Download for Android (APK)"></picture></a>&nbsp;
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-ios-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-ios-light.png"><img src="docs/assets/readme/btn-ios-light.png" width="210" alt="iOS, coming soon"></picture>
 
-<sub>Also: [Mac (Intel)](https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-x64.dmg) · [Checksums and versions](https://dl.dani.danlab.dev/latest.json) · [All releases](https://github.com/Dan-Labs-Agi/dani-dex/releases)</sub>
+<sub>Not sure which Mac you have? Apple menu > About This Mac: "Chip Apple M..." means [Apple silicon](https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-arm64.dmg), "Intel" means [Intel](https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-x64.dmg).</sub>
+
+<sub>Also: [Checksums and versions](https://dl.dani.danlab.dev/latest.json) · [All releases](https://github.com/Dan-Labs-Agi/dani-dex/releases)</sub>
 
 <br>
 
@@ -98,7 +101,7 @@ See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the layers, and the [development
 
 **Download an installer** with the buttons at the top. Downloads come from `dl.dani.danlab.dev`. The apps are not code-signed yet, so the first launch shows a warning.
 
-- **Mac:** open the file and drag Dani Dex to Applications. The first time, Control-click Dani Dex in Applications and choose **Open**. If macOS still blocks it, go to **System Settings > Privacy & Security** and click **Open Anyway**. Needs macOS 13 or newer.
+- **Mac:** pick the Intel or Apple silicon file (see the hint above). Open the file and drag Dani Dex to Applications. The first time, Control-click Dani Dex in Applications and choose **Open**. If macOS still blocks it, go to **System Settings > Privacy & Security** and click **Open Anyway**. Needs macOS 13 or newer.
 - **Windows:** run the installer. If a blue SmartScreen window appears, click **More info**, then **Run anyway**.
 - **Android:** download the APK and open it. Allow installs from your browser or file manager when Android asks. If Play Protect warns, choose **Install anyway**.
 - **Linux and iOS:** coming soon.
