@@ -428,11 +428,6 @@
   padding: 0;
 }
 
-.wfn-stage .wfn-toolbar .wfn-tool-action svg {
-  width: var(--openbot-icon-md);
-  height: var(--openbot-icon-md);
-}
-
 .wfn-stage .wfn-toolbar .wfn-tool-action[data-tone="danger"]:is(:hover, :focus-visible) {
   background: color-mix(in srgb, var(--openbot-danger) 16%, transparent);
   color: var(--openbot-danger-text);
@@ -579,10 +574,6 @@
   translate: 0 0;
 }
 
-.wfn-canvas[data-composer] .wfn-node[data-selected] .wfn-overlay {
-  display: none;
-}
-
 .wfn-stage .wfn-media-overlay :is(.wfn-chip, .wfn-elapsed) {
   height: calc(var(--openbot-control-xs) - var(--openbot-space-1));
   cursor: default;
@@ -678,15 +669,19 @@
   --wfn-overlay-opacity: 0;
 }
 
-.wfn-node:has(.media-generation-player[data-playing]) .wfn-clip-length {
-  opacity: 0;
-  pointer-events: none;
+.wfn-canvas[data-composer] .wfn-node[data-selected] .wfn-overlay {
+  display: none;
 }
 
 .wfn-clip-length {
   position: absolute;
   top: var(--openbot-space-2);
   right: var(--openbot-space-2);
+  pointer-events: none;
+}
+
+.wfn-node:has(.media-generation-player[data-playing]) .wfn-clip-length {
+  opacity: 0;
   pointer-events: none;
 }
 
@@ -746,10 +741,6 @@
   color: inherit;
   font: inherit;
   cursor: pointer;
-}
-
-.wfn-node[data-kind="asset"] .wfn-card {
-  align-content: stretch;
 }
 
 .wfn-node[data-height] .wfn-card[data-media] {
@@ -1060,11 +1051,6 @@ fieldset.wfn-picker-group {
   font-size: var(--openbot-icon-md);
 }
 
-.wfn-picker-tile > .wfn-swatch {
-  width: var(--openbot-icon-md);
-  height: var(--openbot-icon-md);
-}
-
 .wfn-picker-tile:has(> .agent-avatar),
 .wfn-picker-row[data-checked] .wfn-picker-tile:has(> .agent-avatar) {
   overflow: visible;
@@ -1077,10 +1063,6 @@ fieldset.wfn-picker-group {
 
   width: var(--openbot-control-sm);
   height: var(--openbot-control-sm);
-}
-
-.wfn-picker-tile > .wfn-font-sample {
-  font-size: var(--openbot-text-lg);
 }
 
 .wfn-picker-tile > .wfn-font-sample[data-step="1"] {
@@ -2457,15 +2439,15 @@ fieldset.wfn-picker-group {
   rotate: 6deg;
 }
 
-.wfn-menu :is([role="menuitem"], [role="menuitemcheckbox"]) .wfn-keys {
-  margin-inline-start: auto;
-  padding-inline-start: var(--openbot-space-4);
-}
-
 .wfn-keys {
   display: inline-flex;
   gap: 2px;
   align-items: center;
+}
+
+.wfn-menu :is([role="menuitem"], [role="menuitemcheckbox"]) .wfn-keys {
+  margin-inline-start: auto;
+  padding-inline-start: var(--openbot-space-4);
 }
 
 .wfn-keys .ui-kbd {
@@ -2802,8 +2784,8 @@ fieldset.wfn-picker-group {
   transition-timing-function: var(--openbot-ease-out);
 }
 
-.wfn-node:not([data-selected]) .wfn-card-frame:hover .wfn-card {
-  box-shadow: 0 0 0 1px var(--wfn-ring-strong);
+.wfn-node[data-kind="asset"] .wfn-card {
+  align-content: stretch;
 }
 
 .wfn-node[data-selected] .wfn-card {
@@ -3199,10 +3181,6 @@ fieldset.wfn-picker-group {
   margin: var(--openbot-space-1);
 }
 
-.wfn-settings > .wfn-alert {
-  margin: var(--openbot-space-1);
-}
-
 .wfn-settings-block {
   padding: var(--openbot-space-1) var(--openbot-space-2);
 }
@@ -3558,6 +3536,10 @@ fieldset.wfn-picker-group {
   line-height: 1;
 }
 
+.wfn-picker-tile > .wfn-font-sample {
+  font-size: var(--openbot-text-lg);
+}
+
 .wfn-font-sample[data-font="mono"] {
   font-family: var(--openbot-font-mono);
 }
@@ -3571,6 +3553,11 @@ fieldset.wfn-picker-group {
   box-shadow: inset 0 0 0 1px var(--wfn-ring-strong);
 }
 
+.wfn-picker-tile > .wfn-swatch {
+  width: var(--openbot-icon-md);
+  height: var(--openbot-icon-md);
+}
+
 .wfn-alert {
   display: flex;
   gap: var(--openbot-space-2);
@@ -3582,6 +3569,10 @@ fieldset.wfn-picker-group {
   font-size: var(--openbot-text-sm);
   line-height: var(--openbot-leading-sm);
   transition: opacity var(--openbot-duration-hover) var(--openbot-ease-out);
+}
+
+.wfn-settings > .wfn-alert {
+  margin: var(--openbot-space-1);
 }
 
 .wfn-alert > svg {
@@ -3680,10 +3671,6 @@ fieldset.wfn-picker-group {
   height: var(--wfn-answer-glyph);
 }
 
-.wfn-answer-row .wfn-answer-type .ui-select-trigger-icon {
-  display: none;
-}
-
 .wfn-answer-row .wfn-answer-name,
 .wfn-answer-row .wfn-answer-values {
   height: 28px;
@@ -3743,6 +3730,11 @@ fieldset.wfn-picker-group {
   justify-self: center;
   width: var(--wfn-answer-glyph);
   height: var(--wfn-answer-glyph);
+}
+
+.wfn-stage .wfn-toolbar .wfn-tool-action svg {
+  width: var(--openbot-icon-md);
+  height: var(--openbot-icon-md);
 }
 
 .wfn-answer-fields .wfn-answer-add > span {
@@ -3849,8 +3841,8 @@ fieldset.wfn-picker-group {
   box-shadow: none;
 }
 
-.wfn-stage .wfn-node[data-kind="shape"]:not([data-selected]) .wfn-card-frame:hover .wfn-card {
-  box-shadow: none;
+.wfn-node:not([data-selected]) .wfn-card-frame:hover .wfn-card {
+  box-shadow: 0 0 0 1px var(--wfn-ring-strong);
 }
 
 .wfn-shape-surface {
@@ -4004,6 +3996,10 @@ svg.wfn-shape-surface {
   outline-color: var(--wfn-peer);
 }
 
+.wfn-stage .wfn-node[data-kind="shape"]:not([data-selected]) .wfn-card-frame:hover .wfn-card {
+  box-shadow: none;
+}
+
 .wfn-slot[data-peer] .wfn-text:not([data-selected]) .wfn-text-input {
   outline: var(--wfn-select-line) solid var(--wfn-peer);
   outline-offset: var(--wfn-select-gap);
@@ -4040,11 +4036,6 @@ svg.wfn-shape-surface {
   overflow: hidden;
   border-radius: var(--openbot-radius-pill);
   background: color-mix(in srgb, var(--wfn-peer, var(--openbot-text-primary)) 16%, transparent);
-}
-
-.wfn-stage .wfn-hud-presence .wfn-presence-person .person-avatar-generated > svg {
-  width: 100%;
-  height: 100%;
 }
 
 .wfn-presence-person .person-avatar > i {
@@ -4235,6 +4226,11 @@ svg.wfn-shape-surface {
   color: var(--openbot-text-secondary);
 }
 
+.wfn-stage .wfn-hud-presence .wfn-presence-person .person-avatar-generated > svg {
+  width: 100%;
+  height: 100%;
+}
+
 .wfn-stage .wfn-composer-bar :is(.wfn-composer-chip, .wfn-media-pill):focus-visible {
   outline: none;
   box-shadow: var(--openbot-focus-ring);
@@ -4402,6 +4398,10 @@ svg.wfn-shape-surface {
 .wfn-composer-pick .ui-select-trigger-icon {
   grid-row: 1 / span 2;
   grid-column: 2;
+}
+
+.wfn-answer-row .wfn-answer-type .ui-select-trigger-icon {
+  display: none;
 }
 
 .wfn-composer-list.ui-select-content {
