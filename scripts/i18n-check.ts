@@ -1,4 +1,4 @@
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve, sep } from "node:path";
 import { isDynamicRecord } from "@openbot/contracts/runtime-values";
 import type { Message, PluralMessage } from "@openbot/i18n";
@@ -293,7 +293,8 @@ for (const [name, messages] of english) {
   }
 }
 
-const code = CODE_ROOTS.flatMap((root) => files(resolve(ROOT, root), CODE_EXTENSIONS))
+const code = CODE_ROOTS.filter((root) => existsSync(resolve(ROOT, root)))
+  .flatMap((root) => files(resolve(ROOT, root), CODE_EXTENSIONS))
   .filter((path) => !path.startsWith(MESSAGES))
   .map((path) => readFileSync(path, "utf8"))
   .join("\n");
