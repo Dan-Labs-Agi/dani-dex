@@ -14,6 +14,9 @@ const config: KnipConfig = {
     "packages/contracts/src/team-protocol/provider-aware-codec.ts": ["exports", "types"],
     "src/backend/migrations/[0-9]*.ts": ["exports"],
     "apps/auth-api/src/lib/plugin-catalog.generated.ts": ["exports", "types"],
+    // Client functions for the account service land before their callers.
+    "src/main/dani-account.ts": ["exports"],
+    "apps/dani-account/src/remote.ts": ["exports"],
     "package.json": ["catalog"],
   },
   ignoreBinaries: [
