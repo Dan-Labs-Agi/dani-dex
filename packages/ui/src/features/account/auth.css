@@ -1646,6 +1646,6 @@ body,
 .account-login-or {
   margin: 0;
   text-align: center;
-  font-size: 12px;
+  font-size: var(--openbot-text-xs);
   opacity: 0.6;
 }
