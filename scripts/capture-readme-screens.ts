@@ -105,22 +105,17 @@ if (process.env.FRESH === "1") {
   process.exit(0);
 }
 
-// Phase B: attach to the running dev stack.
-const debugPort = process.env.OPENBOT_DEV_REMOTE_DEBUGGING_PORT ?? "9333";
-const browser = await chromium.connectOverCDP(`http://127.0.0.1:${debugPort}`);
-const contexts = browser.contexts();
-console.log("contexts:", contexts.length);
-let page: Page | undefined;
+// Phase B: launch the app directly against the seeded dev API (bun run dev:api).
+// The dev-services app service exits on the free runner, so the script drives its own
+// electron instance, the same way the sign-in and first-run phases do. The seeded
+// profile is keyed by the worktree path, so this launch finds the seeded state.
+const { app, page } = await launchApp({
+  OPENBOT_AUTH_API_URL: process.env.OPENBOT_AUTH_API_URL ?? "http://127.0.0.1:3100",
+});
 let island: Page | undefined;
-for (const ctx of contexts) {
-  for (const p of ctx.pages()) {
-    console.log("page:", p.url().slice(0, 120));
-    if (p.url().includes("helper.html")) island = p;
-    else if (!p.url().startsWith("devtools://")) page = p;
-  }
+for (const w of app.windows()) {
+  if (w.url().includes("helper.html")) island = w;
 }
-if (!page) throw new Error("main page not found over CDP");
-await page.setViewportSize({ width: WIDTH, height: HEIGHT });
 
 // Wait for the seeded, signed-in home screen.
 let ready = false;
@@ -222,5 +217,5 @@ if (island) {
   console.log("MISS dynamic island window");
 }
 
-await browser.close();
+await app.close();
 console.log("DONE");

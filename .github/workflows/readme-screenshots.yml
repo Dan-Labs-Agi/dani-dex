@@ -39,24 +39,22 @@ jobs:
       - name: Capture the clean sign-in screen
         run: xvfb-run -a --server-args="-screen 0 1600x900x24" env SIGNIN=1 bun scripts/capture-readme-screens.ts
 
-      - name: Start the seeded dev stack
-        env:
-          OPENBOT_DEV_REMOTE_DEBUGGING_PORT: "9333"
+      - name: Seed the dev profile and start the dev API
         run: |
           set -euo pipefail
-          nohup xvfb-run -a --server-args="-screen 0 1600x900x24" bun run dev > /tmp/dev-stack.log 2>&1 &
-          echo "dev stack starting"
+          bun run dev:seed
+          nohup bun run dev:api > /tmp/dev-stack.log 2>&1 &
+          echo "dev api starting"
 
       - name: Capture every seeded screen
         run: |
           set -euo pipefail
-          # The seed runs before the app launches and can take several minutes.
-          for i in $(seq 1 240); do
-            if curl -sf http://127.0.0.1:9333/json/list 2>/dev/null | grep -q "index.html\|localhost"; then break; fi
+          # Wait until the local dev API answers; migrations and seed take a minute.
+          for i in $(seq 1 100); do
+            if curl -s -o /dev/null --max-time 2 http://127.0.0.1:3100/; then break; fi
             sleep 3
           done
-          curl -s http://127.0.0.1:9333/json/list | head -c 2000 || true
-          bun scripts/capture-readme-screens.ts
+          xvfb-run -a --server-args="-screen 0 1600x900x24" bun scripts/capture-readme-screens.ts
 
       - name: Capture first-run setup on a fresh profile
         run: xvfb-run -a --server-args="-screen 0 1600x901x24" env FRESH=1 bun scripts/capture-readme-screens.ts
