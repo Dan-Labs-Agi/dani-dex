@@ -2,7 +2,7 @@ import { isOpenBotTeamApiHostname } from "./validation";
 
 export const OPENBOT_INVITE_ORIGIN = "https://dani.danlab.dev";
 export const OPENBOT_INVITE_PATH = "/join";
-export const OPENBOT_CONTROL_PLANE_ORIGIN = "https://api.openbot.run";
+export const OPENBOT_CONTROL_PLANE_ORIGIN = "https://auth.dani.danlab.dev";
 
 export const PERMANENT_INVITE_EXPIRES_AT_MS = 8_640_000_000_000_000;
 

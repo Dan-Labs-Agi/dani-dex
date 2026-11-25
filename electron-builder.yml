@@ -4,6 +4,7 @@ copyright: Copyright © 2026 Dan Lab
 protocols:
   - name: dani-dex invitations
     schemes:
+      - dani-dex
       - openbot
 asar: true
 artifactName: ${productName}-${version}-${arch}.${ext}
