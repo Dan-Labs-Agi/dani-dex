@@ -3,7 +3,7 @@ import type { messages as source } from "../../en/error/backend";
 
 export const messages = {
   "error.backend.eventsUnavailable": "אירועים אינם זמינים במארח הזה.",
-  "error.backend.databaseIntegrity": "מסד הנתונים של dani-dex נכשל בבדיקת השלמות.",
+  "error.backend.databaseIntegrity": "מסד הנתונים של Dani Dex נכשל בבדיקת השלמות.",
   "error.backend.webhookRouteLimit": "במארח אחד יכולות להיות לכל היותר {limit} שגרות webhook.",
   "error.backend.webhookSettingsInvalid": "יש לבדוק את הגדרות ה-webhook ולנסות שוב.",
   "error.backend.webhookSenderSecretInvalid":
@@ -16,8 +16,8 @@ export const messages = {
   "error.backend.browserViewLimit": "יותר מדי תצוגות דפדפן פתוחות במארח הזה.",
   "error.backend.browserViewEnded": "התצוגה החיה של הדף הזה הסתיימה.",
   "error.backend.browserViewFailed": "התצוגה החיה של הדף הזה נכשלה.",
-  "error.backend.windowTemporarilyUnavailable": "חלון dani-dex אינו זמין זמנית.",
-  "error.backend.windowUnavailable": "חלון dani-dex אינו זמין.",
+  "error.backend.windowTemporarilyUnavailable": "חלון Dani Dex אינו זמין זמנית.",
+  "error.backend.windowUnavailable": "חלון Dani Dex אינו זמין.",
   "error.backend.sunshineApiHttp": "ה-API של Sunshine נכשל עם HTTP {status}.",
   "error.backend.sunshinePortsUnavailable": "לא ניתן היה לשמור קבוצת יציאות פנויה של Sunshine עבור Remote Desktop.",
   "error.backend.moonlightPortsUnavailable":
@@ -33,7 +33,7 @@ export const messages = {
   "error.backend.moonlightRejectedPairing": "Moonlight דחה את הזיווג של Sunshine.",
   "error.backend.moonlightNoPin": "Moonlight לא החזיר PIN לזיווג.",
   "error.backend.moonlightPairingIncomplete": "הזיווג של Moonlight לא הושלם.",
-  "error.backend.moonlightWebNotEmbedded": "Moonlight Web אינו גרסה משובצת של dani-dex.",
+  "error.backend.moonlightWebNotEmbedded": "Moonlight Web אינו גרסה משובצת של Dani Dex.",
   "error.backend.moonlightEmptyResponse": "Moonlight החזיר תשובה ריקה.",
   "error.backend.remoteDesktopTimeout": "פג הזמן של בקשת שולחן העבודה המרוחק.",
   "error.backend.moonlightApiHttp": "ה-API של Moonlight נכשל עם HTTP {status}.",
@@ -50,10 +50,10 @@ export const messages = {
   "error.backend.browserTeachUnsupported": "המארח המרוחק הזה אינו תומך בהקלטת משימה.",
   "error.backend.browserUserControlUnsupported": "המארח המרוחק הזה אינו תומך בשליטה בלשונית דפדפן.",
   "error.backend.browserSignInUnsupported": "המארח המרוחק הזה אינו יכול לקבל התחברות מהמחשב הזה.",
-  "error.backend.browserSignInOpenFailed": "dani-dex לא הצליח לפתוח את חלון ההתחברות.",
+  "error.backend.browserSignInOpenFailed": "Dani Dex לא הצליח לפתוח את חלון ההתחברות.",
   "error.backend.browserSignInLoadFailed":
-    "dani-dex לא הצליח לטעון את הדף בחלון ההתחברות. בדקו את החיבור לאינטרנט, ואז פתחו שוב את חלון ההתחברות.",
-  "error.backend.browserSignInReadFailed": "dani-dex לא הצליח לקרוא את ההתחברות מהחלון.",
+    "Dani Dex לא הצליח לטעון את הדף בחלון ההתחברות. בדקו את החיבור לאינטרנט, ואז פתחו שוב את חלון ההתחברות.",
+  "error.backend.browserSignInReadFailed": "Dani Dex לא הצליח לקרוא את ההתחברות מהחלון.",
   "error.backend.browserStopUnsupported": "המארח המרוחק הזה אינו יכול לעצור טעינת דף.",
   "error.backend.sharedDataLocalOnly": "נתונים משותפים מנוהלים במחשב שמריץ את הסוכנים האלה.",
   "error.backend.browserUrlProtocol": "מותר להשתמש רק בכתובות דפדפן של HTTP(S).",
@@ -61,17 +61,17 @@ export const messages = {
   "error.backend.sunshineNotReadyReason": "Sunshine לא הפך למוכן. {reason}",
   "error.backend.channelLeadModelUnavailable": "המודל של מוביל הערוץ אינו זמין.",
   "error.backend.contextCompactionIneffective":
-    "הדחיסה אינה מקטינה את הצ'אט הזה: אחרי שתי דחיסות הוא עדיין תופס {percent}% מחלון ההקשר של המודל, ולכן dani-dex מפסיק לדחוס אותו. כלים והנחיות תופסים את רוב החלון. יש לכבות את שרתי ה-MCP או את השליטה במחשב שהסוכן הזה לא צריך, או לבחור מודל עם חלון גדול יותר. אחר כך יש להתחיל צ'אט חדש.",
+    "הדחיסה אינה מקטינה את הצ'אט הזה: אחרי שתי דחיסות הוא עדיין תופס {percent}% מחלון ההקשר של המודל, ולכן Dani Dex מפסיק לדחוס אותו. כלים והנחיות תופסים את רוב החלון. יש לכבות את שרתי ה-MCP או את השליטה במחשב שהסוכן הזה לא צריך, או לבחור מודל עם חלון גדול יותר. אחר כך יש להתחיל צ'אט חדש.",
   "error.backend.contextCompactionStopped":
-    "שתי דחיסות של הצ'אט הזה נכשלו ברצף, ולכן dani-dex מפסיק לדחוס אותו אוטומטית. כל ניסיון שולח את כל הצ'אט למודל וצורך ממגבלת התוכנית שלך. יש לבחור Compact now כדי לנסות שוב, או להתחיל צ'אט חדש.",
+    "שתי דחיסות של הצ'אט הזה נכשלו ברצף, ולכן Dani Dex מפסיק לדחוס אותו אוטומטית. כל ניסיון שולח את כל הצ'אט למודל וצורך ממגבלת התוכנית שלך. יש לבחור Compact now כדי לנסות שוב, או להתחיל צ'אט חדש.",
   "error.backend.providerModelAtCapacity":
     "המודל בעומס מלא. הספק ינסה שוב בעוד כמה דקות. כדי להמשיך עכשיו, עצור את התור ובחר מודל אחר.",
   "error.backend.providerRetrying":
     "הספק נכשל בבקשה הזו {attempts} פעמים ומנסה שוב. אם הסוכן אינו ממשיך, יש לעצור את התור.",
   "error.backend.providerRetryingLargeContext":
-    "הספק נכשל בבקשה הזו {attempts} פעמים ומנסה שוב. הצ'אט הזה תופס {percent}% מחלון ההקשר של המודל. אם הסוכן אינו ממשיך, יש לעצור את התור: אז dani-dex ידחוס את הצ'אט לפני ההודעה הבאה.",
+    "הספק נכשל בבקשה הזו {attempts} פעמים ומנסה שוב. הצ'אט הזה תופס {percent}% מחלון ההקשר של המודל. אם הסוכן אינו ממשיך, יש לעצור את התור: אז Dani Dex ידחוס את הצ'אט לפני ההודעה הבאה.",
   "error.backend.sharedDataUnavailable": "הנתונים המשותפים אינם זמינים.",
-  "error.backend.shuttingDown": "dani-dex נסגר.",
+  "error.backend.shuttingDown": "Dani Dex נסגר.",
   "error.backend.channelUnconfirmedStart": "לערוץ יש התחלת הקצאה שלא אושרה. יש לבדוק את תוצאתה לפני המחיקה.",
   "error.backend.channelNotFound": "הערוץ לא נמצא.",
   "error.backend.channelMemberUnavailable": "חבר בערוץ אינו זמין.",
@@ -122,7 +122,7 @@ export const messages = {
     "ההרצה נעצרה עם שגיאה, אך לא התקבלה סיבה. פתחו את ההרצה כדי לראות מה הסוכן עשה.",
   "error.backend.turnNotStarted": "הספק לא התחיל את התור הזה.",
   "error.backend.turnStartUnconfirmed":
-    "{provider} לא אישר בזמן שהוא התחיל את ההודעה הזו. dani-dex לא שולח אותה שוב, כדי שהעבודה לא תרוץ פעמיים. dani-dex ממתין עד 5 דקות שהסוכן יתחיל.",
+    "{provider} לא אישר בזמן שהוא התחיל את ההודעה הזו. Dani Dex לא שולח אותה שוב, כדי שהעבודה לא תרוץ פעמיים. Dani Dex ממתין עד 5 דקות שהסוכן יתחיל.",
   "error.backend.turnStartAbandoned": "הסוכן לא התחיל את ההודעה הזו תוך 5 דקות. שלחו את ההודעה שוב.",
   "error.backend.routineResultConnectionOff": "חיבור ההודעות הזה כבוי או הוסר. יש לבחור מקום אחר.",
   "error.backend.routineResultNoDelivery": "להרצה הזו אין תשובה לשלוח שוב.",
@@ -159,7 +159,7 @@ export const messages = {
   "error.backend.queueOrderStale": "סדר התור אינו מעודכן. יש לרענן את התור ולנסות שוב.",
   "error.backend.fileGone": "הקובץ אינו קיים או שכבר נמחק.",
   "error.backend.managedAttachmentChanged": "הקובץ המצורף המנוהל חסר או השתנה: {name}",
-  "error.backend.mailboxStateCorrupt": "מצב תיבת הדואר פגום או שייך לגרסה חדשה יותר של dani-dex; הוא לא יידרס.",
+  "error.backend.mailboxStateCorrupt": "מצב תיבת הדואר פגום או שייך לגרסה חדשה יותר של Dani Dex; הוא לא יידרס.",
   "error.backend.recipientDeleting": "הנמען נמחק. יש לנסות שוב אחרי שהמחיקה תסתיים.",
   "error.backend.recipientHidden": "הסוכן הזה מוסתר. יש לשחזר אותו כדי לשלוח הודעות.",
   "error.backend.agentIdUnknown": "לאף סוכן אין את המזהה {id}. יש לקבל את המזהים מ-openbot.list_agents ולנסות שוב.",
@@ -176,7 +176,7 @@ export const messages = {
   "error.backend.videoGenerationNoVideo": "יצירת הסרטון לא החזירה סרטון.",
   "error.backend.videoGenerationInterrupted": "יצירת הסרטון הופסקה.",
   "error.backend.attachmentNotRegularFile": "אפשר לצרף רק קבצים רגילים: {name}",
-  "error.backend.attachmentCopyFailed": "dani-dex לא הצליח להעתיק את {name}.",
+  "error.backend.attachmentCopyFailed": "Dani Dex לא הצליח להעתיק את {name}.",
   "error.backend.routineNameRequired": "נדרש שם לשגרה.",
   "error.backend.routineNameTooLong": "שם השגרה ארוך מדי.",
   "error.backend.routineInstructionRequired": "נדרשת הוראה לשגרה.",
@@ -197,14 +197,14 @@ export const messages = {
   "error.backend.routineDeletionBusy": "מחיקה אחרת של שגרה כבר מתבצעת עבור הסוכן הזה.",
   "error.backend.routineWaitForAgent": "יש להמתין לסיום פעולת הסוכן לפני הרצת שגרה.",
   "error.backend.routineRunStarting": "הרצת השגרה הזו עדיין מתחילה. יש לנסות שוב אחרי שהתור שלה יתחיל.",
-  "error.backend.routineRunNoSession": "dani-dex אינו יכול להפסיק את הרצת השגרה הפעילה כי סשן הספק שלה אינו זמין.",
+  "error.backend.routineRunNoSession": "Dani Dex אינו יכול להפסיק את הרצת השגרה הפעילה כי סשן הספק שלה אינו זמין.",
   "error.backend.interruptSelf": "סוכן אינו יכול להפסיק את עצמו.",
   "error.backend.interruptOtherWork":
     "הסוכן הזה עובד על משימה שההודעה שלך לא התחילה. רק המשתמש או שולח המשימה יכולים לעצור אותה.",
   "error.backend.interruptSharedWork":
     "התור של הסוכן הזה עובד על ההודעה שלך וגם על הודעה מהמשתמש או מסוכן אחר. רק המשתמש יכול לעצור אותו, באמצעות עצירת הסוכן בצ'אט של הסוכן הזה.",
   "error.backend.interruptStarting": "הסוכן הזה עדיין מתחיל תור. יש לנסות שוב אחרי שהתור יתחיל.",
-  "error.backend.interruptNoSession": "dani-dex אינו יכול להפסיק את הסוכן הזה כי סשן הספק שלו אינו זמין.",
+  "error.backend.interruptNoSession": "Dani Dex אינו יכול להפסיק את הסוכן הזה כי סשן הספק שלו אינו זמין.",
   "error.backend.memoryTextRequired": "נדרש טקסט לזיכרון.",
   "error.backend.memoryTextTooLong": "טקסט הזיכרון ארוך מדי.",
   "error.backend.mcpServerGone": "שרת ה-MCP הזה כבר אינו קיים.",
@@ -233,9 +233,9 @@ export const messages = {
   "error.backend.messagePinNotFound": "ההודעה הזו אינה בצ׳אט.",
   "error.backend.messagePinLimit": "בצ׳אט הזה יש 50 הודעות מוצמדות. בטלו הצמדה של אחת לפני הצמדת הודעה נוספת.",
   "error.backend.routineFlowHandoffFailed": "השגרה לא הצליחה להעביר את העבודה לסוכן הזה.",
-  "error.backend.mcpServerLimit": "dani-dex שומר עד {limit} שרתי MCP.",
+  "error.backend.mcpServerLimit": "Dani Dex שומר עד {limit} שרתי MCP.",
   "error.backend.mcpServerNameTaken": "כבר קיים שרת MCP בשם {name}.",
-  "error.backend.mcpServerInvalid": "dani-dex אינו יכול לשמור את תצורת שרת ה-MCP הזו.",
+  "error.backend.mcpServerInvalid": "Dani Dex אינו יכול לשמור את תצורת שרת ה-MCP הזו.",
   "error.backend.mcpHeaderNameInvalid":
     "שמות כותרות לא יכולים להכיל רווחים או סמלים כמו : ( ) /. השתמשו בשם כמו Authorization, והזינו את המפתח או האסימון בשדה ערך.",
   "error.backend.mcpServerNoAnswer": "השרת לא ענה תוך {seconds} שניות.",
@@ -245,16 +245,16 @@ export const messages = {
   "error.backend.mcpSignInAccountRefused":
     "השרת דחה את החשבון שאיתו התחברת. יש לוודא שלחשבון הזה יש גישה לשירות. כדי להשתמש בחשבון אחר, יש להתנתק ואז להתחבר שוב.",
   "error.backend.mcpSignInClientRefused":
-    "שרת ההתחברות לא קיבל את dani-dex כשהתחברות הושלמה. יש להתחבר שוב: dani-dex ירשום את עצמו שוב בשרת.",
+    "שרת ההתחברות לא קיבל את Dani Dex כשהתחברות הושלמה. יש להתחבר שוב: Dani Dex ירשום את עצמו שוב בשרת.",
   "error.backend.mcpSignInAppRefused":
     "שרת ההתחברות לא קיבל את אפליקציית ההתחברות של השרת הזה. יש לבדוק את ה-Client ID ואת ה-Client secret של אפליקציית ההתחברות, ואז להתחבר שוב.",
   "error.backend.mcpCommandNotFound": "הפקודה לא נמצאה: {command}",
   "error.backend.mcpProviderLimit":
     "הסוכן הזה יכול להשתמש רק במספר מוגבל של שרתי MCP. כדי להשתמש בשרת הזה, כבו שרת MCP שהסוכן לא צריך.",
   "error.backend.mcpRegistrationRefused":
-    "שרת ההתחברות עדיין אינו מקבל את dani-dex כאפליקציה. החשבון שלך אינו הסיבה. יש להשתמש בדרך חיבור אחרת, כמו שרת MCP מקומי.",
+    "שרת ההתחברות עדיין אינו מקבל את Dani Dex כאפליקציה. החשבון שלך אינו הסיבה. יש להשתמש בדרך חיבור אחרת, כמו שרת MCP מקומי.",
   "error.backend.mcpRegistrationUnavailable":
-    "שרת ההתחברות אינו יכול לרשום את dani-dex כאפליקציה. החשבון שלך אינו הסיבה. כדי להתחבר, יש לשמור את השרת הזה בחנות, אפליקציות, ואחר כך להוסיף לו אפליקציית התחברות.",
+    "שרת ההתחברות אינו יכול לרשום את Dani Dex כאפליקציה. החשבון שלך אינו הסיבה. כדי להתחבר, יש לשמור את השרת הזה בחנות, אפליקציות, ואחר כך להוסיף לו אפליקציית התחברות.",
   "error.backend.mcpSignInAbandonedGeneric": "ההתחברות ננטשה.",
   "error.backend.mcpSignInForgotten": "התחברות ה-MCP נשכחה בזמן שהיא רצה.",
   "error.backend.mcpSignInAbandoned": "התחברות ה-MCP ננטשה.",
@@ -270,7 +270,7 @@ export const messages = {
   "error.backend.mcpSignInRefused": "דף ההתחברות דחה את הגישה. התחבר שוב.",
   "error.backend.mcpSignInResponseTimedOut": "תשובת ההתחברות לא הגיעה בזמן.",
   "error.backend.mcpSignInMetadataUnreadable":
-    "dani-dex לא הצליח לקרוא את פרטי ההתחברות של השרת הזה. יש לבדוק את כתובת השרת ולנסות שוב.",
+    "Dani Dex לא הצליח לקרוא את פרטי ההתחברות של השרת הזה. יש לבדוק את כתובת השרת ולנסות שוב.",
   "error.backend.mcpSignInAnswerUnreadable":
     "שרת ההתחברות שלח תשובה ש-dani-dex לא יכול לקרוא. אם השירות נותן לך מפתח API או טוקן, יש להוסיף אותו להגדרות של השרת הזה ולבדוק שוב את החיבור.",
   "error.backend.mcpServerExited": "השרת נעצר לפני שענה. יש להריץ את הפקודה במסוף כדי לראות את השגיאה שלו.",
@@ -298,11 +298,11 @@ export const messages = {
   "error.backend.githubToolsNotStarted":
     "{provider} לא הצליח לקבל את כלי GitHub, כי GitHub לא ענה. יש לפתוח את GitHub בחנות, אפליקציות, ולחבר אותו שוב אם הוא מבקש. לאחר מכן יש להתחיל צ׳אט חדש כדי לנסות שוב.",
   "error.backend.mcpOAuthProxyUnavailable":
-    "dani-dex לא הצליח להפעיל את חיבור ההתחברות המקומי שלו עבור השרת הזה. יש להפעיל מחדש את dani-dex ולנסות שוב.",
+    "Dani Dex לא הצליח להפעיל את חיבור ההתחברות המקומי שלו עבור השרת הזה. יש להפעיל מחדש את Dani Dex ולנסות שוב.",
   "error.backend.mcpOAuthSignInNeeded": "ההתחברות לשרת ה-MCP הזה הסתיימה. המשתמש צריך להתחבר אליו שוב ב-dani-dex.",
   "error.backend.mcpOAuthRenewalFailed":
-    "dani-dex לא הצליח לחדש עכשיו את ההתחברות לשרת ה-MCP הזה. ההתחברות נשמרת, והבקשה הבאה תנסה שוב. אם השגיאה נמשכת, המשתמש יכול להתנתק מהשרת ב-dani-dex ולהתחבר שוב.",
-  "error.backend.mcpServerUnreachable": "dani-dex לא הצליח להגיע אל השרת. יש לבדוק את ה-URL ואת הרשת.",
+    "Dani Dex לא הצליח לחדש עכשיו את ההתחברות לשרת ה-MCP הזה. ההתחברות נשמרת, והבקשה הבאה תנסה שוב. אם השגיאה נמשכת, המשתמש יכול להתנתק מהשרת ב-dani-dex ולהתחבר שוב.",
+  "error.backend.mcpServerUnreachable": "Dani Dex לא הצליח להגיע אל השרת. יש לבדוק את ה-URL ואת הרשת.",
   "error.backend.mcpLocalServerOff":
     "אין שרת שעונה בכתובת {address} במחשב הזה. יש להפעיל את השרת, או להדליק אותו באפליקציה שמריצה אותו, ולנסות שוב.",
   "error.backend.mcpServerBlocked":
@@ -363,14 +363,14 @@ export const messages = {
   "error.backend.approvalInactive": "האישור הזה אינו פעיל עוד.",
   "error.backend.approvalOwnerOnly": "רק בעל השרת יכול לאשר את הפעולה הזו.",
   "error.backend.feedbackNeedsPhone":
-    "רק אפליקציית dani-dex לטלפון יכולה לשלוח את הדיווח הזה, כי היא מוסיפה את גרסת הטלפון ואת יומן התמיכה. יש לפתוח את הצ'אט הזה בטלפון. אם ההודעה הזו מופיעה שם, יש לעדכן את אפליקציית הטלפון.",
+    "רק אפליקציית Dani Dex לטלפון יכולה לשלוח את הדיווח הזה, כי היא מוסיפה את גרסת הטלפון ואת יומן התמיכה. יש לפתוח את הצ'אט הזה בטלפון. אם ההודעה הזו מופיעה שם, יש לעדכן את אפליקציית הטלפון.",
   "error.backend.takeoverInactive": "השתלטות הדפדפן הזו אינה פעילה עוד.",
   "error.backend.authSubmitting": "שליחת האימות כבר מתבצעת.",
-  "error.backend.apiKeyListFailed": "dani-dex לא הצליח לקרוא את מפתחות ה-API השמורים.",
-  "error.backend.apiKeySaveFailed": "dani-dex לא הצליח לשמור את מפתח ה-API. יש לנסות שוב.",
+  "error.backend.apiKeyListFailed": "Dani Dex לא הצליח לקרוא את מפתחות ה-API השמורים.",
+  "error.backend.apiKeySaveFailed": "Dani Dex לא הצליח לשמור את מפתח ה-API. יש לנסות שוב.",
   "error.backend.apiKeySaving": "מפתח ה-API כבר נשמר.",
   "error.backend.apiKeyAnswerUnreadable":
-    "dani-dex לא הצליח לקרוא את מפתח ה-API. יש להזין מפתח של עד 8,000 תווים ולבחור מי יכול להשתמש בו.",
+    "Dani Dex לא הצליח לקרוא את מפתח ה-API. יש להזין מפתח של עד 8,000 תווים ולבחור מי יכול להשתמש בו.",
   "error.backend.vaultItemSaving": "פריט הכספת כבר נשמר.",
   "error.backend.authRequestInactive": "בקשת האימות המאובטח הזו אינה פעילה עוד.",
   "error.backend.secureAuthUnavailable": "אימות מאובטח אינו זמין.",
@@ -391,7 +391,7 @@ export const messages = {
   "error.backend.browserProxyUnreachable": "הפרוקסי {name} אינו עונה, ולכן הדף לא נפתח.",
   "error.backend.browserProxySignInRefused": "הפרוקסי {name} דחה את ההתחברות, ולכן הדף לא נפתח.",
   "error.backend.browserSystemProxyFailed":
-    "הפרוקסי בהגדרות של המחשב שמריץ את dani-dex אינו עונה או דחה את החיבור, ולכן הדף לא נפתח. בדקו את הגדרות הפרוקסי של המחשב הזה.",
+    "הפרוקסי בהגדרות של המחשב שמריץ את Dani Dex אינו עונה או דחה את החיבור, ולכן הדף לא נפתח. בדקו את הגדרות הפרוקסי של המחשב הזה.",
   "error.backend.browserProxyComputerUnreachable": "המחשב שהפרופיל הזה משתמש בו אינו עונה, ולכן הדף לא נפתח.",
   "error.backend.browserProxyComputerLocalAddress":
     "המחשב שהפרופיל הזה משתמש בו פותח רק אתרים ציבוריים. הוא לא פותח כתובות ברשת מקומית, ולכן הדף לא נפתח.",
@@ -427,7 +427,7 @@ export const messages = {
   "error.backend.mcpSignInAppUrl": "אפליקציית ההתחברות דורשת כתובת שרת תקינה.",
   "error.backend.mcpSignInAppClientId": "יש להזין את מזהה הלקוח של אפליקציית ההתחברות.",
   "error.backend.mcpSignInAppIssuerChanged":
-    "שרת ההתחברות של שרת ה-MCP הזה השתנה, ולכן dani-dex לא שלח לו את אפליקציית ההתחברות. אם השינוי נכון, יש להסיר את אפליקציית ההתחברות ולהוסיף אותה שוב.",
+    "שרת ההתחברות של שרת ה-MCP הזה השתנה, ולכן Dani Dex לא שלח לו את אפליקציית ההתחברות. אם השינוי נכון, יש להסיר את אפליקציית ההתחברות ולהוסיף אותה שוב.",
   "error.backend.mcpSignInAppNoServer": "יש לשמור את שרת ה-MCP הזה כשרת URL לפני הוספת אפליקציית התחברות.",
   "error.backend.mcpSignInAppUnavailable": "המחשב הזה אינו יכול לשמור אפליקציית התחברות.",
   "error.backend.taskMoveRefused": "רק הודעה ששלחת לסוכן הזה לבדו יכולה לרוץ כמשימה.",
@@ -455,6 +455,6 @@ export const messages = {
     "לסוכן הזה כבר יש {count} משימות שלא הסתיימו. יש להתחיל משימה נוספת כשאחת מהן תסתיים.",
   "error.backend.taskOpenLimitReached": "לסוכן הזה יש {count} משימות פתוחות. יש לסגור משימה ואז להתחיל או לפתוח אחרת.",
   "error.backend.taskRemoteUnsupported": "משימות זמינות רק לסוכנים שנמצאים במחשב הזה.",
-  "error.backend.taskMessageFailed": "dani-dex לא הצליח לשלוח את ההודעה למשימה. יש לנסות שוב מאוחר יותר.",
-  "error.backend.taskStartFailed": "dani-dex לא הצליח להתחיל את המשימה. יש לבצע את העבודה בתור הזה במקום.",
+  "error.backend.taskMessageFailed": "Dani Dex לא הצליח לשלוח את ההודעה למשימה. יש לנסות שוב מאוחר יותר.",
+  "error.backend.taskStartFailed": "Dani Dex לא הצליח להתחיל את המשימה. יש לבצע את העבודה בתור הזה במקום.",
 } as const satisfies PartialTranslation<typeof source>;

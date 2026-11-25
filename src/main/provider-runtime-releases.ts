@@ -6,8 +6,8 @@ import type { AgentRuntimeLock } from "../../scripts/agent-runtime-lock";
 import {
   codexTag,
   cursorPackageUrl,
-  kimiAssetName,
   KILOCODE_CLI_PACKAGE,
+  kimiAssetName,
   OPENCODE_CLI_PACKAGE,
   providerRuntimeDescriptor,
   type RuntimeSpec,
@@ -23,7 +23,8 @@ export interface LatestReleaseContext {
   fetch: Fetch;
 }
 
-const BLOCKED_VERSIONS_URL = "https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/main/provider-runtime-blocklist.json";
+const BLOCKED_VERSIONS_URL =
+  "https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/main/provider-runtime-blocklist.json";
 
 const REQUEST_TIMEOUT_MS = 30_000;
 const MAX_METADATA_BYTES = 4 * 1024 * 1024;

@@ -2,10 +2,10 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/auth";
 
 export const messages = {
-  "error.auth.serviceUnavailable": "dani-dex לא הצליח להגיע לשירות החשבון. יש לוודא שה-API פועל ולנסות שוב.",
-  "error.auth.sessionTimeout": "dani-dex לא ענה בזמן. בדקו את החיבור לאינטרנט, ואז נסו שוב.",
+  "error.auth.serviceUnavailable": "Dani Dex לא הצליח להגיע לשירות החשבון. יש לוודא שה-API פועל ולנסות שוב.",
+  "error.auth.sessionTimeout": "Dani Dex לא ענה בזמן. בדקו את החיבור לאינטרנט, ואז נסו שוב.",
   "error.auth.networkBlocked":
-    "חומת אש או שרת proxy ברשת הזו חסמו את הגישה של dani-dex אל {host}. יש לבקש ממנהל הרשת לאפשר את {host} ולנסות שוב.",
+    "חומת אש או שרת proxy ברשת הזו חסמו את הגישה של Dani Dex אל {host}. יש לבקש ממנהל הרשת לאפשר את {host} ולנסות שוב.",
   "error.auth.signInFirst": "יש להתחבר תחילה ל-dani-dex.",
   "error.auth.signInRequired": "נדרשת התחברות.",
   "error.auth.chatColorUnavailable": "שירות החשבון עדיין אינו תומך בצבעי צ'אט. יש לנסות שוב מאוחר יותר.",
@@ -13,17 +13,17 @@ export const messages = {
   "error.auth.hostCredentialUnavailable": "פרטי הגישה של המארח המרוחק אינם זמינים. יש לרשום את המארח שוב.",
   "error.auth.codeNotVerified": "לא ניתן היה לאמת את קוד ההתחברות.",
   "error.auth.serviceError": "שירות החשבון החזיר שגיאה.",
-  "error.auth.serviceUnreachable": "dani-dex לא הצליח להגיע לשירות החשבון. יש לבדוק את החיבור ולנסות שוב.",
+  "error.auth.serviceUnreachable": "Dani Dex לא הצליח להגיע לשירות החשבון. יש לבדוק את החיבור ולנסות שוב.",
   "error.auth.serviceTimeout": "שירות החשבון לא הגיב בזמן. יש לנסות שוב.",
   "error.auth.serviceStatus": "שירות החשבון החזיר שגיאה ({status}). יש לנסות שוב מאוחר יותר.",
   "error.auth.invalidHostedServer": "שירות החשבון החזיר שרת מאוחסן לא תקין.",
   "error.auth.invalidServerClaim": "שירות החשבון החזיר קוד שרת לא תקין.",
-  "error.auth.codeNotSent": "dani-dex לא הצליח לשלוח את קוד ההתחברות.",
+  "error.auth.codeNotSent": "Dani Dex לא הצליח לשלוח את קוד ההתחברות.",
   "error.auth.deliveryTimeout":
-    "dani-dex לא הצליח לאשר את המשלוח בזמן. ייתכן שהקוד עדיין יגיע. יש לבדוק את המשלוח לפני שליחה חוזרת.",
+    "Dani Dex לא הצליח לאשר את המשלוח בזמן. ייתכן שהקוד עדיין יגיע. יש לבדוק את המשלוח לפני שליחה חוזרת.",
   "error.auth.deliveryInterrupted":
     "החיבור הסתיים לפני ש-dani-dex אישר את המשלוח. יש לבדוק את המשלוח כדי לא לשלוח קוד נוסף.",
-  "error.auth.deliveryUnknown": "dani-dex לא הצליח לאשר אם קוד ההתחברות נשלח. יש לבדוק את המשלוח לפני שליחה חוזרת.",
+  "error.auth.deliveryUnknown": "Dani Dex לא הצליח לאשר אם קוד ההתחברות נשלח. יש לבדוק את המשלוח לפני שליחה חוזרת.",
   "error.auth.companySignInFailed": "ההתחברות דרך החברה לא הסתיימה. יש לנסות שוב.",
   "error.auth.companySignInCancelled": "ההתחברות דרך החברה בוטלה.",
   "error.auth.companySignInTimeout": "ההתחברות דרך החברה לקחה זמן רב מדי. יש לפתוח שוב את דף ההתחברות.",
@@ -32,7 +32,7 @@ export const messages = {
   "error.auth.companySignInAccountDisabled": "החברה שלך כיבתה את החשבון הזה. יש לפנות למנהל המערכת.",
   "error.auth.companySignInOff": "ההתחברות דרך החברה כבויה עבור האימייל הזה.",
   "error.auth.companySignInEmailMissing": "חשבון החברה שלך לא סיפק כתובת אימייל מאומתת.",
-  "error.auth.companySignInUnavailable": "dani-dex הזה לא יכול לפתוח דפדפן להתחברות דרך החברה.",
+  "error.auth.companySignInUnavailable": "Dani Dex הזה לא יכול לפתוח דפדפן להתחברות דרך החברה.",
   "error.auth.companySignInProviderRejected": "הספק לא קיבל את מזהה הלקוח או את הסוד.",
   "error.auth.companySignInTokenInvalid": "הספק החזיר התחברות ש-dani-dex לא יכול לבדוק.",
   "error.auth.companySignInProviderUnreachable": "ספק ההתחברות של החברה לא הגיב.",

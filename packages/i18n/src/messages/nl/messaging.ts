@@ -3,19 +3,19 @@ import type { messages as source } from "../en/messaging";
 
 export const messages = {
   "messaging.help.invalid_token":
-    "Slack accepteert dani-dex niet meer in deze werkruimte. De app is misschien verwijderd. Verbind de werkruimte opnieuw.",
+    "Slack accepteert Dani Dex niet meer in deze werkruimte. De app is misschien verwijderd. Verbind de werkruimte opnieuw.",
   "messaging.help.secret_storage_unavailable":
-    "dani-dex kan de opgeslagen tokens op deze computer niet lezen. Verbreek de verbinding met de werkruimte en verbind hem daarna opnieuw.",
+    "Dani Dex kan de opgeslagen tokens op deze computer niet lezen. Verbreek de verbinding met de werkruimte en verbind hem daarna opnieuw.",
   "messaging.help.relay_unavailable":
-    "dani-dex kan geen Slack-events ontvangen op deze computer. Log in, geef deze computer een naam in de serverinstellingen en houd dani-dex open.",
+    "Dani Dex kan geen Slack-events ontvangen op deze computer. Log in, geef deze computer een naam in de serverinstellingen en houd Dani Dex open.",
   "messaging.help.not_linked":
     "Deze werkruimte is niet gekoppeld aan deze server. Kies Opnieuw verbinden om hem te koppelen.",
   "messaging.discordHelp.invalid_token":
-    "Discord accepteert dani-dex niet meer in deze Discord-server. De app is misschien verwijderd. Verbind de Discord-server opnieuw.",
+    "Discord accepteert Dani Dex niet meer in deze Discord-server. De app is misschien verwijderd. Verbind de Discord-server opnieuw.",
   "messaging.discordHelp.secret_storage_unavailable":
-    "dani-dex kan de opgeslagen tokens op deze computer niet lezen. Verbreek de verbinding met de Discord-server en verbind hem daarna opnieuw.",
+    "Dani Dex kan de opgeslagen tokens op deze computer niet lezen. Verbreek de verbinding met de Discord-server en verbind hem daarna opnieuw.",
   "messaging.discordHelp.relay_unavailable":
-    "dani-dex kan geen Discord-events ontvangen op deze computer. Log in, geef deze computer een naam in de serverinstellingen en houd dani-dex open.",
+    "Dani Dex kan geen Discord-events ontvangen op deze computer. Log in, geef deze computer een naam in de serverinstellingen en houd Dani Dex open.",
   "messaging.discordHelp.not_linked":
     "Deze Discord-server is niet gekoppeld aan deze dani-dex-server. Kies Opnieuw verbinden om hem te koppelen.",
 } as const satisfies PartialTranslation<typeof source>;

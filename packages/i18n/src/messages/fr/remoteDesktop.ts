@@ -9,7 +9,7 @@ export const messages = {
   "remoteDesktop.workspaceLabel": "Contrôle à distance",
   "remoteDesktop.displayLabel": "Écran distant",
   "remoteDesktop.selectDisplay": "Choisir l’écran",
-  "remoteDesktop.backToOpenBot": "Retour à dani-dex",
+  "remoteDesktop.backToOpenBot": "Retour à Dani Dex",
   "remoteDesktop.disconnect": "Déconnecter",
   "remoteDesktop.viewerTitle": "Bureau à distance Sunshine",
   "remoteDesktop.viewerLoadFailed": "Impossible de charger la visionneuse Moonlight.",
@@ -20,7 +20,7 @@ export const messages = {
   "remoteDesktop.openFailed": "Impossible d’ouvrir le bureau",
   "remoteDesktop.notSharingTitle": "{name} ne partage pas son écran",
   "remoteDesktop.notSharingDescription":
-    "Le serveur empêche dani-dex d’enregistrer son écran. Sur ce serveur, ouvrez Réglages Système → Confidentialité et sécurité → Enregistrement de l’écran, activez dani-dex, puis réessayez ici.",
+    "Le serveur empêche Dani Dex d’enregistrer son écran. Sur ce serveur, ouvrez Réglages Système → Confidentialité et sécurité → Enregistrement de l’écran, activez Dani Dex, puis réessayez ici.",
   "remoteDesktop.setup.check.screenRecording": "Enregistrement de l’écran",
   "remoteDesktop.setup.check.accessibility": "Accessibilité",
   "remoteDesktop.setup.check.service": "Service Sunshine",
@@ -41,7 +41,7 @@ export const messages = {
   "remoteDesktop.setup.startFailed": "Impossible de lancer le test du bureau à distance.",
   "remoteDesktop.setup.connectionLost": "La connexion de test a été perdue.",
   "remoteDesktop.setup.hostUpdateRequired":
-    "Mettez à jour dani-dex sur le serveur pour vérifier les autorisations et tester le bureau à distance.",
+    "Mettez à jour Dani Dex sur le serveur pour vérifier les autorisations et tester le bureau à distance.",
   "remoteDesktop.setup.permissions": "Autorisations",
   "remoteDesktop.setup.checked": "Vérifié à",
   "remoteDesktop.setup.checkAgain": "Revérifier",
@@ -76,12 +76,12 @@ export const messages = {
   "remoteDesktop.setup.finishTest": "Terminer le test",
   "remoteDesktop.host.questionTitle": "{name} veut contrôler cet ordinateur",
   "remoteDesktop.host.questionDetail":
-    "{name} verra votre écran et pourra utiliser votre souris et votre clavier. Sans réponse sous 30 secondes, dani-dex refuse la demande.",
+    "{name} verra votre écran et pourra utiliser votre souris et votre clavier. Sans réponse sous 30 secondes, Dani Dex refuse la demande.",
   "remoteDesktop.host.allow": "Autoriser",
   "remoteDesktop.host.deny": "Refuser",
   "remoteDesktop.host.startedTitle": "Contrôle à distance démarré",
   "remoteDesktop.host.startedBody": "{name} contrôle maintenant cet ordinateur.",
-  "remoteDesktop.host.trayTooltip": "dani-dex : contrôle à distance actif",
+  "remoteDesktop.host.trayTooltip": "Dani Dex : contrôle à distance actif",
   "remoteDesktop.host.trayControlledBy": "{name} contrôle cet ordinateur",
   "remoteDesktop.host.stopAll": "Arrêter tout contrôle à distance",
 } as const satisfies PartialTranslation<typeof source>;

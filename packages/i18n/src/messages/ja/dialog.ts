@@ -18,9 +18,9 @@ export const messages = {
   "dialog.saveExportSkill": "エクスポート用スキルを保存",
   "dialog.saveTransfer": "移行ファイルを保存",
   "dialog.chooseTransfer": "移行ファイルを選択",
-  "dialog.filter.transfer": "dani-dex 移行ファイル",
+  "dialog.filter.transfer": "Dani Dex 移行ファイル",
   "dialog.saveWorkflow": "ワークフローファイルを保存",
-  "dialog.filter.workflow": "dani-dex ワークフローファイル",
+  "dialog.filter.workflow": "Dani Dex ワークフローファイル",
   "dialog.chooseExternalLinkApp": "ブラウザーを選択",
   "dialog.filter.applications": "アプリケーション",
 } as const satisfies PartialTranslation<typeof source>;

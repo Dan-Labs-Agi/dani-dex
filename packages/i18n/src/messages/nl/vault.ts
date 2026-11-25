@@ -4,9 +4,9 @@ import type { messages as source } from "../en/vault";
 export const messages = {
   "vault.items.title": "Opgeslagen items",
   "vault.items.description":
-    "Elke agent op deze server kan deze items gebruiken. dani-dex typt wachtwoorden, kaartnummers en beveiligingscodes zelf in de pagina, zodat agents ze nooit zien. Agents lezen API-sleutels uit een bestand, niet uit de chat.",
+    "Elke agent op deze server kan deze items gebruiken. Dani Dex typt wachtwoorden, kaartnummers en beveiligingscodes zelf in de pagina, zodat agents ze nooit zien. Agents lezen API-sleutels uit een bestand, niet uit de chat.",
   "vault.items.scopedDescription":
-    "Elk item is voor de agents die je kiest. dani-dex typt wachtwoorden, kaartnummers en beveiligingscodes zelf in de pagina, zodat agents ze nooit zien. Agents lezen API-sleutels uit een bestand, niet uit de chat. Alle agents draaien als dezelfde systeemgebruiker, dus een agent kan ook een API-sleutelbestand lezen dat voor andere agents is.",
+    "Elk item is voor de agents die je kiest. Dani Dex typt wachtwoorden, kaartnummers en beveiligingscodes zelf in de pagina, zodat agents ze nooit zien. Agents lezen API-sleutels uit een bestand, niet uit de chat. Alle agents draaien als dezelfde systeemgebruiker, dus een agent kan ook een API-sleutelbestand lezen dat voor andere agents is.",
   "vault.agents.label": "Agents",
   "vault.agents.all": "Alle agents",
   "vault.agents.some": "{chosen} van {total}",
@@ -89,18 +89,18 @@ export const messages = {
   "vault.importMenu": "Importeren uit CSV",
   "vault.importTitle": "Importeren uit een CSV-bestand",
   "vault.importDescription":
-    "Importeer logins uit een CSV-bestand dat 1Password, Bitwarden, Chrome, Edge, Firefox, Safari, Apple Wachtwoorden, LastPass of Proton Pass exporteert. dani-dex leest het bestand op deze computer en uploadt het niet.",
+    "Importeer logins uit een CSV-bestand dat 1Password, Bitwarden, Chrome, Edge, Firefox, Safari, Apple Wachtwoorden, LastPass of Proton Pass exporteert. Dani Dex leest het bestand op deze computer en uploadt het niet.",
   "vault.importChoose": "CSV-bestand kiezen",
   "vault.importDone": "Geïmporteerd: {imported}. Overgeslagen: {skipped}.",
   "vault.unavailableTitle": "Deze computer kan geen geheimen bewaren",
   "vault.unavailableDescription":
-    "dani-dex versleutelt de kluis met de geheimenopslag van het systeem. Stel een sleutelhanger in en open deze pagina daarna opnieuw.",
-  "vault.unreadableTitle": "dani-dex kan de kluis niet lezen",
+    "Dani Dex versleutelt de kluis met de geheimenopslag van het systeem. Stel een sleutelhanger in en open deze pagina daarna opnieuw.",
+  "vault.unreadableTitle": "Dani Dex kan de kluis niet lezen",
   "vault.unreadableDescription":
-    "Het kluisbestand staat op deze computer, maar dani-dex kan het niet ontsleutelen. Dit kan gebeuren als de sleutelhanger van het systeem verandert. Reset de kluis om opnieuw te beginnen zonder items.",
+    "Het kluisbestand staat op deze computer, maar Dani Dex kan het niet ontsleutelen. Dit kan gebeuren als de sleutelhanger van het systeem verandert. Reset de kluis om opnieuw te beginnen zonder items.",
   "vault.reset": "Kluis resetten",
   "vault.resetTitle": "De kluis resetten?",
-  "vault.resetDescription": "dani-dex verwijdert het kluisbestand en alle items erin. Je kunt dit niet ongedaan maken.",
+  "vault.resetDescription": "Dani Dex verwijdert het kluisbestand en alle items erin. Je kunt dit niet ongedaan maken.",
   "vault.request.private": "Gaat naar je Kluis. {agent} ziet het nooit.",
   "vault.request.privateUnnamed": "Gaat naar je Kluis. De agent ziet het nooit.",
   "vault.request.addLogin": "Login toevoegen",
@@ -120,7 +120,7 @@ export const messages = {
   },
   "vault.twoStep.setupTitle": "Verificatiecode instellen",
   "vault.twoStep.setupIntro":
-    "Zet op {site} verificatie in twee stappen aan met een authenticator-app. Als de site een QR-code toont, geef dani-dex de sleutel.",
+    "Zet op {site} verificatie in twee stappen aan met een authenticator-app. Als de site een QR-code toont, geef Dani Dex de sleutel.",
   "vault.twoStep.keyLabel": "Instelsleutel of otpauth://-link",
   "vault.twoStep.keyHint":
     "De meeste sites tonen hem onder de QR-code, als “Kun je niet scannen?” of “Sleutel handmatig invoeren”.",

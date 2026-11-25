@@ -17,10 +17,10 @@ export const messages = {
   "notification.channelMessage": "Новое сообщение.",
   "notification.usageLimit.title": "Аккаунт {provider} достиг лимита",
   "notification.usageLimit.body": {
-    one: "Ждёт {count} агент. dani-dex попробует позже.",
-    few: "Ждут {count} агента. dani-dex попробует позже.",
-    many: "Ждут {count} агентов. dani-dex попробует позже.",
-    other: "Ждут {count} агента. dani-dex попробует позже.",
+    one: "Ждёт {count} агент. Dani Dex попробует позже.",
+    few: "Ждут {count} агента. Dani Dex попробует позже.",
+    many: "Ждут {count} агентов. Dani Dex попробует позже.",
+    other: "Ждут {count} агента. Dani Dex попробует позже.",
   },
   "notification.usageLimit.bodyResets": {
     one: "Ждёт {count} агент. Сброс {reset}.",
@@ -33,7 +33,7 @@ export const messages = {
   "notification.machineAlert.cpu": "{server}: CPU загружен на {percent}",
   "notification.machineAlert.body": "Превышен порог оповещения {level}. См. «Настройки сервера» → «Хранилище».",
   "notification.test": "Уведомления работают.",
-  "notification.welcome": "dani-dex сообщит здесь, когда вы понадобитесь агенту.",
+  "notification.welcome": "Dani Dex сообщит здесь, когда вы понадобитесь агенту.",
   "notification.toast.region": "Уведомления",
   "notification.toast.close": "Закрыть уведомление",
 } as const satisfies PartialTranslation<typeof source>;

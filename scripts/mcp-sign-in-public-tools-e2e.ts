@@ -239,7 +239,7 @@ async function main(): Promise<void> {
       check(
         unreadable,
         unreadable.result.error ===
-          "dani-dex could not read the sign-in information of this server. Check the server address and try again.",
+          "Dani Dex could not read the sign-in information of this server. Check the server address and try again.",
         `a sign-in with an unreadable metadata document reported: ${unreadable.result.error}`,
       );
       check(unreadable, unreadable.pagesOpened === 0, "a sign-in with an unreadable metadata document opened a page");

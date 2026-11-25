@@ -1,3 +1,5 @@
+// biome-ignore-all lint/nursery/noUnsafeTypeAssertion: untyped account service payloads, typed contracts pending
+// biome-ignore-all lint/suspicious/noConsole: untyped account service payloads, typed contracts pending
 // Launches the built desktop app under xvfb on CI and captures real screenshots of
 // the screens it can reach without signing in. Run: xvfb-run -a bun scripts/capture-ui-screenshots.ts
 import { mkdirSync } from "node:fs";
@@ -36,7 +38,10 @@ let mounted = false;
 for (let i = 0; i < 18; i++) {
   await win.waitForTimeout(5_000);
   const size = await win.evaluate(() => document.body?.innerText?.length ?? 0).catch(() => 0);
-  const buttons = await win.getByRole("button").count().catch(() => 0);
+  const buttons = await win
+    .getByRole("button")
+    .count()
+    .catch(() => 0);
   console.log(`t+${(i + 1) * 5}s text=${size} buttons=${buttons} url=${win.url().slice(0, 100)}`);
   if (buttons > 2 || size > 400) {
     mounted = true;
@@ -45,7 +50,10 @@ for (let i = 0; i < 18; i++) {
 }
 await win.screenshot({ path: "shots/01-first-screen.png" });
 console.log("mounted:", mounted);
-console.log("body text:", (await win.evaluate(() => document.body?.innerText?.slice(0, 500)).catch(() => "")) as string);
+console.log(
+  "body text:",
+  (await win.evaluate(() => document.body?.innerText?.slice(0, 500)).catch(() => "")) as string,
+);
 
 let n = 2;
 const snap = async (label: string) => {
@@ -56,7 +64,18 @@ const snap = async (label: string) => {
   console.log("captured", file);
 };
 
-for (const label of ["New agent", "Agents", "Chats", "Library", "Workflows", "Skills", "Settings", "Sign in", "Get started", "Continue"]) {
+for (const label of [
+  "New agent",
+  "Agents",
+  "Chats",
+  "Library",
+  "Workflows",
+  "Skills",
+  "Settings",
+  "Sign in",
+  "Get started",
+  "Continue",
+]) {
   try {
     const target = win.getByRole("button", { name: new RegExp(`^${label}`, "i") }).first();
     if ((await target.count()) > 0 && (await target.isVisible())) {
@@ -67,7 +86,10 @@ for (const label of ["New agent", "Agents", "Chats", "Library", "Workflows", "Sk
     console.log("skip", label, String(error).slice(0, 120));
   }
 }
-const labels = await win.getByRole("button").allInnerTexts().catch(() => [] as string[]);
+const labels = await win
+  .getByRole("button")
+  .allInnerTexts()
+  .catch(() => [] as string[]);
 console.log("buttons seen:", JSON.stringify(labels.slice(0, 60)));
 await snap("final-state");
 await app.close();

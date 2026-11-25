@@ -1,7 +1,7 @@
 import { defineMessages } from "../../../message";
 
 export const messages = defineMessages("error.crm", {
-  "error.crm.serverTooOld": "This server does not support the CRM. Update dani-dex on the computer that runs it.",
+  "error.crm.serverTooOld": "This server does not support the CRM. Update Dani Dex on the computer that runs it.",
   "error.crm.tooLargeToSend": "This CRM page is too large to send to this client.",
   "error.crm.customerMissing": "This customer no longer exists.",
   "error.crm.planMissing": "This plan no longer exists.",
@@ -37,9 +37,9 @@ export const messages = defineMessages("error.crm", {
   "error.crm.sourcePermission":
     "This key cannot read customers, invoices, subscriptions, events and products. Give it read access to them.",
   "error.crm.sourceRateLimited": "Stripe got too many requests. Try again in a minute.",
-  "error.crm.sourceNetwork": "dani-dex cannot connect to Stripe. Check the internet connection.",
-  "error.crm.sourceFailed": "Stripe sent an answer that dani-dex cannot read. Try again later.",
-  "error.crm.sourceKeySaveFailed": "dani-dex cannot save the Stripe key on this computer.",
+  "error.crm.sourceNetwork": "Dani Dex cannot connect to Stripe. Check the internet connection.",
+  "error.crm.sourceFailed": "Stripe sent an answer that Dani Dex cannot read. Try again later.",
+  "error.crm.sourceKeySaveFailed": "Dani Dex cannot save the Stripe key on this computer.",
   "error.crm.off": "The CRM is off. An owner or admin can turn it on in Server Settings > Experimental.",
-  "error.crm.settingsSaveFailed": "dani-dex cannot save the CRM setting on this server.",
+  "error.crm.settingsSaveFailed": "Dani Dex cannot save the CRM setting on this server.",
 });

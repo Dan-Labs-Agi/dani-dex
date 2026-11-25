@@ -186,6 +186,6 @@ export const messages = {
   "sidebar.community.title": "Schuif aan.",
   "sidebar.community.body": "Er is een plek voor jou in de toekomst van AI. Word lid van de community op Discord en X.",
   "sidebar.community.joinDiscord": "Word lid van de Discord",
-  "sidebar.community.followX": "Volg dani-dex op X",
+  "sidebar.community.followX": "Volg Dani Dex op X",
   "sidebar.community.dismiss": "Community-uitnodiging sluiten",
 } as const satisfies PartialTranslation<typeof source>;

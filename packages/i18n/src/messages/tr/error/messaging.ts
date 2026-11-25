@@ -5,20 +5,20 @@ export const messages = {
   "error.messaging.notConnected": "Bu Slack çalışma alanı bağlı değil.",
   "error.messaging.unsupported": "Bu bilgisayar Slack'e bağlanamıyor.",
   "error.messaging.relayUnavailable":
-    "dani-dex bu bilgisayarda Slack etkinliklerini alamıyor. Oturum açın, bu bilgisayara bir ad verin ve tekrar deneyin.",
+    "Dani Dex bu bilgisayarda Slack etkinliklerini alamıyor. Oturum açın, bu bilgisayara bir ad verin ve tekrar deneyin.",
   "error.messaging.discordNotConnected": "Bu Discord sunucusu bağlı değil.",
   "error.messaging.discordUnsupported": "Bu bilgisayar Discord'a bağlanamıyor.",
   "error.messaging.discordRelayUnavailable":
-    "dani-dex bu bilgisayarda Discord etkinliklerini alamıyor. Oturum açın, bu bilgisayara bir ad verin ve tekrar deneyin.",
+    "Dani Dex bu bilgisayarda Discord etkinliklerini alamıyor. Oturum açın, bu bilgisayara bir ad verin ve tekrar deneyin.",
   "error.messaging.discordRolesUnsupported":
-    "dani-dex henüz Discord rollerini listeleyemiyor. Daha sonra yeniden deneyin.",
+    "Dani Dex henüz Discord rollerini listeleyemiyor. Daha sonra yeniden deneyin.",
   "error.messaging.telegramNotConnected": "Bu Telegram sohbeti bağlı değil.",
   "error.messaging.telegramUnsupported": "Bu bilgisayar Telegram'a bağlanamıyor.",
   "error.messaging.telegramRelayUnavailable":
-    "dani-dex bu bilgisayarda Telegram'a ulaşamıyor. Oturum açın, bu bilgisayara bir ad verin ve tekrar deneyin.",
+    "Dani Dex bu bilgisayarda Telegram'a ulaşamıyor. Oturum açın, bu bilgisayara bir ad verin ve tekrar deneyin.",
   "error.messaging.telegramRelayUnreachable":
-    "dani-dex bu bilgisayardan hizmetine bağlanamıyor. İnternet bağlantısını, VPN'i, proxy'yi veya güvenlik duvarını kontrol edin ve tekrar deneyin.",
-  "error.messaging.telegramServiceUnavailable": "dani-dex şu anda Telegram'ı bağlayamıyor. Daha sonra tekrar deneyin.",
+    "Dani Dex bu bilgisayardan hizmetine bağlanamıyor. İnternet bağlantısını, VPN'i, proxy'yi veya güvenlik duvarını kontrol edin ve tekrar deneyin.",
+  "error.messaging.telegramServiceUnavailable": "Dani Dex şu anda Telegram'ı bağlayamıyor. Daha sonra tekrar deneyin.",
   "error.messaging.whatsappNotConnected": "Bu WhatsApp numarası bağlı değil.",
   "error.messaging.whatsappUnsupported": "Bu bilgisayar WhatsApp'a bağlanamıyor.",
   "error.messaging.whatsappTooManySenders": "Bir WhatsApp numarası en fazla 200 kişiye ve gruba izin verebilir.",

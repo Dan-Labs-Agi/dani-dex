@@ -222,7 +222,7 @@ try {
       }
     });
     await tab.goto(`${origin}/`);
-    await tab.getByRole("heading", { name: "Sign in to dani-dex" }).waitFor();
+    await tab.getByRole("heading", { name: "Sign in to Dani Dex" }).waitFor();
     await tab.getByLabel("Email").fill(EMAIL);
     await settledScreenshot(tab, join(OUT, "1-email.png"));
     await tab.getByRole("button", { name: "Send sign-in code" }).click();

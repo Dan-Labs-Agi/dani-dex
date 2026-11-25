@@ -10,8 +10,8 @@ export const messages = {
   "error.voice.modelUnavailable": "מודל הקול אינו זמין.",
   "error.voice.transcriptionTimedOut": "תמלול הקול חרג מהזמן המותר.",
   "error.voice.prepareRequired":
-    "תמלול קול מקומי אינו זמין. יש להריץ `bun run voice:prepare` ולהפעיל מחדש את dani-dex.",
-  "error.voice.transcriptionFailed": "dani-dex לא הצליח לתמלל את ההקלטה הזו.",
+    "תמלול קול מקומי אינו זמין. יש להריץ `bun run voice:prepare` ולהפעיל מחדש את Dani Dex.",
+  "error.voice.transcriptionFailed": "Dani Dex לא הצליח לתמלל את ההקלטה הזו.",
   "error.voice.videoModelMissing": "לא הוגדר מודל זיהוי דיבור להקלטות בהגדרות ← קול.",
   "error.voice.videoModelMissingServer":
     "לא הוגדר מודל זיהוי דיבור בשרת הזה. בעלים או מנהל יכולים להגדיר מודל בהגדרות השרת, בזיהוי דיבור.",
@@ -26,9 +26,9 @@ export const messages = {
   "error.voice.speech.runtimeUnavailable": "דיבור מקומי אינו זמין בפלטפורמה הזו.",
   "error.voice.speech.modelRequired": "יש להוריד את מודל הדיבור בהגדרות ← קול.",
   "error.voice.speech.timedOut": "הקראת התשובה חרגה מהזמן המותר.",
-  "error.voice.speech.failed": "dani-dex לא הצליח להקריא את התשובה.",
+  "error.voice.speech.failed": "Dani Dex לא הצליח להקריא את התשובה.",
   "error.voice.speech.providerRefused": "{provider} סירבה ליצור את השמע: {reason}",
-  "error.voice.recordingNotKept": "dani-dex לא הצליח לשמור את הקלטת הקול.",
+  "error.voice.recordingNotKept": "Dani Dex לא הצליח לשמור את הקלטת הקול.",
   "error.voice.live.timedOut": "הקול החי של Codex לא התחיל בזמן. יש לנסות שוב.",
   "error.voice.live.failed": "הקול החי נעצר: {reason}",
   "error.voice.live.disconnected": "הקול החי התנתק.",

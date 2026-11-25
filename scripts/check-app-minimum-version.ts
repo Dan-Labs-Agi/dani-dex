@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { APP_SURFACES, type AppSurface } from "@openbot/contracts/app-minimum-version";
 import { createOpenBotLogger } from "@openbot/logging";
@@ -37,8 +37,10 @@ if (import.meta.main) {
   const root = resolve(import.meta.dirname, "..");
   const read = (path: string) => readFileSync(resolve(root, path), "utf8");
   const releases = {
-    desktop: parseChangelog(read("CHANGELOG.md")),
-    mobile: parseChangelog(read("apps/mobile/CHANGELOG.md"), { stores: true }),
+    desktop: parseChangelog(read("docs/CHANGELOG.md")),
+    mobile: existsSync(resolve(root, "apps/mobile/CHANGELOG.md"))
+      ? parseChangelog(read("apps/mobile/CHANGELOG.md"), { stores: true })
+      : [],
   };
   const logger = createOpenBotLogger("check-app-minimum-version");
   const problems = appMinimumVersionProblems(APP_MINIMUM_VERSIONS, releases, new Date().toISOString().slice(0, 10));

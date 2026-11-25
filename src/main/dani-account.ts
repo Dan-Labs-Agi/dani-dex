@@ -1,4 +1,4 @@
-import { app, shell } from "electron";
+// biome-ignore-all lint/nursery/noUnsafeTypeAssertion: untyped account service payloads, typed contracts pending
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import {
@@ -11,6 +11,7 @@ import {
   isDaniAccountSyncKind,
 } from "@openbot/contracts/dani-account";
 import { createOpenBotLogger } from "@openbot/logging";
+import { app, shell } from "electron";
 
 const logger = createOpenBotLogger("dani-account");
 

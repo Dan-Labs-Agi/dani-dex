@@ -5,21 +5,21 @@ export const messages = {
   "error.messaging.notConnected": "Cet espace de travail Slack n’est pas connecté.",
   "error.messaging.unsupported": "Cet ordinateur ne peut pas se connecter à Slack.",
   "error.messaging.relayUnavailable":
-    "dani-dex ne peut pas recevoir les événements Slack sur cet ordinateur. Connectez-vous, donnez un nom à cet ordinateur et réessayez.",
+    "Dani Dex ne peut pas recevoir les événements Slack sur cet ordinateur. Connectez-vous, donnez un nom à cet ordinateur et réessayez.",
   "error.messaging.discordNotConnected": "Ce serveur Discord n’est pas connecté.",
   "error.messaging.discordUnsupported": "Cet ordinateur ne peut pas se connecter à Discord.",
   "error.messaging.discordRelayUnavailable":
-    "dani-dex ne peut pas recevoir les événements Discord sur cet ordinateur. Connectez-vous, donnez un nom à cet ordinateur et réessayez.",
+    "Dani Dex ne peut pas recevoir les événements Discord sur cet ordinateur. Connectez-vous, donnez un nom à cet ordinateur et réessayez.",
   "error.messaging.discordRolesUnsupported":
-    "dani-dex ne peut pas encore lister les rôles Discord. Réessayez plus tard.",
+    "Dani Dex ne peut pas encore lister les rôles Discord. Réessayez plus tard.",
   "error.messaging.telegramNotConnected": "Cette discussion Telegram n’est pas connectée.",
   "error.messaging.telegramUnsupported": "Cet ordinateur ne peut pas se connecter à Telegram.",
   "error.messaging.telegramRelayUnavailable":
-    "dani-dex ne peut pas joindre Telegram sur cet ordinateur. Connectez-vous, donnez un nom à cet ordinateur et réessayez.",
+    "Dani Dex ne peut pas joindre Telegram sur cet ordinateur. Connectez-vous, donnez un nom à cet ordinateur et réessayez.",
   "error.messaging.telegramRelayUnreachable":
-    "dani-dex ne peut pas se connecter à son service depuis cet ordinateur. Vérifiez la connexion Internet, le VPN, le proxy ou le pare-feu, puis réessayez.",
+    "Dani Dex ne peut pas se connecter à son service depuis cet ordinateur. Vérifiez la connexion Internet, le VPN, le proxy ou le pare-feu, puis réessayez.",
   "error.messaging.telegramServiceUnavailable":
-    "dani-dex ne peut pas connecter Telegram pour le moment. Réessayez plus tard.",
+    "Dani Dex ne peut pas connecter Telegram pour le moment. Réessayez plus tard.",
   "error.messaging.whatsappNotConnected": "Ce numéro WhatsApp n’est pas connecté.",
   "error.messaging.whatsappUnsupported": "Cet ordinateur ne peut pas se connecter à WhatsApp.",
   "error.messaging.whatsappTooManySenders": "Un numéro WhatsApp peut autoriser jusqu’à 200 contacts et groupes.",

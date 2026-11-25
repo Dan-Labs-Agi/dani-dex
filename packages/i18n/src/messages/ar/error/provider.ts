@@ -3,25 +3,25 @@ import type { messages as source } from "../../en/error/provider";
 
 export const messages = {
   "error.provider.mcpConfig":
-    "تعذّر على dani-dex تسجيل خوادم MCP في إعدادات Codex. تأكد من أن ملف config.toml الخاص بـ Codex صالح وقابل للكتابة، ثم أعد تشغيل dani-dex.",
+    "تعذّر على Dani Dex تسجيل خوادم MCP في إعدادات Codex. تأكد من أن ملف config.toml الخاص بـ Codex صالح وقابل للكتابة، ثم أعد تشغيل Dani Dex.",
   "error.provider.computerUseConfig":
-    "تعذّر على dani-dex تسجيل التحكم في الحاسوب في إعدادات Codex. تأكد من أن ملف config.toml الخاص بـ Codex صالح وقابل للكتابة، ثم أعد تشغيل dani-dex. يمكنك إيقاف التحكم في الحاسوب في إعدادات الزميل للمتابعة بدونه.",
-  "error.provider.codexUnresponsive": "توقف Codex عن الاستجابة، لذا أنهى dani-dex عمليته.",
-  "error.provider.acpUnresponsive": "لم يستجب {provider} في الوقت المحدد، لذا أنهى dani-dex عمليته.",
-  "error.provider.acpSignInLost": "فقد {provider} تسجيل دخوله، لذا أنهى dani-dex عمليته. أرسل رسالتك مرة أخرى.",
-  "error.provider.acpRefusedUntilRestart": "رفض {provider} رسالة، لذا أنهى dani-dex عمليته. أرسل رسالتك مرة أخرى.",
+    "تعذّر على Dani Dex تسجيل التحكم في الحاسوب في إعدادات Codex. تأكد من أن ملف config.toml الخاص بـ Codex صالح وقابل للكتابة، ثم أعد تشغيل Dani Dex. يمكنك إيقاف التحكم في الحاسوب في إعدادات الزميل للمتابعة بدونه.",
+  "error.provider.codexUnresponsive": "توقف Codex عن الاستجابة، لذا أنهى Dani Dex عمليته.",
+  "error.provider.acpUnresponsive": "لم يستجب {provider} في الوقت المحدد، لذا أنهى Dani Dex عمليته.",
+  "error.provider.acpSignInLost": "فقد {provider} تسجيل دخوله، لذا أنهى Dani Dex عمليته. أرسل رسالتك مرة أخرى.",
+  "error.provider.acpRefusedUntilRestart": "رفض {provider} رسالة، لذا أنهى Dani Dex عمليته. أرسل رسالتك مرة أخرى.",
   "error.provider.acpServerLost": "فقد {provider} اتصاله. أرسل رسالتك مرة أخرى.",
-  "error.provider.acpServerLostEnded": "فقد {provider} اتصاله، لذا أنهى dani-dex عمليته.",
+  "error.provider.acpServerLostEnded": "فقد {provider} اتصاله، لذا أنهى Dani Dex عمليته.",
   "error.provider.acpSettingsTimedOut": "لم يستجب {provider} في الوقت المحدد. حاول مرة أخرى بعد قليل.",
   "error.provider.acpPlanUsedUp": "يقول {provider} إن خطتك استُنفدت. اختر نموذجًا آخر، أو قم بترقية خطة {provider}.",
   "error.provider.acpMcpNotLoaded":
-    "لم يحمّل {provider} أدوات dani-dex، لذا لا يمكن لهذا الوكيل استخدامها أو الوصول إلى زملائه. قد تحظر سياسة فريق {provider} خوادم MCP المحلية. اطلب من مسؤول فريقك السماح بها، ثم أعد المحاولة.",
+    "لم يحمّل {provider} أدوات Dani Dex، لذا لا يمكن لهذا الوكيل استخدامها أو الوصول إلى زملائه. قد تحظر سياسة فريق {provider} خوادم MCP المحلية. اطلب من مسؤول فريقك السماح بها، ثم أعد المحاولة.",
   "error.provider.acpToolsNotLoaded":
-    "شغّل {provider} هذه الرسالة بدون أدوات dani-dex، لذا لم يتمكن الوكيل من الوصول إلى زملائه أو استخدام المتصفح أو إرفاق الملفات. أعد المحاولة.",
+    "شغّل {provider} هذه الرسالة بدون أدوات Dani Dex، لذا لم يتمكن الوكيل من الوصول إلى زملائه أو استخدام المتصفح أو إرفاق الملفات. أعد المحاولة.",
   "error.provider.acpOwnMcpServerFailed":
-    "تعذّر على {provider} تشغيل خادم MCP {name}، لذا توقّف الرد. هذا الخادم موجود في إعدادات {provider} الخاصة بك، وليس في dani-dex. أزِل الخادم من هناك أو أصلحه، ثم ابدأ محادثة جديدة.",
+    "تعذّر على {provider} تشغيل خادم MCP {name}، لذا توقّف الرد. هذا الخادم موجود في إعدادات {provider} الخاصة بك، وليس في Dani Dex. أزِل الخادم من هناك أو أصلحه، ثم ابدأ محادثة جديدة.",
   "error.provider.endpointsReadOnly":
-    "كُتبت نقاط النهاية المحفوظة بإصدار أحدث من dani-dex، أو تتعذّر قراءة الملف. حدّث dani-dex لتغييرها.",
+    "كُتبت نقاط النهاية المحفوظة بإصدار أحدث من Dani Dex، أو تتعذّر قراءة الملف. حدّث Dani Dex لتغييرها.",
   "error.provider.endpointNoSecureStorage":
     "لا يحتوي هذا الحاسوب على تخزين آمن، لذا لا يمكن حفظ مفتاح API أو ترويسة. أزلها، أو استخدم نقطة نهاية لا تحتاج إلى بيانات اعتماد.",
   "error.provider.endpointDuplicate": "توجد نقطة نهاية محفوظة بمعرّف المزوّد هذا. أزلها أولًا، أو استخدم معرّفًا آخر.",
@@ -31,21 +31,21 @@ export const messages = {
   "error.provider.endpointSecretUnreadable":
     "لا يستطيع هذا الحاسوب قراءة مفتاح API والترويسات المحفوظة. أدخل مفتاح API والترويسات مرة أخرى، حتى لا يُفقد أي منها.",
   "error.provider.discoveryTimeout": "لم يستجب {host} في الوقت المحدد.",
-  "error.provider.discoveryUnreachable": "تعذّر على dani-dex الاتصال بـ {host}.",
+  "error.provider.discoveryUnreachable": "تعذّر على Dani Dex الاتصال بـ {host}.",
   "error.provider.discoveryRedirect": "أرسل {host} إعادة توجيه. أدخل العنوان النهائي للخادم.",
   "error.provider.discoveryRefused": "رفض {host} الطلب. تحقق من مفتاح API والترويسات.",
   "error.provider.discoveryHttp": "استجاب {host} برمز HTTP {status}.",
   "error.provider.discoveryTooLarge": "قائمة النماذج من {host} كبيرة جدًا.",
   "error.provider.discoveryInvalid": "لم يرسل {host} قائمة نماذج متوافقة مع OpenAI.",
   "error.provider.detectionSettingsReadOnly":
-    "كُتبت إعدادات الاكتشاف بإصدار أحدث من dani-dex، أو تتعذّر قراءة الملف. حدّث dani-dex لتغييرها.",
+    "كُتبت إعدادات الاكتشاف بإصدار أحدث من Dani Dex، أو تتعذّر قراءة الملف. حدّث Dani Dex لتغييرها.",
   "error.provider.detectionEntryInvalid":
     "يجب أن يكون العنوان رابط URL يبدأ بـ http:// أو https:// بدون كلمة مرور، ويجب أن يكون المجلد مسارًا مطلقًا.",
   "error.provider.detectionEntriesTooMany": "عدد العناوين أو المجلدات كبير جدًا.",
   "error.provider.credentialFileUnreadable": "تتعذّر قراءة ملف بيانات اعتماد المزوّد.",
   "error.provider.credentialFileTooLarge": "ملف بيانات اعتماد المزوّد كبير جدًا.",
   "error.provider.environmentNameInvalid": "{name} ليس اسم متغير صالحًا. استخدم الحروف والأرقام و_ ولا تبدأ برقم.",
-  "error.provider.environmentNameReserved": "يضبط dani-dex المتغير {name} لهذا المزوّد. أزل هذا المتغير.",
+  "error.provider.environmentNameReserved": "يضبط Dani Dex المتغير {name} لهذا المزوّد. أزل هذا المتغير.",
   "error.provider.environmentNameDuplicate": "يرد {name} في القائمة أكثر من مرة.",
   "error.provider.environmentValueTooLong": "قيمة {name} طويلة جدًا.",
   "error.provider.environmentTooMany": "يمكن أن يكون للمزوّد {limit} متغيرًا كحد أقصى.",
@@ -63,6 +63,14 @@ export const messages = {
   "error.provider.opencodePackageMismatch": "لا تطابق حزمة OpenCode كتالوج بيئات التشغيل.",
   "error.provider.opencodeChecksum": "عدم تطابق المجموع الاختباري لبيئة تشغيل OpenCode.",
   "error.provider.opencodeLicenseChecksum": "عدم تطابق المجموع الاختباري لترخيص OpenCode.",
+  "error.provider.kilocodeArchivePath": "مسار أرشيف KiloCode غير متوقع.",
+  "error.provider.kilocodePackageMismatch": "حزمة KiloCode لا تطابق فهرس بيئة التشغيل.",
+  "error.provider.kilocodeChecksum": "المجموع الاختباري لبيئة تشغيل KiloCode غير مطابق.",
+  "error.provider.kilocodeLicenseChecksum": "المجموع الاختباري لترخيص KiloCode غير مطابق.",
+  "error.provider.kilocodeNotStarted": "تعذّر تشغيل KiloCode. شغّل `kilo --version` في الطرفية.",
+  "error.provider.kilocodeMissing": "لم يتم تنزيل KiloCode. نزّله في Dani Dex للمتابعة.",
+  "error.provider.kilocodeVersionUnreadable": "تعذّر قراءة إصدار واجهة Kilo Code CLI.",
+  "error.provider.kilocodeNoModels": "لم يعلن KiloCode عن أي نماذج. لن يخمّن Dani Dex نموذجًا احتياطيًا.",
   "error.provider.grokChecksum": "عدم تطابق المجموع الاختباري لبيئة تشغيل Grok.",
   "error.provider.grokLicenseChecksum": "عدم تطابق المجموع الاختباري لترخيص Grok.",
   "error.provider.grokNoticesChecksum": "عدم تطابق المجموع الاختباري لإشعارات Grok.",
@@ -72,14 +80,14 @@ export const messages = {
   "error.provider.bunLicenseChecksum": "عدم تطابق المجموع الاختباري لترخيص Bun.",
   "error.provider.bunxDamaged": "مشغّل مدير حزم Bun مفقود أو تالف.",
   "error.provider.releaseSourcesUnreachable":
-    "تعذّر على dani-dex الوصول إلى مصادر إصدارات المزوّد. تحقق من الاتصال وأعد المحاولة.",
+    "تعذّر على Dani Dex الوصول إلى مصادر إصدارات المزوّد. تحقق من الاتصال وأعد المحاولة.",
   "error.provider.runtimesUnsupported": "بيئات تشغيل المزوّدين غير متاحة على هذا النظام.",
-  "error.provider.closing": "يجري إغلاق dani-dex.",
+  "error.provider.closing": "يجري إغلاق Dani Dex.",
   "error.provider.removeWhileOn": "أوقف المزوّد قبل إزالة تنزيله.",
   "error.provider.removeWhileDownloading": "انتظر حتى ينتهي التنزيل، ثم أزله.",
   "error.provider.removeIncomplete": "يستخدم برنامج بعض ملفات واجهة CLI هذه. أغلقه، ثم أعد المحاولة.",
   "error.provider.removeDownloadsFailed": "تعذّرت إزالة تنزيلات CLI الخاصة بـ {providers}.",
-  "error.provider.cliOverride": "أزل مسار CLI المخصص قبل التحديث في dani-dex.",
+  "error.provider.cliOverride": "أزل مسار CLI المخصص قبل التحديث في Dani Dex.",
   "error.provider.runtimeUpdateIncomplete": "لم يكتمل تحديث بيئة التشغيل.",
   "error.provider.downloadHttp": "فشل تنزيل بيئة التشغيل برمز HTTP {status}.",
   "error.provider.downloadNoData": "لم يُرجع تنزيل بيئة التشغيل أي بيانات.",
@@ -95,7 +103,7 @@ export const messages = {
   "error.provider.unexpectedVersion": "أرجعت بيئة تشغيل المزوّد إصدارًا غير متوقع.",
   "error.provider.metadataNoData": "لم يُرجع تنزيل بيانات تعريف بيئة التشغيل أي بيانات.",
   "error.provider.metadataTooLarge": "بيانات تعريف بيئة التشغيل كبيرة جدًا.",
-  "error.provider.requestFailed": "تعذّر على dani-dex تنزيل {url}. {reason}",
+  "error.provider.requestFailed": "تعذّر على Dani Dex تنزيل {url}. {reason}",
   "error.provider.installRecordMismatch": "سجل تثبيت بيئة التشغيل غير مطابق.",
   "error.provider.runtimeChecksum": "عدم تطابق المجموع الاختباري لبيئة تشغيل المزوّد.",
   "error.provider.codexReleaseShape": "إصدار Codex بتنسيق غير متوقع.",
@@ -135,26 +143,26 @@ export const messages = {
   "error.provider.noModel": "لا يتوفر نموذج للمزوّد المحدد.",
   "error.provider.noModelNamed": "لا يتوفر نموذج لدى {provider}.",
   "error.provider.acpModelsNotLoaded": "تعذّر على {provider} تحميل نماذجه. أرسل رسالتك مرة أخرى.",
-  "error.provider.acpNoModels": "لم تُعلن واجهة ACP CLI عن أي نماذج ACP. لن يخمّن dani-dex نموذجًا بديلًا.",
+  "error.provider.acpNoModels": "لم تُعلن واجهة ACP CLI عن أي نماذج ACP. لن يخمّن Dani Dex نموذجًا بديلًا.",
   "error.provider.endpointRemoveBusy": "انتظر حتى ينتهي الدور النشط وقائمة الانتظار قبل إزالة نقطة النهاية هذه.",
-  "error.provider.codexOutdated": "إصدار Codex CLI {version} قديم جدًا. يتطلب dani-dex الإصدار 0.156.0 أو أحدث.",
+  "error.provider.codexOutdated": "إصدار Codex CLI {version} قديم جدًا. يتطلب Dani Dex الإصدار 0.156.0 أو أحدث.",
   "error.provider.codexNotStarted": "عُثر على Codex CLI لكن تعذّر تشغيله.",
   "error.provider.codexNotStartedHint":
     "عُثر على Codex CLI لكن تعذّر تشغيله. شغّل `codex --version` في نافذة طرفية جديدة.",
-  "error.provider.codexManagedNotStarted": "نُزّل ChatGPT لكن تعذّر تشغيله. نزّله مرة أخرى في dani-dex.",
-  "error.provider.codexMissing": "لم يُنزَّل ChatGPT. نزّله في dani-dex للمتابعة.",
-  "error.provider.claudeOutdated": "إصدار Claude Code {version} قديم جدًا. يتطلب dani-dex الإصدار 2.1.232 أو أحدث.",
+  "error.provider.codexManagedNotStarted": "نُزّل ChatGPT لكن تعذّر تشغيله. نزّله مرة أخرى في Dani Dex.",
+  "error.provider.codexMissing": "لم يُنزَّل ChatGPT. نزّله في Dani Dex للمتابعة.",
+  "error.provider.claudeOutdated": "إصدار Claude Code {version} قديم جدًا. يتطلب Dani Dex الإصدار 2.1.232 أو أحدث.",
   "error.provider.claudeNotStarted": "عُثر على Claude CLI لكن تعذّر تشغيله.",
   "error.provider.claudeNotStartedHint":
     "عُثر على Claude CLI لكن تعذّر تشغيله. شغّل `claude --version` في نافذة طرفية جديدة.",
-  "error.provider.claudeManagedNotStarted": "نُزّل Claude لكن تعذّر تشغيله. نزّله مرة أخرى في dani-dex.",
-  "error.provider.claudeMissing": "لم يُنزَّل Claude. نزّله في dani-dex للمتابعة.",
-  "error.provider.grokOutdated": "إصدار Grok CLI {version} قديم جدًا. يتطلب dani-dex الإصدار 1.0.5 أو أحدث.",
+  "error.provider.claudeManagedNotStarted": "نُزّل Claude لكن تعذّر تشغيله. نزّله مرة أخرى في Dani Dex.",
+  "error.provider.claudeMissing": "لم يُنزَّل Claude. نزّله في Dani Dex للمتابعة.",
+  "error.provider.grokOutdated": "إصدار Grok CLI {version} قديم جدًا. يتطلب Dani Dex الإصدار 1.0.5 أو أحدث.",
   "error.provider.grokNotStarted": "عُثر على Grok CLI لكن تعذّر تشغيله.",
   "error.provider.grokNotStartedHint": "عُثر على Grok CLI لكن تعذّر تشغيله. شغّل `grok --version` في نافذة طرفية جديدة.",
-  "error.provider.grokMissing": "لم يُنزَّل Grok. نزّله في dani-dex للمتابعة.",
+  "error.provider.grokMissing": "لم يُنزَّل Grok. نزّله في Dani Dex للمتابعة.",
   "error.provider.opencodeNotStarted": "تعذّر تشغيل OpenCode. شغّل `opencode --version` في نافذة طرفية.",
-  "error.provider.opencodeMissing": "لم يُنزَّل OpenCode. نزّله في dani-dex للمتابعة.",
+  "error.provider.opencodeMissing": "لم يُنزَّل OpenCode. نزّله في Dani Dex للمتابعة.",
   "error.provider.codexVersionUnreadable": "تتعذّر قراءة إصدار Codex CLI.",
   "error.provider.claudeVersionUnreadable": "تتعذّر قراءة إصدار Claude CLI.",
   "error.provider.grokVersionUnreadable": "تتعذّر قراءة إصدار Grok CLI.",
@@ -162,24 +170,24 @@ export const messages = {
   "error.provider.bunVersionUnreadable": "تتعذّر قراءة إصدار بيئة تشغيل Bun.",
   "error.provider.connectBeforeProfile": "اربط المزوّد المحدد قبل إنشاء ملف تعريف.",
   "error.provider.cliNotReady": "واجهة {provider} CLI غير جاهزة أو لم يُسجَّل الدخول إليها.",
-  "error.provider.cliTimedOut": "لم يستجب {provider} في الوقت المحدد. قد يكون الحاسوب مشغولًا. سيعيد dani-dex المحاولة.",
+  "error.provider.cliTimedOut": "لم يستجب {provider} في الوقت المحدد. قد يكون الحاسوب مشغولًا. سيعيد Dani Dex المحاولة.",
   "error.provider.cliTimedOutRefresh":
     "لم يستجب {provider} في الوقت المحدد. قد يكون الحاسوب مشغولًا. حدّث المزوّدين لإعادة المحاولة.",
   "error.provider.stoppedBeforeStart": "توقف {provider} قبل أن تبدأ هذه الرسالة. أرسل الرسالة مرة أخرى.",
   "error.provider.sessionStartTimedOut":
-    "لم يفتح {provider} محادثة جديدة في الوقت المحدد، لذلك لم تبدأ هذه الرسالة. على الكمبيوتر الذي يشغّل dani-dex، افتح المزوّدون، واختر {provider}، وانقر إعادة التشغيل. ثم حاول مرة أخرى.",
+    "لم يفتح {provider} محادثة جديدة في الوقت المحدد، لذلك لم تبدأ هذه الرسالة. على الكمبيوتر الذي يشغّل Dani Dex، افتح المزوّدون، واختر {provider}، وانقر إعادة التشغيل. ثم حاول مرة أخرى.",
   "error.provider.sessionResumeTimedOut":
-    "لم يفتح {provider} هذه المحادثة في الوقت المحدد، لذلك لم تبدأ هذه الرسالة. على الكمبيوتر الذي يشغّل dani-dex، افتح المزوّدون، واختر {provider}، وانقر إعادة التشغيل. ثم حاول مرة أخرى.",
+    "لم يفتح {provider} هذه المحادثة في الوقت المحدد، لذلك لم تبدأ هذه الرسالة. على الكمبيوتر الذي يشغّل Dani Dex، افتح المزوّدون، واختر {provider}، وانقر إعادة التشغيل. ثم حاول مرة أخرى.",
   "error.provider.serviceUnreachable":
-    "لا يستطيع {provider} الاتصال بخدمته. تحقّق من اتصال الإنترنت. سيعيد dani-dex المحاولة.",
+    "لا يستطيع {provider} الاتصال بخدمته. تحقّق من اتصال الإنترنت. سيعيد Dani Dex المحاولة.",
   "error.provider.serviceUnreachableRefresh":
     "لا يستطيع {provider} الاتصال بخدمته. تحقّق من اتصال الإنترنت، ثم حدّث المزوّدين.",
   "error.provider.acpStartTimedOut": "لم يكتمل تشغيل {provider} خلال {seconds} ث. قد يكون الحاسوب مشغولًا.",
   "error.provider.acpModelsTimedOut": "لم يعرض {provider} نماذجه خلال {seconds} ث. قد يكون الحاسوب مشغولًا.",
   "error.provider.startStopped":
-    "فشل تشغيل {provider} عدة مرات متتالية، لذا توقف dani-dex عن المحاولة. حدّث المزوّدين لإعادة المحاولة.",
+    "فشل تشغيل {provider} عدة مرات متتالية، لذا توقف Dani Dex عن المحاولة. حدّث المزوّدين لإعادة المحاولة.",
   "error.provider.startPaused":
-    "فشل تشغيل {provider} عدة مرات متتالية. سيحاول dani-dex مرة أخرى مع الرسالة أو المهمة الدورية التالية. للمحاولة الآن، حدّث المزوّدين.",
+    "فشل تشغيل {provider} عدة مرات متتالية. سيحاول Dani Dex مرة أخرى مع الرسالة أو المهمة الدورية التالية. للمحاولة الآن، حدّث المزوّدين.",
   "error.provider.tempDiskSpace":
     "يحتاج {provider} إلى 1 GB على الأقل من مساحة القرص الفارغة ليعمل. حرّر مساحة، ثم حدّث المزوّدين.",
   "error.provider.noCodeSignIn": "لا يمكن تسجيل الدخول إلى {provider} برمز.",
@@ -191,16 +199,16 @@ export const messages = {
   "error.provider.codeLoginUnsupported":
     "لا يمكن لهذا الخادم تسجيل الدخول برمز ملصوق. سجّل الدخول على حاسوب الخادم، في متصفحه.",
   "error.provider.claudeLoginNotSaved":
-    "تعذّر على Claude حفظ تسجيل الدخول على جهاز Mac. أعد تشغيل جهاز Mac الذي يشغّل dani-dex، ثم اربط Claude مرة أخرى.",
+    "تعذّر على Claude حفظ تسجيل الدخول على جهاز Mac. أعد تشغيل جهاز Mac الذي يشغّل Dani Dex، ثم اربط Claude مرة أخرى.",
   "error.provider.cliBusyRetry": "تعمل واجهة {provider} CLI على دور. انتظر حتى ينتهي، ثم أعد المحاولة.",
   "error.provider.cliSigningIn": "تُجري واجهة {provider} CLI تسجيل الدخول. أكمل تسجيل الدخول أو ألغه، ثم حدّث.",
   "error.provider.cliBusyUpdate": "تعمل واجهة {provider} CLI على دور. انتظر حتى ينتهي، ثم حدّث.",
-  "error.provider.cliSelectFailed": "تعذّر على dani-dex اختيار واجهة CLI المُدارة المثبتة.",
+  "error.provider.cliSelectFailed": "تعذّر على Dani Dex اختيار واجهة CLI المُدارة المثبتة.",
   "error.provider.noAuthenticatedAccount": "لم يُرجع {provider} حسابًا مصادقًا عليه.",
   "error.provider.codexModelProvider":
     "يستخدم Codex على هذا الكمبيوتر مزوّد نماذج آخر، وهذا المزوّد لا يستخدم تسجيل الدخول إلى ChatGPT أو مفتاح OpenAI API. يمكن لوكلاء ChatGPT استخدام هذا المزوّد الآن. لاستخدام حساب ChatGPT، أعد مزوّد النماذج في Codex إلى OpenAI.",
   "error.provider.signInExpired": "انتهت صلاحية تسجيل دخولك إلى {provider}. سجّل الدخول مرة أخرى للمتابعة.",
-  "error.provider.cliActivateFailed": "تعذّر على dani-dex تفعيل واجهة CLI المُدارة.",
+  "error.provider.cliActivateFailed": "تعذّر على Dani Dex تفعيل واجهة CLI المُدارة.",
   "error.provider.noMainlandChinaSignIn": "لا يوفر {provider} تسجيل دخول للصين القارية.",
   "error.provider.cliNewVersionNotStarted": "لم يبدأ تشغيل الإصدار الجديد.",
   "error.provider.cliBusyReconnect": "تعمل واجهة {provider} CLI على دور. انتظر حتى ينتهي، ثم أعد الاتصال.",
@@ -231,7 +239,7 @@ export const messages = {
     "رفض OpenCode Go الطلب. لا يحل مفتاح API جديد هذه المشكلة. قد لا تكون خطة OpenCode Go نشطة، أو قد يحظر OpenCode Go شبكتك: بعض الخدمات تحظر شبكات VPN أو الخوادم الوكيلة أو بعض البلدان. تأكد من أن خطتك نشطة في OpenCode Console، أو أوقف VPN، ثم حاول مرة أخرى. يمكنك أيضًا اختيار نموذج آخر.",
   "error.provider.opencodeServiceFailure":
     "تعذّر على OpenCode إكمال هذا الدور لأن خدمته المحلية فشلت. أعد المحاولة. إذا استمر الخطأ، أعد ربط OpenCode في الإعدادات.",
-  "error.provider.opencodeStillStarting": "لم ينتهِ OpenCode من التحميل في الوقت المحدد. سيحاول dani-dex مرة أخرى.",
+  "error.provider.opencodeStillStarting": "لم ينتهِ OpenCode من التحميل في الوقت المحدد. سيحاول Dani Dex مرة أخرى.",
   "error.provider.opencodeRateLimited":
     "رفض مزوّد النموذج الطلب بسبب حد المعدل. انتظر بضع دقائق أو اختر نموذجًا آخر، ثم أعد المحاولة.\n{detail}",
   "error.provider.opencodeBilling":
@@ -239,11 +247,11 @@ export const messages = {
   "error.provider.opencodeInvalidUpload":
     "أبلغ مزوّد نموذج OpenCode عن طلب رفع غير صالح. اختر نموذجًا آخر وتابع. تحقق من المهام الدورية المحفوظة قبل إنشائها مرة أخرى.\n{detail}",
   "error.provider.opencodeUnreadableContent":
-    "لا يستطيع هذا النموذج قراءة ملف أو صورة في هذه الدردشة. بدأ dani-dex جلسة OpenCode جديدة مع سجل الدردشة. أرسل رسالتك مرة أخرى بدون الملف، أو اختر نموذجًا يمكنه قراءة الملفات. إذا أضفت هذا النموذج إلى مزوّد مخصص، فألغِ تحديد «الصور» في «يقبل» في إعداداته.",
+    "لا يستطيع هذا النموذج قراءة ملف أو صورة في هذه الدردشة. بدأ Dani Dex جلسة OpenCode جديدة مع سجل الدردشة. أرسل رسالتك مرة أخرى بدون الملف، أو اختر نموذجًا يمكنه قراءة الملفات. إذا أضفت هذا النموذج إلى مزوّد مخصص، فألغِ تحديد «الصور» في «يقبل» في إعداداته.",
   "error.provider.opencodeOutOfMemory":
-    "نفدت ذاكرة خادم النموذج لهذه المحادثة. ابدأ محادثة جديدة، أو حمّل النموذج بطول سياق أصغر وأدخل النافذة نفسها في إعدادات مزوده في dani-dex.",
+    "نفدت ذاكرة خادم النموذج لهذه المحادثة. ابدأ محادثة جديدة، أو حمّل النموذج بطول سياق أصغر وأدخل النافذة نفسها في إعدادات مزوده في Dani Dex.",
   "error.provider.opencodeContextTooSmall":
-    "هذه المحادثة لا تتسع في نافذة سياق النموذج. في Ollama أو LM Studio، حمّل النموذج بطول سياق أكبر، وأدخل النافذة نفسها في إعدادات مزوده في dani-dex. أو اختر نموذجًا أكبر.",
+    "هذه المحادثة لا تتسع في نافذة سياق النموذج. في Ollama أو LM Studio، حمّل النموذج بطول سياق أكبر، وأدخل النافذة نفسها في إعدادات مزوده في Dani Dex. أو اختر نموذجًا أكبر.",
   "error.provider.opencodeFreeLimit":
     "بلغت نماذج OpenCode المجانية حد الاستخدام. تشترك جميع النماذج المجانية في هذا الحد. للمتابعة، الصق مفتاح OpenCode Go في إعدادات OpenCode، أو اختر نموذجًا من مزوّد آخر.",
   "error.provider.opencodeProviderFailed":
@@ -262,12 +270,12 @@ export const messages = {
   "error.provider.opencodeSafetyBlocked":
     "حظر مزوّد النموذج هذه الرسالة بسبب قواعد الأمان الخاصة به. أرسل طلبك مرة أخرى بكلمات مختلفة. إذا حظر رسائلك التالية أيضًا، فابدأ محادثة جديدة أو اختر نموذجًا آخر.",
   "error.provider.opencodeNetwork":
-    "تعذّر على OpenCode الاتصال بمزوّد النموذج. تحقق من اتصال الشبكة للحاسوب الذي يشغّل dani-dex، ثم أعد المحاولة.\n{detail}",
+    "تعذّر على OpenCode الاتصال بمزوّد النموذج. تحقق من اتصال الشبكة للحاسوب الذي يشغّل Dani Dex، ثم أعد المحاولة.\n{detail}",
   "error.provider.codexStateBusy": "لا يزال ChatGPT يجهّز سجله المحلي بعد تشغيل سابق. انتظر بضع دقائق، ثم أعد المحاولة.",
   "error.provider.codexThreadInUse":
     "تطبيق Codex آخر يفتح هذه الدردشة، مثل تطبيق Codex لسطح المكتب أو Codex CLI أو إضافة IDE. يمكن لتطبيق واحد فقط في كل مرة أن يكتب في دردشة Codex. أغلق الدردشة في ذلك التطبيق، ثم أرسل رسالتك مرة أخرى.",
   "error.provider.realtimeLimitZero":
-    "أوقف Linux المزوّد لأن حد وقت المعالج في الوقت الحقيقي لدى dani-dex هو 0. يأتي هذا الحد من نظامك. ثبّت rtkit وشغّله (`rtkit-daemon`)، ثم نفّذ `systemctl --user restart xdg-desktop-portal`، ثم أعد تشغيل dani-dex. إعادة تشغيل xdg-desktop-portal وحدها لا تكفي ما دام rtkit غير مثبّت.",
+    "أوقف Linux المزوّد لأن حد وقت المعالج في الوقت الحقيقي لدى Dani Dex هو 0. يأتي هذا الحد من نظامك. ثبّت rtkit وشغّله (`rtkit-daemon`)، ثم نفّذ `systemctl --user restart xdg-desktop-portal`، ثم أعد تشغيل Dani Dex. إعادة تشغيل xdg-desktop-portal وحدها لا تكفي ما دام rtkit غير مثبّت.",
   "error.provider.cpuUnsupported": "لا يمكن لمعالج هذا الكمبيوتر تشغيل هذا المزوّد. استخدم مزوّدًا آخر.",
   "error.provider.windowsBlocked":
     "منعت إعدادات أمان Windows، مثل التحكم الذكي في التطبيقات، هذا المزوّد من البدء. استخدم مزوّدًا آخر.",
@@ -285,19 +293,19 @@ export const messages = {
   "error.provider.channelNoAnswer":
     "أنهى {provider} الدور بدون إجابة. في القناة، انقر على «متابعة» لتشغيل المهمة مرة أخرى، أو على «إعادة الإسناد» لإعطائها لعضو آخر.",
   "error.provider.acpProcessStopped": "توقف {provider} قبل أن يجيب. أرسل الرسالة مرة أخرى.",
-  "error.provider.chatgptPageFailed": "تعذّر على dani-dex فتح صفحة ربط ChatGPT.",
+  "error.provider.chatgptPageFailed": "تعذّر على Dani Dex فتح صفحة ربط ChatGPT.",
   "error.provider.noneReady": "لا يوجد مزوّد وكلاء جاهز.",
   "error.provider.claudeTurnActive": "انتظر انتهاء دور Claude النشط قبل تحديث سياقه.",
   "error.provider.codexLoginRequired": "يتطلب Codex تسجيل الدخول باشتراك ChatGPT. شغّل `codex login`.",
-  "error.provider.cliUpdateFailed": "تعذّر على dani-dex تحديث واجهة {provider} CLI. {reason}",
+  "error.provider.cliUpdateFailed": "تعذّر على Dani Dex تحديث واجهة {provider} CLI. {reason}",
   "error.provider.tryAgain": "أعد المحاولة.",
   "error.provider.noAgentProcess": "لا توجد عملية {provider} قيد التشغيل لهذا الوكيل.",
   "error.provider.stoppedBeforeAgentProcess": "توقف {provider} قبل بدء عملية الوكيل.",
   "error.provider.archiveUnreadable": "تتعذّر قراءة أرشيف بيئة التشغيل أو أنه يستخدم تنسيقًا غير مدعوم.",
-  "error.provider.antigravityMissing": "لم يُنزَّل Gemini. نزّله في dani-dex للمتابعة.",
+  "error.provider.antigravityMissing": "لم يُنزَّل Gemini. نزّله في Dani Dex للمتابعة.",
   "error.provider.antigravityNotStarted": "عُثر على خادم Gemini، لكن تتعذّر قراءة إصداره.",
   "error.provider.antigravityOverrideInvalid":
-    "خادم Gemini في OPENBOT_ANTIGRAVITY_PATH غير موجود أو غير قابل للتنفيذ. صحّح المسار أو احذف المتغير، ثم أعد تشغيل dani-dex.",
+    "خادم Gemini في OPENBOT_ANTIGRAVITY_PATH غير موجود أو غير قابل للتنفيذ. صحّح المسار أو احذف المتغير، ثم أعد تشغيل Dani Dex.",
   "error.provider.antigravityVersionUnreadable": "تتعذّر قراءة إصدار خادم Gemini.",
   "error.provider.antigravitySignIn": "سجّل الدخول باستخدام Google لاستخدام Gemini.",
   "error.provider.antigravityModelAtCapacity":
@@ -316,11 +324,11 @@ export const messages = {
     "رفض Gemini هذا الطلب. اختر نموذجًا آخر، ثم أرسل رسالتك مرة أخرى. إذا فشل مرة أخرى، فابدأ دردشة جديدة.\n{detail}",
   "error.provider.antigravityNetwork": "فقد Gemini الاتصال بـ Google. أرسل رسالتك مرة أخرى. ({cause})",
   "error.provider.antigravitySessionRejected":
-    "رفض Gemini هذا الطلب ولم يذكر السبب. قد يسبب هذا عنصر في سجل الدردشة، مثل صورة فتحها الوكيل. بدأ dani-dex جلسة Gemini جديدة بسجل الدردشة. أعد المحاولة. إذا استمر الخطأ، اختر نموذجًا آخر.",
+    "رفض Gemini هذا الطلب ولم يذكر السبب. قد يسبب هذا عنصر في سجل الدردشة، مثل صورة فتحها الوكيل. بدأ Dani Dex جلسة Gemini جديدة بسجل الدردشة. أعد المحاولة. إذا استمر الخطأ، اختر نموذجًا آخر.",
   "error.provider.antigravityHistoryUnreadable":
-    "تعذّر على Gemini قراءة السجل المحفوظ لهذه الدردشة. بدأ dani-dex جلسة Gemini جديدة مع سجل الدردشة. أرسل رسالتك مرة أخرى.",
+    "تعذّر على Gemini قراءة السجل المحفوظ لهذه الدردشة. بدأ Dani Dex جلسة Gemini جديدة مع سجل الدردشة. أرسل رسالتك مرة أخرى.",
   "error.provider.acpTurnStuck":
-    "لم يُنهِ {provider} دوره السابق، لذلك لم يقبل هذه الرسالة. بدأ dani-dex جلسة {provider} جديدة مع سجل الدردشة. أرسل رسالتك مرة أخرى.",
+    "لم يُنهِ {provider} دوره السابق، لذلك لم يقبل هذه الرسالة. بدأ Dani Dex جلسة {provider} جديدة مع سجل الدردشة. أرسل رسالتك مرة أخرى.",
   "error.provider.antigravityLocationUnsupported":
     "لا تسمح Google بتشغيل Gemini من الموقع الشبكي للكمبيوتر الذي يشغّل هذا الوكيل. استخدم Gemini على كمبيوتر آخر، أو اختر مزوّدًا آخر لهذا الوكيل.\n{detail}",
   "error.provider.antigravityTurnStopped":
@@ -334,7 +342,7 @@ export const messages = {
   "error.provider.cursorArchivePath": "يحتوي أرشيف Cursor على ملف غير متوقع.",
   "error.provider.cursorChecksum": "عدم تطابق المجموع الاختباري لبيئة تشغيل Cursor.",
   "error.provider.cursorReleaseShape": "إصدار Cursor بتنسيق غير متوقع.",
-  "error.provider.cursorMissing": "لم يُنزَّل Cursor. نزّله في dani-dex للمتابعة.",
+  "error.provider.cursorMissing": "لم يُنزَّل Cursor. نزّله في Dani Dex للمتابعة.",
   "error.provider.cursorNotStarted": "عُثر على وكيل Cursor، لكن تتعذّر قراءة إصداره.",
   "error.provider.cursorVersionUnreadable": "تتعذّر قراءة إصدار وكيل Cursor.",
   "error.provider.cursorSignIn": "سجّل الدخول باستخدام Cursor أو عيّن CURSOR_API_KEY لاستخدام Cursor.",
@@ -344,16 +352,16 @@ export const messages = {
   "error.provider.clinePackageMismatch": "لا تطابق حزمة Cline كتالوج بيئات التشغيل.",
   "error.provider.clineChecksum": "عدم تطابق المجموع الاختباري لبيئة تشغيل Cline.",
   "error.provider.clineLicenseChecksum": "عدم تطابق المجموع الاختباري لترخيص Cline.",
-  "error.provider.clineMissing": "لم يُنزَّل Cline. نزّله في dani-dex للمتابعة.",
-  "error.provider.clineOutdated": "إصدار Cline CLI {version} قديم جدًا. يتطلب dani-dex الإصدار 3.0.68 أو أحدث.",
+  "error.provider.clineMissing": "لم يُنزَّل Cline. نزّله في Dani Dex للمتابعة.",
+  "error.provider.clineOutdated": "إصدار Cline CLI {version} قديم جدًا. يتطلب Dani Dex الإصدار 3.0.68 أو أحدث.",
   "error.provider.clineNotStarted": "تعذّر تشغيل Cline. شغّل `cline --version` في نافذة طرفية.",
   "error.provider.clineVersionUnreadable": "تتعذّر قراءة إصدار Cline CLI.",
   "error.provider.clineSignIn": "سجّل الدخول باستخدام Cline أو عيّن CLINE_API_KEY لاستخدام Cline.",
   "error.provider.kimiArchivePath": "يحتوي أرشيف Kimi على مسار غير متوقع.",
   "error.provider.kimiChecksum": "عدم تطابق المجموع الاختباري لبيئة تشغيل Kimi.",
   "error.provider.kimiLicenseChecksum": "عدم تطابق المجموع الاختباري لترخيص Kimi.",
-  "error.provider.kimiMissing": "لم يُنزَّل Kimi. نزّله في dani-dex للمتابعة.",
-  "error.provider.kimiOutdated": "إصدار Kimi CLI {version} قديم جدًا. يتطلب dani-dex الإصدار 1.52.0 أو أحدث.",
+  "error.provider.kimiMissing": "لم يُنزَّل Kimi. نزّله في Dani Dex للمتابعة.",
+  "error.provider.kimiOutdated": "إصدار Kimi CLI {version} قديم جدًا. يتطلب Dani Dex الإصدار 1.52.0 أو أحدث.",
   "error.provider.kimiNotStarted": "تعذّر تشغيل Kimi. شغّل `kimi --version` في نافذة طرفية.",
   "error.provider.kimiVersionUnreadable": "تتعذّر قراءة إصدار Kimi CLI.",
   "error.provider.kimiSignIn": "سجّل الدخول باستخدام Kimi Code لاستخدام Kimi.",
@@ -368,14 +376,14 @@ export const messages = {
   "error.provider.hermesTurnFailed":
     "لم يتمكن Hermes من إنهاء هذا الدور. إذا ذكر ردّه سببًا، فاتبع ما يقوله. وإلا فقد يكون أحد خوادم MCP لهذا الوكيل غير متاح: تحقق منه في المتجر، التطبيقات، ثم أرسل رسالتك مرة أخرى.",
   "error.provider.hermesRefused":
-    "رفض Hermes هذه الرسالة قبل أن تبدأ. أرسلها مرة أخرى. إذا رفض Hermes كل رسالة، فأعد تشغيل dani-dex على الكمبيوتر الذي يشغّل هذا الوكيل.",
+    "رفض Hermes هذه الرسالة قبل أن تبدأ. أرسلها مرة أخرى. إذا رفض Hermes كل رسالة، فأعد تشغيل Dani Dex على الكمبيوتر الذي يشغّل هذا الوكيل.",
   "error.provider.hermesConnectionLost":
     "فقد Hermes اتصاله أثناء هذه الرسالة، لذا لا يعرف ما إذا كان العمل قد اكتمل. تحقق مما فعله الوكيل قبل أن ترسل الرسالة مرة أخرى.",
   "error.provider.copilotThinkingRejected":
     "تعذّر على GitHub Copilot استخدام هذا النموذج: لم يقبل النموذج إعداد التفكير. اختر نموذجًا آخر لهذا الوكيل، ثم أرسل رسالتك مرة أخرى.",
   "error.provider.usageLimitReached": "بلغ الحساب حد الاستخدام.",
   "error.provider.claudeContextFull":
-    "أصبحت هذه الدردشة طويلة جدًا على Claude. بدأ dani-dex جلسة Claude Code جديدة بسجل الدردشة. أعد المحاولة.",
+    "أصبحت هذه الدردشة طويلة جدًا على Claude. بدأ Dani Dex جلسة Claude Code جديدة بسجل الدردشة. أعد المحاولة.",
   "error.provider.claudeApiKeyNoCredit":
     "لا يوجد رصيد API في مفتاح Anthropic API. لا تدفع خطة Claude مقابل الطلبات التي تستخدم مفتاح API. أضف رصيدًا في Anthropic Console، أو سجّل الدخول إلى Claude في الإعدادات واختر حساب Claude في قائمة نموذج الوكيل.",
   "error.provider.claudeAccountNoCredit":
@@ -383,39 +391,39 @@ export const messages = {
   "error.provider.claudeServiceBlocked":
     "حظرت خدمة Claude هذا الطلب. عادةً تكون هذه مشكلة قصيرة من جهة Claude، وليست مشكلة في حسابك. أرسل الرسالة مرة أخرى بعد بضع دقائق.",
   "error.provider.foreignReasoning":
-    "لم يقبل {provider} الاستدلال السابق في هذه الدردشة، لأن حسابًا أو مفتاح API مختلفًا استلمه. بدأ dani-dex جلسة {provider} جديدة بسجل الدردشة. أعد المحاولة.",
+    "لم يقبل {provider} الاستدلال السابق في هذه الدردشة، لأن حسابًا أو مفتاح API مختلفًا استلمه. بدأ Dani Dex جلسة {provider} جديدة بسجل الدردشة. أعد المحاولة.",
   "error.provider.blankHistoryText":
-    "لم يقبل النموذج هذه الدردشة، لأن سجلها المحفوظ يحتوي على رسالة فارغة. بدأ dani-dex جلسة {provider} جديدة بسجل الدردشة. أعد المحاولة.",
+    "لم يقبل النموذج هذه الدردشة، لأن سجلها المحفوظ يحتوي على رسالة فارغة. بدأ Dani Dex جلسة {provider} جديدة بسجل الدردشة. أعد المحاولة.",
   "error.provider.codexHistoryItemMissing":
-    "لم يتمكن Codex من متابعة هذه الدردشة، لأن عنصرًا في سجله المحفوظ مفقود. بدأ dani-dex جلسة Codex جديدة بسجل الدردشة. أعد المحاولة.",
+    "لم يتمكن Codex من متابعة هذه الدردشة، لأن عنصرًا في سجله المحفوظ مفقود. بدأ Dani Dex جلسة Codex جديدة بسجل الدردشة. أعد المحاولة.",
   "error.provider.codexRequestRefused":
-    "رفض {provider} طلب هذه الدردشة ولم يذكر السبب. قد يحدث هذا في دردشة طويلة تحتوي على صور كثيرة. بدأ dani-dex جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
+    "رفض {provider} طلب هذه الدردشة ولم يذكر السبب. قد يحدث هذا في دردشة طويلة تحتوي على صور كثيرة. بدأ Dani Dex جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
   "error.provider.codexSafetyBlocked":
     "حظر {provider} هذه الرسالة بسبب قواعد الأمان الخاصة به: {reason} لم يعد الوكيل يرى هذه الرسالة، لذلك لن تمنع رسائلك التالية. أرسل طلبك مرة أخرى بكلمات مختلفة.",
   "error.provider.codexSafetyBlockedKept":
     "حظر {provider} هذه الرسالة بسبب قواعد الأمان الخاصة به: {reason} إذا حظر {provider} رسائلك التالية أيضًا، فابدأ دردشة جديدة.",
   "error.provider.codexAudioRefused":
-    "لا يستطيع هذا النموذج الاستماع إلى الصوت، لذلك لم يقبل الصوت في هذه الدردشة. بدأ dani-dex جلسة Codex جديدة مع سجل الدردشة. للمتابعة، أرسل طلبك مرة أخرى واطلب من الوكيل أن يعمل بدون الصوت. لفحص الصوت، اختر في قائمة نموذج الوكيل نموذجًا يستطيع الاستماع إلى الصوت.",
+    "لا يستطيع هذا النموذج الاستماع إلى الصوت، لذلك لم يقبل الصوت في هذه الدردشة. بدأ Dani Dex جلسة Codex جديدة مع سجل الدردشة. للمتابعة، أرسل طلبك مرة أخرى واطلب من الوكيل أن يعمل بدون الصوت. لفحص الصوت، اختر في قائمة نموذج الوكيل نموذجًا يستطيع الاستماع إلى الصوت.",
   "error.provider.imageTooSmall":
-    "لم يقبل النموذج صورة في هذه الدردشة لأن الصورة صغيرة جدًا. بدأ dani-dex جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
+    "لم يقبل النموذج صورة في هذه الدردشة لأن الصورة صغيرة جدًا. بدأ Dani Dex جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
   "error.provider.imageTooLarge":
-    "لم يقبل النموذج صورة في هذه الدردشة لأن الصورة كبيرة جدًا. بدأ dani-dex جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
+    "لم يقبل النموذج صورة في هذه الدردشة لأن الصورة كبيرة جدًا. بدأ Dani Dex جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
   "error.provider.imageCountLimit":
-    "لم يقبل النموذج هذه الدردشة لأن فيها صورًا كثيرة جدًا. بدأ dani-dex جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
+    "لم يقبل النموذج هذه الدردشة لأن فيها صورًا كثيرة جدًا. بدأ Dani Dex جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
   "error.provider.imageUnreadable":
-    "لم يتمكن النموذج من قراءة صورة في هذه الدردشة. بدأ dani-dex جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى. إذا أرسلت صورة، فأرسل صورة أخرى.",
+    "لم يتمكن النموذج من قراءة صورة في هذه الدردشة. بدأ Dani Dex جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى. إذا أرسلت صورة، فأرسل صورة أخرى.",
   "error.provider.requestTooLarge":
-    "أصبحت هذه الدردشة كبيرة جدًا بحيث لا يمكن إرسالها إلى النموذج. غالبًا ما تسبب الصور في الدردشة ذلك. بدأ dani-dex جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
+    "أصبحت هذه الدردشة كبيرة جدًا بحيث لا يمكن إرسالها إلى النموذج. غالبًا ما تسبب الصور في الدردشة ذلك. بدأ Dani Dex جلسة {provider} جديدة مع سجل الدردشة. حاول مرة أخرى.",
   "error.provider.opencodeSessionRejected":
-    "رفض OpenCode الطلب ولم يذكر السبب. قد يحدث هذا في دردشة طويلة أو بعد تغيير النموذج. بدأ dani-dex جلسة OpenCode جديدة بسجل الدردشة. أعد المحاولة. إذا استمر الخطأ، اختر نموذجًا مختلفًا أو مستوى جهد أقل.",
+    "رفض OpenCode الطلب ولم يذكر السبب. قد يحدث هذا في دردشة طويلة أو بعد تغيير النموذج. بدأ Dani Dex جلسة OpenCode جديدة بسجل الدردشة. أعد المحاولة. إذا استمر الخطأ، اختر نموذجًا مختلفًا أو مستوى جهد أقل.",
   "error.provider.opencodeInputRefused":
-    "رفض النموذج محتوى هذه الدردشة ولم يذكر السبب. قد يسبب ذلك ملف في الدردشة، مثل ملف PDF أو صورة. بدأ dani-dex جلسة OpenCode جديدة بسجل الدردشة. أرسل رسالتك مرة أخرى بدون الملف، أو اختر نموذجًا مختلفًا.",
+    "رفض النموذج محتوى هذه الدردشة ولم يذكر السبب. قد يسبب ذلك ملف في الدردشة، مثل ملف PDF أو صورة. بدأ Dani Dex جلسة OpenCode جديدة بسجل الدردشة. أرسل رسالتك مرة أخرى بدون الملف، أو اختر نموذجًا مختلفًا.",
   "error.provider.opencodeCompactionFailed":
-    "لم يتمكن النموذج من تلخيص هذه الدردشة الطويلة لإفساح المجال في نافذة السياق. بدأ dani-dex جلسة OpenCode جديدة بسجل الدردشة. أعد المحاولة. إذا استمر الخطأ، اختر نموذجًا أقوى.",
+    "لم يتمكن النموذج من تلخيص هذه الدردشة الطويلة لإفساح المجال في نافذة السياق. بدأ Dani Dex جلسة OpenCode جديدة بسجل الدردشة. أعد المحاولة. إذا استمر الخطأ، اختر نموذجًا أقوى.",
   "error.provider.museMcpStartupFault":
-    "تعذّر على Muse تشغيل خادم MCP فحظر MCP في هذه الجلسة. بدأ dani-dex جلسة Muse جديدة بسجل الدردشة. أعد المحاولة. إذا استمر الخطأ، أوقف التحكم في الحاسوب أو خادم MCP الفاشل لهذا الوكيل.",
+    "تعذّر على Muse تشغيل خادم MCP فحظر MCP في هذه الجلسة. بدأ Dani Dex جلسة Muse جديدة بسجل الدردشة. أعد المحاولة. إذا استمر الخطأ، أوقف التحكم في الحاسوب أو خادم MCP الفاشل لهذا الوكيل.",
   "error.provider.claudeSessionMissing":
-    "لم يعثر Claude Code على الجلسة المحفوظة لهذه الدردشة. بدأ dani-dex جلسة Claude Code جديدة بسجل الدردشة. أعد المحاولة.",
+    "لم يعثر Claude Code على الجلسة المحفوظة لهذه الدردشة. بدأ Dani Dex جلسة Claude Code جديدة بسجل الدردشة. أعد المحاولة.",
   "error.provider.grokSignIn": "شغّل `grok login` أو عيّن XAI_API_KEY لاستخدام Grok.",
   "error.provider.acpSignInTimedOut": "انتهت مهلة تسجيل الدخول.",
   "error.provider.acpSignInStopped": "توقف تسجيل الدخول قبل اكتماله.",
@@ -426,7 +434,7 @@ export const messages = {
   "error.provider.acpSignInFailed": "لم يكتمل تسجيل الدخول.",
   "error.provider.acpSignInFailedReason": "لم يكتمل تسجيل الدخول: {reason}",
   "error.provider.acpSignInNetwork":
-    "تعذّر على تسجيل الدخول الوصول إلى خادم المزوّد. تحقّق من اتصال الشبكة وإعدادات DNS في الكمبيوتر الذي يشغّل dani-dex، ثم حاول مرة أخرى.",
+    "تعذّر على تسجيل الدخول الوصول إلى خادم المزوّد. تحقّق من اتصال الشبكة وإعدادات DNS في الكمبيوتر الذي يشغّل Dani Dex، ثم حاول مرة أخرى.",
   "error.provider.acpSignOutFailed": "لم يكتمل تسجيل الخروج.",
   "error.provider.acpSignOutFailedReason": "لم يكتمل تسجيل الخروج: {reason}",
   "error.provider.acpSignInMethodMissing":
@@ -441,7 +449,7 @@ export const messages = {
   "error.provider.geminiAccountSettingsUnreadable":
     "لا يستطيع Gemini فتح ملف إعدادات هذا الحساب، لذا لا يمكنه تسجيل الدخول. أزل هذا الحساب ثم أضفه مرة أخرى.",
   "error.provider.geminiSettingsUnreadable":
-    "لا يستطيع Gemini فتح ملف إعداداته على هذا الكمبيوتر، لذا لا يمكنه تسجيل الدخول. أغلق التطبيقات الأخرى التي تستخدم Gemini، ثم أغلق dani-dex وافتحه مرة أخرى.",
+    "لا يستطيع Gemini فتح ملف إعداداته على هذا الكمبيوتر، لذا لا يمكنه تسجيل الدخول. أغلق التطبيقات الأخرى التي تستخدم Gemini، ثم أغلق Dani Dex وافتحه مرة أخرى.",
   "error.provider.geminiVerificationRequired":
     "يجب أن يتحقق Google من حسابك قبل أن يتمكن Gemini من الرد. تحقق من حساب Google في متصفح، ثم أرسل رسالتك مرة أخرى.",
   "error.provider.keyProviderRefused":
@@ -454,7 +462,7 @@ export const messages = {
     "رفضت خدمة النموذج الطلب. اختر نموذجًا آخر، أو تحقق من صلاحية وصولك إلى هذا النموذج لدى الخدمة.",
   "error.provider.modelServiceRefusedReason":
     "رفضت خدمة النموذج الطلب: {reason}. اختر نموذجًا آخر، أو تحقق من صلاحية وصولك إلى هذا النموذج لدى الخدمة.",
-  "error.provider.messageTooLarge": "أوقف dani-dex {provider} لأنه أرسل رسالة أكبر من {limit} MB.",
+  "error.provider.messageTooLarge": "أوقف Dani Dex {provider} لأنه أرسل رسالة أكبر من {limit} MB.",
   "error.provider.customAgentIdInvalid":
     "يجب أن يتكوّن معرّف الوكيل من أحرف صغيرة أو أرقام أو `-`، ولا يمكن أن يكون معرّف مزوّد مدمج.",
   "error.provider.customAgentEnvInvalid":
@@ -465,33 +473,33 @@ export const messages = {
   "error.provider.customAgentArgsInvalid": "لا يمكن أن تحتوي الوسيطة على فاصل أسطر. استخدم 32 وسيطة كحد أقصى.",
   "error.provider.customAgentWindowsScript":
     "لا يقبل أمر .cmd أو .bat في وسيطاته إلا الأحرف والأرقام و - _ . , : = @ + / \\.",
-  "error.provider.customAgentNotFound": "لا يستطيع dani-dex العثور على {command}. أدخل المسار الكامل للأمر.",
+  "error.provider.customAgentNotFound": "لا يستطيع Dani Dex العثور على {command}. أدخل المسار الكامل للأمر.",
   "error.provider.customAgentCheckTimedOut": "لم يستجب الوكيل خلال 20 ثانية.",
   "error.provider.customAgentCheckStopped": "توقف الوكيل قبل أن يستجيب.",
-  "error.provider.customAgentProtocolVersion": "يستخدم الوكيل إصدار ACP {version}. يستخدم dani-dex الإصدار 1.",
+  "error.provider.customAgentProtocolVersion": "يستخدم الوكيل إصدار ACP {version}. يستخدم Dani Dex الإصدار 1.",
   "error.provider.customAgentCheckFailed": "لم يستجب الوكيل كوكيل ACP.",
   "error.provider.customAgentRemoveBusy": "انتظر حتى ينتهي الدور النشط وقائمة الانتظار قبل إزالة هذا الوكيل المخصص.",
   "error.provider.customAgentNone": "لا يوجد وكيل مخصص محفوظ.",
-  "error.provider.customAgentsUnavailable": "لا يستطيع هذا الخادم تغيير وكلائه المخصصين. حدّث dani-dex عليه.",
+  "error.provider.customAgentsUnavailable": "لا يستطيع هذا الخادم تغيير وكلائه المخصصين. حدّث Dani Dex عليه.",
   "error.provider.customAgentMissing": "هذا الوكيل المخصص لم يعد محفوظًا. اختر نموذجًا آخر.",
   "error.provider.customAgentSignIn": "سجّل الدخول بأمر الوكيل الخاص، ثم أعد المحاولة.",
   "error.provider.customAgentsReadOnly":
-    "كُتب الوكلاء المخصصون المحفوظون بإصدار أحدث من dani-dex، أو تتعذّر قراءة الملف. حدّث dani-dex لتغييرهم.",
+    "كُتب الوكلاء المخصصون المحفوظون بإصدار أحدث من Dani Dex، أو تتعذّر قراءة الملف. حدّث Dani Dex لتغييرهم.",
   "error.provider.customAgentNoSecureStorage":
     "لا يحتوي هذا الحاسوب على تخزين آمن، لذا لا يمكن حفظ قيم البيئة. أزلها وأعد المحاولة.",
   "error.provider.customAgentNotSaved": "هذا الوكيل المخصص غير محفوظ. حدّث القائمة وأعد المحاولة.",
   "error.provider.customAgentWorkspaceOnly": "{reason}. وضع «مساحة العمل فقط» يحظر هذا. جرّب «الوصول الكامل».",
   "error.provider.customAgentTooMany": "يمكنك حفظ {count} من الوكلاء المخصصين كحد أقصى.",
   "error.provider.customAgentEnvValueMissing": "أدخل قيمة لـ {name}.",
-  "error.provider.off": "{provider} متوقف في dani-dex. شغّله في إعدادات المزوّد أولًا.",
+  "error.provider.off": "{provider} متوقف في Dani Dex. شغّله في إعدادات المزوّد أولًا.",
   "error.provider.inUse": "يستخدم وكيل {provider}. غيّر نموذجه قبل إيقاف هذا المزوّد.",
   "error.provider.useBusy": "انتظر حتى ينتهي فحص المزوّد أو تسجيل الدخول، ثم أعد المحاولة.",
-  "error.provider.useSettingsReadOnly": "تتعذّر قراءة إعدادات المزوّد المحفوظة. حدّث dani-dex قبل تغييرها.",
-  "error.provider.useChangeFailed": "تعذّر على dani-dex تغيير إعداد المزوّد.",
+  "error.provider.useSettingsReadOnly": "تتعذّر قراءة إعدادات المزوّد المحفوظة. حدّث Dani Dex قبل تغييرها.",
+  "error.provider.useChangeFailed": "تعذّر على Dani Dex تغيير إعداد المزوّد.",
   "error.provider.accountsUnsupported": "لا يقبل {provider} إلا حسابًا واحدًا.",
   "error.provider.accountNeedsConnection": "اربط {provider} قبل إضافة حساب آخر.",
   "error.provider.usageResetUnsupported": "لا يستطيع {provider} إعادة تعيين حدود الاستخدام.",
-  "error.provider.signOutUnsupported": "لا يستطيع dani-dex فصل تسجيل الدخول إلى {provider}.",
+  "error.provider.signOutUnsupported": "لا يستطيع Dani Dex فصل تسجيل الدخول إلى {provider}.",
   "error.provider.usageResetNotConnected": "سجّل الدخول إلى حساب {provider} هذا مرة أخرى قبل إعادة تعيين استخدامه.",
   "error.provider.accountLimit": "يقبل {provider} {limit} من الحسابات كحد أقصى.",
   "error.provider.accountNotFound": "حساب {provider} هذا غير موجود على هذا الحاسوب. حدّث وأعد المحاولة.",
@@ -500,13 +508,13 @@ export const messages = {
   "error.provider.accountUsesKey":
     "يستخدم حساب {provider} هذا مفتاح API المحفوظ وليس له تسجيل دخول. غيّر المفتاح في إعدادات الخادم ← المزوّدون.",
   "error.provider.accountNeedsKey":
-    "يحتاج حساب {provider} الجديد إلى مفتاح API. حدّث dani-dex على هذا الجهاز، ثم أضف الحساب مرة أخرى.",
+    "يحتاج حساب {provider} الجديد إلى مفتاح API. حدّث Dani Dex على هذا الجهاز، ثم أضف الحساب مرة أخرى.",
   "error.provider.accountKeyRefused": "لم يقبل {provider} مفتاح API هذا. تحقّق من المفتاح، ثم أعد المحاولة.",
   "error.provider.accountKeyUnreachable":
-    "تعذّر على dani-dex الوصول إلى {provider} للتحقق من مفتاح API. تحقّق من اتصال الإنترنت، ثم أعد المحاولة.",
+    "تعذّر على Dani Dex الوصول إلى {provider} للتحقق من مفتاح API. تحقّق من اتصال الإنترنت، ثم أعد المحاولة.",
   "error.provider.accountKeySignedOut": "لم يعد {provider} يقبل مفتاح API لهذا الحساب. أدخل مفتاحًا جديدًا للحساب.",
   "error.provider.accountInUse": "يعمل وكيل على هذا الحساب. أعد المحاولة عندما يتوقف الوكيل.",
-  "error.provider.accountsReadOnly": "تتعذّر قراءة حسابات المزوّد المحفوظة. حدّث dani-dex قبل تغييرها.",
+  "error.provider.accountsReadOnly": "تتعذّر قراءة حسابات المزوّد المحفوظة. حدّث Dani Dex قبل تغييرها.",
   "error.provider.accountSignedOut": "تم تسجيل الخروج من حساب {provider} هذا. سجّل الدخول مرة أخرى.",
   "error.provider.sessionSettingUnavailable": "هذا الإعداد غير متاح في جلسة المزوّد الحالية.",
   "error.provider.sessionSettingInvalid": "هذه القيمة غير متاحة لهذا الإعداد.",
@@ -545,7 +553,7 @@ export const messages = {
   "error.provider.museRequestUnsupported": "طلب خادم Muse غير مدعوم.",
   "error.provider.museConnectionFailed": "فشل اتصال Muse. استأنف المحادثة لاستعادة سجلها المحفوظ.",
   "error.provider.museUnknownSession": "جلسة Muse غير معروفة.",
-  "error.provider.museInvalidToolResult": "نتيجة أداة dani-dex غير صالحة.",
+  "error.provider.museInvalidToolResult": "نتيجة أداة Dani Dex غير صالحة.",
   "error.provider.museMcpRequired": "يجب أن يدعم Muse خوادم MCP للجلسة.",
   "error.provider.museSessionMismatch": "أرجع Muse جلسة مختلفة.",
   "error.provider.museCompactRejected": "لم يقبل Muse الضغط.",

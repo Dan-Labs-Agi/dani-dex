@@ -180,7 +180,12 @@ if (import.meta.main) {
   const { failures, manualCompositeCount } = checkUiFoundation(
     resolve(projectRoot, "src/renderer/src"),
     projectRoot,
-    [resolve(projectRoot, "src"), resolve(projectRoot, "apps"), resolve(projectRoot, "packages/ui/src")],
+    [
+      resolve(projectRoot, "src"),
+      resolve(projectRoot, "apps"),
+      resolve(projectRoot, "packages/ui/src"),
+      resolve(projectRoot, "packages/brand/src"),
+    ],
     resolve(projectRoot, "packages/ui/src"),
   );
 

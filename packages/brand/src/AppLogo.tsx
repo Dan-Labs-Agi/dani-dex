@@ -23,7 +23,7 @@ export function AppLogo(props: AppLogoProps) {
       data-variant={props.variant}
       data-interactive={props.interactive ? "true" : undefined}
       aria-hidden={props.interactive ? undefined : "true"}
-      aria-label={props.interactive ? "dani-dex" : undefined}
+      aria-label={props.interactive ? "Dani Dex" : undefined}
       role={props.interactive ? "button" : undefined}
       tabindex={props.interactive ? 0 : undefined}
     />

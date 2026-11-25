@@ -7,9 +7,9 @@ export const messages = {
   "status.computerUse.driverNoAnswer": "Драйвер управления компьютером не ответил. {reason}",
   "status.computerUse.driverStopped": "Драйвер управления компьютером остановлен.",
   "status.computerUse.unsupported": "Управление компьютером доступно в macOS, Windows и Linux.",
-  "status.computerUse.driverMissing": "В этой сборке dani-dex нет драйвера управления компьютером.",
+  "status.computerUse.driverMissing": "В этой сборке Dani Dex нет драйвера управления компьютером.",
   "status.computerUse.inputRefused":
-    "На этом рабочем столе dani-dex не может печатать и нажимать в других приложениях. Для задач на сайтах попросите агента использовать браузер dani-dex.",
+    "На этом рабочем столе Dani Dex не может печатать и нажимать в других приложениях. Для задач на сайтах попросите агента использовать браузер Dani Dex.",
   "status.computerUse.progressActing": "Работаю с приложением на этом компьютере…",
   "status.computerUse.progressDeciding": "Выбираю следующий шаг в приложении…",
 } as const satisfies PartialTranslation<typeof source>;

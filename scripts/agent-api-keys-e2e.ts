@@ -865,7 +865,7 @@ try {
     );
     const respond = (answers: Record<string, string[]>, responder?: PromptResponder) =>
       runCauseEffect(unreadRegistry.respondToPrompt({ requestId: id, answers }, responder));
-    const unreadable = /dani-dex could not read the API key/;
+    const unreadable = /Dani Dex could not read the API key/;
     await assert.rejects(
       respond({ [API_KEY_FIELD_ID]: [KEY], [API_KEY_SCOPE_FIELD_ID]: ["Todos os agentes"] }, MEMBER),
       unreadable,

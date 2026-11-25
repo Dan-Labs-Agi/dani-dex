@@ -2,8 +2,8 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/window";
 
 export const messages = {
-  "window.localHostTitle": "dani-dex 로컬 호스트",
-  "window.localClientTitle": "dani-dex 로컬 클라이언트",
+  "window.localHostTitle": "Dani Dex 로컬 호스트",
+  "window.localClientTitle": "Dani Dex 로컬 클라이언트",
   "window.computerUsePermissionTitle": "컴퓨터 제어 켜기",
   "window.rendererStoppedTitle": "dani-dex이 작동을 멈췄어요",
   "window.rendererStoppedBody": "창이 여러 번 멈췄어요. 채팅은 저장되어 있고 에이전트는 계속 작업해요.",

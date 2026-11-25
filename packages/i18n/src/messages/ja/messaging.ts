@@ -3,19 +3,19 @@ import type { messages as source } from "../en/messaging";
 
 export const messages = {
   "messaging.help.invalid_token":
-    "Slack はこのワークスペースで dani-dex を受け付けなくなりました。アンインストールされた可能性があります。ワークスペースをもう一度接続してください。",
+    "Slack はこのワークスペースで Dani Dex を受け付けなくなりました。アンインストールされた可能性があります。ワークスペースをもう一度接続してください。",
   "messaging.help.secret_storage_unavailable":
-    "dani-dex はこのコンピューターに保存されたトークンを読み取れません。ワークスペースの接続を解除してから、もう一度接続してください。",
+    "Dani Dex はこのコンピューターに保存されたトークンを読み取れません。ワークスペースの接続を解除してから、もう一度接続してください。",
   "messaging.help.relay_unavailable":
-    "dani-dex はこのコンピューターで Slack のイベントを受信できません。サインインし、サーバー設定でこのコンピューターに名前を付けて、dani-dex を開いたままにしてください。",
+    "Dani Dex はこのコンピューターで Slack のイベントを受信できません。サインインし、サーバー設定でこのコンピューターに名前を付けて、Dani Dex を開いたままにしてください。",
   "messaging.help.not_linked":
     "このワークスペースはこのサーバーにリンクされていません。リンクするには「再接続」を選択してください。",
   "messaging.discordHelp.invalid_token":
-    "Discord はこの Discord サーバーで dani-dex を受け付けなくなりました。削除された可能性があります。Discord サーバーをもう一度接続してください。",
+    "Discord はこの Discord サーバーで Dani Dex を受け付けなくなりました。削除された可能性があります。Discord サーバーをもう一度接続してください。",
   "messaging.discordHelp.secret_storage_unavailable":
-    "dani-dex はこのコンピューターに保存されたトークンを読み取れません。Discord サーバーの接続を解除してから、もう一度接続してください。",
+    "Dani Dex はこのコンピューターに保存されたトークンを読み取れません。Discord サーバーの接続を解除してから、もう一度接続してください。",
   "messaging.discordHelp.relay_unavailable":
-    "dani-dex はこのコンピューターで Discord のイベントを受信できません。サインインし、サーバー設定でこのコンピューターに名前を付けて、dani-dex を開いたままにしてください。",
+    "Dani Dex はこのコンピューターで Discord のイベントを受信できません。サインインし、サーバー設定でこのコンピューターに名前を付けて、Dani Dex を開いたままにしてください。",
   "messaging.discordHelp.not_linked":
-    "この Discord サーバーはこの dani-dex サーバーにリンクされていません。リンクするには「再接続」を選択してください。",
+    "この Discord サーバーはこの Dani Dex サーバーにリンクされていません。リンクするには「再接続」を選択してください。",
 } as const satisfies PartialTranslation<typeof source>;

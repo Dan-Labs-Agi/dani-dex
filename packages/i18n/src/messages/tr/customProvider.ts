@@ -12,7 +12,7 @@ export const messages = {
   "customProvider.registry.update": "Güncelle",
   "customProvider.registry.remove": "Çalışma zamanını kaldır",
   "customProvider.registry.searchFailed": "Kayıt defterinde arama yapılamadı. Tekrar deneyin.",
-  "customProvider.registry.statusFailed": "Yükleme ilerlemesi denetlenemedi. dani-dex tekrar deneyecek.",
+  "customProvider.registry.statusFailed": "Yükleme ilerlemesi denetlenemedi. Dani Dex tekrar deneyecek.",
   "customProvider.registry.installFailed": "Ajan yüklenemedi. Tekrar deneyin.",
   "customProvider.registry.updateFailed": "Ajan güncellenemedi. Tekrar deneyin.",
   "customProvider.registry.removeFailed": "Çalışma zamanı kaldırılamadı. Tekrar deneyin.",
@@ -21,7 +21,7 @@ export const messages = {
   "customProvider.error.providerIdPattern":
     "Bir harf veya rakamla başlayan küçük harfler, rakamlar, kısa çizgiler veya alt çizgiler kullanın.",
   "customProvider.error.providerIdLength": "Sağlayıcı kimliğini en fazla {max} karakter tutun.",
-  "customProvider.error.providerIdBuiltIn": "dani-dex'ta zaten {id} adında bir sağlayıcı var. Başka bir kimlik seçin.",
+  "customProvider.error.providerIdBuiltIn": "Dani Dex'ta zaten {id} adında bir sağlayıcı var. Başka bir kimlik seçin.",
   "customProvider.error.providerIdSaved":
     "{id} adlı bir uç nokta zaten kayıtlı. Önce onu kaldırın veya başka bir kimlik seçin.",
   "customProvider.error.displayNameRequired": "Bir görünen ad girin.",
@@ -47,14 +47,14 @@ export const messages = {
   "customProvider.error.baseUrlProtocol": "Bir http:// veya https:// URL'si kullanın.",
   "customProvider.error.baseUrlCredential": "Kimlik bilgilerini URL'ye değil, bir başlığa koyun.",
 
-  "customProvider.saved.restarted": "Kaydedildi. dani-dex modelleri yüklüyor.",
+  "customProvider.saved.restarted": "Kaydedildi. Dani Dex modelleri yüklüyor.",
   "customProvider.saved.skippedBusy": "Kaydedildi. Sağlayıcı listeyi geçerli görev durduktan sonra okur.",
   "customProvider.saved.notRunning": "Kaydedildi. Sağlayıcı bir sonraki başlatılışında listeyi okur.",
-  "customProvider.removed.restarted": "Kaldırıldı. dani-dex modelleri yüklüyor.",
+  "customProvider.removed.restarted": "Kaldırıldı. Dani Dex modelleri yüklüyor.",
   "customProvider.removed.skippedBusy": "Kaldırıldı. Sağlayıcı listeyi geçerli görev durduktan sonra okur.",
   "customProvider.removed.notRunning": "Kaldırıldı. Sağlayıcı bir sonraki başlatılışında listeyi okur.",
-  "customProvider.saveFailed": "dani-dex bu uç noktayı kaydedemedi.",
-  "customProvider.removeFailed": "dani-dex {name} öğesini kaldıramadı.",
+  "customProvider.saveFailed": "Dani Dex bu uç noktayı kaydedemedi.",
+  "customProvider.removeFailed": "Dani Dex {name} öğesini kaldıramadı.",
   "customProvider.saveUnavailable": "Bu derleme bir uç noktayı kaydedemez.",
   "customProvider.removeUnavailable": "Bu derleme bir uç noktayı kaldıramaz.",
 
@@ -143,7 +143,7 @@ export const messages = {
   "customProvider.detected.titleServer": "Sunucuda bulundu",
   "customProvider.detected.scanning": "Yerel modeller ve ajanlar aranıyor.",
   "customProvider.detected.scanAgain": "Tekrar tara",
-  "customProvider.detected.empty": "dani-dex yerel bir model sunucusu veya ACP ajanı bulamadı.",
+  "customProvider.detected.empty": "Dani Dex yerel bir model sunucusu veya ACP ajanı bulamadı.",
   "customProvider.detected.add": "Ekle",
   "customProvider.detected.addLabel": "{name} sağlayıcısını ekle",
   "customProvider.detected.added": "Eklendi",
@@ -160,10 +160,10 @@ export const messages = {
 
   "customProvider.detection.title": "Yerel algılama",
   "customProvider.detection.saveFailed": "Algılama ayarları kaydedilemedi.",
-  "customProvider.detection.description": "dani-dex'un yerel model sunucularını ve ACP ajanlarını arayacağı yerler.",
+  "customProvider.detection.description": "Dani Dex'un yerel model sunucularını ve ACP ajanlarını arayacağı yerler.",
   "customProvider.detection.enabled": "Yerel modelleri ve ajanları ara",
   "customProvider.detection.enabledDescription":
-    "dani-dex, Ollama ve LM Studio'nun varsayılan adreslerini kontrol eder ve PATH'inizde bilinen ACP ajanlarını arar.",
+    "Dani Dex, Ollama ve LM Studio'nun varsayılan adreslerini kontrol eder ve PATH'inizde bilinen ACP ajanlarını arar.",
   "customProvider.detection.enabledDescriptionServer":
     "Sunucu, Ollama ve LM Studio'nun varsayılan adreslerini kontrol eder ve kendi PATH'inde bilinen ACP ajanlarını arar.",
   "customProvider.detection.addresses": "Diğer model sunucusu adresleri",
@@ -185,14 +185,14 @@ export const messages = {
   "customProvider.acp.agentId": "Ajan kimliği",
   "customProvider.acp.agentIdHint": "Küçük harfler, rakamlar veya kısa çizgiler. Daha sonra değiştiremezsiniz.",
   "customProvider.acp.command": "Komut",
-  "customProvider.acp.commandHint": "Başlatılacak program. dani-dex bunu PATH'inizde arar.",
+  "customProvider.acp.commandHint": "Başlatılacak program. Dani Dex bunu PATH'inizde arar.",
   "customProvider.acp.commandHintServer": "Başlatılacak program. Sunucu onu kendi PATH'inde arar.",
   "customProvider.acp.args": "Bağımsız değişkenler",
   "customProvider.acp.argsHint":
     "Bağımsız değişkenleri boşluklarla ayırın. Boşluk içeren bir bağımsız değişkenin etrafına tırnak işareti koyun.",
   "customProvider.acp.usagePrompt": "Kullanım komutu",
   "customProvider.acp.usagePromptHint":
-    "dani-dex bunu en fazla 5 dakikada bir gönderir ve son yanıtı gösterir. Ajanın kendisinin yanıtladığı bir komut kullanın, örneğin /usage.",
+    "Dani Dex bunu en fazla 5 dakikada bir gönderir ve son yanıtı gösterir. Ajanın kendisinin yanıtladığı bir komut kullanın, örneğin /usage.",
   "customProvider.acp.env": "Ortam değişkenleri",
   "customProvider.acp.env.name": "{number}. değişken adı",
   "customProvider.acp.env.value": "{number}. değişken değeri",
@@ -200,7 +200,7 @@ export const messages = {
   "customProvider.acp.env.add": "Değişken ekle",
   "customProvider.acp.check": "Bağlantı",
   "customProvider.acp.checkRun": "Ajanı kontrol et",
-  "customProvider.acp.checkIdle": "dani-dex, yanıt verdiğinden emin olmak için komutu bir kez başlatır.",
+  "customProvider.acp.checkIdle": "Dani Dex, yanıt verdiğinden emin olmak için komutu bir kez başlatır.",
   "customProvider.acp.checking": "{command} başlatılıyor.",
   "customProvider.acp.checkOk": "{name} yanıt verdi",
   "customProvider.acp.checkOkVersion": "{name} {version} yanıt verdi",
@@ -212,10 +212,10 @@ export const messages = {
   "customProvider.acp.checkFailed": "Ajan yanıt vermedi",
   "customProvider.acp.trustTitle": "Bu komut bilgisayarınızda çalışır",
   "customProvider.acp.trustDescription":
-    "dani-dex bunu kullanıcı hesabınızla başlatır. Ajan dosyaları okuyabilir, değiştirebilir ve komutlar çalıştırabilir. Yalnızca güvendiğiniz bir ajanı ekleyin.",
+    "Dani Dex bunu kullanıcı hesabınızla başlatır. Ajan dosyaları okuyabilir, değiştirebilir ve komutlar çalıştırabilir. Yalnızca güvendiğiniz bir ajanı ekleyin.",
   "customProvider.acp.hostTrustTitle": "Bu komut sunucuda çalışır",
   "customProvider.acp.hostTrustDescription":
-    "dani-dex bunu sunucunun kullanıcı hesabıyla başlatır. Ajan sunucudaki dosyaları okuyabilir, değiştirebilir ve orada komutlar çalıştırabilir. Yalnızca güvendiğiniz bir ajanı ekleyin.",
+    "Dani Dex bunu sunucunun kullanıcı hesabıyla başlatır. Ajan sunucudaki dosyaları okuyabilir, değiştirebilir ve orada komutlar çalıştırabilir. Yalnızca güvendiğiniz bir ajanı ekleyin.",
   "customProvider.acp.submit": "Ajan ekle",
   "customProvider.acp.editTitle": "Özel ACP ajanını düzenle",
   "customProvider.acp.submitEdit": "Ajanı kaydet",
@@ -232,8 +232,8 @@ export const messages = {
     "Bir harf veya rakamla başlayan küçük harfler, rakamlar veya kısa çizgiler kullanın. En fazla 40 karakter kullanın.",
 
   "customProvider.agents.title": "Özel ajanlar",
-  "customProvider.agents.description": "dani-dex'un bu bilgisayarda başlattığı ACP ajanları.",
-  "customProvider.agents.hostDescription": "dani-dex'un sunucunun bilgisayarında başlattığı ACP ajanları.",
+  "customProvider.agents.description": "Dani Dex'un bu bilgisayarda başlattığı ACP ajanları.",
+  "customProvider.agents.hostDescription": "Dani Dex'un sunucunun bilgisayarında başlattığı ACP ajanları.",
   "customProvider.agents.empty": "Henüz özel ajan yok.",
   "customProvider.agents.add": "Ajan ekle",
   "customProvider.agents.restart": "Ajanları yeniden başlat",
@@ -248,11 +248,11 @@ export const messages = {
   "customProvider.agents.deleteLabel": "{name} ajanını sil",
   "customProvider.agents.confirmDescription":
     "Kayıtlı değişkenleri atılır ve bunu kullanan her ajan varsayılan bir modele geçer.",
-  "customProvider.agents.saveFailed": "dani-dex bu ajanı kaydedemedi.",
-  "customProvider.agents.saved.restarted": "Kaydedildi. dani-dex özel ajanları yeniden başlattı.",
+  "customProvider.agents.saveFailed": "Dani Dex bu ajanı kaydedemedi.",
+  "customProvider.agents.saved.restarted": "Kaydedildi. Dani Dex özel ajanları yeniden başlattı.",
   "customProvider.agents.saved.skippedBusy": "Kaydedildi. Özel ajanlar geçerli görev durduktan sonra yeniden başlar.",
   "customProvider.agents.saved.notRunning": "Kaydedildi. Özel ajanlar bir sonraki başlatılışlarında bunu okur.",
-  "customProvider.agents.removed.restarted": "Kaldırıldı. dani-dex özel ajanları yeniden başlattı.",
+  "customProvider.agents.removed.restarted": "Kaldırıldı. Dani Dex özel ajanları yeniden başlattı.",
   "customProvider.agents.removed.skippedBusy": "Kaldırıldı. Özel ajanlar geçerli görev durduktan sonra yeniden başlar.",
   "customProvider.agents.removed.notRunning": "Kaldırıldı. Özel ajanlar bir sonraki başlatılışlarında bunu okur.",
 

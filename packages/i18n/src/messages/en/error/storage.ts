@@ -3,5 +3,5 @@ import { defineMessages } from "../../../message";
 export const messages = defineMessages("error.storage", {
   "error.storage.unsupported": "Storage is not supported by this server.",
   "error.storage.agentMissing": "The agent does not exist.",
-  "error.storage.unreadableFile": "dani-dex cannot read {path}. The file is damaged.",
+  "error.storage.unreadableFile": "Dani Dex cannot read {path}. The file is damaged.",
 });

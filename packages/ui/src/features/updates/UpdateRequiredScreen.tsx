@@ -8,7 +8,7 @@ import { useText } from "../../text";
 import { restartReasonKey } from "./restart-reasons";
 import { presentUpdateStatus } from "./update-status";
 
-const PRODUCT_NAME = "dani-dex";
+const PRODUCT_NAME = "Dani Dex";
 
 export interface UpdateRequiredScreenProps {
   status: UpdateStatus;

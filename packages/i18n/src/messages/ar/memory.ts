@@ -39,7 +39,7 @@ export const messages = {
   "memory.clearAll": "مسح كل الذكريات",
   "memory.clearTitle": "مسح كل الذكريات؟",
   "memory.clearDescription":
-    "سيزيل dani-dex نهائيًا كل الذكريات المحفوظة لـ {name} وعددها {total}. ستبقى الرسائل الأصلية في سجل المحادثة.",
+    "سيزيل Dani Dex نهائيًا كل الذكريات المحفوظة لـ {name} وعددها {total}. ستبقى الرسائل الأصلية في سجل المحادثة.",
   "memory.loadFailed": "تعذّر تحميل الذكريات.",
   "memory.saveFailed": "تعذّر حفظ الذكرى.",
   "memory.updateFailed": "تعذّر تحديث الذكرى.",

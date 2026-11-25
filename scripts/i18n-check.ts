@@ -1,4 +1,4 @@
-import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, relative, resolve, sep } from "node:path";
 import { isDynamicRecord } from "@openbot/contracts/runtime-values";
 import type { Message, PluralMessage } from "@openbot/i18n";
@@ -293,12 +293,15 @@ for (const [name, messages] of english) {
   }
 }
 
-const code = CODE_ROOTS.flatMap((root) => files(resolve(ROOT, root), CODE_EXTENSIONS))
+const code = CODE_ROOTS.filter((root) => existsSync(resolve(ROOT, root)))
+  .flatMap((root) => files(resolve(ROOT, root), CODE_EXTENSIONS))
   .filter((path) => !path.startsWith(MESSAGES))
   .map((path) => readFileSync(path, "utf8"))
   .join("\n");
+// The mobile app lives in its own repository and renders these keys there.
+const KEPT_FOR_MOBILE = /^(?:mobile\.|language\.|error\.remote\.|error\.voice\.live\.)/u;
 for (const [key, name] of owner) {
-  if (RELEASED_SOURCE_KEYS.has(key)) continue;
+  if (RELEASED_SOURCE_KEYS.has(key) || KEPT_FOR_MOBILE.test(key)) continue;
   if (!code.includes(`"${key}"`) && !code.includes(`'${key}'`) && !code.includes(`\`${key}\``)) {
     failures.push(`en/${name}.ts: ${key} is not used. Remove it, or name it as a literal where it renders.`);
   }

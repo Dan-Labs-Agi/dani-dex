@@ -35,15 +35,15 @@ export const messages = {
   "marketplace.agents.all": "Alle Agenten",
   "marketplace.agents.missing": "Dieser Agent ist nicht im Marketplace.",
   "marketplace.agents.trust.reviewed":
-    "Von einer anderen dani-dex-Person erstellt. dani-dex hat ihn vor der Veröffentlichung geprüft.",
+    "Von einer anderen dani-dex-Person erstellt. Dani Dex hat ihn vor der Veröffentlichung geprüft.",
   "marketplace.agents.trust.reviewedBeforeAdd":
-    "Von einer anderen dani-dex-Person erstellt. dani-dex hat ihn vor der Veröffentlichung geprüft. Nach dem Hinzufügen kann er in deinem Namen handeln.",
-  "marketplace.agents.trust.pending": "Von seiner erstellenden Person geteilt, bevor dani-dex ihn geprüft hat.",
+    "Von einer anderen dani-dex-Person erstellt. Dani Dex hat ihn vor der Veröffentlichung geprüft. Nach dem Hinzufügen kann er in deinem Namen handeln.",
+  "marketplace.agents.trust.pending": "Von seiner erstellenden Person geteilt, bevor Dani Dex ihn geprüft hat.",
   "marketplace.agents.trust.pendingBeforeAdd":
-    "Von seiner erstellenden Person geteilt, bevor dani-dex ihn geprüft hat. Nach dem Hinzufügen kann er in deinem Namen handeln.",
+    "Von seiner erstellenden Person geteilt, bevor Dani Dex ihn geprüft hat. Nach dem Hinzufügen kann er in deinem Namen handeln.",
   "marketplace.agents.source.pending": "Noch nicht geprüft",
   "marketplace.skill.loading": "Fähigkeit wird geladen",
-  "marketplace.try.readFailed": "dani-dex konnte die Fähigkeiten dieses Agenten nicht lesen. Versuche es erneut.",
+  "marketplace.try.readFailed": "Dani Dex konnte die Fähigkeiten dieses Agenten nicht lesen. Versuche es erneut.",
   "marketplace.try.enable": "Aktiviere diese Fähigkeit in den Agenteneinstellungen, um sie auszuprobieren.",
   "marketplace.try.repair": "Repariere diese Fähigkeit in den Agenteneinstellungen, um sie auszuprobieren.",
   "marketplace.try.update": "Aktualisiere diese Fähigkeit, um diese Version auszuprobieren.",
@@ -136,25 +136,25 @@ export const messages = {
   "marketplace.app.setup.account": "Melde dich im Browser mit deinem {name}-Konto an.",
   "marketplace.app.setup.key": "Benötigt einen API-Schlüssel aus deinem {name}-Konto.",
   "marketplace.app.setup.keySaved": "{field} auf {host} gespeichert.",
-  "marketplace.app.account.removeDescription": "dani-dex löscht die Anmeldung dieses Kontos auf {host}.",
+  "marketplace.app.account.removeDescription": "Dani Dex löscht die Anmeldung dieses Kontos auf {host}.",
   "marketplace.app.setup.desktop": "Läuft in der Desktop-App von {name} unter {address}.",
   "marketplace.app.setup.desktopConnected": "Verbunden mit {address}.",
   "marketplace.app.setup.open": "Keine Anmeldung und kein Schlüssel nötig.",
   "marketplace.app.blocked.update":
-    "Auf {host} läuft eine ältere dani-dex-Version, die keine Apps verbinden kann. Aktualisiere dani-dex auf {host} oder bitte den Inhaber darum.",
+    "Auf {host} läuft eine ältere dani-dex-Version, die keine Apps verbinden kann. Aktualisiere Dani Dex auf {host} oder bitte den Inhaber darum.",
   "marketplace.app.blocked.member":
-    "Nur ein Inhaber oder Admin von {host} kann dort Apps verbinden. Bitte eine dieser Personen, {name} zu verbinden oder dani-dex auf {host} zu aktualisieren, damit Mitglieder Apps verbinden können.",
-  "marketplace.app.blocked.mac": "{name} funktioniert nur auf einem Mac, auf dem dani-dex läuft.",
+    "Nur ein Inhaber oder Admin von {host} kann dort Apps verbinden. Bitte eine dieser Personen, {name} zu verbinden oder Dani Dex auf {host} zu aktualisieren, damit Mitglieder Apps verbinden können.",
+  "marketplace.app.blocked.mac": "{name} funktioniert nur auf einem Mac, auf dem Dani Dex läuft.",
   "marketplace.app.connectAgain": "Erneut verbinden",
   "marketplace.app.automation.askOnInstall": "Bei Installation macOS um Zugriff bitten",
   "marketplace.app.automation.title": "Zugriff auf Apple-Apps",
   "marketplace.app.automation.description":
     "macOS zeigt für jede App eine Abfrage. Eine geschlossene App öffnet sich kurz und wird dann beendet.",
   "marketplace.app.automation.request": "Zugriff anfragen",
-  "marketplace.app.automation.allowed": "dani-dex kann jetzt alle Apple-Apps steuern.",
+  "marketplace.app.automation.allowed": "Dani Dex kann jetzt alle Apple-Apps steuern.",
   "marketplace.app.automation.refused":
-    "macOS hat keinen Zugriff auf {apps} gegeben. Erlaube dani-dex unter Systemeinstellungen › Datenschutz & Sicherheit › Automation.",
-  "marketplace.app.automation.failed": "dani-dex konnte macOS nicht nach {apps} fragen. Versuche es erneut.",
+    "macOS hat keinen Zugriff auf {apps} gegeben. Erlaube Dani Dex unter Systemeinstellungen › Datenschutz & Sicherheit › Automation.",
+  "marketplace.app.automation.failed": "Dani Dex konnte macOS nicht nach {apps} fragen. Versuche es erneut.",
   "marketplace.app.automation.app.calendar": "Kalender",
   "marketplace.app.automation.app.contacts": "Kontakte",
   "marketplace.app.automation.app.mail": "Mail",
@@ -249,7 +249,7 @@ export const messages = {
   "marketplace.plugin.figma.prompt.assets": "Exportiere die Marketing-Icons in 2x für das App-Bundle.",
   "marketplace.plugin.paper.tagline": "Design-Canvas auf Basis von HTML und CSS",
   "marketplace.plugin.paper.description":
-    "Mit Paper lesen und schreiben Agenten die Designdatei, die in Paper Desktop geöffnet ist: Sie prüfen Artboards, Auswahlen, berechnete Stile, JSX und Tokens und erstellen oder ändern Frames, Text und Stile. Installiere Paper Desktop, öffne es einmal und öffne eine Datei, bevor du beginnst. dani-dex startet die Paper CLI, die Paper Desktop installiert. Paper braucht keinen Schlüssel. Schreibwerkzeuge ändern die geöffnete Datei, prüfe also jeden Schreibvorgang, bevor du ihn genehmigst.",
+    "Mit Paper lesen und schreiben Agenten die Designdatei, die in Paper Desktop geöffnet ist: Sie prüfen Artboards, Auswahlen, berechnete Stile, JSX und Tokens und erstellen oder ändern Frames, Text und Stile. Installiere Paper Desktop, öffne es einmal und öffne eine Datei, bevor du beginnst. Dani Dex startet die Paper CLI, die Paper Desktop installiert. Paper braucht keinen Schlüssel. Schreibwerkzeuge ändern die geöffnete Datei, prüfe also jeden Schreibvorgang, bevor du ihn genehmigst.",
   "marketplace.plugin.paper.app":
     "Liest und schreibt die geöffnete Paper-Desktop-Datei über den lokalen MCP-Server, den die Paper CLI weiterleitet. Benötigt Paper Desktop mit einer geöffneten Datei.",
   "marketplace.plugin.paper.prompt.implement":
@@ -291,7 +291,7 @@ export const messages = {
     "Fasse die letzten zehn Gespräche meines Support-Sprachagenten zusammen.",
   "marketplace.plugin.appleApps.tagline": "Mail, Kalender und mehr auf deinem Mac",
   "marketplace.plugin.appleApps.description":
-    "Mit Apple apps nutzen Agenten Mail, Kalender, Kontakte, Erinnerungen, Notizen, Nachrichten und Safari auf diesem Mac. Es funktioniert nur unter macOS. dani-dex startet mcp-icloud, einen Community-Server, der nicht von Apple oder dani-dex stammt. Der Server steuert die Apps über AppleScript auf diesem Computer und braucht kein Konto und keinen Schlüssel. Bei der Installation kann dani-dex macOS auf einmal um Zugriff auf alle diese Apps bitten, mit einer Abfrage pro App. Sonst fragt macOS, wenn ein Agent eine App zum ersten Mal nutzt. Um das später zu ändern, öffne Systemeinstellungen › Datenschutz & Sicherheit › Automation. Agenten können E-Mails und iMessages senden und Termine, Kontakte und Erinnerungen ändern oder löschen, prüfe also jeden Schreibvorgang, bevor du ihn genehmigst. Was die Werkzeuge lesen, etwa E-Mail-Text, geht an den Modellanbieter des Agenten.",
+    "Mit Apple apps nutzen Agenten Mail, Kalender, Kontakte, Erinnerungen, Notizen, Nachrichten und Safari auf diesem Mac. Es funktioniert nur unter macOS. Dani Dex startet mcp-icloud, einen Community-Server, der nicht von Apple oder Dani Dex stammt. Der Server steuert die Apps über AppleScript auf diesem Computer und braucht kein Konto und keinen Schlüssel. Bei der Installation kann Dani Dex macOS auf einmal um Zugriff auf alle diese Apps bitten, mit einer Abfrage pro App. Sonst fragt macOS, wenn ein Agent eine App zum ersten Mal nutzt. Um das später zu ändern, öffne Systemeinstellungen › Datenschutz & Sicherheit › Automation. Agenten können E-Mails und iMessages senden und Termine, Kontakte und Erinnerungen ändern oder löschen, prüfe also jeden Schreibvorgang, bevor du ihn genehmigst. Was die Werkzeuge lesen, etwa E-Mail-Text, geht an den Modellanbieter des Agenten.",
   "marketplace.plugin.appleApps.app":
     "Mail, Kalender, Kontakte, Erinnerungen, Notizen, Nachrichten und Safari über den lokalen Server mcp-icloud. Benötigt macOS und Zugriff unter Automation.",
   "marketplace.plugin.appleApps.prompt.unread": "Fasse meine ungelesenen E-Mails von heute in Apple Mail zusammen.",
@@ -600,8 +600,8 @@ export const messages = {
   "marketplace.skills.source.all": "Alle",
   "marketplace.skills.source.verified": "Geprüft",
   "marketplace.skills.source.public": "Öffentlich",
-  "marketplace.skills.source.verifiedLong": "Von dani-dex geprüft",
-  "marketplace.skills.source.publicLong": "Von dani-dex freigegeben",
+  "marketplace.skills.source.verifiedLong": "Von Dani Dex geprüft",
+  "marketplace.skills.source.publicLong": "Von Dani Dex freigegeben",
   "marketplace.skills.sortLabel": "Sortieren",
   "marketplace.skills.sortName": "Sortieren: {name}",
   "marketplace.skills.sort.installs": "Meistgenutzt",
@@ -625,7 +625,7 @@ export const messages = {
   "marketplace.skills.github.search": "Suchen oder GitHub-Link einfügen",
   "marketplace.skills.github.reading": "Fähigkeiten im Repository werden gesucht",
   "marketplace.skills.github.trust":
-    "dani-dex hat Fähigkeiten von GitHub nicht geprüft. Lies eine Fähigkeit, bevor du sie hinzufügst.",
+    "Dani Dex hat Fähigkeiten von GitHub nicht geprüft. Lies eine Fähigkeit, bevor du sie hinzufügst.",
   "marketplace.skills.github.source": "GitHub · {repository} bei {commit}",
   "marketplace.skills.github.open": "GitHub",
   "marketplace.skills.github.openName": "{repository} auf GitHub öffnen",

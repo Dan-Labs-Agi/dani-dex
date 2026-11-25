@@ -2,13 +2,13 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/team";
 
 export const messages = {
-  "error.team.ownerNotLinked": "このホストは dani-dex のオーナーアカウントにリンクされていません。",
-  "error.team.ownerEmailRequired": "このホストを作成した dani-dex のメールアドレスでサインインしてください。",
+  "error.team.ownerNotLinked": "このホストは Dani Dex のオーナーアカウントにリンクされていません。",
+  "error.team.ownerEmailRequired": "このホストを作成した Dani Dex のメールアドレスでサインインしてください。",
   "error.team.hostNotConfigured": "チームのホストが設定されていません。",
   "error.team.alreadyConfigured": "チームのサーバーはすでに設定されています。",
   "error.team.identityCreateFailed": "チームの ID を作成できませんでした。",
   "error.team.accountChangedDuringCreate": "このサーバーの作成中に、サインイン中のアカウントが変わりました。",
-  "error.team.notConfigured": "この dani-dex はまだ設定されていません。",
+  "error.team.notConfigured": "この Dani Dex はまだ設定されていません。",
   "error.team.keyRotationMissing": "保留中のサーバーキー変更はありません。",
   "error.team.serverNotActive": "このサーバーは、サインイン中のアカウントの有効なサーバーではなくなりました。",
   "error.team.logoInvalid": "512 KB 以下の有効な PNG、JPEG、または WebP 画像を選択してください。",
@@ -21,9 +21,9 @@ export const messages = {
   "error.team.inviteEmailMismatch": "この招待は別のメールアドレス宛てです。",
   "error.team.memberDisabled": "このチームメンバーは無効になっています。",
   "error.team.memberLimit": "1 つのホストのメンバーは最大 {limit} 人です。",
-  "error.team.accountNotMember": "この dani-dex アカウントはチームのメンバーではありません。",
+  "error.team.accountNotMember": "この Dani Dex アカウントはチームのメンバーではありません。",
   "error.team.usernameTaken": "このユーザー名はすでに使用されています。",
-  "error.team.inviteRequiresAccount": "この招待には確認済みの dani-dex アカウントが必要です。",
+  "error.team.inviteRequiresAccount": "この招待には確認済みの Dani Dex アカウントが必要です。",
   "error.team.loginIncorrect": "ユーザー名またはパスワードが正しくありません。",
   "error.team.currentPasswordIncorrect": "現在のパスワードが正しくありません。",
   "error.team.memberNotFound": "チームメンバーが見つかりません。",
@@ -44,22 +44,22 @@ export const messages = {
   "error.team.usernameInvalid": "ユーザー名は 3〜32 文字の英字、数字、ドット、ハイフン、アンダースコアにしてください。",
   "error.team.passwordLength": "パスワードは 12〜256 文字にしてください。",
   "error.team.bindFailed": "チーム API をバインドできませんでした。",
-  "error.team.signInRequired": "dani-dex へのサインインが必要です。",
+  "error.team.signInRequired": "Dani Dex へのサインインが必要です。",
   "error.team.authenticationRequired": "認証が必要です。",
   "error.team.agentNotFound": "エージェントが見つかりません。",
   "error.team.routeNotFound": "ルートが見つかりません。",
   "error.team.requestFailed": "リクエストに失敗しました。",
   "error.team.tooManySignInAttempts": "サインインの試行回数が多すぎます。しばらくしてから再試行してください。",
-  "error.team.clientUpdateRequired": "このホストに接続する前に、この dani-dex クライアントを更新してください。",
-  "error.team.hostUpdateRequired": "接続する前に、ホストの dani-dex を更新してください。",
-  "error.team.serverSafeMode": "このサーバーでは dani-dex が起動しないため、セーフモードになっています。",
+  "error.team.clientUpdateRequired": "このホストに接続する前に、この Dani Dex クライアントを更新してください。",
+  "error.team.hostUpdateRequired": "接続する前に、ホストの Dani Dex を更新してください。",
+  "error.team.serverSafeMode": "このサーバーでは Dani Dex が起動しないため、セーフモードになっています。",
   "error.team.serverSafeModeNewerDatabase":
-    "このサーバーの dani-dex {version} はデータを開けません。より新しいバージョンの dani-dex がデータを保存したためです。サーバーに新しい dani-dex リリースを入れると解決します。",
+    "このサーバーの Dani Dex {version} はデータを開けません。より新しいバージョンの Dani Dex がデータを保存したためです。サーバーに新しい Dani Dex リリースを入れると解決します。",
   "error.team.serverSafeModeStartFailed":
-    "このサーバーの dani-dex {version} は、起動に何度も失敗したため停止しました。サーバーに新しい dani-dex リリースを入れると解決します。",
+    "このサーバーの Dani Dex {version} は、起動に何度も失敗したため停止しました。サーバーに新しい Dani Dex リリースを入れると解決します。",
   "error.team.sidebarLayoutUnavailable": "サイドバーのレイアウトを利用できません。",
   "error.team.providersUnsupported": "この接続ではプロバイダーの設定を利用できません。",
-  "error.team.providerNotManaged": "dani-dex はこのプロバイダーの CLI を管理していません。",
+  "error.team.providerNotManaged": "Dani Dex はこのプロバイダーの CLI を管理していません。",
   "error.team.channelsUnsupported": "この接続ではチャンネルのチャットを利用できません。",
   "error.team.channelContextUnsupported": "この接続はチャンネルでの新しい会話と圧縮に対応していません。",
   "error.team.channelPictureUnsupported": "この接続ではチャンネル画像を使用できません。",
@@ -92,9 +92,9 @@ export const messages = {
   "error.team.libraryFoldersUnsupported": "この接続ではライブラリのフォルダーを使用できません。",
   "error.team.workflowFoldersUnsupported": "この接続はワークフローのフォルダーに対応していません。",
   "error.team.agentNotificationLevelsUnsupported":
-    "このサーバーはエージェントごとの通知レベルを保存できません。サーバーを実行しているコンピューターで dani-dex を更新してください。",
+    "このサーバーはエージェントごとの通知レベルを保存できません。サーバーを実行しているコンピューターで Dani Dex を更新してください。",
   "error.team.sidebarPinsUnsupported":
-    "このサーバーは、ピン留めしたチャットをすべてのデバイスで共有できません。サーバーを実行しているコンピューターの dani-dex を更新してください。",
+    "このサーバーは、ピン留めしたチャットをすべてのデバイスで共有できません。サーバーを実行しているコンピューターの Dani Dex を更新してください。",
   "error.team.agentInstructionsUnsupported": "この接続ではエージェントの指示を編集できません。",
   "error.team.agentPublishUnsupported": "この接続ではエージェントを公開できません。",
   "error.team.agentUpdateUnsupported": "この接続ではエージェントを更新できません。",
@@ -106,9 +106,9 @@ export const messages = {
   "error.team.threadMessageSearchUnsupported": "この接続ではサイドスレッドを検索できません。",
   "error.team.sideQuestionUnsupported": "この接続ではサイド質問を使えません。",
   "error.team.liveVoiceUnsupported":
-    "このサーバーは Codex ライブ音声に対応していません。サーバーを実行しているコンピューターの dani-dex を更新してください。",
+    "このサーバーは Codex ライブ音声に対応していません。サーバーを実行しているコンピューターの Dani Dex を更新してください。",
   "error.team.routineFlowsUnsupported":
-    "このサーバーはルーティンフローに対応していません。サーバーを実行しているコンピューターの dani-dex を更新してください。",
+    "このサーバーはルーティンフローに対応していません。サーバーを実行しているコンピューターの Dani Dex を更新してください。",
   "error.team.routineCanvasTooLarge":
     "このルーティンキャンバスは大きすぎるため、このデバイスに送信できません。サーバーを実行しているコンピューターでルーティンの指示を短くしてください。",
   "error.team.conversationPageTooLarge":
@@ -152,15 +152,15 @@ export const messages = {
   "error.team.browserSessionNotFound": "ブラウザービューのセッションが見つかりません。",
   "error.team.mcpUnsupported": "この接続では MCP サーバーを利用できません。",
   "error.team.mcpServerListNeedsUpdate":
-    "このサーバーで {limit} 個を超える MCP サーバーを使うには、このデバイスの dani-dex を更新してください。",
+    "このサーバーで {limit} 個を超える MCP サーバーを使うには、このデバイスの Dani Dex を更新してください。",
   "error.team.providerAccountListNeedsUpdate":
-    "このサーバーで 1 つのプロバイダーのアカウントを {limit} 個より多く使うには、このデバイスの dani-dex を更新してください。",
+    "このサーバーで 1 つのプロバイダーのアカウントを {limit} 個より多く使うには、このデバイスの Dani Dex を更新してください。",
   "error.team.storageUnsupported": "この接続ではストレージを利用できません。",
   "error.team.machineResourcesUnsupported": "この接続ではマシンの使用状況を利用できません。",
   "error.team.machineAlertMemberInvalid":
     "マシンのアラートを受け取れるのは、このサーバーのオーナーまたは管理者のみです。",
   "error.team.hostedSitesUnsupported": "この接続ではサイトを利用できません。",
-  "error.team.hostedSitesUnregistered": "このサーバーは dani-dex に登録されていないため、サイトがありません。",
+  "error.team.hostedSitesUnregistered": "このサーバーは Dani Dex に登録されていないため、サイトがありません。",
   "error.team.hostedSiteNotFound": "サイトが見つかりません。",
   "error.team.markUnreadUnsupported": "このクライアントは会話を未読にする操作に対応していません。",
   "error.team.inviteServiceUnavailable": "招待サービスを利用できません。",
@@ -185,12 +185,12 @@ export const messages = {
   "error.team.ownerRequired": "この操作ができるのはこのサーバーのオーナーだけです。",
   "error.team.requestTooLarge": "リクエストの本文が大きすぎます。",
   "error.team.signInRelayUnsupported":
-    "このサーバーはサインインを中継できません。ホストの dani-dex を更新してください。",
+    "このサーバーはサインインを中継できません。ホストの Dani Dex を更新してください。",
   "error.team.connectorsUnsupported":
-    "このサーバーの接続はここから管理できません。ホストの dani-dex を更新してください。",
+    "このサーバーの接続はここから管理できません。ホストの Dani Dex を更新してください。",
   "error.team.discordAccessUnsupported":
-    "このサーバーでは Discord のロールを設定できません。サーバーの dani-dex を更新してください。",
-  "error.team.connectorPageRefused": "サーバーが dani-dex で開かないページを送信しました。",
+    "このサーバーでは Discord のロールを設定できません。サーバーの Dani Dex を更新してください。",
+  "error.team.connectorPageRefused": "サーバーが Dani Dex で開かないページを送信しました。",
   "error.team.signInRelayUnknown": "このサインインは終了したか、存在しません。",
   "error.team.signInRelayUsed": "このサインインはすでに送信されています。",
   "error.team.signInRelayMismatch": "このアドレスはこのサインインのものではありません。",

@@ -20,7 +20,7 @@ export const messages = {
   "status.remote.stageAgents": "Chargement des agents : {reason}",
   "status.remote.stageReads": "Chargement de l’état de lecture : {reason}",
   "status.remote.suspendedDetail":
-    "Mettez à jour dani-dex Mobile ou l’app de bureau avant de vous connecter.\n{detail}",
+    "Mettez à jour Dani Dex Mobile ou l’app de bureau avant de vous connecter.\n{detail}",
   "status.remote.cooldownDetail":
     "La connexion a échoué après {limit} tentatives. Nouvelle tentative dans {minutes}:{seconds}.\n{detail}",
   "status.remote.cooldown":

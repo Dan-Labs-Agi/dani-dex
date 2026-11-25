@@ -202,6 +202,6 @@ export const messages = {
   "sidebar.community.title": "Setz dich zu uns.",
   "sidebar.community.body": "In der KI-Zukunft ist ein Platz für dich frei. Komm in die Community auf Discord und X.",
   "sidebar.community.joinDiscord": "Zum Discord",
-  "sidebar.community.followX": "dani-dex auf X folgen",
+  "sidebar.community.followX": "Dani Dex auf X folgen",
   "sidebar.community.dismiss": "Community-Einladung ausblenden",
 } as const satisfies PartialTranslation<typeof source>;

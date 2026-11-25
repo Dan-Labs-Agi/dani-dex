@@ -26,7 +26,7 @@ export const messages = {
   "prompt.approval.alwaysAllow": "Altijd toestaan",
   "prompt.approval.deny": "Weigeren",
   "prompt.approval.cut":
-    "Deze kaart toont alleen het begin van het verzoek en biedt daarom alleen Weigeren. Verschijnt Toestaan niet snel, werk dani-dex dan bij op de server.",
+    "Deze kaart toont alleen het begin van het verzoek en biedt daarom alleen Weigeren. Verschijnt Toestaan niet snel, werk Dani Dex dan bij op de server.",
   "prompt.approval.report.bugHeadline": "Een bug gevonden? Laten we hem oplossen.",
   "prompt.approval.report.ideaHeadline": "Een idee? Laten we het waarmaken.",
   "prompt.approval.report.dontSend": "Niet nu",
@@ -45,7 +45,7 @@ export const messages = {
   "prompt.browser.title.pending": "Voltooi de stap op {host}",
   "prompt.browser.cancelled": "Geannuleerd",
   "prompt.browser.reload":
-    "dani-dex kon het wachtwoord of de code niet helemaal invullen. Controleer de pagina en vul in wat ontbreekt. Rond het inloggen af en laad daarna de browserpagina opnieuw voordat je “Ik ben klaar” kiest. De pagina kan pas weer worden geïnspecteerd nadat ze opnieuw is geladen.",
+    "Dani Dex kon het wachtwoord of de code niet helemaal invullen. Controleer de pagina en vul in wat ontbreekt. Rond het inloggen af en laad daarna de browserpagina opnieuw voordat je “Ik ben klaar” kiest. De pagina kan pas weer worden geïnspecteerd nadat ze opnieuw is geladen.",
   "prompt.browser.continuing": "{name} gaat verder.",
   "prompt.browser.cancelledBody": "De browserstap is geannuleerd.",
   "prompt.browser.pendingBody":
@@ -58,7 +58,7 @@ export const messages = {
   "prompt.browser.signInBlocked.title": "{host} heeft het inloggen vanaf {server} geblokkeerd",
   "prompt.browser.signInBlocked.cancelledTitle": "Inloggen bij {host} geannuleerd",
   "prompt.browser.signInBlocked.body":
-    "Log in op deze computer. dani-dex stuurt alleen de inloggegevens van {host} naar {server}, en {name} gaat verder.",
+    "Log in op deze computer. Dani Dex stuurt alleen de inloggegevens van {host} naar {server}, en {name} gaat verder.",
   "prompt.browser.signInBlocked.desktopBody":
     "{host} accepteert geen aanmelding vanaf de server. Open deze chat in de dani-dex-desktopapp op je computer en log daar in. Daarna gaat {name} verder.",
   "prompt.browser.signInBlocked.cancelledBody": "Het inloggen is geannuleerd.",
