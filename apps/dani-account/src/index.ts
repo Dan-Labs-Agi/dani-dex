@@ -1,3 +1,5 @@
+// biome-ignore-all lint/suspicious/noExplicitAny: untyped account service payloads, typed contracts pending
+// biome-ignore-all lint/nursery/noUnsafeTypeAssertion: untyped account service payloads, typed contracts pending
 // Dani Dex account + sync Worker. One Google account = one user id on mobile and desktop.
 // Secrets and provider tokens are never synced: kinds below are the only accepted ones.
 
@@ -59,7 +61,7 @@ async function authUser(req: Request, env: Env): Promise<string | null> {
   return row ? row.user_id : null;
 }
 
-async function googleAuthUrl(env: Env, extra: Record<string, unknown>, hint?: string): Promise<string> {
+async function googleAuthUrl(env: Env, extra: { [key: string]: unknown }, hint?: string): Promise<string> {
   const payload = b64url(enc.encode(JSON.stringify({ ...extra, n: crypto.randomUUID(), t: now() })));
   const state = `${payload}.${await hmac(env.STATE_SECRET, payload)}`;
   const g = new URL("https://accounts.google.com/o/oauth2/v2/auth");

@@ -33,14 +33,19 @@ import {
   GEMINI_DIR_FLAG,
   geminiSavedKeyLimitFailure,
 } from "./acp-flavor-antigravity";
-import { OPENCODE_ACP_FLAVOR } from "./acp-flavor-opencode";
 import { KILOCODE_ACP_FLAVOR } from "./acp-flavor-kilocode";
+import { OPENCODE_ACP_FLAVOR } from "./acp-flavor-opencode";
 import { acpSessionSteers, steerAcpSession } from "./acp-session-steering";
 import type { AcpArgv, AcpExtensionMethod } from "./acp-sign-in";
 import { CODEX_VARIABLE_PROVIDER, readCodexModelSource } from "./agent/codex-model-source";
 import type { ImageFitter } from "./agent/image-reader";
 import { readMuseAccount } from "./agent/muse-login";
-import { claudeModelName, modelsAfterKilocodeDiscoveryFailure, modelsAfterOpenCodeDiscoveryFailure, serviceTierFields } from "./agent/provider-models";
+import {
+  claudeModelName,
+  modelsAfterKilocodeDiscoveryFailure,
+  modelsAfterOpenCodeDiscoveryFailure,
+  serviceTierFields,
+} from "./agent/provider-models";
 import type { TurnContext } from "./agent/turn-context";
 import type { AgentClient } from "./agent-client";
 import { ANTIGRAVITY_TOKEN_FILE, importAntigravityToken } from "./antigravity-token-import";
@@ -63,11 +68,11 @@ import {
   resolveDevinCli,
   resolveGrokCli,
   resolveHermesCli,
+  resolveKilocodeCli,
   resolveKimiCli,
   resolveMistralCli,
   resolveMuseCli,
   resolveOpencodeCli,
-  resolveKilocodeCli,
   resolvePiCli,
 } from "./cli";
 import { clineFreeModels } from "./cline-free-models";
@@ -112,12 +117,12 @@ import {
   grokHomeDirectory,
   hermesHome,
   hermesStatePaths,
+  kilocodeStatePaths,
   kimiCodeStatePaths,
   kimiStatePaths,
   mistralHomeDirectory,
   mistralStatePaths,
   museStatePaths,
-  kilocodeStatePaths,
   OPENCODE_CONFINED_ENV,
   openCodeStatePaths,
   type ProcessConfinement,

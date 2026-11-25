@@ -1,3 +1,5 @@
+// biome-ignore-all lint/suspicious/noExplicitAny: untyped account service payloads, typed contracts pending
+// biome-ignore-all lint/nursery/noUnsafeTypeAssertion: untyped account service payloads, typed contracts pending
 // Remote pairing + remote desktop control plane for Dani Dex.
 // Implements the contracts the existing client uses (mobile-connect, remote sessions,
 // signal relay). Media and control run peer to peer over WebRTC; this only signals.
@@ -49,7 +51,7 @@ async function pubKey(env: { REMOTE_TICKET_PRIVATE_JWK: string }) {
 }
 export async function signJwt(
   env: REnv,
-  claims: Record<string, unknown>,
+  claims: { [key: string]: unknown },
   ttlSec: number,
 ): Promise<{ jwt: string; exp: number }> {
   const iat = now();

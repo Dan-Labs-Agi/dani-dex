@@ -1,3 +1,5 @@
+// biome-ignore-all lint/suspicious/noExplicitAny: untyped account service payloads, typed contracts pending
+// biome-ignore-all lint/nursery/noUnsafeTypeAssertion: untyped account service payloads, typed contracts pending
 // Email-code sign-in. The desktop and mobile apps already speak this protocol:
 // POST /v1/auth/email/start -> { challengeId, expiresAt, resendAt }
 // POST /v1/auth/email/verify -> { sessionToken, user }
