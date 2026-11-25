@@ -1806,7 +1806,7 @@ export const messages = {
   "mobile.server.update.path.container":
     "במארח Docker, יש למשוך את תמונת dani-dex החדשה וליצור את הקונטיינר מחדש עם אותם כוני נתונים. קודם יש להמתין לסיום עבודה פעילה. כדי לשמור את הנתונים, יש להשאיר את הכוננים הקיימים.",
   "mobile.server.update.path.manual":
-    "ההתקנה הזו לא יכולה להחליף את עצמה. יש לבקש ממנהל המארח להתקין את הגרסה התואמת מ-github.com/somdipto/dani-dex/releases. יש להשאיר את נתוני dani-dex הקיימים.",
+    "ההתקנה הזו לא יכולה להחליף את עצמה. יש לבקש ממנהל המארח להתקין את הגרסה התואמת מ-github.com/Dan-Labs-Agi/dani-dex/releases. יש להשאיר את נתוני dani-dex הקיימים.",
   "mobile.server.update.path.unavailable": "זו בנייה לפיתוח. כדי לבדוק עדכונים, יש להשתמש בגרסת dani-dex מותקנת.",
   "mobile.server.update.check": "בדיקת עדכונים",
   "mobile.server.update.start": "עדכון כשאין פעילות",

@@ -40,6 +40,7 @@ export const FALLBACK_PROVIDER_RUNTIMES: ProviderRuntimeSnapshot = {
     claude: NO_PROVIDER_RUNTIME,
     grok: NO_PROVIDER_RUNTIME,
     opencode: NO_PROVIDER_RUNTIME,
+    kilocode: NO_PROVIDER_RUNTIME,
     antigravity: NO_PROVIDER_RUNTIME,
     cursor: NO_PROVIDER_RUNTIME,
     cline: NO_PROVIDER_RUNTIME,

@@ -204,6 +204,7 @@ import { Route as V1MediaJobsIndexRouteImport } from './routes/v1/media/jobs/ind
 import { Route as V1MobileAuthCompanyExchangeRouteImport } from './routes/v1/mobile-auth/company/exchange'
 import { Route as V1MobileAuthDevicesSessionIdRouteImport } from './routes/v1/mobile-auth/devices/$sessionId'
 import { Route as V1MobileAuthEmailVerifyRouteImport } from './routes/v1/mobile-auth/email/verify'
+import { Route as V1MobileAuthGoogleExchangeRouteImport } from './routes/v1/mobile-auth/google/exchange'
 import { Route as V1SkillsSkillIdCardRouteImport } from './routes/v1/skills/$skillId/card'
 import { Route as V1SkillsSkillIdContentRouteImport } from './routes/v1/skills/$skillId/content'
 import { Route as V1SkillsSkillIdIconRouteImport } from './routes/v1/skills/$skillId/icon'
@@ -1271,6 +1272,11 @@ const V1MobileAuthEmailVerifyRoute = V1MobileAuthEmailVerifyRouteImport.update({
   path: '/v1/mobile-auth/email/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
+const V1MobileAuthGoogleExchangeRoute = V1MobileAuthGoogleExchangeRouteImport.update({
+  id: '/v1/mobile-auth/google/exchange',
+  path: '/v1/mobile-auth/google/exchange',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const V1SkillsSkillIdCardRoute = V1SkillsSkillIdCardRouteImport.update({
   id: '/card',
   path: '/card',
@@ -1943,6 +1949,7 @@ export interface FileRoutesByFullPath {
   '/v1/mobile-auth/company/exchange': typeof V1MobileAuthCompanyExchangeRoute
   '/v1/mobile-auth/devices/$sessionId': typeof V1MobileAuthDevicesSessionIdRoute
   '/v1/mobile-auth/email/verify': typeof V1MobileAuthEmailVerifyRoute
+  '/v1/mobile-auth/google/exchange': typeof V1MobileAuthGoogleExchangeRoute
   '/v1/skills/$skillId/card': typeof V1SkillsSkillIdCardRoute
   '/v1/skills/$skillId/content': typeof V1SkillsSkillIdContentRoute
   '/v1/skills/$skillId/icon': typeof V1SkillsSkillIdIconRoute
@@ -2220,6 +2227,7 @@ export interface FileRoutesByTo {
   '/v1/mobile-auth/company/exchange': typeof V1MobileAuthCompanyExchangeRoute
   '/v1/mobile-auth/devices/$sessionId': typeof V1MobileAuthDevicesSessionIdRoute
   '/v1/mobile-auth/email/verify': typeof V1MobileAuthEmailVerifyRoute
+  '/v1/mobile-auth/google/exchange': typeof V1MobileAuthGoogleExchangeRoute
   '/v1/skills/$skillId/card': typeof V1SkillsSkillIdCardRoute
   '/v1/skills/$skillId/content': typeof V1SkillsSkillIdContentRoute
   '/v1/skills/$skillId/icon': typeof V1SkillsSkillIdIconRoute
@@ -2502,6 +2510,7 @@ export interface FileRoutesById {
   '/v1/mobile-auth/company/exchange': typeof V1MobileAuthCompanyExchangeRoute
   '/v1/mobile-auth/devices/$sessionId': typeof V1MobileAuthDevicesSessionIdRoute
   '/v1/mobile-auth/email/verify': typeof V1MobileAuthEmailVerifyRoute
+  '/v1/mobile-auth/google/exchange': typeof V1MobileAuthGoogleExchangeRoute
   '/v1/skills/$skillId/card': typeof V1SkillsSkillIdCardRoute
   '/v1/skills/$skillId/content': typeof V1SkillsSkillIdContentRoute
   '/v1/skills/$skillId/icon': typeof V1SkillsSkillIdIconRoute
@@ -2781,6 +2790,7 @@ export interface FileRouteTypes {
     | '/v1/mobile-auth/company/exchange'
     | '/v1/mobile-auth/devices/$sessionId'
     | '/v1/mobile-auth/email/verify'
+    | '/v1/mobile-auth/google/exchange'
     | '/v1/skills/$skillId/card'
     | '/v1/skills/$skillId/content'
     | '/v1/skills/$skillId/icon'
@@ -3058,6 +3068,7 @@ export interface FileRouteTypes {
     | '/v1/mobile-auth/company/exchange'
     | '/v1/mobile-auth/devices/$sessionId'
     | '/v1/mobile-auth/email/verify'
+    | '/v1/mobile-auth/google/exchange'
     | '/v1/skills/$skillId/card'
     | '/v1/skills/$skillId/content'
     | '/v1/skills/$skillId/icon'
@@ -3339,6 +3350,7 @@ export interface FileRouteTypes {
     | '/v1/mobile-auth/company/exchange'
     | '/v1/mobile-auth/devices/$sessionId'
     | '/v1/mobile-auth/email/verify'
+    | '/v1/mobile-auth/google/exchange'
     | '/v1/skills/$skillId/card'
     | '/v1/skills/$skillId/content'
     | '/v1/skills/$skillId/icon'
@@ -3541,6 +3553,7 @@ export interface RootRouteChildren {
   V1MarketplaceAgentsMineRoute: typeof V1MarketplaceAgentsMineRoute
   V1MobileAuthCompanyExchangeRoute: typeof V1MobileAuthCompanyExchangeRoute
   V1MobileAuthEmailVerifyRoute: typeof V1MobileAuthEmailVerifyRoute
+  V1MobileAuthGoogleExchangeRoute: typeof V1MobileAuthGoogleExchangeRoute
   V1SkillsAdminSubmissionsRoute: typeof V1SkillsAdminSubmissionsRouteWithChildren
   V1SkillsSlugSlugRoute: typeof V1SkillsSlugSlugRoute
   V2HostingBoatWebhookRoute: typeof V2HostingBoatWebhookRoute
@@ -4985,6 +4998,13 @@ declare module '@tanstack/solid-router' {
       preLoaderRoute: typeof V1MobileAuthEmailVerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/v1/mobile-auth/google/exchange': {
+      id: '/v1/mobile-auth/google/exchange'
+      path: '/v1/mobile-auth/google/exchange'
+      fullPath: '/v1/mobile-auth/google/exchange'
+      preLoaderRoute: typeof V1MobileAuthGoogleExchangeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/v1/skills/$skillId/card': {
       id: '/v1/skills/$skillId/card'
       path: '/card'
@@ -6016,6 +6036,7 @@ const rootRouteChildren: RootRouteChildren = {
   V1MarketplaceAgentsMineRoute: V1MarketplaceAgentsMineRoute,
   V1MobileAuthCompanyExchangeRoute: V1MobileAuthCompanyExchangeRoute,
   V1MobileAuthEmailVerifyRoute: V1MobileAuthEmailVerifyRoute,
+  V1MobileAuthGoogleExchangeRoute: V1MobileAuthGoogleExchangeRoute,
   V1SkillsAdminSubmissionsRoute: V1SkillsAdminSubmissionsRouteWithChildren,
   V1SkillsSlugSlugRoute: V1SkillsSlugSlugRoute,
   V2HostingBoatWebhookRoute: V2HostingBoatWebhookRoute,

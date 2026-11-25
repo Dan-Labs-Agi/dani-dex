@@ -36,7 +36,7 @@ continue without the user.
 
    | Surface | Story location | Stylesheet |
    | --- | --- | --- |
-   | Desktop renderer, shared UI | `src/renderer/stories/` | Global; `.storybook/preview.tsx` loads it |
+   | Desktop renderer, shared UI | `src/renderer/stories/` | Global; `config/storybook/preview.tsx` loads it |
    | Public web (`apps/auth-api`) | Beside the page, in `apps/auth-api/src/components/<area>/`. For a new page, use `landing/` | Import `apps/auth-api/src/styles.css` in the story, as `DiscordConnectPage.stories.tsx` does |
 
    A pricing page, landing page, or article is public web. A dialog, panel,

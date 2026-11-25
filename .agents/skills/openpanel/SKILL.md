@@ -34,7 +34,7 @@ If no key is available, stop and ask the developer. Never print the token, a key
 
 - Every tool needs `"projectId": "openbot"`. Nightly, Infeld and other products share the
   organization, and the token can change their dashboards too: do not touch them.
-- Event names and properties are in [ANALYTICS.md](../../../ANALYTICS.md). Call `list_event_names`
+- Event names and properties are in [ANALYTICS.md](../../../docs/ANALYTICS.md). Call `list_event_names`
   or `list_event_properties` when a name is not there.
 - Read the schema with `tools <tool>` before the first call of a tool. Most query tools take
   `startDate` and `endDate` (`YYYY-MM-DD`) and use the last 30 days by default.

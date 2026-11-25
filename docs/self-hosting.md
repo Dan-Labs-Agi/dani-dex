@@ -7,7 +7,7 @@ your account and connection set-up.
 Our Worker does not issue a ticket for another Signal. A ticket gives access to a host, and our key
 signs it, so a ticket for your Signal would also open our Signal. Thus a self-hosted Signal needs a
 self-hosted account service with its own keys. See
-[issue #1263](https://github.com/somdipto/dani-dex/issues/1263).
+[issue #1263](https://github.com/Dan-Labs-Agi/dani-dex/issues/1263).
 
 ## What changes
 
@@ -18,7 +18,7 @@ self-hosted account service with its own keys. See
 - The browser client at `dani.danlab.dev/app` does not work with your service.
 - Hosted servers, the dani-dex GitHub App, Slack, the dani-dex Telegram bot and the iPhone Live
   Activity relay stay off. Each needs secrets that only we have.
-- The other network connections in [PRIVACY.md](../PRIVACY.md) do not change.
+- The other network connections in [PRIVACY.md](PRIVACY.md) do not change.
 
 ## What you need
 

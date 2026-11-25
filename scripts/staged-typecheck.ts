@@ -1,7 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, posix, relative, resolve } from "node:path";
-import { MOBILE_CODEGEN_INPUTS } from "./mobile-codegen";
 
 const ROOT = resolve(import.meta.dirname, "..");
 
@@ -9,8 +8,7 @@ const TYPE_INPUT = /\.(ts|tsx|mts|cts|js|mjs|cjs)$|(^|\/)(tsconfig[^/]*\.json|pa
 const SELECTS_ALL = /^(tsconfig[^/]*\.json|package\.json|bun\.lock)$/;
 
 const RELATIVE_IMPORTS: Record<string, string[]> = {
-  "typecheck:node": ["apps/mobile/src", "apps/auth-api/src", "apps/mobile-updates/src"],
-  "typecheck:updates": ["scripts/mobile-ota-lib.ts"],
+  "typecheck:node": ["apps/auth-api/src"],
   "typecheck:api": ["apps/site-router/src"],
   "typecheck:renderer": ["src/preload/clipboard-files.ts"],
   "typecheck:storybook": ["src/renderer/src"],
@@ -114,9 +112,8 @@ function selectTypechecks(paths: string[]): Map<string, string> {
   for (const path of paths) {
     for (const project of all) {
       if (selected.has(project.script)) continue;
-      const mobileCodegen = project.script === "typecheck:mobile" && MOBILE_CODEGEN_INPUTS.includes(path);
       const visible = TYPE_INPUT.test(path) && project.roots.some((root) => contains(root, path));
-      if (SELECTS_ALL.test(path) || mobileCodegen || visible) selected.set(project.script, path);
+      if (SELECTS_ALL.test(path) || visible) selected.set(project.script, path);
     }
   }
   return new Map(

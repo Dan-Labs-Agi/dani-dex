@@ -412,7 +412,7 @@ const findServer = (servers: AgentMcpServers, name: string) => {
 };
 
 const SIGN_IN_NEXT =
-  "A Sign in card is in this conversation. Only the user sees it: do not check it, and do not test again in this turn. Tell the user to press Sign in on it, end your turn, and test again when the user says it is done. Another needs_sign_in means only that the sign-in is not done; it is not an dani-dex fault. If the user sees no card, tell them to sign in from Marketplace, Apps, the server's page, and end your turn. Do not send openbot.send_feedback about the card unless the user asks for it, or says that the sign-in there failed too.";
+  "A Sign in card is in this conversation. Only the user sees it: do not check it, and do not test again in this turn. Tell the user to press Sign in on it, end your turn, and test again when the user says it is done. Another needs_sign_in means only that the sign-in is not done; it is not a dani-dex fault. If the user sees no card, tell them to sign in from Marketplace, Apps, the server's page, and end your turn. Do not send openbot.send_feedback about the card unless the user asks for it, or says that the sign-in there failed too.";
 
 function signInNeeded(servers: AgentMcpServers, config: McpServerConfig, when = "") {
   const failure = servers.signInFailure(config);

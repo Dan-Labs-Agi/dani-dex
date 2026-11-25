@@ -1128,14 +1128,14 @@ command -v age >/dev/null || DEBIAN_FRONTEND=noninteractive apt-get install -y -
     let body: unknown;
     try {
       body = JSON.parse(
-        execFileSync("gh", ["api", "repos/somdipto/dani-dex/releases/latest"], {
+        execFileSync("gh", ["api", "repos/Dan-Labs-Agi/dani-dex/releases/latest"], {
           encoding: "utf8",
           maxBuffer: 16 * 1024 * 1024,
           stdio: ["ignore", "pipe", "ignore"],
         }),
       );
     } catch {
-      const response = await fetch("https://api.github.com/repos/somdipto/dani-dex/releases/latest", {
+      const response = await fetch("https://api.github.com/repos/Dan-Labs-Agi/dani-dex/releases/latest", {
         headers: { accept: "application/vnd.github+json" },
         signal: AbortSignal.timeout(30_000),
       });
@@ -1149,7 +1149,7 @@ command -v age >/dev/null || DEBIAN_FRONTEND=noninteractive apt-get install -y -
     if (!VERSION_PATTERN.test(version) || !asset || !/^[0-9a-f]{64}$/u.test(sha256)) {
       throw new Error(`Release ${release.tag_name} has no x86_64 AppImage with a SHA-256.`);
     }
-    if (!asset.browser_download_url.startsWith("https://github.com/somdipto/dani-dex/releases/download/")) {
+    if (!asset.browser_download_url.startsWith("https://github.com/Dan-Labs-Agi/dani-dex/releases/download/")) {
       throw new Error(`The AppImage of release ${version} is not on the releases of the repository.`);
     }
     return { version, url: asset.browser_download_url, sha256 };

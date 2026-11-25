@@ -311,6 +311,7 @@ console.log("ok");
       "package.json": '{ "type": "module" }\n',
       "lib/format.js": "export function fmtPrice(cents) {\n  return `$${(cents / 100).toFixed(2)}`;\n}\n",
       "lib/cart.js":
+        // biome-ignore lint/suspicious/noTemplateCurlyInString: fixture source code embedded as data
         'import { fmtPrice } from "./format.js";\n\nexport function cartLine(name, cents, qty) {\n  return `${name} x${qty}: ${fmtPrice(cents * qty)}`;\n}\n',
       "main.js":
         'import { cartLine } from "./lib/cart.js";\nimport { fmtPrice } from "./lib/format.js";\n\nconsole.log(cartLine("pen", 150, 3));\nconsole.log("total", fmtPrice(450));\n',

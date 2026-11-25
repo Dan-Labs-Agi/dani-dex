@@ -1,6 +1,6 @@
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import type { AgentModelOption } from "@openbot/contracts/ipc";
-import { isFreeOpencodeModel, OPENCODE_RECOMMENDED_FREE_MODELS } from "@openbot/contracts/ipc";
+import { isFreeKilocodeModel, isFreeOpencodeModel, KILOCODE_RECOMMENDED_FREE_MODELS, OPENCODE_RECOMMENDED_FREE_MODELS } from "@openbot/contracts/ipc";
 import type { AgentProvider } from "./../agent-client";
 import type { ModelListResponse } from "./../protocol";
 
@@ -18,8 +18,19 @@ function opencodeModelRank(model: AgentModelOption): number {
   return id.startsWith("opencode/") || id.startsWith("opencode-go/") ? recommended + 1 : recommended + 2;
 }
 
+function kilocodeModelRank(model: AgentModelOption): number {
+  const recommended = KILOCODE_RECOMMENDED_FREE_MODELS.length;
+  if (isFreeKilocodeModel(model.id, model.name)) {
+    const place = KILOCODE_RECOMMENDED_FREE_MODELS.indexOf(model.id.toLowerCase());
+    return place >= 0 ? place : recommended;
+  }
+  const id = model.id.toLowerCase();
+  return id.startsWith("kilo/") ? recommended + 1 : recommended + 2;
+}
+
 export const PREFERRED_MODEL_ORDER: ReadonlyMap<AgentProvider, (model: AgentModelOption) => number> = new Map([
   ["opencode", opencodeModelRank],
+  ["kilocode", kilocodeModelRank],
 ]);
 
 function modelVersion(name: string): number[] | null {
@@ -278,6 +289,47 @@ export const FALLBACK_MODELS: AgentModelOption[] = [
 
 export function modelsAfterOpenCodeDiscoveryFailure(previous: AgentModelOption[]): AgentModelOption[] {
   return previous.length ? previous : OPENCODE_FREE_MODEL_FALLBACKS;
+}
+
+const KILOCODE_FREE_REASONING = ["low", "medium", "high", "xhigh", "max"] as const;
+
+const KILOCODE_FREE_MODEL_FALLBACKS: AgentModelOption[] = [
+  {
+    provider: "kilocode",
+    id: "kilo/kilo-auto/free",
+    name: "Kilo Auto Free",
+    description: "Free KiloCode model.",
+    defaultReasoningEffort: "medium",
+    supportedReasoningEfforts: [...KILOCODE_FREE_REASONING],
+  },
+  {
+    provider: "kilocode",
+    id: "kilo/nvidia/nemotron-3.5-super-vl:free",
+    name: "Nemotron 3.5 Super VL Free",
+    description: "Free KiloCode model.",
+    defaultReasoningEffort: "medium",
+    supportedReasoningEfforts: [...KILOCODE_FREE_REASONING],
+  },
+  {
+    provider: "kilocode",
+    id: "kilo/nvidia/nemotron-3.5-lightning:free",
+    name: "Nemotron 3.5 Lightning Free",
+    description: "Free KiloCode model.",
+    defaultReasoningEffort: "medium",
+    supportedReasoningEfforts: [...KILOCODE_FREE_REASONING],
+  },
+  {
+    provider: "kilocode",
+    id: "kilo/recursive/flint-v1.0:free",
+    name: "Flint 1.0 Free",
+    description: "Free KiloCode model.",
+    defaultReasoningEffort: "medium",
+    supportedReasoningEfforts: [...KILOCODE_FREE_REASONING],
+  },
+];
+
+export function modelsAfterKilocodeDiscoveryFailure(previous: AgentModelOption[]): AgentModelOption[] {
+  return previous.length ? previous : KILOCODE_FREE_MODEL_FALLBACKS;
 }
 
 export function serviceTierFields(server: ModelListResponse["data"][number]): {

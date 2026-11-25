@@ -43,6 +43,7 @@
   },
   "vars": {
     "AUTH_EXPOSE_DEVELOPMENT_CODE": "false",
+    "GOOGLE_MOBILE_CLIENT_IDS": "454615540313-srf667aqmv5lendkuoje6mco7l5akjuk.apps.googleusercontent.com",
     "EMAIL_SMTP_HOST": "mail.privateemail.com",
     "EMAIL_SMTP_PORT": "465",
     "EMAIL_SMTP_USERNAME": "no_reply@openbot.run",
@@ -65,7 +66,7 @@
     "GITHUB_APP_CLIENT_ID": "Iv23lik5pzHz70cb0RUL",
     "FEEDBACK_WITHDRAWN_REPOSITORY": "",
     "APNS_TEAM_ID": "8A47NKRZSJ",
-    "APNS_TOPIC": "run.openbot.mobile"
+    "APNS_TOPIC": "dev.danlab.dex"
   },
   "services": [
     {
@@ -155,6 +156,7 @@
       },
       "vars": {
         "AUTH_EXPOSE_DEVELOPMENT_CODE": "false",
+        "GOOGLE_MOBILE_CLIENT_IDS": "454615540313-srf667aqmv5lendkuoje6mco7l5akjuk.apps.googleusercontent.com",
         "EMAIL_SMTP_HOST": "mail.privateemail.com",
         "EMAIL_SMTP_PORT": "465",
         "EMAIL_SMTP_USERNAME": "no_reply@openbot.run",
@@ -251,6 +253,7 @@
       },
       "vars": {
         "AUTH_EXPOSE_DEVELOPMENT_CODE": "false",
+        "GOOGLE_MOBILE_CLIENT_IDS": "454615540313-srf667aqmv5lendkuoje6mco7l5akjuk.apps.googleusercontent.com",
         "EMAIL_SMTP_HOST": "mail.privateemail.com",
         "EMAIL_SMTP_PORT": "465",
         "EMAIL_SMTP_USERNAME": "no_reply@openbot.run",
@@ -269,7 +272,7 @@
         "HOSTED_SERVERS_ENABLED": "true",
         "GITHUB_APP_CLIENT_ID": "Iv23lik5pzHz70cb0RUL",
         "APNS_TEAM_ID": "8A47NKRZSJ",
-        "APNS_TOPIC": "run.openbot.mobile"
+        "APNS_TOPIC": "dev.danlab.dex"
       },
       "d1_databases": [
         {

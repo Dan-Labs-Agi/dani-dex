@@ -1396,7 +1396,7 @@ export const messages = {
   "mobile.server.update.path.container":
     "Sull'host Docker, scarica la nuova immagine di dani-dex e crea di nuovo il container con gli stessi volumi di dati. Attendi prima la fine del lavoro in corso. Mantieni i volumi esistenti per conservare i tuoi dati.",
   "mobile.server.update.path.manual":
-    "Questa installazione non può aggiornarsi da sola. Chiedi all'amministratore dell'host di installare la versione compatibile da github.com/somdipto/dani-dex/releases. Mantieni i dati di dani-dex esistenti.",
+    "Questa installazione non può aggiornarsi da sola. Chiedi all'amministratore dell'host di installare la versione compatibile da github.com/Dan-Labs-Agi/dani-dex/releases. Mantieni i dati di dani-dex esistenti.",
   "mobile.server.update.path.unavailable":
     "Questa è una build di sviluppo. Usa una versione di dani-dex installata per cercare aggiornamenti.",
   "mobile.server.update.check": "Cerca aggiornamenti",

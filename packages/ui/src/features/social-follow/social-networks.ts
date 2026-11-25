@@ -11,10 +11,10 @@ export interface SocialNetwork {
 }
 
 export const SOCIAL_NETWORKS: Record<SocialNetworkId, SocialNetwork> = {
-  x: { id: "x", name: "X", handle: "@OpenBot_", kind: "profile", compose: "text" },
+  x: { id: "x", name: "X", handle: "dani.danlab.dev", kind: "profile", compose: "text" },
   threads: { id: "threads", name: "Threads", handle: "@dani.danlab.dev", kind: "profile", compose: "text" },
   linkedin: { id: "linkedin", name: "LinkedIn", handle: "dani-dex", kind: "profile", compose: "link" },
-  reddit: { id: "reddit", name: "Reddit", handle: "r/OpenBot_", kind: "community", compose: "text" },
+  reddit: { id: "reddit", name: "Reddit", handle: "dani.danlab.dev", kind: "community", compose: "text" },
   instagram: { id: "instagram", name: "Instagram", handle: "@dani.danlab.dev", kind: "profile", compose: "copy" },
   tiktok: { id: "tiktok", name: "TikTok", handle: "@dani.danlab.dev", kind: "profile", compose: "copy" },
   facebook: { id: "facebook", name: "Facebook", handle: "dani-dex", kind: "profile", compose: "link" },

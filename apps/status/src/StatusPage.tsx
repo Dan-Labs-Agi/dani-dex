@@ -32,7 +32,7 @@ import {
 } from "./model";
 import "./status.css";
 
-export const ISSUES_URL = "https://github.com/somdipto/dani-dex/issues?q=label%3Astatus";
+export const ISSUES_URL = "https://github.com/Dan-Labs-Agi/dani-dex/issues?q=label%3Astatus";
 const SITE_URL = "https://dani.danlab.dev";
 const LATE_CHECK_MS = 30 * 60_000;
 

@@ -7,12 +7,12 @@ iPhone app or `dani.danlab.dev/app`, as any other server.
 ## Install
 
 The app is in the dani-dex community app store,
-[nightly-labs/openbot-umbrel-store](https://github.com/somdipto/dani-dex-umbrel-store). It is not in
+[nightly-labs/openbot-umbrel-store](https://github.com/Dan-Labs-Agi/dani-dex-umbrel-store). It is not in
 the official Umbrel App Store yet.
 
 1. On your Umbrel, open the **App Store**.
 2. Open the **⋯** menu at the top right and select **Community App Stores**.
-3. Paste `https://github.com/somdipto/dani-dex-umbrel-store` and select **Add**.
+3. Paste `https://github.com/Dan-Labs-Agi/dani-dex-umbrel-store` and select **Add**.
 4. Open the **dani-dex** store and install **dani-dex**.
 
 Umbrel keeps the data of an app in a folder with the name of its app id, here `openbot-server`. An

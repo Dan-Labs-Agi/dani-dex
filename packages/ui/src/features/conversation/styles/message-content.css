@@ -112,17 +112,6 @@
   margin-top: var(--openbot-space-2);
 }
 
-.message-markdown :not(pre) > code {
-  border: 1px solid var(--openbot-border);
-  border-radius: var(--openbot-radius-xs);
-  background: var(--openbot-bg-control);
-  padding: var(--openbot-space-0-5) var(--openbot-space-1);
-  color: var(--openbot-text-primary);
-  font-family: var(--openbot-font-mono);
-  font-size: var(--openbot-text-md);
-  white-space: break-spaces;
-}
-
 .message-markdown hr {
   height: 1px;
   border: 0;
@@ -222,10 +211,6 @@
 
 .message-markdown-table :is(th, td):last-child {
   border-inline-end: 0;
-}
-
-.message-markdown-table tbody tr:last-child td {
-  border-bottom: 0;
 }
 
 .message-markdown-table [data-align="center"] {
@@ -495,14 +480,6 @@
 
 .selection-actions-expand svg {
   transition: transform var(--openbot-duration-overlay) cubic-bezier(0.23, 1, 0.32, 1);
-}
-
-:dir(rtl) .selection-actions-expand svg {
-  scale: -1 1;
-}
-
-.selection-actions-expand[aria-expanded="true"] svg {
-  transform: rotate(180deg);
 }
 
 .selection-actions-icon {
@@ -868,6 +845,17 @@
   font: inherit;
 }
 
+.message-markdown :not(pre) > code {
+  border: 1px solid var(--openbot-border);
+  border-radius: var(--openbot-radius-xs);
+  background: var(--openbot-bg-control);
+  padding: var(--openbot-space-0-5) var(--openbot-space-1);
+  color: var(--openbot-text-primary);
+  font-family: var(--openbot-font-mono);
+  font-size: var(--openbot-text-md);
+  white-space: break-spaces;
+}
+
 .message-entry-agent .ui-bubble-variant-ghost .message-code-scroll {
   background: transparent;
 }
@@ -984,10 +972,6 @@
   background: var(--openbot-bg-canvas);
 }
 
-.message-data-table tbody tr:not(:last-child) td {
-  border-bottom: 1px solid var(--openbot-data-table-border);
-}
-
 .message-data-table th,
 .message-data-table td {
   padding: 9px 12px;
@@ -997,6 +981,14 @@
   text-align: start;
   vertical-align: top;
   unicode-bidi: plaintext;
+}
+
+.message-markdown-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.message-data-table tbody tr:not(:last-child) td {
+  border-bottom: 1px solid var(--openbot-data-table-border);
 }
 
 .message-data-table thead th {
@@ -1677,6 +1669,14 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   stroke-width: var(--openbot-icon-stroke-lg);
+}
+
+:dir(rtl) .selection-actions-expand svg {
+  scale: -1 1;
+}
+
+.selection-actions-expand[aria-expanded="true"] svg {
+  transform: rotate(180deg);
 }
 
 .reference-chip.message-reference-chip .reference-chip-icon,

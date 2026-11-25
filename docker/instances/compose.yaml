@@ -1,6 +1,6 @@
 services:
   openbot:
-    image: ghcr.io/somdipto/dani-dex:${OPENBOT_TAG:-latest}
+    image: ghcr.io/Dan-Labs-Agi/dani-dex:${OPENBOT_TAG:-latest}
     container_name: openbot-${OPENBOT_NAME:?}
     restart: unless-stopped
     security_opt:
