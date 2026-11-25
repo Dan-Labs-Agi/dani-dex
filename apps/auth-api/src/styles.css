@@ -962,17 +962,17 @@ a {
     gap: 8px;
   }
 
-    .site-sheet[data-state="open"] .site-sheet-section,
-    .site-sheet[data-state="open"] .site-sheet-actions {
-      opacity: 1;
-      filter: none;
-      transform: none;
-      transition:
-        opacity 380ms ease,
-        filter 460ms cubic-bezier(0.32, 0.72, 0, 1),
-        transform 560ms cubic-bezier(0.32, 0.72, 0, 1);
-      transition-delay: calc(var(--site-sheet-index) * 50ms + 40ms);
-    }
+  .site-sheet[data-state="open"] .site-sheet-section,
+  .site-sheet[data-state="open"] .site-sheet-actions {
+    opacity: 1;
+    filter: none;
+    transform: none;
+    transition:
+      opacity 380ms ease,
+      filter 460ms cubic-bezier(0.32, 0.72, 0, 1),
+      transform 560ms cubic-bezier(0.32, 0.72, 0, 1);
+    transition-delay: calc(var(--site-sheet-index) * 50ms + 40ms);
+  }
 
   html[data-site-sheet-open] {
     overflow: hidden;
@@ -2216,10 +2216,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   text-wrap: pretty;
 }
 
-.landing-feature[data-feature="local"] p {
-  color: var(--openbot-download-card-muted);
-}
-
 .landing-feature-link {
   color: inherit;
   text-decoration: underline;
@@ -2321,14 +2317,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   background: var(--landing-card-fill);
 }
 
-.landing-feature .landing-team-avatar > svg {
-  display: block;
-  width: 128%;
-  height: 128%;
-  overflow: visible;
-  translate: 0 calc(var(--landing-team-avatar-size) * -0.14);
-}
-
 .landing-team-copy {
   min-width: 0;
   display: grid;
@@ -2387,10 +2375,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
     transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.t-skel-skeleton.is-pulsing > * {
-  animation: t-skel-pulse var(--pulse-dur) ease-in-out var(--pulse-count);
-}
-
 .landing-team-typing {
   display: inline-flex;
   align-self: start;
@@ -2442,10 +2426,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
 
 .landing-multiplayer-window .landing-team-stack {
   padding-inline-end: 0;
-}
-
-.landing-multiplayer-window .landing-team-stack > * + * {
-  margin-inline-start: 4px;
 }
 
 .landing-feature .landing-face {
@@ -3642,13 +3622,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   font-weight: 500;
 }
 
-.landing-footer-cta svg,
-.landing-footer-meta a svg {
-  width: 14px;
-  height: 14px;
-  transition: transform var(--openbot-duration-normal) var(--openbot-ease-out);
-}
-
 .landing-footer-socials {
   display: flex;
   flex-wrap: wrap;
@@ -3724,10 +3697,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   margin: 0;
 }
 
-.landing-feature:is([data-feature="team"], [data-feature="multiplayer"], [data-feature="persist"]) p {
-  max-width: 64ch;
-}
-
 .landing-footer-meta {
   display: flex;
   align-items: center;
@@ -3766,10 +3735,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   fill: var(--openbot-logo-production);
   color: var(--openbot-logo-production);
   animation: landing-footer-heart 1.8s ease-in-out infinite;
-}
-
-.landing-download-trigger[aria-expanded="true"] svg {
-  transform: rotate(180deg);
 }
 
 .landing-footer [data-revealed="false"] {
@@ -4712,19 +4677,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   text-align: center;
 }
 
-.teams-page .teams-heading p {
-  max-width: 560px;
-  margin: 22px 0 0;
-  color: var(--openbot-text-secondary);
-  font-size: clamp(16px, 1.8vw, 19px);
-  line-height: 1.55;
-  text-wrap: pretty;
-}
-
-.teams-page .teams-heading-center p {
-  margin-inline: auto;
-}
-
 .teams-page .teams-help {
   display: flex;
   flex-wrap: wrap;
@@ -4734,10 +4686,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   margin: 32px 0 0;
   color: var(--openbot-text-secondary);
   font-size: 16px;
-}
-
-.teams-page .teams-section[data-revealed="true"] > * {
-  animation: landing-download-reveal 720ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 
 .teams-page .teams-section[data-revealed="true"] > :nth-child(3) {
@@ -4983,38 +4931,8 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   mask-image: linear-gradient(var(--openbot-mask-solid) 55%, transparent);
 }
 
-.teams-page .teams-tile-art svg {
-  width: 88px;
-  height: 88px;
-  padding: 20px;
-  border: 1px solid var(--openbot-download-card-border);
-  border-radius: 24px;
-  background: var(--teams-color);
-  box-shadow: 0 20px 50px -18px var(--teams-color);
-  color: var(--openbot-text-on-light);
-  stroke-width: 1.6;
-  transition: transform 400ms var(--openbot-ease-out);
-}
-
 .teams-page .teams-tile-copy {
   padding: 8px 32px 32px;
-}
-
-.teams-page .teams-tile-copy h2 {
-  margin: 0;
-  font-size: 26px;
-  font-weight: 600;
-  letter-spacing: -0.035em;
-  line-height: 1.15;
-}
-
-.teams-page .teams-tile-copy p {
-  max-width: 48ch;
-  margin: 10px 0 0;
-  color: var(--openbot-text-secondary);
-  font-size: 15px;
-  line-height: 1.6;
-  text-wrap: pretty;
 }
 
 .teams-page .teams-timeline {
@@ -5114,11 +5032,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   border-radius: 50%;
   content: "";
   opacity: 0;
-}
-
-.teams-page .teams-step-node svg {
-  width: 24px;
-  height: 24px;
 }
 
 .teams-page .teams-step-number {
@@ -5306,11 +5219,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   color: var(--openbot-text-on-light);
 }
 
-.teams-page .teams-chip-icon svg {
-  width: 22px;
-  height: 22px;
-}
-
 @keyframes teams-marquee-scroll {
   to {
     transform: translateX(-50%);
@@ -5329,18 +5237,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   gap: 36px;
   padding-bottom: clamp(80px, 9vw, 128px);
   text-align: center;
-}
-
-.teams-page .teams-closing h2 {
-  position: relative;
-  z-index: 1;
-  max-width: 16ch;
-  margin: 0;
-  font-size: clamp(40px, 6vw, 84px);
-  font-weight: 500;
-  letter-spacing: -0.06em;
-  line-height: 0.98;
-  text-wrap: balance;
 }
 
 .teams-page .teams-closing-spot {
@@ -5426,14 +5322,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   background: var(--landing-card-fill);
 }
 
-.teams-page .teams-avatar > svg {
-  display: block;
-  width: 128%;
-  height: 128%;
-  overflow: visible;
-  translate: 0 calc(var(--teams-avatar-size) * -0.14);
-}
-
 .teams-page .teams-title-keep {
   white-space: nowrap;
 }
@@ -5441,10 +5329,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
 .teams-page .teams-title-team {
   display: inline-flex;
   vertical-align: -0.26em;
-}
-
-.teams-page .teams-title-team > * + * {
-  margin-inline-start: -0.06em;
 }
 
 .teams-page .teams-cursors {
@@ -6019,13 +5903,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   line-height: 1.6;
 }
 
-.post-prose pre code {
-  padding: 0;
-  border-radius: 0;
-  background: none;
-  font-size: inherit;
-}
-
 .post-prose kbd {
   padding: 2px 7px;
   border: 1px solid var(--openbot-border-strong);
@@ -6223,14 +6100,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   width: calc(var(--agent-honeycomb-height) * 1.75);
   height: calc(var(--agent-honeycomb-height) * 1.75);
   translate: -50% -50%;
-}
-
-.agent-honeycomb-cell > .agent-honeycomb-avatar > svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  scale: 0.86 1;
 }
 
 .post-cta {
@@ -7242,11 +7111,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   border-top: 1px solid var(--openbot-border);
 }
 
-.compare-table tbody th {
-  color: var(--openbot-text-primary);
-  font-weight: 500;
-}
-
 .compare-table td {
   color: var(--openbot-text-secondary);
 }
@@ -7482,6 +7346,11 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   vertical-align: middle;
 }
 
+.compare-table tbody th {
+  color: var(--openbot-text-primary);
+  font-weight: 500;
+}
+
 .compare-table thead th {
   border-bottom: 1px solid var(--openbot-border-strong);
   background: var(--openbot-bg-surface-raised);
@@ -7563,15 +7432,10 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   text-underline-offset: 3px;
 }
 
-.compare-section[data-revealed="false"] > *,
 .compare-section[data-revealed="false"] .compare-table tbody tr,
 .compare-section[data-revealed="false"] .compare-plan,
 .compare-section[data-revealed="false"] .compare-faq-item {
   opacity: 0;
-}
-
-.compare-section[data-revealed="true"] > * {
-  animation: landing-download-reveal 720ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 
 .compare-section[data-revealed="true"] > :nth-child(2) {
@@ -7593,7 +7457,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
 
 .compare-section[data-revealed="true"] .compare-table tbody tr,
 .compare-section[data-revealed="true"] .compare-plan,
-.compare-section[data-revealed="true"] .compare-roundup-list > li,
 .compare-section[data-revealed="true"] .compare-faq-item {
   animation: landing-download-reveal 620ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
   animation-delay: calc(160ms + var(--compare-index, 0) * 70ms);
@@ -8638,14 +8501,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.35));
 }
 
-.agent-share-hero .agent-share-avatar > svg {
-  display: block;
-  width: 128%;
-  height: 128%;
-  overflow: visible;
-  translate: 0 calc(var(--agent-share-avatar-size) * -0.14);
-}
-
 .agent-share-hero .agent-share-avatar.agent-avatar-custom {
   overflow: hidden;
   box-shadow: 0 0 0 4px color-mix(in srgb, #ffffff 12%, transparent);
@@ -8763,7 +8618,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   list-style: decimal;
 }
 
-.agent-share-instructions li + li,
 .agent-share-instructions li > :is(ul, ol) {
   margin-top: 4px;
 }
@@ -8776,6 +8630,13 @@ svg[data-icon="arrow-right"]:dir(rtl) {
 .agent-share-instructions code {
   font-family: var(--openbot-font-mono);
   font-size: 0.9em;
+}
+
+.post-prose pre code {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  font-size: inherit;
 }
 
 .compare-page :is(.provider-step-text, .provider-table td) code {
@@ -9125,10 +8986,10 @@ svg[data-icon="arrow-right"]:dir(rtl) {
     transition: none;
   }
 
-    .plugin-grid-section[data-revealed] .plugin-card {
-      opacity: 1;
-      animation: none;
-    }
+  .plugin-grid-section[data-revealed] .plugin-card {
+    opacity: 1;
+    animation: none;
+  }
 
   .plugin-card-logo,
   .plugin-card-icon,
@@ -10536,6 +10397,30 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   max-width: 760px;
 }
 
+.compare-section[data-revealed="true"] > * {
+  animation: landing-download-reveal 720ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.compare-section[data-revealed="false"] > * {
+  opacity: 0;
+}
+
+.teams-page .teams-title-team > * + * {
+  margin-inline-start: -0.06em;
+}
+
+.landing-multiplayer-window .landing-team-stack > * + * {
+  margin-inline-start: 4px;
+}
+
+.t-skel-skeleton.is-pulsing > * {
+  animation: t-skel-pulse var(--pulse-dur) ease-in-out var(--pulse-count);
+}
+
+.teams-page .teams-section[data-revealed="true"] > * {
+  animation: landing-download-reveal 720ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
 .teams-page .teams-section[data-revealed="false"] > * {
   opacity: 0;
 }
@@ -10674,11 +10559,6 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   color: var(--openbot-text-secondary);
   font-size: 16px;
   line-height: 1.6;
-}
-
-.download-notes li + li {
-  padding-top: 18px;
-  border-top: 1px solid var(--openbot-border);
 }
 
 .download-notes li::before {
@@ -11189,6 +11069,26 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   letter-spacing: -0.03em;
 }
 
+.teams-page .teams-closing h2 {
+  position: relative;
+  z-index: 1;
+  max-width: 16ch;
+  margin: 0;
+  font-size: clamp(40px, 6vw, 84px);
+  font-weight: 500;
+  letter-spacing: -0.06em;
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.teams-page .teams-tile-copy h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.15;
+}
+
 .teams-page .teams-heading h2 {
   margin: 0;
   font-size: clamp(38px, 5vw, 64px);
@@ -11204,6 +11104,36 @@ svg[data-icon="arrow-right"]:dir(rtl) {
   font-size: 15px;
   line-height: 1.5;
   overflow-wrap: anywhere;
+}
+
+.teams-page .teams-tile-copy p {
+  max-width: 48ch;
+  margin: 10px 0 0;
+  color: var(--openbot-text-secondary);
+  font-size: 15px;
+  line-height: 1.6;
+  text-wrap: pretty;
+}
+
+.teams-page .teams-heading-center p {
+  margin-inline: auto;
+}
+
+.teams-page .teams-heading p {
+  max-width: 560px;
+  margin: 22px 0 0;
+  color: var(--openbot-text-secondary);
+  font-size: clamp(16px, 1.8vw, 19px);
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.landing-feature:is([data-feature="team"], [data-feature="multiplayer"], [data-feature="persist"]) p {
+  max-width: 64ch;
+}
+
+.landing-feature[data-feature="local"] p {
+  color: var(--openbot-download-card-muted);
 }
 
 .teams-page .teams-setup .landing-download-card-copy p {
@@ -11248,6 +11178,20 @@ svg[data-icon="arrow-right"]:dir(rtl) {
 
 .contact-channels li {
   border-bottom: 1px solid var(--openbot-border);
+}
+
+.download-notes li + li {
+  padding-top: 18px;
+  border-top: 1px solid var(--openbot-border);
+}
+
+.agent-share-instructions li + li {
+  margin-top: 4px;
+}
+
+.compare-section[data-revealed="true"] .compare-roundup-list > li {
+  animation: landing-download-reveal 620ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation-delay: calc(160ms + var(--compare-index, 0) * 70ms);
 }
 
 .compare-section[data-revealed="false"] .compare-roundup-list > li {
@@ -12048,6 +11992,72 @@ svg[data-icon="arrow-right"]:dir(rtl) {
 .marketplace-site-routine-mark > svg {
   width: 45%;
   height: 45%;
+}
+
+.landing-footer-cta svg,
+.landing-footer-meta a svg {
+  width: 14px;
+  height: 14px;
+  transition: transform var(--openbot-duration-normal) var(--openbot-ease-out);
+}
+
+.agent-share-hero .agent-share-avatar > svg {
+  display: block;
+  width: 128%;
+  height: 128%;
+  overflow: visible;
+  translate: 0 calc(var(--agent-share-avatar-size) * -0.14);
+}
+
+.agent-honeycomb-cell > .agent-honeycomb-avatar > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  scale: 0.86 1;
+}
+
+.teams-page .teams-avatar > svg {
+  display: block;
+  width: 128%;
+  height: 128%;
+  overflow: visible;
+  translate: 0 calc(var(--teams-avatar-size) * -0.14);
+}
+
+.teams-page .teams-chip-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.teams-page .teams-step-node svg {
+  width: 24px;
+  height: 24px;
+}
+
+.teams-page .teams-tile-art svg {
+  width: 88px;
+  height: 88px;
+  padding: 20px;
+  border: 1px solid var(--openbot-download-card-border);
+  border-radius: 24px;
+  background: var(--teams-color);
+  box-shadow: 0 20px 50px -18px var(--teams-color);
+  color: var(--openbot-text-on-light);
+  stroke-width: 1.6;
+  transition: transform 400ms var(--openbot-ease-out);
+}
+
+.landing-download-trigger[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.landing-feature .landing-team-avatar > svg {
+  display: block;
+  width: 128%;
+  height: 128%;
+  overflow: visible;
+  translate: 0 calc(var(--landing-team-avatar-size) * -0.14);
 }
 
 .teams-page .teams-tile:hover .teams-tile-art svg {

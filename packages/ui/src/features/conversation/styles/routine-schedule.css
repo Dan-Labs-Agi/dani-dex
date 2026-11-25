@@ -62,15 +62,6 @@
   stroke-width: 2;
 }
 
-.routine-schedule-picker[data-density="panel"] .routine-trigger-icon {
-  width: var(--openbot-control-sm);
-  height: var(--openbot-control-sm);
-}
-
-.routine-schedule-picker[data-density="card"] .routine-trigger-icon {
-  display: none;
-}
-
 .routine-trigger-chips {
   display: flex;
   min-width: 0;
@@ -529,6 +520,15 @@
 }
 
 :is(.routine-trigger-card-header, .routine-trigger-menu) .routine-trigger-icon {
+  width: var(--openbot-control-sm);
+  height: var(--openbot-control-sm);
+}
+
+.routine-schedule-picker[data-density="card"] .routine-trigger-icon {
+  display: none;
+}
+
+.routine-schedule-picker[data-density="panel"] .routine-trigger-icon {
   width: var(--openbot-control-sm);
   height: var(--openbot-control-sm);
 }

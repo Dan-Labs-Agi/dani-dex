@@ -124,14 +124,17 @@
     transition: none;
   }
 
-  .agent-activity-avatar,
-  .agent-activity-entry[data-state="exiting"] .agent-activity-avatar {
+  .agent-activity-avatar {
     transform: none;
   }
 
   .agent-activity-entry .agent-activity-avatar {
     animation: none;
     transition: none;
+  }
+
+  .agent-activity-entry[data-state="exiting"] .agent-activity-avatar {
+    transform: none;
   }
 
   .agent-queue-item {

@@ -231,15 +231,6 @@
   transform-origin: left center;
 }
 
-.dynamic-island[data-layout-state="expanded"] .dynamic-island-trailing-compact {
-  pointer-events: none;
-  opacity: 0;
-  filter: none;
-  transform: scale(0.92);
-  transition-duration: var(--openbot-duration-island-content-exit);
-  transition-timing-function: var(--dynamic-island-shared-ease);
-}
-
 .dynamic-island-panel {
   position: relative;
   z-index: 1;
@@ -302,11 +293,6 @@
   transition: opacity var(--openbot-duration-island-content) var(--dynamic-island-shared-ease);
 }
 
-.dynamic-island-status[data-layout-state="expanded"] .dynamic-island-trailing-compact {
-  opacity: 0;
-  transform: scale(1);
-}
-
 .dynamic-island-status .dynamic-island-trailing-content {
   transform-origin: left center;
 }
@@ -315,6 +301,20 @@
 .dynamic-island-status .dynamic-island-hover-trailing,
 .dynamic-island-status .dynamic-island-mode-swap[data-island-mode-slot="compact-trailing"] {
   width: max-content;
+}
+
+.dynamic-island-status[data-layout-state="expanded"] .dynamic-island-trailing-compact {
+  opacity: 0;
+  transform: scale(1);
+}
+
+.dynamic-island[data-layout-state="expanded"] .dynamic-island-trailing-compact {
+  pointer-events: none;
+  opacity: 0;
+  filter: none;
+  transform: scale(0.92);
+  transition-duration: var(--openbot-duration-island-content-exit);
+  transition-timing-function: var(--dynamic-island-shared-ease);
 }
 
 .dynamic-island-external.dynamic-island-status .dynamic-island-trailing-compact {
@@ -337,12 +337,6 @@
   transition: none;
 }
 
-.dynamic-island.dynamic-island-idle:not(.dynamic-island-external) .dynamic-island-ear-leading {
-  justify-content: flex-start;
-  padding-right: 0;
-  padding-left: var(--openbot-space-4);
-}
-
 .dynamic-island-hover-zone {
   position: absolute;
   top: calc(-1 * var(--dynamic-island-hover-hit-top));
@@ -357,22 +351,6 @@
   );
   pointer-events: auto;
   transform: translateX(-50%);
-}
-
-.dynamic-island[data-layout-state="compact"] > .dynamic-island-hover-zone {
-  display: block;
-}
-
-.dynamic-island-status:not(.dynamic-island-external) .dynamic-island-ear-leading {
-  justify-content: flex-start;
-  padding-right: 0;
-  padding-left: 12px;
-}
-
-.dynamic-island-status:not(.dynamic-island-external) .dynamic-island-ear-trailing {
-  justify-content: flex-end;
-  padding-right: 12px;
-  padding-left: 0;
 }
 
 .dynamic-island-status:not(.dynamic-island-external) .dynamic-island-trailing-compact {
@@ -440,6 +418,10 @@
   top: 0;
 }
 
+.dynamic-island[data-layout-state="compact"] > .dynamic-island-hover-zone {
+  display: block;
+}
+
 .dynamic-island[data-layout-state="compact"][data-hovered="true"] > .dynamic-island-hover-zone {
   width: min(
     calc(
@@ -477,8 +459,20 @@
   padding-right: 0;
 }
 
+.dynamic-island-status:not(.dynamic-island-external) .dynamic-island-ear-leading {
+  justify-content: flex-start;
+  padding-right: 0;
+  padding-left: 12px;
+}
+
 .dynamic-island-external .dynamic-island-ear-trailing {
   justify-content: flex-end;
+  padding-left: 0;
+}
+
+.dynamic-island-status:not(.dynamic-island-external) .dynamic-island-ear-trailing {
+  justify-content: flex-end;
+  padding-right: 12px;
   padding-left: 0;
 }
 
@@ -497,6 +491,12 @@
   justify-content: flex-start;
   padding-right: 0;
   padding-left: 0;
+}
+
+.dynamic-island.dynamic-island-idle:not(.dynamic-island-external) .dynamic-island-ear-leading {
+  justify-content: flex-start;
+  padding-right: 0;
+  padding-left: var(--openbot-space-4);
 }
 
 .dynamic-island:not(.dynamic-island-external):not(.dynamic-island-status) .dynamic-island-ear-leading {

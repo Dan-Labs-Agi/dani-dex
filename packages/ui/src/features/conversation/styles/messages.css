@@ -1061,10 +1061,6 @@
   height: var(--openbot-icon-xs);
 }
 
-.chat-action-history-toggle[aria-expanded="true"] svg {
-  transform: rotate(180deg);
-}
-
 .chat-action-history-status-completed .chat-action-history-icon {
   color: var(--openbot-success);
 }
@@ -1190,13 +1186,6 @@ button.chat-action-target:active,
   text-overflow: ellipsis;
 }
 
-.chat-action-target .ui-marker-icon,
-.chat-action-target .ui-marker-icon svg {
-  width: var(--openbot-icon-xs);
-  height: var(--openbot-icon-xs);
-  flex: 0 0 var(--openbot-icon-xs);
-}
-
 .chat-action-target .ui-marker-icon {
   translate: 0 -0.5px;
 }
@@ -1270,10 +1259,6 @@ button.chat-action-target:active,
 
 .chat-action-target-status-needs-attention .ui-marker-icon {
   color: var(--openbot-warning);
-}
-
-.chat-action-target-status-in-progress .ui-marker-icon svg {
-  animation: ui-spin 1s linear infinite;
 }
 
 .chat-action-avatar-stack {
@@ -1721,13 +1706,6 @@ button.chat-action-target:active,
   color: var(--openbot-media-control-text);
 }
 
-.ui-button.media-generation-play > svg {
-  width: 22px;
-  height: 22px;
-  margin-inline-start: 2px;
-  fill: currentColor;
-}
-
 .media-generation-wait {
   display: grid;
   position: absolute;
@@ -1787,11 +1765,6 @@ button.chat-action-target:active,
 .media-generation-actions .ui-button:hover:not(:disabled) {
   background: var(--openbot-media-control-hover);
   color: var(--openbot-media-control-text);
-}
-
-.media-generation-bar .ui-button > svg {
-  width: 16px;
-  height: 16px;
 }
 
 .media-generation-seek {
@@ -1957,6 +1930,33 @@ button.chat-action-target:active,
   flex: none;
 }
 
+.media-generation-bar .ui-button > svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ui-button.media-generation-play > svg {
+  width: 22px;
+  height: 22px;
+  margin-inline-start: 2px;
+  fill: currentColor;
+}
+
+.chat-action-target-status-in-progress .ui-marker-icon svg {
+  animation: ui-spin 1s linear infinite;
+}
+
+.chat-action-target .ui-marker-icon,
+.chat-action-target .ui-marker-icon svg {
+  width: var(--openbot-icon-xs);
+  height: var(--openbot-icon-xs);
+  flex: 0 0 var(--openbot-icon-xs);
+}
+
+.chat-action-history-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
 .media-generation-bar .ui-button:first-child > svg {
   fill: currentColor;
 }
@@ -1985,14 +1985,6 @@ button.chat-action-target:active,
   order: -1;
 }
 
-.virtual-chat-row[data-grouped="sender"]
-  > .message-entry-user:first-child
-  .message-stack
-  > .ui-bubble:first-child
-  > .ui-bubble-content {
-  border-start-end-radius: var(--openbot-radius-sm);
-}
-
 .virtual-chat-row[data-next-grouped="agent"]
   > .message-entry-agent:last-child
   .message-shell
@@ -2007,6 +1999,14 @@ button.chat-action-target:active,
   > .ui-bubble
   > .ui-bubble-content {
   border-start-start-radius: var(--openbot-radius-sm);
+}
+
+.virtual-chat-row[data-grouped="sender"]
+  > .message-entry-user:first-child
+  .message-stack
+  > .ui-bubble:first-child
+  > .ui-bubble-content {
+  border-start-end-radius: var(--openbot-radius-sm);
 }
 
 .virtual-chat-row[data-next-grouped="user"]

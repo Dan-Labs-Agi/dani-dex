@@ -223,10 +223,6 @@
   pointer-events: auto;
 }
 
-.wfn-canvas:is([data-tool="draw"], [data-tool="note"], [data-tool="shape"]) .wfn-world * {
-  pointer-events: none;
-}
-
 .wfn-canvas[data-tool="pan"] .wfn-viewport,
 .wfn-canvas[data-tool="pan"] .wfn-slot :is(.wfn-label, .wfn-card, .wfn-card *) {
   cursor: grab;
@@ -426,11 +422,6 @@
   padding-inline-start: calc(var(--openbot-space-2) + var(--openbot-space-0-5));
 }
 
-.wfn-stage .wfn-hud-button svg {
-  width: var(--openbot-icon-sm);
-  height: var(--openbot-icon-sm);
-}
-
 .wfn-stage .wfn-hud-tools {
   gap: var(--openbot-space-1-5);
   height: calc(var(--openbot-control-lg) + var(--openbot-space-3));
@@ -445,18 +436,6 @@
 
 .wfn-stage .wfn-hud-tools .wfn-hud-tool {
   width: var(--openbot-control-lg);
-}
-
-.wfn-stage .wfn-hud-tools .wfn-hud-tool svg {
-  width: var(--openbot-icon-lg);
-  height: var(--openbot-icon-lg);
-  stroke-width: var(--openbot-icon-stroke-lg);
-}
-
-.wfn-stage .wfn-hud-tools .wfn-hud-add-button svg {
-  width: var(--openbot-icon-md);
-  height: var(--openbot-icon-md);
-  stroke-width: var(--openbot-icon-stroke);
 }
 
 .wfn-stage .wfn-hud-tools {
@@ -548,11 +527,6 @@
   color: var(--openbot-text-secondary);
 }
 
-.wfn-stage .wfn-hud-icon svg {
-  width: var(--openbot-icon-sm);
-  height: var(--openbot-icon-sm);
-}
-
 .wfn-stage .wfn-hud-name {
   field-sizing: content;
   min-width: 8ch;
@@ -586,13 +560,6 @@
   gap: var(--openbot-space-1-5);
   padding-inline-start: var(--openbot-space-3);
   font-variant-numeric: tabular-nums;
-}
-
-.wfn-stage .wfn-hud-viewing > svg,
-.wfn-stage .wfn-hud-paused > svg {
-  width: var(--openbot-icon-sm);
-  height: var(--openbot-icon-sm);
-  color: var(--openbot-text-muted);
 }
 
 .wfn-hud[hidden] {
@@ -668,12 +635,6 @@
 
 .wfn-stage .wfn-hud-stop {
   animation: wfn-fade-in var(--openbot-duration-fast) var(--openbot-ease-out);
-}
-
-.wfn-stage .wfn-hud-stop svg {
-  width: var(--openbot-icon-xs);
-  height: var(--openbot-icon-xs);
-  fill: currentColor;
 }
 
 @keyframes wfn-fade-in {
@@ -860,6 +821,34 @@
   touch-action: none;
 }
 
+.wfn-stage .wfn-hud-stop svg {
+  width: var(--openbot-icon-xs);
+  height: var(--openbot-icon-xs);
+  fill: currentColor;
+}
+
+.wfn-stage .wfn-hud-paused > svg {
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
+  color: var(--openbot-text-muted);
+}
+
+.wfn-stage .wfn-hud-viewing > svg {
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
+  color: var(--openbot-text-muted);
+}
+
+.wfn-stage .wfn-hud-icon svg {
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
+}
+
+.wfn-stage .wfn-hud-button svg {
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
+}
+
 .wfn-minimap-node {
   fill: color-mix(in srgb, var(--wfn-kind, var(--openbot-text-primary)) 40%, transparent);
 }
@@ -989,6 +978,10 @@
   pointer-events: auto;
 }
 
+.wfn-canvas:is([data-tool="draw"], [data-tool="note"], [data-tool="shape"]) .wfn-world * {
+  pointer-events: none;
+}
+
 .wfn-canvas[data-tool="pan"] .wfn-viewport[data-panning] * {
   cursor: grabbing;
 }
@@ -1019,6 +1012,18 @@
 .wfn-stage .wfn-empty-icon svg {
   width: var(--openbot-icon-md);
   height: var(--openbot-icon-md);
+}
+
+.wfn-stage .wfn-hud-tools .wfn-hud-add-button svg {
+  width: var(--openbot-icon-md);
+  height: var(--openbot-icon-md);
+  stroke-width: var(--openbot-icon-stroke);
+}
+
+.wfn-stage .wfn-hud-tools .wfn-hud-tool svg {
+  width: var(--openbot-icon-lg);
+  height: var(--openbot-icon-lg);
+  stroke-width: var(--openbot-icon-stroke-lg);
 }
 
 .wfn-stage .wfn-hud .wfn-hud-tool svg {

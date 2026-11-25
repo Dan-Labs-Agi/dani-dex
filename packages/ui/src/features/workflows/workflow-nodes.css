@@ -907,13 +907,6 @@
   border-bottom: 1px solid var(--wfn-ring-strong);
 }
 
-.wfn-picker.ui-action-menu .wfn-picker-search > svg {
-  flex: none;
-  width: var(--openbot-icon-sm);
-  height: var(--openbot-icon-sm);
-  color: var(--openbot-text-muted);
-}
-
 .wfn-picker .wfn-picker-field {
   flex: 1;
   min-width: 0;
@@ -964,13 +957,6 @@ fieldset.wfn-picker-group {
   font-size: var(--wfn-small);
   font-weight: var(--openbot-weight-medium);
   line-height: var(--openbot-leading-sm);
-}
-
-.wfn-picker.ui-action-menu .wfn-picker-heading > svg {
-  flex: none;
-  width: var(--openbot-icon-xs);
-  height: var(--openbot-icon-xs);
-  fill: currentcolor;
 }
 
 .wfn-picker.ui-action-menu .wfn-picker-row:is([role^="menuitem"]) {
@@ -1030,12 +1016,6 @@ fieldset.wfn-picker-group {
 .wfn-picker-row[data-checked] .wfn-picker-tile {
   box-shadow: inset 0 0 0 1px var(--wfn-ring-strong);
   color: var(--openbot-text-primary);
-}
-
-:is(.wfn-picker.ui-action-menu, .wfn-drop-menu) .wfn-picker-tile > svg {
-  width: var(--openbot-icon-md);
-  height: var(--openbot-icon-md);
-  stroke-width: var(--openbot-icon-stroke);
 }
 
 .wfn-picker.ui-action-menu .wfn-picker-tile > svg.wfn-model-logo,
@@ -1149,12 +1129,6 @@ fieldset.wfn-picker-group {
   font-variant-numeric: tabular-nums;
   line-height: 1;
   white-space: nowrap;
-}
-
-.wfn-picker.ui-action-menu .wfn-picker-chip > svg {
-  flex: none;
-  width: var(--openbot-icon-xs);
-  height: var(--openbot-icon-xs);
 }
 
 .wfn-picker.ui-action-menu .wfn-picker-row > svg.wfn-picker-check {
@@ -2141,10 +2115,6 @@ fieldset.wfn-picker-group {
   scale: 0.5;
 }
 
-.wfn-node[data-status="running"] .wfn-card {
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--openbot-text-primary) 16%, transparent);
-}
-
 .wfn-node[data-status="running"] .wfn-card-frame::before {
   content: "";
   position: absolute;
@@ -2784,6 +2754,10 @@ fieldset.wfn-picker-group {
   transition-timing-function: var(--openbot-ease-out);
 }
 
+.wfn-node[data-status="running"] .wfn-card {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--openbot-text-primary) 16%, transparent);
+}
+
 .wfn-node[data-kind="asset"] .wfn-card {
   align-content: stretch;
 }
@@ -2963,10 +2937,6 @@ fieldset.wfn-picker-group {
 
 .wfn-node:focus-visible {
   outline: none;
-}
-
-.wfn-node:not(.wfn-text):focus-visible:not([data-selected]) .wfn-card {
-  outline-color: color-mix(in srgb, var(--openbot-text-primary) 40%, transparent);
 }
 
 .wfn-hud-spin {
@@ -3280,17 +3250,6 @@ fieldset.wfn-picker-group {
 
 .wfn-settings-head .wfn-row-name {
   display: none;
-}
-
-.wfn-settings-head .wfn-row-value > svg {
-  box-sizing: content-box;
-  width: var(--openbot-icon-sm);
-  height: var(--openbot-icon-sm);
-  padding: var(--openbot-space-1);
-  border-radius: var(--openbot-radius-sm);
-  background: color-mix(in srgb, var(--wfn-kind) 16%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wfn-kind) 14%, transparent);
-  color: var(--wfn-kind);
 }
 
 .wfn-row[data-input]:focus-within {
@@ -3666,11 +3625,6 @@ fieldset.wfn-picker-group {
   color: var(--openbot-text-primary);
 }
 
-.wfn-answer-row .wfn-answer-type svg {
-  width: var(--wfn-answer-glyph);
-  height: var(--wfn-answer-glyph);
-}
-
 .wfn-answer-row .wfn-answer-name,
 .wfn-answer-row .wfn-answer-values {
   height: 28px;
@@ -3724,17 +3678,6 @@ fieldset.wfn-picker-group {
   color: var(--openbot-text-secondary);
   font-size: var(--openbot-text-sm);
   font-weight: inherit;
-}
-
-.wfn-answer-fields .wfn-answer-add > svg {
-  justify-self: center;
-  width: var(--wfn-answer-glyph);
-  height: var(--wfn-answer-glyph);
-}
-
-.wfn-stage .wfn-toolbar .wfn-tool-action svg {
-  width: var(--openbot-icon-md);
-  height: var(--openbot-icon-md);
 }
 
 .wfn-answer-fields .wfn-answer-add > span {
@@ -3839,6 +3782,10 @@ fieldset.wfn-picker-group {
   padding: var(--openbot-space-3);
   background: transparent;
   box-shadow: none;
+}
+
+.wfn-node:not(.wfn-text):focus-visible:not([data-selected]) .wfn-card {
+  outline-color: color-mix(in srgb, var(--openbot-text-primary) 40%, transparent);
 }
 
 .wfn-node:not([data-selected]) .wfn-card-frame:hover .wfn-card {
@@ -4224,6 +4171,59 @@ svg.wfn-shape-surface {
   width: var(--openbot-icon-sm);
   height: var(--openbot-icon-sm);
   color: var(--openbot-text-secondary);
+}
+
+.wfn-answer-fields .wfn-answer-add > svg {
+  justify-self: center;
+  width: var(--wfn-answer-glyph);
+  height: var(--wfn-answer-glyph);
+}
+
+.wfn-answer-row .wfn-answer-type svg {
+  width: var(--wfn-answer-glyph);
+  height: var(--wfn-answer-glyph);
+}
+
+.wfn-settings-head .wfn-row-value > svg {
+  box-sizing: content-box;
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
+  padding: var(--openbot-space-1);
+  border-radius: var(--openbot-radius-sm);
+  background: color-mix(in srgb, var(--wfn-kind) 16%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--wfn-kind) 14%, transparent);
+  color: var(--wfn-kind);
+}
+
+.wfn-stage .wfn-toolbar .wfn-tool-action svg {
+  width: var(--openbot-icon-md);
+  height: var(--openbot-icon-md);
+}
+
+.wfn-picker.ui-action-menu .wfn-picker-chip > svg {
+  flex: none;
+  width: var(--openbot-icon-xs);
+  height: var(--openbot-icon-xs);
+}
+
+:is(.wfn-picker.ui-action-menu, .wfn-drop-menu) .wfn-picker-tile > svg {
+  width: var(--openbot-icon-md);
+  height: var(--openbot-icon-md);
+  stroke-width: var(--openbot-icon-stroke);
+}
+
+.wfn-picker.ui-action-menu .wfn-picker-heading > svg {
+  flex: none;
+  width: var(--openbot-icon-xs);
+  height: var(--openbot-icon-xs);
+  fill: currentcolor;
+}
+
+.wfn-picker.ui-action-menu .wfn-picker-search > svg {
+  flex: none;
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
+  color: var(--openbot-text-muted);
 }
 
 .wfn-stage .wfn-hud-presence .wfn-presence-person .person-avatar-generated > svg {
