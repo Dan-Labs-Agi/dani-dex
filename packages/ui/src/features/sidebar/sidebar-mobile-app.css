@@ -55,11 +55,9 @@
   gap: var(--openbot-space-1);
   overflow: hidden;
   border-color: transparent;
-  background:
-    radial-gradient(110% 80% at 50% 0%, color-mix(in srgb, var(--openbot-paper) 40%, transparent), transparent 70%),
-    var(--openbot-logo-production);
+  background: linear-gradient(180deg, #078bd5 0%, #0670ae 100%);
   padding-top: 0;
-  color: var(--openbot-logo-eye);
+  color: #d7ff67;
   text-align: center;
 }
 
@@ -69,12 +67,12 @@
   top: var(--openbot-space-1-5);
   right: var(--openbot-space-1-5);
   margin: 0;
-  color: color-mix(in srgb, var(--openbot-logo-eye) 60%, transparent);
+  color: rgb(255 255 255 / 70%);
 }
 
 .sidebar-mobile-app-crew > .sidebar-mobile-app-dismiss:hover {
-  background: color-mix(in srgb, var(--openbot-logo-eye) 10%, transparent);
-  color: var(--openbot-logo-eye);
+  background: rgb(255 255 255 / 16%);
+  color: #fff;
 }
 
 .sidebar-mobile-app-crew-stage {
@@ -131,14 +129,14 @@
   min-width: 0;
   height: 36px;
   gap: var(--openbot-space-1-5);
-  border-color: var(--openbot-logo-eye);
-  background: var(--openbot-logo-eye);
-  color: var(--openbot-logo-production);
+  border-color: #d7ff67;
+  background: #d7ff67;
+  color: #101416;
   font-weight: var(--openbot-weight-semibold);
 }
 
 .sidebar-mobile-app-platforms > .ui-button:hover {
-  background: color-mix(in srgb, var(--openbot-logo-eye) 86%, var(--openbot-logo-production));
+  background: #c6f04f;
 }
 
 .sidebar-mobile-app-platform-logo {
