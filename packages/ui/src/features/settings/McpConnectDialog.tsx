@@ -53,7 +53,11 @@ export function McpConnectDialog(props: McpConnectDialogProps) {
   const alternative = () => (
     <Show when={other()}>
       {(label) => (
-        <Button type="button" variant="outline" onClick={useOther}>
+        <Button
+          type="button"
+          variant={props.flows[otherIndex()]?.kind === "key" ? "ghost" : "outline"}
+          onClick={useOther}
+        >
           {label()}
         </Button>
       )}
