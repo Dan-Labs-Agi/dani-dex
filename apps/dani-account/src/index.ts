@@ -169,7 +169,7 @@ export default {
     const bearer = (req.headers.get("authorization") || "").slice(7);
     const rr = await handleRemote(req, env, url, uid, bearer);
     if (rr) return rr;
-    if (!uid) return json({ error: "unauthorized" }, 401);
+    if (!uid) return apiError(401, "unauthorized", "Sign in to continue.");
 
     if (p === "/v1/me") {
       const u = await env.DB.prepare("SELECT id,email,name FROM users WHERE id=?").bind(uid).first<any>();
