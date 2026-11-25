@@ -3429,7 +3429,7 @@ export class ProviderRuntime implements ProviderPort {
     const readable =
       matchingSourceKeys(rawMessage).length > 0 ||
       error instanceof ProviderSignInError ||
-      /^(ChatGPT connection|dani-dex)/u.test(rawMessage);
+      /^(ChatGPT connection|dani-dex|Dani Dex)/u.test(rawMessage);
     if (isProviderTimeout(error) || !readable) this.#recordProviderError(provider, error);
     const message = readable ? redactText(rawMessage) : fallbackMessage;
     const status = hasActiveClient
