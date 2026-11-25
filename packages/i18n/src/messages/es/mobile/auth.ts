@@ -33,6 +33,8 @@ export const messages = {
   "mobile.auth.signIn.helpStep2": "2. Ve a Ajustes → Conexión móvil.",
   "mobile.auth.signIn.helpStep3": "3. Elige Generar código QR y escanéalo aquí.",
   "mobile.auth.signIn.emailButton": "Continuar con correo",
+  "mobile.auth.signIn.googleButton": "Continuar con Google",
+  "mobile.auth.signIn.googleFailed": "El inicio de sesión con Google no se completó. Inténtalo de nuevo.",
   "mobile.auth.done.title": "Conectado",
   "mobile.auth.done.body": "Has iniciado sesión.",
   "mobile.auth.email.title": "Inicia sesión con tu correo",

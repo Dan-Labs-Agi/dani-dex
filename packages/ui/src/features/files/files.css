@@ -398,12 +398,6 @@
   gap: var(--openbot-space-1);
 }
 
-.file-list[data-compact="true"] .file-list-filters {
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
 .file-list-filter.ui-button {
   flex: 0 0 auto;
   gap: var(--openbot-space-1-5);
@@ -894,10 +888,6 @@
   gap: var(--openbot-space-4);
   overflow-y: auto;
   padding: var(--openbot-space-8) var(--openbot-space-8) var(--openbot-space-6);
-}
-
-.library-frame[data-pill] .library-page {
-  padding-bottom: calc(var(--openbot-space-8) * 3);
 }
 
 .library-page[data-marquee] {
@@ -2133,6 +2123,10 @@ html:not(.library-dragging)
   padding: 11px var(--openbot-space-4) var(--openbot-space-6);
 }
 
+.library-frame[data-pill] .library-page {
+  padding-bottom: calc(var(--openbot-space-8) * 3);
+}
+
 .library-shell .library-frame[data-pill] .library-page {
   padding-bottom: calc(var(--openbot-space-8) * 3);
 }
@@ -2141,6 +2135,12 @@ html:not(.library-dragging)
   min-height: 32px;
   flex: none;
   align-items: center;
+}
+
+.file-list[data-compact="true"] .file-list-filters {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
 .library-grid[data-layout="grid"] {

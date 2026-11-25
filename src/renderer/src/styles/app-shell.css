@@ -229,15 +229,10 @@
 }
 
 .global-search-dialog [data-popper-positioner] {
-  /* biome-ignore lint/complexity/noImportantStyles: Kobalte's positioner uses an inline declaration. */
   position: relative !important;
-  /* biome-ignore lint/complexity/noImportantStyles: Kobalte's positioner uses inline coordinates. */
   inset: auto !important;
-  /* biome-ignore lint/complexity/noImportantStyles: Kobalte's positioner uses an inline anchor width. */
   width: 100% !important;
-  /* biome-ignore lint/complexity/noImportantStyles: Kobalte's positioner uses an inline minimum width. */
   min-width: 0 !important;
-  /* biome-ignore lint/complexity/noImportantStyles: Kobalte's positioner uses an inline popper transform. */
   transform: none !important;
 }
 

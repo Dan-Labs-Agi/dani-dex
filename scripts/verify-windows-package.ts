@@ -136,8 +136,11 @@ try {
 } catch (error) {
   if (requireUpdateMetadata) throw error;
 }
-if (updateMetadata !== null && !updateMetadata.includes("provider: github")) {
-  throw new Error("The packaged update provider is not GitHub.");
+if (
+  updateMetadata !== null &&
+  !(updateMetadata.includes("provider: generic") && updateMetadata.includes("url: https://dl.dani.danlab.dev/desktop"))
+) {
+  throw new Error("The packaged update provider is not the download host.");
 }
 
 const ownExecutables = [

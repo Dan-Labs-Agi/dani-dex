@@ -42,6 +42,10 @@ export interface OpencodeCliInfo extends ResolvedCli {
   source?: "system" | "managed";
 }
 
+export interface KilocodeCliInfo extends ResolvedCli {
+  source?: "system" | "managed";
+}
+
 export interface AntigravityCliInfo extends ResolvedCli {
   source?: "system" | "managed";
 }
@@ -67,6 +71,7 @@ export type AgentCliInfo =
   | ClaudeCliInfo
   | GrokCliInfo
   | OpencodeCliInfo
+  | KilocodeCliInfo
   | AntigravityCliInfo
   | CursorCliInfo
   | ClineCliInfo
@@ -331,6 +336,40 @@ export const resolveOpencodeCli: (input?: {
     }
     throw new CodexCliError(
       found ? sourceText("error.provider.opencodeNotStarted") : sourceText("error.provider.opencodeMissing"),
+      found ? "invalid" : "missing",
+    );
+  },
+  Effect.catchDefect((cause) => Effect.fail(providerFailure(cause))),
+);
+
+export const resolveKilocodeCli: (input?: {
+  systemCandidates?: string[];
+  bundledExecutable?: string | null | undefined;
+}) => Effect.Effect<KilocodeCliInfo, ProviderClientOperationError> = Effect.fn("Cli.resolveKilocodeCli")(
+  function* (
+    input: { systemCandidates?: string[]; bundledExecutable?: string | null | undefined } = {},
+  ): Effect.fn.Return<KilocodeCliInfo, ProviderClientOperationError> {
+    const bundledExecutable =
+      input.bundledExecutable === undefined ? bundledKilocodeExecutable() : input.bundledExecutable;
+    const candidates = yield* cliCandidates("kilocode", input.systemCandidates, bundledExecutable);
+    let found = false;
+    for (const candidate of candidates) {
+      if (!(yield* isExecutable(candidate.executable))) continue;
+      found = true;
+      const attempt = yield* Effect.result(
+        Effect.gen(function* () {
+          const { stdout, launch } = yield* readCliVersion(candidate, "kilocode");
+          const version = parseKilocodeVersion(stdout);
+          return { executable: candidate.executable, version, source: candidate.source, ...launch };
+        }).pipe(Effect.catchDefect((cause) => Effect.fail(providerFailure(cause)))),
+      );
+      if (Result.isSuccess(attempt)) return attempt.success;
+      const error = attempt.failure.cause;
+
+      if (isCliTimeout(error)) throw error;
+    }
+    throw new CodexCliError(
+      found ? sourceText("error.provider.kilocodeNotStarted") : sourceText("error.provider.kilocodeMissing"),
       found ? "invalid" : "missing",
     );
   },
@@ -612,6 +651,30 @@ function bundledOpencodeExecutable(
   return bundledProviderExecutable("opencode", platform, architecture, resourcesPath);
 }
 
+function bundledKilocodeExecutable(
+  platform = process.platform,
+  architecture = process.arch,
+  resourcesPath: string | null | undefined = process.resourcesPath,
+): string | null {
+  const targetPlatform =
+    platform === "darwin" && (architecture === "arm64" || architecture === "x64")
+      ? "mac"
+      : platform === "linux" && (architecture === "x64" || architecture === "arm64")
+        ? "linux"
+        : platform === "win32" && architecture === "x64"
+          ? "win"
+          : null;
+  if (!targetPlatform) return null;
+
+  const executable = platform === "win32" ? "kilo.exe" : "kilo";
+  if (!resourcesPath) {
+    return resolve("build", "kilocode", targetPlatform, architecture, "bin", executable);
+  }
+
+  const targetPath = platform === "win32" ? win32 : posix;
+  return targetPath.join(resourcesPath, "kilocode", targetPlatform, architecture, "bin", executable);
+}
+
 function bundledGrokExecutable(
   platform = process.platform,
   architecture = process.arch,
@@ -666,6 +729,12 @@ export function parseGrokVersion(output: string): string {
 export function parseOpencodeVersion(output: string): string {
   const match = output.trim().match(/^(?:opencode\s+)?v?(\d+)\.(\d+)\.(\d+)(?:[-+][\w.-]+)?$/i);
   if (!match) throw new CodexCliError(sourceText("error.provider.opencodeVersionUnreadable"), "invalid");
+  return `${Number(match[1])}.${Number(match[2])}.${Number(match[3])}`;
+}
+
+export function parseKilocodeVersion(output: string): string {
+  const match = output.trim().match(/^(?:kilo(?:code)?\s+)?v?(\d+)\.(\d+)\.(\d+)(?:[-+][\w.-]+)?$/i);
+  if (!match) throw new CodexCliError(sourceText("error.provider.kilocodeVersionUnreadable"), "invalid");
   return `${Number(match[1])}.${Number(match[2])}.${Number(match[3])}`;
 }
 
@@ -889,7 +958,13 @@ export function chooseInstalledFirst<Cli extends AgentCliInfo, E>(
 }
 
 function cliCommandName(provider: AgentProviderId): string {
-  return provider === "cursor" ? "cursor-agent" : provider === "mistral" ? "vibe-acp" : provider;
+  return provider === "cursor"
+    ? "cursor-agent"
+    : provider === "mistral"
+      ? "vibe-acp"
+      : provider === "kilocode"
+        ? "kilo"
+        : provider;
 }
 
 export function configuredCliPath(provider: AgentProviderId): string | null {
@@ -1042,6 +1117,10 @@ function windowsFallbackPaths(
     paths.push(win32.join(userHome, ".opencode", "bin", "opencode.exe"));
     if (localAppData) paths.push(win32.join(localAppData, "Microsoft", "WinGet", "Links", "opencode.exe"));
   }
+  if (command === "kilo") {
+    paths.push(win32.join(userHome, ".kilo", "bin", "kilo.exe"));
+    if (localAppData) paths.push(win32.join(localAppData, "Microsoft", "WinGet", "Links", "kilo.exe"));
+  }
   if (command === "kimi") paths.push(win32.join(userHome, ".kimi-code", "bin", "kimi.exe"));
   if (command === "hermes") {
     const configuredRoot = environment.HERMES_HOME?.trim();
@@ -1193,6 +1272,7 @@ function posixFallbackPaths(
   const paths = [posix.join(userHome, ".local", "bin", command)];
   if (command === "claude") paths.push(posix.join(userHome, ".claude", "local", "claude"));
   if (command === "opencode") paths.push(posix.join(userHome, ".opencode", "bin", "opencode"));
+  if (command === "kilo") paths.push(posix.join(userHome, ".kilo", "bin", "kilo"));
   if (command === "grok") paths.push(posix.join(userHome, ".grok", "bin", "grok"));
   if (command === "kimi") paths.push(posix.join(userHome, ".kimi-code", "bin", "kimi"));
   paths.push(

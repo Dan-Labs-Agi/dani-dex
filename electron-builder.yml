@@ -20,9 +20,8 @@ electronFuses:
   loadBrowserProcessSpecificV8Snapshot: false
   grantFileProtocolExtraPrivileges: false
 publish:
-  provider: github
-  owner: somdipto
-  repo: dani-dex
+  provider: generic
+  url: https://dl.dani.danlab.dev/desktop/
 files:
   - out/**/*
   - package.json

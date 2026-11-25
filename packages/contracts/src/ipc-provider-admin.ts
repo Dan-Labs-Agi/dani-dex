@@ -252,6 +252,7 @@ export function decodeProviderRuntimeSnapshot(value: unknown): ProviderRuntimeSn
       claude: decodeProviderRuntimeStatus(providers.claude),
       grok: decodeProviderRuntimeStatus(providers.grok),
       opencode: decodeProviderRuntimeStatus(providers.opencode),
+      kilocode: decodeProviderRuntimeStatus(providers.kilocode),
       antigravity: decodeLaterRuntime(providers.antigravity),
       cursor: decodeLaterRuntime(providers.cursor),
       cline: decodeLaterRuntime(providers.cline),

@@ -34,6 +34,8 @@ export const messages = {
   "mobile.auth.signIn.helpStep2": "2. Ga naar Instellingen → Mobile Connect.",
   "mobile.auth.signIn.helpStep3": "3. Kies Genereer QR-code en scan die hier.",
   "mobile.auth.signIn.emailButton": "Ga door met e-mail",
+  "mobile.auth.signIn.googleButton": "Doorgaan met Google",
+  "mobile.auth.signIn.googleFailed": "Inloggen met Google is niet voltooid. Probeer het opnieuw.",
   "mobile.auth.done.title": "Verbonden",
   "mobile.auth.done.body": "Je bent ingelogd.",
   "mobile.auth.email.title": "Log in met e-mail",

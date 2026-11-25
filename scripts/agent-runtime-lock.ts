@@ -118,6 +118,17 @@ const clineArtifactSchema = z.object({
   executable: z.enum(["cline", "cline.exe"]),
 });
 
+const kilocodeArtifactSchema = z.object({
+  package: z.string().regex(/^@kilocode\/cli-(?:darwin-arm64|darwin-x64|linux-x64|linux-arm64|windows-x64)$/u),
+  asset: z.string().regex(/^cli-(?:darwin-arm64|darwin-x64|linux-x64|linux-arm64|windows-x64)-\d+\.\d+\.\d+\.tgz$/u),
+  assetSha256: sha256Schema,
+  binarySha256: sha256Schema,
+  downloadBytes: z.number().int().positive(),
+  installedBytes: z.number().int().positive(),
+  executable: z.enum(["kilo", "kilo.exe"]),
+  platformDirectory: z.enum(["linux", "mac", "win"]),
+});
+
 const kimiArtifactSchema = z.object({
   asset: z
     .string()
@@ -174,6 +185,21 @@ const agentRuntimeLockSchema = z.object({
       "linux-x64": opencodeArtifactSchema,
       "linux-arm64": opencodeArtifactSchema,
       "win32-x64": opencodeArtifactSchema,
+    }),
+  }),
+  kilocode: z.object({
+    registry: z.literal("https://registry.npmjs.org"),
+    repository: z.literal("https://github.com/Kilo-Org/kilocode"),
+    version: z.string().regex(/^\d+\.\d+\.\d+$/u),
+    license: z.literal("MIT"),
+    licensePackage: z.object({ name: z.literal("@kilocode/cli"), version: z.string().regex(/^\d+\.\d+\.\d+$/u) }),
+    licenseSha256: sha256Schema,
+    artifacts: z.object({
+      "darwin-arm64": kilocodeArtifactSchema,
+      "darwin-x64": kilocodeArtifactSchema,
+      "linux-x64": kilocodeArtifactSchema,
+      "linux-arm64": kilocodeArtifactSchema,
+      "win32-x64": kilocodeArtifactSchema,
     }),
   }),
   bun: z.object({
