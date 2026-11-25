@@ -26,7 +26,7 @@ const childModule = argumentValue("dump");
 const childDatabase = argumentValue("db");
 if (childModule && childDatabase) {
   const source = await readFile(childModule, "utf8");
-  const schema: unknown = await import(childModule);
+  const schema = await import(childModule);
   if (typeof schema !== "object" || schema === null) throw new Error(`No schema module in ${childModule}.`);
   const openbotMigrate = "migrateOpenBotDatabase" in schema ? schema.migrateOpenBotDatabase : undefined;
   const daniDexMigrate = "migrateDaniDexDatabase" in schema ? schema.migrateDaniDexDatabase : undefined;
