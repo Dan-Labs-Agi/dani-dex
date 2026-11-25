@@ -37,7 +37,7 @@
       "icon": "./assets/icons/app-icon.icon"
     },
     "android": {
-      "package": "run.openbot.mobile",
+      "package": "dev.danlab.dani",
       "icon": "./assets/icons/app-icon.png",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icons/android-adaptive-eyes.png",
@@ -154,7 +154,10 @@
             "usesCleartextTraffic": true,
             "enableMinifyInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
-            "extraProguardRules": "-dontwarn org.webrtc.Dav1dDecoder$Natives"
+            "extraProguardRules": "-dontwarn org.webrtc.Dav1dDecoder$Natives",
+            "buildArchs": [
+              "arm64-v8a"
+            ]
           }
         }
       ],
