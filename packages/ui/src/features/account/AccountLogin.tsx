@@ -646,6 +646,22 @@ export function AccountLogin(props: AccountLoginProps) {
                         : t("account.login.sendingCode")}
                     </Show>
                   </Button>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    class="account-login-google"
+                    disabled={emailBusy() || emailRetryIn() > 0}
+                    onClick={() => {
+                      if (!email().trim()) {
+                        showEmailError(t("account.login.googleNeedsEmail"));
+                        emailInput?.focus();
+                        return;
+                      }
+                      void submitEmail();
+                    }}
+                  >
+                    {t("account.login.continueWithGoogle")}
+                  </Button>
                   {props.consent}
                 </form>
               }

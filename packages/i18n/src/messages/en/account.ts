@@ -77,6 +77,8 @@ export const messages = defineMessages("account", {
   "account.login.checkDelivery": "Check delivery",
   "account.login.checkAgainIn": "Check again in {time}",
   "account.login.sendCode": "Send sign-in code",
+  "account.login.continueWithGoogle": "Continue with Google",
+  "account.login.googleNeedsEmail": "Enter your Google email first.",
   "account.login.tryAgainIn": "Try again in {time}",
   "account.login.checkingDelivery": "Checking delivery…",
   "account.login.sendingCode": "Sending code…",
