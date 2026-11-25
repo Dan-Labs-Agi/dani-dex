@@ -94,6 +94,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Put bsdtar (System32) ahead of Git's GNU tar: GNU tar reads "D:\..." as a remote host and fails.
+          export PATH="/c/Windows/System32:$PATH"
           bun run voice:prepare-runtime
           bun scripts/prepare-remote-desktop-runtime.ts win32 x64
           bun run verify:remote-desktop-runtime --windows
