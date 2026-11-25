@@ -67,7 +67,7 @@ function draftPost(translate: AppTranslate): string {
 }
 
 const EXTERNAL_DESTINATIONS: Record<ExternalDestination, string | ((translate: AppTranslate) => string)> = {
-  "agent-setup": "https://github.com/somdipto/dani-dex/blob/main/docs/TROUBLESHOOTING.md",
+  "agent-setup": "https://github.com/Dan-Labs-Agi/dani-dex/blob/main/docs/TROUBLESHOOTING.md",
   "opencode-install": "https://opencode.ai/docs/",
   "opencode-auth": "https://opencode.ai/auth",
   "claude-install": "https://code.claude.com/docs",
@@ -78,7 +78,7 @@ const EXTERNAL_DESTINATIONS: Record<ExternalDestination, string | ((translate: A
   changelog: "https://dani.danlab.dev/changelog",
   guides: "https://dani.danlab.dev/guides",
   discord: "https://discord.openbot.run",
-  github: "https://github.com/somdipto/dani-dex",
+  github: "https://github.com/Dan-Labs-Agi/dani-dex",
   x: "https://x.com/OpenBot_",
   threads: "https://www.threads.com/@dani.danlab.dev",
   instagram: "https://www.instagram.com/dani.danlab.dev/",

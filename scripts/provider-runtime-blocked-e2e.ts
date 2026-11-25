@@ -12,7 +12,7 @@ import { parseAgentRuntimeLock } from "./agent-runtime-lock";
 const OUT = resolve(import.meta.dirname, "../.openbot-build/provider-runtime-blocked-e2e");
 const WAIT_MS = 15_000;
 const BLOCKED_VERSION = "2.3.2";
-const BLOCKLIST_URL = "https://raw.githubusercontent.com/somdipto/dani-dex/main/provider-runtime-blocklist.json";
+const BLOCKLIST_URL = "https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/main/provider-runtime-blocklist.json";
 const LICENSE = "fake OpenCode license\n";
 
 interface Scenario {

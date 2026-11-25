@@ -2,7 +2,7 @@ import { HISTORY_DAYS, type Incident, SERVICE_IDS, type ServiceId, type StatusFi
 
 export const FIXTURE_NOW = "2026-10-16T10:05:00Z";
 
-const ISSUES = "https://github.com/somdipto/dani-dex/issues";
+const ISSUES = "https://github.com/Dan-Labs-Agi/dani-dex/issues";
 
 const INCIDENTS: readonly Incident[] = [
   {

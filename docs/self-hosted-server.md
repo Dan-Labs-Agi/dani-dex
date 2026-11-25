@@ -12,7 +12,7 @@ To run it in a container, see [Docker](docker.md).
 On Ubuntu 24.04 or 26.04 (x86_64 or arm64) with systemd:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/somdipto/dani-dex/main/scripts/install-server.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/main/scripts/install-server.sh | sudo bash
 sudo dani-dex login
 ```
 
@@ -28,7 +28,7 @@ In the desktop app, select Add server, then Other options, then New server on an
 The app shows one command with a one-time claim of your account:
 
 ```sh
-{ echo OPENBOT_CLAIM=<claim>; curl -fsSL https://raw.githubusercontent.com/somdipto/dani-dex/main/scripts/install-server.sh; } | sudo bash -s
+{ echo OPENBOT_CLAIM=<claim>; curl -fsSL https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/main/scripts/install-server.sh; } | sudo bash -s
 ```
 
 Run it on the server, or give it to an AI agent there with Copy for an AI agent. It asks no

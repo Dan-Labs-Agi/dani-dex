@@ -1,7 +1,7 @@
 #!/bin/bash
 # Installs dani-dex as a self-hosted server on a Linux computer with no screen:
 #
-#   curl -fsSL https://raw.githubusercontent.com/somdipto/dani-dex/main/scripts/install-server.sh | sudo bash
+#   curl -fsSL https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/main/scripts/install-server.sh | sudo bash
 #
 # Options (after `sudo bash -s --`):
 #   --user <name>             The user that runs dani-dex and its agents. Default: the user of the
@@ -25,7 +25,7 @@
 set -euo pipefail
 export LC_ALL=C DEBIAN_FRONTEND=noninteractive
 
-RELEASES=https://github.com/somdipto/dani-dex/releases
+RELEASES=https://github.com/Dan-Labs-Agi/dani-dex/releases
 service_user=""
 auth_api_url=""
 display_size=""

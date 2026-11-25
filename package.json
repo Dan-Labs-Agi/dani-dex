@@ -11,12 +11,12 @@
   "license": "PolyForm-Noncommercial-1.0.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/somdipto/dani-dex.git"
+    "url": "git+https://github.com/Dan-Labs-Agi/dani-dex.git"
   },
   "bugs": {
-    "url": "https://github.com/somdipto/dani-dex/issues"
+    "url": "https://github.com/Dan-Labs-Agi/dani-dex/issues"
   },
-  "homepage": "https://github.com/somdipto/dani-dex#readme",
+  "homepage": "https://github.com/Dan-Labs-Agi/dani-dex#readme",
   "keywords": [
     "ai-agents",
     "bun",

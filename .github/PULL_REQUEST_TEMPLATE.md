@@ -1,6 +1,6 @@
 ## Linked issue
 
-<!-- `Closes #123`. A new feature or a change to how dani-dex works needs an issue with the `approved` label first: see https://github.com/somdipto/dani-dex/blob/main/CONTRIBUTING.md#what-you-can-send -->
+<!-- `Closes #123`. A new feature or a change to how dani-dex works needs an issue with the `approved` label first: see https://github.com/Dan-Labs-Agi/dani-dex/blob/main/CONTRIBUTING.md#what-you-can-send -->
 
 ## Type of change
 

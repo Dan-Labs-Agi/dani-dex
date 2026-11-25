@@ -41,7 +41,7 @@ in_container() {
 
 require_host() {
   in_container || return 0
-  fail "In a container, $1. See https://github.com/somdipto/dani-dex/blob/main/docs/docker.md"
+  fail "In a container, $1. See https://github.com/Dan-Labs-Agi/dani-dex/blob/main/docs/docker.md"
 }
 
 require_root() {

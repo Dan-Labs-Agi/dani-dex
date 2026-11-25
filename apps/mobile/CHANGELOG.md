@@ -1414,7 +1414,7 @@ the [root changelog](../../CHANGELOG.md).
 
 - MP3 and other audio files in a chat play in the conversation. The card shows the waveform of the file, as on desktop. Tap or drag the waveform to move the position, and tap the speed button to play at 0.5×, 1×, 1.5× or 2×. Before, you could only download them.
 - A Markdown file in a chat opens in a preview that shows the formatted text. The menu shows the source, copies it, or shares the file. Before, you could only download it.
-- Tap any image in a chat to open it, then swipe left or right to see all the other images of the loaded conversation, in chat order. The top bar shows the position, such as "3 of 8". ([#2426](https://github.com/somdipto/dani-dex/issues/2426))
+- Tap any image in a chat to open it, then swipe left or right to see all the other images of the loaded conversation, in chat order. The top bar shows the position, such as "3 of 8". ([#2426](https://github.com/Dan-Labs-Agi/dani-dex/issues/2426))
 - When an agent sends two or more images in one reply, the chat shows them together in a compact grid, as on desktop. Before, each image took the full width of the chat.
 - Channels are back in the mobile app, on a computer whose dani-dex has channels again. A channel
   shows in the home list beside your agents, and you can pin it, hide it, put it in a section, and

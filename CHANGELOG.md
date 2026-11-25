@@ -9632,7 +9632,7 @@ All notable changes to dani-dex will be documented here. The project follows
   and the web client. Before, only the computer that runs the agent showed the setting, so a hosted
   server had no way to set it. Members do not see it. The server must also run this version.
 - You can install dani-dex with Nix on x64 or arm64 Linux and on Apple silicon:
-  `nix run github:somdipto/dani-dex`. Nix installs dani-dex updates. A copy that Nix installed does
+  `nix run github:Dan-Labs-Agi/dani-dex`. Nix installs dani-dex updates. A copy that Nix installed does
   not update itself; Settings shows that Nix installs its updates.
 - Gemini agents now show how full their context is, next to the send button. When the context is
   80% full, dani-dex compacts it: the agent continues in a new session that starts from the recent
@@ -10793,7 +10793,7 @@ All notable changes to dani-dex will be documented here. The project follows
 - When a joined server has a new dani-dex version, a dialog now shows the update steps: download, restart, and back online. One click starts the update. An admin can let the restart wait until agents are idle, restart at once, or cancel the restart. You can hide the dialog while the server updates; a notice keeps the status and opens the dialog again.
 - In Server settings > Updates, "Update when idle" and "Restart now" open the same dialog.
 - The update dialog opens each time you enter a server that has a new version. An update button next to the server name in the sidebar opens it again.
-- The dani.danlab.dev website now keeps the first visit of your browser (source, first page, day and campaign tags) in the browser. When you sign in on the web, or open the page after a desktop checkout, dani-dex saves it on your account for product analytics. It contains no referrer, IP address or identifier. [PRIVACY.md](https://github.com/somdipto/dani-dex/blob/main/PRIVACY.md) describes it.
+- The dani.danlab.dev website now keeps the first visit of your browser (source, first page, day and campaign tags) in the browser. When you sign in on the web, or open the page after a desktop checkout, dani-dex saves it on your account for product analytics. It contains no referrer, IP address or identifier. [PRIVACY.md](https://github.com/Dan-Labs-Agi/dani-dex/blob/main/PRIVACY.md) describes it.
 
 ### Fixed
 
@@ -11684,7 +11684,7 @@ All notable changes to dani-dex will be documented here. The project follows
   card and undo.
 - When an agent needs GitHub and it is not connected, the agent shows a GitHub card in the chat.
 - The dani.danlab.dev home page shows what dani-dex does, answers common questions, and links to each comparison.
-- An official Docker image, `ghcr.io/somdipto/dani-dex`, for `linux/amd64` and `linux/arm64`. It
+- An official Docker image, `ghcr.io/Dan-Labs-Agi/dani-dex`, for `linux/amd64` and `linux/arm64`. It
   runs dani-dex as a self-hosted server with the Electron sandbox on. Sign it in with
   `docker exec -it openbot openbot login`. See `docs/docker.md`.
 - dani.danlab.dev has a download page for each system: `/download/macos`, `/download/windows` and
@@ -11832,7 +11832,7 @@ All notable changes to dani-dex will be documented here. The project follows
 - A script on your computer can now run an agent's routine and give it a payload, for example to wake the agent when a long build ends. Turn on Local scripts in the agent's settings, then use Copy run command on a routine. The setting is off by default.
 - The dani.danlab.dev header menu has a Compare section, and each comparison links to the other comparisons.
 - Install dani-dex as a server on a Linux computer with no screen, such as a VPS, from a terminal:
-  `curl -fsSL https://raw.githubusercontent.com/somdipto/dani-dex/main/scripts/install-server.sh | sudo bash`.
+  `curl -fsSL https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/main/scripts/install-server.sh | sudo bash`.
   Sign it in with `sudo dani-dex login`, and use it from the desktop app, the iPhone app or
   dani.danlab.dev/app. The `openbot` command also shows the status and the log, changes the server name,
   installs updates, and removes dani-dex with `sudo openbot uninstall`. The install also works on Debian
@@ -11866,7 +11866,7 @@ All notable changes to dani-dex will be documented here. The project follows
 - Brazilian Portuguese for the desktop app and web client. Select Português (Brasil) in Settings, or use your system language.
 - More of the desktop app and the web client is in Turkish, including server settings, providers, marketplace, routines, usage and remote desktop.
 - Cline is a provider. Its free models have a limit for each model, and the provider of a free model can use your prompts to train models. Select Download on the Cline row in More providers, then sign in with your Cline account in the browser, or set `CLINE_API_KEY`. Cline agents stay on this computer: team members do not see them.
-- You can run your own account service, Signal and TURN for remote access. Start the app with `OPENBOT_AUTH_API_URL` and `OPENBOT_REMOTE_SIGNAL_URL`. Invitations for your service are `openbot://join` links. See [Self-hosted remote access](https://github.com/somdipto/dani-dex/blob/main/docs/self-hosting.md). ([#1263](https://github.com/somdipto/dani-dex/issues/1263))
+- You can run your own account service, Signal and TURN for remote access. Start the app with `OPENBOT_AUTH_API_URL` and `OPENBOT_REMOTE_SIGNAL_URL`. Invitations for your service are `openbot://join` links. See [Self-hosted remote access](https://github.com/Dan-Labs-Agi/dani-dex/blob/main/docs/self-hosting.md). ([#1263](https://github.com/Dan-Labs-Agi/dani-dex/issues/1263))
 - A Schedule view shows the routines of all agents and channels on a server in a day or week calendar, with past results and planned runs. Open it from the server menu or the command palette.
 - Restart a provider from its menu in Settings, and restart all custom agents from the Custom agents section. dani-dex waits until no agent of that provider works, then starts the provider again and reads its version, sign-in state and models again. Agents of other providers continue to work, and messages sent during the wait run after the restart.
 - Restart dani-dex when no agent works, from Settings > Updates. New routine runs wait until the restart and run after it. When an update is downloaded, the same action installs it.
@@ -11905,10 +11905,10 @@ All notable changes to dani-dex will be documented here. The project follows
 
 ### Fixed
 
-- A custom ACP agent that is slow to start now shows its models. Model discovery waited only 5 seconds for it. ([#1230](https://github.com/somdipto/dani-dex/issues/1230))
+- A custom ACP agent that is slow to start now shows its models. Model discovery waited only 5 seconds for it. ([#1230](https://github.com/Dan-Labs-Agi/dani-dex/issues/1230))
 - The **Open dani-dex** button on the page that Slack returns to after you install dani-dex is now in the
   middle of the card.
-- A link to a file that an agent edited now opens the file. Before, a link to a file outside the agent's workspace, a link with a line number such as `page.tsx:12`, a `~/` path or a `file://` link showed "not found" or an error. A file outside the workspace opens only for an agent with Full access, and "Open file externally" shows it in the file manager. ([#1240](https://github.com/somdipto/dani-dex/issues/1240))
+- A link to a file that an agent edited now opens the file. Before, a link to a file outside the agent's workspace, a link with a line number such as `page.tsx:12`, a `~/` path or a `file://` link showed "not found" or an error. A file outside the workspace opens only for an agent with Full access, and "Open file externally" shows it in the file manager. ([#1240](https://github.com/Dan-Labs-Agi/dani-dex/issues/1240))
 - A link to a file that was moved or deleted now says so. Before, it told you to ask the agent to create the file.
 - A long error after a failed provider update ran out of its notification. Now it stays inside, stops after three lines, and "Show details" shows the full text.
 - When the Dynamic Island width or height changes, the logo and the greeting now move with the black
@@ -11929,10 +11929,10 @@ All notable changes to dani-dex will be documented here. The project follows
 - When dani-dex stops an ACP agent (because it is idle, to restart it, or at quit), the errors that
   the agent writes while it stops go to the log. Before, dani-dex showed each of them as a "Provider
   error" message. When an agent stops on its own, dani-dex still shows its errors.
-- A provider CLI download no longer fails with "another instance is replacing it" when no other dani-dex runs. When another program holds the new files open, dani-dex now waits for a moment, and then tells you to close that program. ([#1264](https://github.com/somdipto/dani-dex/issues/1264))
-- A failed update notification now closes when the CLI is updated later. Retry on a provider row now removes the old error text, and the custom provider row no longer shows a second Retry next to Add. ([#1264](https://github.com/somdipto/dani-dex/issues/1264))
-- On a busy computer, a provider CLI that answers slowly no longer shows as broken. dani-dex now waits 10 seconds for its version, says that it did not answer in time, keeps the last known version, and tries again by itself. ([#1258](https://github.com/somdipto/dani-dex/issues/1258))
-- A provider refresh no longer marks a connected provider as failed while its models stay in the model list. ([#1258](https://github.com/somdipto/dani-dex/issues/1258))
+- A provider CLI download no longer fails with "another instance is replacing it" when no other dani-dex runs. When another program holds the new files open, dani-dex now waits for a moment, and then tells you to close that program. ([#1264](https://github.com/Dan-Labs-Agi/dani-dex/issues/1264))
+- A failed update notification now closes when the CLI is updated later. Retry on a provider row now removes the old error text, and the custom provider row no longer shows a second Retry next to Add. ([#1264](https://github.com/Dan-Labs-Agi/dani-dex/issues/1264))
+- On a busy computer, a provider CLI that answers slowly no longer shows as broken. dani-dex now waits 10 seconds for its version, says that it did not answer in time, keeps the last known version, and tries again by itself. ([#1258](https://github.com/Dan-Labs-Agi/dani-dex/issues/1258))
+- A provider refresh no longer marks a connected provider as failed while its models stay in the model list. ([#1258](https://github.com/Dan-Labs-Agi/dani-dex/issues/1258))
 - A desktop chat no longer shows an empty bubble when an agent ends its turn without an answer, for
   example after it reads a teammate update that needs no reply. The phone app and channels already
   hid these rows.
@@ -11996,7 +11996,7 @@ All notable changes to dani-dex will be documented here. The project follows
 - With Grok, an MCP server from `~/.claude.json`, `~/.cursor/mcp.json` or `.mcp.json` that needs
   an OAuth sign-in no longer shows a "Provider error". Before, Grok's `worker quit with fatal …
   AuthRequired` line showed as an error, but the chat worked without that server.
-- An agent that another agent creates now gets the provider, model, and reasoning effort of that agent, unless the request names different ones. Before, each new teammate started on the default model. ([#1201](https://github.com/somdipto/dani-dex/issues/1201))
+- An agent that another agent creates now gets the provider, model, and reasoning effort of that agent, unless the request names different ones. Before, each new teammate started on the default model. ([#1201](https://github.com/Dan-Labs-Agi/dani-dex/issues/1201))
 - Keep the other devices connected to a desktop when one phone reconnects. Before, a late network
   message from the old connection of that phone could disconnect every device from the desktop.
 - Keep the web client connected through a short network change. Before, it made a new connection
@@ -13053,7 +13053,7 @@ contains all changes of 0.21.1.
 
 ### Changed
 
-- Repository moved to `somdipto/dani-dex`; release links and the update feed follow it.
+- Repository moved to `Dan-Labs-Agi/dani-dex`; release links and the update feed follow it.
 - Tighten agent-to-agent communication prompts and route agent instructions instead of
   front-loading them.
 - Stop the two animations that burn idle CPU, and add `dev:cpu` to measure it.

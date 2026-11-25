@@ -1410,7 +1410,7 @@ export const messages = {
   "mobile.server.update.path.container":
     "No computador anfitrião do Docker, baixe a nova imagem do dani-dex e crie o contêiner de novo com os mesmos volumes de dados. Aguarde o trabalho ativo terminar primeiro. Mantenha os volumes existentes para preservar seus dados.",
   "mobile.server.update.path.manual":
-    "Esta instalação não pode se substituir. Peça ao administrador do computador anfitrião para instalar a versão compatível de github.com/somdipto/dani-dex/releases. Mantenha os dados existentes do dani-dex.",
+    "Esta instalação não pode se substituir. Peça ao administrador do computador anfitrião para instalar a versão compatível de github.com/Dan-Labs-Agi/dani-dex/releases. Mantenha os dados existentes do dani-dex.",
   "mobile.server.update.path.unavailable":
     "Esta é uma compilação de desenvolvimento. Use uma versão instalada do dani-dex para verificar atualizações.",
   "mobile.server.update.check": "Buscar atualizações",

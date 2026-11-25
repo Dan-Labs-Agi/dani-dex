@@ -93,7 +93,7 @@ if (parsed.values.manifests) {
     "download",
     RELEASE_TAG,
     "--repo",
-    "somdipto/dani-dex",
+    "Dan-Labs-Agi/dani-dex",
     "--pattern",
     "*.yml",
     "--dir",

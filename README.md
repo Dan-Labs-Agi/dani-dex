@@ -8,17 +8,17 @@ plan the work, use your apps, files and browser, talk to each other, and come ba
 Click your system. The latest installer starts at once. No Dani-Dex account.
 
 <p align="center">
-  <a href="https://github.com/somdipto/dani-dex/releases/latest/download/Dani-Dex-mac-universal.dmg"><img alt="Download for macOS" width="560" src="docs/readme/download-macos.png"></a>
+  <a href="https://github.com/Dan-Labs-Agi/dani-dex/releases/latest/download/Dani-Dex-mac-universal.dmg"><img alt="Download for macOS" width="560" src="docs/readme/download-macos.png"></a>
   <br>
-  <a href="https://github.com/somdipto/dani-dex/releases/latest/download/Dani-Dex-windows-x64.exe"><img alt="Download for Windows" width="560" src="docs/readme/download-windows.png"></a>
+  <a href="https://github.com/Dan-Labs-Agi/dani-dex/releases/latest/download/Dani-Dex-windows-x64.exe"><img alt="Download for Windows" width="560" src="docs/readme/download-windows.png"></a>
   <br>
-  <a href="https://github.com/somdipto/dani-dex/releases/latest/download/Dani-Dex-linux-x86_64.AppImage"><img alt="Download for Linux" width="560" src="docs/readme/download-linux.png"></a>
+  <a href="https://github.com/Dan-Labs-Agi/dani-dex/releases/latest/download/Dani-Dex-linux-x86_64.AppImage"><img alt="Download for Linux" width="560" src="docs/readme/download-linux.png"></a>
 </p>
 
 <p align="center">
 macOS 13 or newer, Apple silicon and Intel · Windows 10 or newer, x64 · Linux x64
 <br>
-<a href="https://github.com/somdipto/dani-dex/releases/latest">Checksums and every file</a>
+<a href="https://github.com/Dan-Labs-Agi/dani-dex/releases/latest">Checksums and every file</a>
 </p>
 
 ### Install from a terminal
@@ -32,19 +32,19 @@ release and checks the checksum before it installs.
 macOS, Linux or WSL:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/somdipto/dani-dex/main/scripts/onboard.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/main/scripts/onboard.sh | bash
 ```
 
 Windows (PowerShell):
 
 ```powershell
-irm https://raw.githubusercontent.com/somdipto/dani-dex/main/scripts/onboard.ps1 | iex
+irm https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/main/scripts/onboard.ps1 | iex
 ```
 
 <img width="1600" height="1200" alt="Dani-Dex on the desktop: the agent list, a conversation, and the screen to create an agent" src="https://github.com/user-attachments/assets/2a14a0b2-a69c-4dc2-acc1-4b2dd1113dda" />
 
-[![CI](https://github.com/somdipto/dani-dex/actions/workflows/ci.yml/badge.svg)](https://github.com/somdipto/dani-dex/actions/workflows/ci.yml)
-[![Latest release](https://img.shields.io/github/v/release/somdipto/dani-dex?label=latest)](https://github.com/somdipto/dani-dex/releases/latest)
+[![CI](https://github.com/Dan-Labs-Agi/dani-dex/actions/workflows/ci.yml/badge.svg)](https://github.com/Dan-Labs-Agi/dani-dex/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/Dan-Labs-Agi/dani-dex?label=latest)](https://github.com/Dan-Labs-Agi/dani-dex/releases/latest)
 
 ## What you can get done
 
