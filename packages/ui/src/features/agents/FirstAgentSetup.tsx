@@ -16,18 +16,14 @@ import type {
 import type { AppTextKey, AppTranslate } from "@openbot/i18n";
 import { Button, Field, Input, Textarea } from "@openbot/ui";
 import { createSignal, For, onSettled, Show } from "solid-js";
-import {
-  AVATAR_COLOR_CHOICES,
-  avatarHeadColor,
-  isAvatarColorChoice,
-} from "../../bloub-avatar";
+import { AVATAR_COLOR_CHOICES, avatarHeadColor, isAvatarColorChoice } from "../../bloub-avatar";
 import { ProviderModelPicker } from "../../components/ProviderModelPicker";
 import { currentText, useText } from "../../text";
 import { prefersReducedMotion } from "../../utils";
 import { AgentAvatar } from "./AgentAvatar";
+import { avatarColorChoiceLabel } from "./avatar-hue-label";
 import { CharacterCatalogue } from "./CharacterCatalogue";
 import { characterSeed } from "./character-faces";
-import { avatarColorChoiceLabel } from "./avatar-hue-label";
 import { InstructionsLimit, instructionsTooLong } from "./InstructionsLimit";
 
 export interface FirstAgentDraft {
@@ -77,7 +73,9 @@ export interface FirstAgentSetupProps {
 }
 
 // A short first row of characters; "View more" opens all of them.
-export const FIRST_AGENT_AVATAR_SEEDS: readonly string[] = Array.from({ length: 12 }, (_, index) => characterSeed(index));
+export const FIRST_AGENT_AVATAR_SEEDS: readonly string[] = Array.from({ length: 12 }, (_, index) =>
+  characterSeed(index),
+);
 
 const SUGGESTION_MOMENTUM_FRICTION = 0.88;
 const SUGGESTION_MOMENTUM_MINIMUM = 0.01;

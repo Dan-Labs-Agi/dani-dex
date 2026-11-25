@@ -2,12 +2,7 @@ import { Button, Dialog, IconButton, Input, X } from "@openbot/ui";
 import { createMemo, createSignal, For, Show } from "solid-js";
 import { useText } from "../../text";
 import { CHARACTER_COUNT, characterIndexForSeed, characterSeed, characterUrlAt } from "./character-faces";
-import {
-  CHARACTER_COLOR_HUES,
-  CHARACTER_COLORS,
-  CHARACTER_SPECS,
-  characterLabel,
-} from "./character-meta";
+import { CHARACTER_COLOR_HUES, CHARACTER_COLORS, CHARACTER_SPECS, characterLabel } from "./character-meta";
 
 export interface CharacterCatalogueProps {
   open: boolean;
@@ -69,7 +64,7 @@ export function CharacterCatalogue(props: CharacterCatalogueProps) {
                 onValueChange={setQuery}
               />
             </div>
-            <div class="character-catalogue-colors" role="group" aria-label={t("agent.characters.colorFilter")}>
+            <fieldset class="character-catalogue-colors" aria-label={t("agent.characters.colorFilter")}>
               <Button
                 variant="ghost"
                 type="button"
@@ -94,8 +89,8 @@ export function CharacterCatalogue(props: CharacterCatalogueProps) {
                   />
                 )}
               </For>
-            </div>
-            <div class="character-catalogue-grid" aria-label={t("agent.characters.title")}>
+            </fieldset>
+            <div class="character-catalogue-grid">
               <For each={visible()}>
                 {(index) => (
                   <Button
@@ -122,7 +117,11 @@ export function CharacterCatalogue(props: CharacterCatalogueProps) {
             <div class="character-catalogue-footer">
               <Show
                 when={current() !== null}
-                fallback={<span class="character-catalogue-name">{t("agent.characters.count", { count: visible().length })}</span>}
+                fallback={
+                  <span class="character-catalogue-name">
+                    {t("agent.characters.count", { count: visible().length })}
+                  </span>
+                }
               >
                 <img class="character-catalogue-preview" src={characterUrlAt(current() ?? 0)} alt="" />
                 <span class="character-catalogue-name">{characterLabel(current() ?? 0)}</span>
