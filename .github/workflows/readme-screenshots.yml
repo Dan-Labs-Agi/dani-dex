@@ -40,6 +40,8 @@ jobs:
         run: xvfb-run -a --server-args="-screen 0 1600x900x24" env SIGNIN=1 bun scripts/capture-readme-screens.ts
 
       - name: Start the seeded dev stack
+        env:
+          OPENBOT_DEV_REMOTE_DEBUGGING_PORT: "9333"
         run: |
           set -euo pipefail
           nohup xvfb-run -a --server-args="-screen 0 1600x900x24" bun run dev > /tmp/dev-stack.log 2>&1 &
