@@ -1,9 +1,10 @@
 <div align="center">
 
-# Dani Dex
+<a href="https://dl.dani.danlab.dev/latest.json">
+  <img src="docs/assets/readme/hero.webp" width="100%" alt="Dani Dex: your own team of AI agents, on your computer and your phone. Download buttons for Mac, Windows and Android; Linux and iOS coming soon.">
+</a>
 
-**Your own AI team, on your own computer and your phone.**
-
+<br>
 <br>
 
 <a href="https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-arm64.dmg"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-mac-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-mac-light.png"><img src="docs/assets/readme/btn-mac-light.png" width="226" alt="Download for macOS (Apple silicon)"></picture></a>&nbsp;
@@ -77,6 +78,8 @@ Give each agent a job: researcher, writer, developer, assistant. The Chief agent
 <br>
 
 ## How it works
+
+<img src="docs/assets/readme/architecture.webp" width="100%" alt="Architecture: the desktop and Android apps send commands to a local server and receive live events. The server runs your agents on your AI logins, asks permission, and talks to the account and update services over HTTPS.">
 
 The app talks to a local server on your computer. The server runs your agents, keeps their transcripts and keys on your machine, and asks you before anything that matters. The phone app pairs with your computer and works with the same agents.
 
