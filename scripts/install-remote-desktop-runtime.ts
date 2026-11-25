@@ -46,6 +46,14 @@ export async function installRemoteDesktopRuntime(
   const artifact = lock.remoteDesktop.releaseArtifacts[target];
   const githubToken = input.githubToken ?? process.env.GITHUB_TOKEN;
   if (!release || !artifact) throw new Error(`No published remote desktop runtime is pinned for ${target}.`);
+  // Release assets of a private repository need the token on every download, not only on the
+  // release lookup. The header does not leak past the redirect: fetch drops Authorization when
+  // the asset URL redirects to the signed object-storage host.
+  const releaseFetch: typeof fetch = (url, init) => {
+    const headers = new Headers(init?.headers);
+    if (githubToken && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${githubToken}`);
+    return fetchImpl(url, { ...init, headers });
+  };
 
   if (await isCurrentInstallation(() => verifyRuntimeTree(outputRoot, target, lock))) {
     logger.info(`The ${target} remote desktop runtime is current.`);
@@ -67,14 +75,14 @@ export async function installRemoteDesktopRuntime(
   validateGitHubRelease(githubRelease, release.tag);
 
   const manifestAsset = findAsset(githubRelease, release.manifestAsset);
-  const manifestBytes = await download(fetchImpl, manifestAsset.browser_download_url, "Runtime asset");
+  const manifestBytes = await download(releaseFetch, manifestAsset.browser_download_url, "Runtime asset");
   if (sha256(manifestBytes) !== release.manifestSha256)
     throw new Error("The runtime release manifest checksum is invalid.");
   const manifest = parseReleaseManifest(JSON.parse(manifestBytes.toString("utf8")));
   validateManifest(lock, manifest, target);
 
   const archiveAsset = findAsset(githubRelease, artifact.asset);
-  const archiveBytes = await download(fetchImpl, archiveAsset.browser_download_url, "Runtime asset");
+  const archiveBytes = await download(releaseFetch, archiveAsset.browser_download_url, "Runtime asset");
   if (sha256(archiveBytes) !== artifact.sha256) throw new Error(`The ${target} runtime archive checksum is invalid.`);
 
   const temporaryRoot = await mkdtemp(join(tmpdir(), "openbot-runtime-install-"));
