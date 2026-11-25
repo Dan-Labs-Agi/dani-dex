@@ -1,0 +1,72 @@
+name: README screenshots
+
+# Captures real screenshots of every screen for the README on a free Linux runner:
+# the clean sign-in screen from the packaged build, then every seeded screen from the
+# dev stack (bun run dev), then first-run setup on a fresh profile. Uploads shots/ as
+# an artifact.
+
+on:
+  push:
+    branches:
+      - build/readme-screenshots
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shots:
+    name: Capture every screen
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Bun and Node
+        uses: ./.github/actions/setup-bun
+
+      - name: Build the app
+        run: |
+          set -euo pipefail
+          bun run voice:prepare-runtime
+          bun run prepare:remote-desktop-runtime
+          bun run prepare:cua-driver
+          bun run build
+
+      - name: Capture the clean sign-in screen
+        run: xvfb-run -a --server-args="-screen 0 1600x900x24" env SIGNIN=1 bun scripts/capture-readme-screens.ts
+
+      - name: Start the seeded dev stack
+        run: |
+          set -euo pipefail
+          nohup xvfb-run -a --server-args="-screen 0 1600x900x24" bun run dev > /tmp/dev-stack.log 2>&1 &
+          echo "dev stack starting"
+
+      - name: Capture every seeded screen
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 60); do
+            if curl -sf http://127.0.0.1:9333/json/version > /dev/null 2>&1; then break; fi
+            sleep 3
+          done
+          curl -s http://127.0.0.1:9333/json/version || true
+          bun scripts/capture-readme-screens.ts
+
+      - name: Capture first-run setup on a fresh profile
+        run: xvfb-run -a --server-args="-screen 0 1600x901x24" env FRESH=1 bun scripts/capture-readme-screens.ts
+        # A second X server on a different display via -a; screen number differs to avoid lock clashes.
+
+      - name: Dev stack log
+        if: always()
+        run: tail -c 20000 /tmp/dev-stack.log || true
+
+      - name: Save the screenshots
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: readme-screens-${{ github.run_id }}
+          path: shots/
+          retention-days: 14
