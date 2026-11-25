@@ -63,7 +63,7 @@ jobs:
         run: |
           set -euo pipefail
           VERSION=$(bun -e 'console.log(JSON.parse(require("fs").readFileSync("package.json","utf8")).version)')
-          pip3 install --quiet boto3
+          python3 -m pip install --quiet --break-system-packages boto3
           python3 scripts/publish-feed.py --platform "mac-$ARCH" \
             --file "dist/dani-dex-$VERSION-$ARCH.dmg" --key "desktop/Dani-Dex-mac-$ARCH.dmg" --version "$VERSION"
 
