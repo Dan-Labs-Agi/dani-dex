@@ -2,6 +2,7 @@ import { defineMessages } from "../../message";
 
 export const messages = defineMessages("agent", {
   "agent.access.workspaceOnly": "Workspace only",
+  "agent.characters.option": "Character {number}",
   "agent.setup.nameFallback": "New agent",
   "agent.setup.titleAdditional": "Create a new agent",
   "agent.setup.titleFirst": "Create your first agent",

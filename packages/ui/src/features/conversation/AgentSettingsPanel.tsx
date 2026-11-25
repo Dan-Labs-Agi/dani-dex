@@ -98,6 +98,7 @@ import {
 } from "@openbot/ui/components/SettingsPanel";
 import type { AgentProfile } from "@openbot/ui/data";
 import { AgentAvatar } from "@openbot/ui/features/agents/AgentAvatar";
+import { CHARACTER_COUNT, characterSeed } from "@openbot/ui/features/agents/character-faces";
 import { InstructionsLimit, instructionsTooLong } from "@openbot/ui/features/agents/InstructionsLimit";
 import {
   type BrowserProfileChoice,
@@ -1097,6 +1098,22 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
                         <small>{t("agentSettings.avatar.imageHint")}</small>
                       </span>
                     </Button>
+                    <div class="avatar-face-grid avatar-shape-grid">
+                      <For each={Array.from({ length: CHARACTER_COUNT }, (_, index) => characterSeed(index))}>
+                        {(seed, index) => (
+                          <Button
+                            variant="ghost"
+                            type="button"
+                            class="avatar-face-choice"
+                            aria-label={t("agent.characters.option", { number: index() + 1 })}
+                            aria-pressed={draft.avatar.seed === seed ? "true" : "false"}
+                            onClick={() => void selectGeneratedAvatar(seed, avatarFace().color)}
+                          >
+                            <AgentAvatar seed={seed} hue={draft.avatar.hue} color={draft.avatar.color} />
+                          </Button>
+                        )}
+                      </For>
+                    </div>
                     <div class="avatar-editor-divider" />
                     <div class="avatar-editor-heading">
                       <span>{t("agentSettings.avatar.shape")}</span>

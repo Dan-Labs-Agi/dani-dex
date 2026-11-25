@@ -82,6 +82,7 @@
     "./features/agent-dock/AgentDockChat": "./src/features/agent-dock/AgentDockChat.tsx",
     "./features/agent-dock/agent-dock.css": "./src/features/agent-dock/agent-dock.css",
     "./features/agents/AgentAvatar": "./src/features/agents/AgentAvatar.tsx",
+    "./features/agents/character-faces": "./src/features/agents/character-faces.ts",
     "./features/agents/AgentPicker": "./src/features/agents/AgentPicker.tsx",
     "./features/agents/AgentSearchSelect": "./src/features/agents/AgentSearchSelect.tsx",
     "./features/agents/AgentDeleteUndoToast": "./src/features/agents/AgentDeleteUndoToast.tsx",
