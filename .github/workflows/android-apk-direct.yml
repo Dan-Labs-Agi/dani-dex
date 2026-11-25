@@ -1,0 +1,116 @@
+name: Android APK direct
+
+# Builds the Android app as an APK on this runner and puts it on the download host at
+# https://dl.dani.danlab.dev/android/, so a phone with no Google Play can install a build of this
+# branch. The APK is signed with the debug key: it is for testing, not for Google Play.
+# Only the built APK goes to the bucket, never source. Secrets: R2_ACCESS_KEY_ID,
+# R2_SECRET_ACCESS_KEY.
+on:
+  push:
+    branches:
+      - feat/dani-account
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    name: Build and publish the Android APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    concurrency:
+      group: android-apk-direct
+      cancel-in-progress: true
+    env:
+      CI: "1"
+      EXPO_PUBLIC_APP_ENV: production
+      NODE_OPTIONS: --max-old-space-size=3072
+      APK_PATH: ${{ runner.temp }}/dani-dex.apk
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      AWS_EC2_METADATA_DISABLED: "true"
+      R2_ENDPOINT: https://a2f714474bf94011597fd5cd1a92b56b.r2.cloudflarestorage.com
+      R2_BUCKET: dani-dex-releases
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # A React Native release build needs more disk than the runner leaves free.
+      - name: Free runner disk
+        shell: bash
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /opt/hostedtoolcache/CodeQL
+          df -h "$GITHUB_WORKSPACE"
+
+      - name: Set up Bun and Node
+        uses: ./.github/actions/setup-bun
+
+      - name: Set up Java
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # The generated android/gradle.properties gives the Gradle daemon 512 MB of
+      # Metaspace, and release lint runs out of it. Gradle reads the Gradle user
+      # home file before the project file, so this value applies on the runner only.
+      # Each Gradle worker runs a CMake build with one compiler per core. Skia,
+      # Reanimated and Worklets compiled together with R8 can use all 16 GB of the
+      # runner, and then the runner stops the job. Two workers keep all cores busy.
+      - name: Give Gradle more memory
+        shell: bash
+        run: |
+          mkdir -p ~/.gradle
+          echo 'org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=2g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8' >> ~/.gradle/gradle.properties
+          echo 'org.gradle.workers.max=2' >> ~/.gradle/gradle.properties
+          sudo fallocate -l 8G /swapfile-build
+          sudo chmod 600 /swapfile-build
+          sudo mkswap /swapfile-build
+          sudo swapon /swapfile-build
+          free -h
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # The app config still names the retired Expo project; point this build at the live one.
+      - name: Point the app config at the live Expo project
+        working-directory: apps/mobile
+        run: |
+          bun -e 'const fs=require("fs");const a=JSON.parse(fs.readFileSync("app.json","utf8"));a.expo.extra.eas.projectId="aae4c765-8e67-4d77-aa14-58fe4935e774";a.expo.slug="dani-dex";delete a.expo.owner;fs.writeFileSync("app.json",JSON.stringify(a,null,2)+"\n")'
+
+      - name: Prebuild the native Android project
+        working-directory: apps/mobile
+        run: bunx expo prebuild --platform android --non-interactive --no-install
+
+      - name: Assemble the release APK
+        working-directory: apps/mobile/android
+        run: |
+          ./gradlew assembleRelease --no-daemon
+          cp app/build/outputs/apk/release/app-release.apk "$APK_PATH"
+          ls -la "$APK_PATH"
+
+      - name: Save the APK as an artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dani-dex-apk-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ env.APK_PATH }}
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Upload the APK to the download host
+        run: |
+          set -euo pipefail
+          s3() { aws s3 "$@" --endpoint-url "$R2_ENDPOINT"; }
+          s3 cp "$APK_PATH" "s3://$R2_BUCKET/android/dani-dex-$(git rev-parse --short HEAD).apk"
+          s3 cp "$APK_PATH" "s3://$R2_BUCKET/android/dani-dex.apk"
+
+      - name: Verify the public URL
+        run: |
+          set -euo pipefail
+          code=$(curl -s -o /dev/null -w '%{http_code}' "https://dl.dani.danlab.dev/android/dani-dex.apk")
+          echo "https://dl.dani.danlab.dev/android/dani-dex.apk -> $code"
+          test "$code" = 200
