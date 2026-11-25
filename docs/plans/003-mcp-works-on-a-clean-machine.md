@@ -94,7 +94,7 @@ Two deviations from the plan as approved, both deliberate:
 
 `bun run pin:bun-runtime [version]` recomputes the lock block from the npm
 registry and asserts `bun --version` on a matching host.
-[docs/RELEASING.md](../docs/RELEASING.md) holds the procedure, and the
+[docs/RELEASING.md](../RELEASING.md) holds the procedure, and the
 release-upgrade-safety skill asks about the pin at Step 2b.
 
 ## Stage 2b - Pin `mcp-remote` (DONE, then superseded by Stage 4)

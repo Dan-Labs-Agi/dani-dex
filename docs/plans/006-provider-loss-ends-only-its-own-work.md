@@ -3,7 +3,7 @@
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before you start the
 > next step. If a "STOP conditions" item occurs, stop and report. Do not
-> improvise. When done, set the state of this plan in `plans/README.md`.
+> improvise. When done, set the state of this plan in `docs/plans/README.md`.
 >
 > **Drift check (run first)**:
 > `git diff --stat ac4880d86..HEAD -- src/backend/agent-service.ts src/backend/agent/context-compaction.ts src/backend/agent/turn-lifecycle.ts src/backend/agent/provider-runtime.ts src/backend/browser-control-sessions.ts`
@@ -225,7 +225,7 @@ their browser controls."
 - [ ] `bun run typecheck:node` exits 0
 - [ ] `grep -n "compaction.dispose()\|clearControls()" src/backend/agent-service.ts` shows only the lines in `stop()`/`dispose()` (shutdown), not in `onProviderLost`
 - [ ] `git status` shows only the in-scope files
-- [ ] `plans/README.md` state for 006 is updated
+- [ ] `docs/plans/README.md` state for 006 is updated
 
 ## STOP conditions
 

@@ -3,7 +3,7 @@
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before you start the
 > next step. If a "STOP conditions" item occurs, stop and report. Do not
-> improvise. When done, set the state of this plan in `plans/README.md`.
+> improvise. When done, set the state of this plan in `docs/plans/README.md`.
 >
 > **Drift check (run first)**:
 > `git diff --stat ac4880d86..HEAD -- src/backend/mailbox-store.ts scripts/mailbox-queue-scale-e2e.ts`
@@ -241,7 +241,7 @@ Create `changelog.d/<branch>.md` with one `### Changed` item, for example:
 - [ ] `bun run typecheck:node` exits 0
 - [ ] `grep -n "positions = this.#queuedPositions()" src/backend/mailbox-store.ts` shows no default argument in `#publicDelivery`
 - [ ] `git status` shows only the in-scope files
-- [ ] `plans/README.md` state for 008 is updated
+- [ ] `docs/plans/README.md` state for 008 is updated
 
 ## STOP conditions
 

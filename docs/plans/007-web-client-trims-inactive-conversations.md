@@ -3,7 +3,7 @@
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before you start the
 > next step. If a "STOP conditions" item occurs, stop and report. Do not
-> improvise. When done, set the state of this plan in `plans/README.md`.
+> improvise. When done, set the state of this plan in `docs/plans/README.md`.
 >
 > **Drift check (run first)**:
 > `git diff --stat ac4880d86..HEAD -- src/renderer/src/features/web-client/web-client-context.tsx src/renderer/src/preview/bench-web-runtime.ts src/renderer/src/features/conversation/conversation-context.tsx`
@@ -228,7 +228,7 @@ web app uses less memory when you open many long conversations."
 - [ ] `bun run typecheck:renderer` exits 0
 - [ ] `grep -n "trimToLatestPage" src/renderer/src/features/web-client/web-client-context.tsx` shows the function and at least two calls
 - [ ] `git status` shows only the in-scope files
-- [ ] `plans/README.md` state for 007 is updated
+- [ ] `docs/plans/README.md` state for 007 is updated
 
 ## STOP conditions
 

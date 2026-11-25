@@ -3,7 +3,7 @@
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before you start the
 > next step. If a "STOP conditions" item occurs, stop and report. Do not
-> improvise. When done, set the state of this plan in `plans/README.md`.
+> improvise. When done, set the state of this plan in `docs/plans/README.md`.
 >
 > **Drift check (run first)**:
 > `git diff --stat ac4880d86..HEAD -- src/main/team-api/route-team.ts src/main/team-api-server.ts src/main/host-service.ts src/main/browser-view-gateway.ts src/main/team-api/dependencies.ts`
@@ -204,7 +204,7 @@ Create `changelog.d/<branch>.md` with one `### Fixed` item, for example:
 - [ ] `grep -n "browserView.revokeTeamSession" src/main/team-api/route-team.ts` shows 2 lines
 - [ ] `grep -n "browserView: this.#options.browserView" src/main/team-api-server.ts` shows the `#routeTeam` line
 - [ ] `git status` shows only the in-scope files
-- [ ] `plans/README.md` state for 009 is updated
+- [ ] `docs/plans/README.md` state for 009 is updated
 
 ## STOP conditions
 

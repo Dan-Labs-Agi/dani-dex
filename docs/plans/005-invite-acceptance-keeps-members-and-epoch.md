@@ -3,7 +3,7 @@
 > **Executor instructions**: Follow this plan step by step. Run every
 > verification command and confirm the expected result before you start the
 > next step. If a "STOP conditions" item occurs, stop and report. Do not
-> improvise. When done, set the state of this plan in `plans/README.md`.
+> improvise. When done, set the state of this plan in `docs/plans/README.md`.
 >
 > **Drift check (run first)**:
 > `git diff --stat ac4880d86..HEAD -- apps/auth-api/src/server/remote-control-plane.ts apps/auth-api/scripts package.json`
@@ -253,7 +253,7 @@ disconnects the server, and a removed member cannot rejoin with an old link."
 - [ ] `bun run typecheck:api` exits 0
 - [ ] `grep -n "auth_epoch = auth_epoch + 1" apps/auth-api/src/server/remote-control-plane.ts` has no line inside `acceptInvite`
 - [ ] `git status` shows only the in-scope files
-- [ ] `plans/README.md` state for 005 is updated
+- [ ] `docs/plans/README.md` state for 005 is updated
 
 ## STOP conditions
 

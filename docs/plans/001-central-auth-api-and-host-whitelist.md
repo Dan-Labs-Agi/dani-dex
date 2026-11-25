@@ -11,7 +11,7 @@
 > every step run the command given and confirm the expected result. If a
 > condition from the `STOP` section occurs, stop work and report the problem. Do
 > not guess. When you are done, set this plan's state to `DONE` in
-> `plans/README.md`, unless the reviewer maintains the index themselves.
+> `docs/plans/README.md`, unless the reviewer maintains the index themselves.
 >
 > **Repository change check — do this first**:
 >
@@ -896,7 +896,7 @@ Every condition must hold:
       as the code does.
 - [ ] VNC/cloudflared is unchanged beyond the necessary hand-off of the auth
       state.
-- [ ] This plan's state is `DONE` in `plans/README.md`.
+- [ ] This plan's state is `DONE` in `docs/plans/README.md`.
 
 ## STOP conditions
 
