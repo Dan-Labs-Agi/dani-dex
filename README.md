@@ -7,11 +7,11 @@
 <br>
 <br>
 
-<a href="https://dani.danlab.dev/#download"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-mac-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-mac-light.png"><img src="docs/assets/readme/btn-mac-light.png" width="226" alt="Download for macOS (Apple silicon)"></picture></a>&nbsp;
-<a href="https://dani.danlab.dev/#download"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-win-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-win-light.png"><img src="docs/assets/readme/btn-win-light.png" width="226" alt="Download for Windows (installer)"></picture></a>&nbsp;
-<a href="https://dani.danlab.dev/#download"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-and-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-and-light.png"><img src="docs/assets/readme/btn-and-light.png" width="226" alt="Download for Android (APK)"></picture></a>
+<a href="https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-arm64.dmg"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-mac-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-mac-light.png"><img src="docs/assets/readme/btn-mac-light.png" width="226" alt="Download for macOS (Apple silicon)"></picture></a>&nbsp;
+<a href="https://dl.dani.danlab.dev/desktop/Dani-Dex-win-x64.exe"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-win-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-win-light.png"><img src="docs/assets/readme/btn-win-light.png" width="226" alt="Download for Windows (installer)"></picture></a>&nbsp;
+<a href="https://dl.dani.danlab.dev/android/dani-dex.apk"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-and-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-and-light.png"><img src="docs/assets/readme/btn-and-light.png" width="226" alt="Download for Android (APK)"></picture></a>
 
-<sub>Also: [Mac (Intel)](https://dani.danlab.dev/#download) · [All downloads](https://dani.danlab.dev/#download) · Linux build is planned</sub>
+<sub>Also: [Mac (Intel)](https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-x64.dmg) · [All downloads](https://dani.danlab.dev/#download) · Linux build is planned</sub>
 
 <br>
 
