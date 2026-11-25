@@ -25,15 +25,13 @@ env:
 
 jobs:
   mac:
-    name: Mac ${{ matrix.arch }} dmg
+    name: Mac arm64 and x64 dmg
     runs-on: macos-15
-    timeout-minutes: 60
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [arm64, x64]
+    timeout-minutes: 90
+    # Both architectures build in one job so electron-builder writes one latest-mac.yml
+    # that lists both, which the in-app updater reads.
     concurrency:
-      group: desktop-release-mac-${{ matrix.arch }}
+      group: desktop-release-mac
       cancel-in-progress: true
     steps:
       - name: Check out
@@ -45,8 +43,6 @@ jobs:
         uses: ./.github/actions/setup-bun
 
       - name: Build the app and package the dmg
-        env:
-          ARCH: ${{ matrix.arch }}
         run: |
           set -euo pipefail
           bun run voice:prepare-runtime
@@ -54,26 +50,31 @@ jobs:
           bun run verify:remote-desktop-runtime
           bun run prepare:cua-driver
           bun run build
-          bunx electron-builder --mac dmg --"$ARCH" --config.mac.identity=null --config.mac.notarize=false --publish never
-          ls -la dist/*.dmg
+          # The updater needs a zip per architecture alongside the dmg for the landing page.
+          bunx electron-builder --mac dmg zip --arm64 --x64 --config.mac.identity=null --config.mac.notarize=false --publish never
+          ls -la dist/*.dmg dist/*.zip dist/latest-mac.yml
 
       - name: Publish to the download host and update feed
-        env:
-          ARCH: ${{ matrix.arch }}
         run: |
           set -euo pipefail
           VERSION=$(bun -e 'console.log(JSON.parse(require("fs").readFileSync("package.json","utf8")).version)')
           python3 -m pip install --quiet --break-system-packages boto3
-          python3 scripts/publish-feed.py --platform "mac-$ARCH" \
-            --file "dist/dani-dex-$VERSION-$ARCH.dmg" --key "desktop/Dani-Dex-mac-$ARCH.dmg" --version "$VERSION"
+          for ARCH in arm64 x64; do
+            python3 scripts/publish-feed.py --platform "mac-$ARCH" \
+              --file "dist/dani-dex-$VERSION-$ARCH.dmg" --key "desktop/Dani-Dex-mac-$ARCH.dmg" --version "$VERSION"
+          done
+          python3 scripts/publish-updater-files.py dist/latest-mac.yml dist/*.zip dist/*.blockmap
 
       - name: Verify the public URL
-        env:
-          ARCH: ${{ matrix.arch }}
         run: |
           set -euo pipefail
-          code=$(curl -s -o /dev/null -w '%{http_code}' "https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-$ARCH.dmg")
-          echo "https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-$ARCH.dmg -> $code"
+          for ARCH in arm64 x64; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' "https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-$ARCH.dmg")
+            echo "https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-$ARCH.dmg -> $code"
+            test "$code" = 200
+          done
+          code=$(curl -s -o /dev/null -w '%{http_code}' "https://dl.dani.danlab.dev/desktop/latest-mac.yml")
+          echo "https://dl.dani.danlab.dev/desktop/latest-mac.yml -> $code"
           test "$code" = 200
 
   windows:
@@ -114,6 +115,8 @@ jobs:
           python -m pip install --quiet boto3
           python scripts/publish-feed.py --platform windows \
             --file "dist/dani-dex-$VERSION-x64.exe" --key "desktop/Dani-Dex-win-x64.exe" --version "$VERSION"
+          # latest.yml points at the exe under its build name, so upload that name too.
+          python scripts/publish-updater-files.py dist/latest.yml dist/*.exe dist/*.blockmap
 
       - name: Verify the public URL
         shell: bash
@@ -121,4 +124,7 @@ jobs:
           set -euo pipefail
           code=$(curl -s -o /dev/null -w '%{http_code}' "https://dl.dani.danlab.dev/desktop/Dani-Dex-win-x64.exe")
           echo "https://dl.dani.danlab.dev/desktop/Dani-Dex-win-x64.exe -> $code"
+          test "$code" = 200
+          code=$(curl -s -o /dev/null -w '%{http_code}' "https://dl.dani.danlab.dev/desktop/latest.yml")
+          echo "https://dl.dani.danlab.dev/desktop/latest.yml -> $code"
           test "$code" = 200
