@@ -69,7 +69,7 @@ export const messages = defineMessages("connector", {
 
   "connector.slack.title": "Slack",
   "connector.slack.description":
-    "People mention @dani-dex in Slack or send it a direct message. The Slack Orchestrator asks the right agent and answers.",
+    "People mention @Dani Dex in Slack or send it a direct message. The Slack Orchestrator asks the right agent and answers.",
   "connector.slack.statusConnected": "Connected",
   "connector.slack.statusAttention": "Needs attention",
   "connector.slack.summaryConnected": "{workspace} · Slack Orchestrator answers",
@@ -83,11 +83,11 @@ export const messages = defineMessages("connector", {
   "connector.slack.addAgent": "Add agent",
   "connector.slack.actionFailed": "Slack did not accept the change",
   "connector.slack.workspaceTitle": "Workspaces",
-  "connector.slack.workspaceDescription": "People mention @dani-dex or send it a direct message.",
+  "connector.slack.workspaceDescription": "People mention @Dani Dex or send it a direct message.",
   "connector.slack.disconnectWorkspace": "Disconnect",
   "connector.slack.disconnectAllTitle": "Disconnect Slack",
   "connector.slack.disconnectAllSummary":
-    "Every workspace disconnects. People can no longer reach your agents through @dani-dex.",
+    "Every workspace disconnects. People can no longer reach your agents through @Dani Dex.",
   "connector.slack.disconnectAllSummaryOrchestrator":
     "Every workspace disconnects. The Slack Orchestrator and its conversations are deleted from Dani Dex.",
   "connector.slack.missingScopes":
@@ -103,7 +103,7 @@ export const messages = defineMessages("connector", {
   "connector.slack.orchestratorNone": "No agent answers yet",
   "connector.slack.orchestratorNoneDescription": "Add the Slack Orchestrator, or Slack gets no answer.",
   "connector.slack.inviteNote":
-    "Dani Dex joins every public channel by itself, and each new one. For a private channel, invite it: /invite @dani-dex.",
+    "Dani Dex joins every public channel by itself, and each new one. For a private channel, invite it: /invite @Dani Dex.",
   "connector.slack.stepWorkspace": "Workspace",
   "connector.slack.stepAgent": "Agent",
   "connector.slack.connectTitle": "Connect a Slack workspace",
@@ -116,7 +116,7 @@ export const messages = defineMessages("connector", {
   "connector.slack.connectWaiting": "Waiting for Slack. Finish the install in your browser.",
   "connector.slack.agentStepTitle": "Add the Slack Orchestrator",
   "connector.slack.agentStepDescription":
-    "This new agent answers everything that people send to @dani-dex in {workspace}.",
+    "This new agent answers everything that people send to @Dani Dex in {workspace}.",
   "connector.slack.orchestratorName": "Slack Orchestrator",
   "connector.slack.orchestratorRole": "Answers in Slack and asks the team",
   "connector.slack.orchestratorDoesReceive": "Receives every Slack request first",
@@ -124,14 +124,14 @@ export const messages = defineMessages("connector", {
   "connector.slack.orchestratorDoesAnswer": "Posts the answer in the Slack thread",
   "connector.slack.orchestratorModel": "Model",
   "connector.slack.doneTitle": "Dani Dex is in {workspace}",
-  "connector.slack.doneDescription": "Mention @dani-dex in any public channel, or send it a direct message.",
+  "connector.slack.doneDescription": "Mention @Dani Dex in any public channel, or send it a direct message.",
   "connector.slack.done": "Done",
   "connector.slack.disconnectTitle": "Disconnect {workspace}?",
   "connector.slack.disconnectDescription":
     "Dani Dex stops answering in {workspace} and removes its Slack token from this computer.",
   "connector.slack.disconnectDescriptionHost":
     "Dani Dex stops answering in {workspace} and removes its Slack token from {host}.",
-  "connector.slack.disconnectEffect": "People in {workspace} can no longer reach your agents through @dani-dex.",
+  "connector.slack.disconnectEffect": "People in {workspace} can no longer reach your agents through @Dani Dex.",
   "connector.slack.removeEffectKept": "The conversations and the Slack Orchestrator stay in Dani Dex.",
   "connector.slack.removeEffectDeleted": "The Slack Orchestrator and its conversations are deleted from Dani Dex.",
   "connector.slack.keep": "Keep connected",
@@ -148,7 +148,7 @@ export const messages = defineMessages("connector", {
 
   "connector.discord.title": "Discord",
   "connector.discord.description":
-    "People mention @dani-dex in a channel of a Discord server. The Discord Orchestrator asks the right agent and answers.",
+    "People mention @Dani Dex in a channel of a Discord server. The Discord Orchestrator asks the right agent and answers.",
   "connector.discord.statusConnected": "Connected",
   "connector.discord.statusAttention": "Needs attention",
   "connector.discord.summaryConnected": "{workspace} · Discord Orchestrator answers",
@@ -162,11 +162,11 @@ export const messages = defineMessages("connector", {
   "connector.discord.addAgent": "Add agent",
   "connector.discord.actionFailed": "Discord did not accept the change",
   "connector.discord.workspaceTitle": "Discord servers",
-  "connector.discord.workspaceDescription": "Mention @dani-dex in a channel. Reply to Dani Dex to continue.",
+  "connector.discord.workspaceDescription": "Mention @Dani Dex in a channel. Reply to Dani Dex to continue.",
   "connector.discord.disconnectWorkspace": "Disconnect",
   "connector.discord.disconnectAllTitle": "Disconnect Discord",
   "connector.discord.disconnectAllSummary":
-    "Every server disconnects. People can no longer reach your agents through @dani-dex.",
+    "Every server disconnects. People can no longer reach your agents through @Dani Dex.",
   "connector.discord.disconnectAllSummaryOrchestrator":
     "Every server disconnects. The Discord Orchestrator and its conversations are deleted from Dani Dex.",
   "connector.discord.missingScopes":
@@ -193,7 +193,7 @@ export const messages = defineMessages("connector", {
   "connector.discord.connectWaiting": "Waiting for Discord. Finish the authorization in your browser.",
   "connector.discord.agentStepTitle": "Add the Discord Orchestrator",
   "connector.discord.agentStepDescription":
-    "This new agent answers everything that people send to @dani-dex in {workspace}.",
+    "This new agent answers everything that people send to @Dani Dex in {workspace}.",
   "connector.discord.orchestratorName": "Discord Orchestrator",
   "connector.discord.orchestratorRole": "Answers in Discord and asks the team",
   "connector.discord.orchestratorDoesReceive": "Receives every Discord request first",
@@ -201,14 +201,14 @@ export const messages = defineMessages("connector", {
   "connector.discord.orchestratorDoesAnswer": "Replies with the answer in the Discord channel",
   "connector.discord.orchestratorModel": "Model",
   "connector.discord.doneTitle": "Dani Dex is in {workspace}",
-  "connector.discord.doneDescription": "Mention @dani-dex in a channel. Reply to Dani Dex to continue.",
+  "connector.discord.doneDescription": "Mention @Dani Dex in a channel. Reply to Dani Dex to continue.",
   "connector.discord.done": "Done",
   "connector.discord.disconnectTitle": "Disconnect {workspace}?",
   "connector.discord.disconnectDescription":
     "Dani Dex stops answering in {workspace} and removes the Discord connection from this computer.",
   "connector.discord.disconnectDescriptionHost":
     "Dani Dex stops answering in {workspace} and removes the Discord connection from {host}.",
-  "connector.discord.disconnectEffect": "People in {workspace} can no longer reach your agents through @dani-dex.",
+  "connector.discord.disconnectEffect": "People in {workspace} can no longer reach your agents through @Dani Dex.",
   "connector.discord.removeEffectKept": "The conversations and the Discord Orchestrator stay in Dani Dex.",
   "connector.discord.removeEffectDeleted": "The Discord Orchestrator and its conversations are deleted from Dani Dex.",
   "connector.discord.keep": "Keep connected",
