@@ -1,8 +1,8 @@
 {
   "slug": "composio",
   "name": "Composio",
-  "tagline": "Gmail, Slack, GitHub and 1,000+ more apps",
-  "description": "Composio connects your agents to Gmail, Slack, GitHub and more than 1,000 other apps through one MCP server. Sign in with your Composio account. When an agent needs an app, it asks you to connect that app.",
+  "tagline": "Sign in with Composio, pick any app",
+  "description": "Sign in with your own Composio account, then pick any of its 1,800+ apps, including Gmail, Slack and GitHub. When an agent needs an app, it asks you to connect it.",
   "category": "automation",
   "creatorName": "Composio",
   "iconUrl": "https://composio.dev/favicon.ico",
