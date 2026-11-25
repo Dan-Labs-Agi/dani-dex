@@ -102,12 +102,6 @@ export default {
     const url = new URL(req.url);
     const p = url.pathname;
     if (p === "/healthz") return json({ ok: true });
-    if (p === "/v1/ota/manifest" && (req.method === "GET" || req.method === "HEAD")) {
-      // expo-updates manifest: static JSON at R2 ota/manifest.json, served with the headers expo-updates requires.
-      const r = await fetch("https://dl.dani.danlab.dev/ota/manifest.json", { cf: { cacheTtl: 30 } } as RequestInit);
-      if (!r.ok) return new Response(null, { status: 204, headers: { "expo-protocol-version": "1", "expo-sfv-version": "0" } });
-      return new Response(await r.text(), { headers: { "content-type": "application/expo+json", "expo-protocol-version": "1", "expo-sfv-version": "0", "cache-control": "private, max-age=0" } });
-    }
     if (p === "/v1/releases" && req.method === "GET") {
       // Public release feed for the landing page and in-app updater (CORS open, read only).
       const cors = { "access-control-allow-origin": "*", "cache-control": "public, max-age=60" };

@@ -313,7 +313,7 @@
       "policy": "fingerprint"
     },
     "updates": {
-      "url": "https://auth.dani.danlab.dev/v1/ota/manifest",
+      "url": "https://updates.dani.danlab.dev/manifest",
       "codeSigningCertificate": "./certs/certificate.pem",
       "codeSigningMetadata": {
         "keyid": "main",
