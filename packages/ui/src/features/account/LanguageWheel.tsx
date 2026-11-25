@@ -19,7 +19,7 @@ interface WheelEntry {
   option: AppLanguageOption;
 }
 
-const PRODUCT_NAME = "dani-dex";
+const PRODUCT_NAME = "Dani Dex";
 const TITLE_ID = "language-wheel-title";
 
 const WHEEL: readonly WheelEntry[] = APP_LANGUAGE_OPTIONS.flatMap((option) => {

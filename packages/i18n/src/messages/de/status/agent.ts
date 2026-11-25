@@ -29,7 +29,7 @@ export const messages = {
   "status.agent.screenCaptureChannel":
     "Das Bild erscheint im Kanal {channel}, und jedes Mitglied dieses Servers, das den Kanal liest, kann es sehen.",
   "status.agent.screenCapturePermissionNext":
-    "macOS kann dich danach bitten, dani-dex die Bildschirmaufnahme zu erlauben.",
+    "macOS kann dich danach bitten, Dani Dex die Bildschirmaufnahme zu erlauben.",
   "status.agent.screenCaptureDisplay": "Den Bildschirm {name} aufnehmen und das Bild an das Modell des Agenten senden.",
   "status.agent.screenCaptureWindow": "Das Fenster {name} aufnehmen und das Bild an das Modell des Agenten senden.",
   "status.agent.screenCaptureRegion":
@@ -48,12 +48,12 @@ export const messages = {
     "Niemand kann diesen Bericht auf GitHub mehr sehen. Das kannst du nicht rückgängig machen. Zum Korrigieren kann der Agent einen korrigierten Bericht senden.",
   "status.agent.feedbackWithdrawing": "Dein Bericht wird von GitHub entfernt…",
   "status.agent.serverInstallCommand":
-    "Einen einmaligen Befehl erstellen, der dani-dex auf einem anderen Computer als Server {name} installiert und bei deinem Konto anmeldet. Der Agent führt ihn dort aus.",
+    "Einen einmaligen Befehl erstellen, der Dani Dex auf einem anderen Computer als Server {name} installiert und bei deinem Konto anmeldet. Der Agent führt ihn dort aus.",
   "status.agent.serverInstallCard": "Installationsbefehl für den Server {name}",
   "status.agent.browserProfileNamed":
     "{agents} in das Browser-Profil {profile} verschieben. Sie erhalten seine Anmeldungen und Cookies. Ihre offenen Tabs werden geschlossen.",
-  "status.agent.commitCoAuthorOff": "dani-dex nicht mehr als Mitautor in die Commits aller Agenten eintragen.",
-  "status.agent.commitCoAuthorOn": "dani-dex wieder als Mitautor in die Commits aller Agenten eintragen.",
+  "status.agent.commitCoAuthorOff": "Dani Dex nicht mehr als Mitautor in die Commits aller Agenten eintragen.",
+  "status.agent.commitCoAuthorOn": "Dani Dex wieder als Mitautor in die Commits aller Agenten eintragen.",
   "status.agent.browserProfileNew":
     "Das neue Browser-Profil {profile} erstellen und {agents} dorthin verschieben. Es hat keine Anmeldungen. Ihre offenen Tabs werden geschlossen.",
   "status.agent.browserProfileShared":

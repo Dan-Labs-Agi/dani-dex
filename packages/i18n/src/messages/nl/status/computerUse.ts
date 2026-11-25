@@ -8,9 +8,9 @@ export const messages = {
   "status.computerUse.driverNoAnswer": "De driver voor Computerbesturing reageerde niet. {reason}",
   "status.computerUse.driverStopped": "De driver voor Computerbesturing is gestopt.",
   "status.computerUse.unsupported": "Computerbesturing is beschikbaar op macOS, Windows en Linux.",
-  "status.computerUse.driverMissing": "Deze build van dani-dex bevat geen driver voor Computerbesturing.",
+  "status.computerUse.driverMissing": "Deze build van Dani Dex bevat geen driver voor Computerbesturing.",
   "status.computerUse.inputRefused":
-    "Op dit bureaublad kan dani-dex niet typen of klikken in andere apps. Vraag de agent voor taken op websites om de dani-dex-browser te gebruiken.",
+    "Op dit bureaublad kan Dani Dex niet typen of klikken in andere apps. Vraag de agent voor taken op websites om de dani-dex-browser te gebruiken.",
   "status.computerUse.progressActing": "Gebruikt een app op deze computer…",
   "status.computerUse.progressDeciding": "Bepaalt de volgende stap in de app…",
 } as const satisfies PartialTranslation<typeof source>;

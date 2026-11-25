@@ -4,26 +4,26 @@ import type { messages as source } from "../../en/error/mcp";
 export const messages = {
   "error.mcp.redirectByName": "Diese Adresse ist nicht über ihren Namen erreichbar.",
   "error.mcp.redirectNotSignIn": "Diese Adresse gehört nicht zu einer Anmeldung.",
-  "error.mcp.redirectRefused": "Die Anmeldung wurde abgelehnt. Kehre zu dani-dex zurück und versuche es erneut.",
+  "error.mcp.redirectRefused": "Die Anmeldung wurde abgelehnt. Kehre zu Dani Dex zurück und versuche es erneut.",
   "error.mcp.redirectNoSignIn":
-    "Diese Anmeldung ist nicht mehr aktiv. Geh zurück zu dani-dex und starte die Anmeldung erneut.",
-  "error.mcp.redirectSignedIn": "dani-dex ist angemeldet. Du kannst dieses Fenster schließen.",
+    "Diese Anmeldung ist nicht mehr aktiv. Geh zurück zu Dani Dex und starte die Anmeldung erneut.",
+  "error.mcp.redirectSignedIn": "Dani Dex ist angemeldet. Du kannst dieses Fenster schließen.",
   "error.mcp.redirectNotSaved":
-    "Die Anmeldung wurde nicht abgeschlossen. Gehe zurück zu dani-dex, um den Grund zu sehen.",
+    "Die Anmeldung wurde nicht abgeschlossen. Gehe zurück zu Dani Dex, um den Grund zu sehen.",
   "error.mcp.signInFileUnreadable": "Die MCP-Anmeldedatei ist nicht lesbar.",
   "error.mcp.signInFileTooLarge": "Die MCP-Anmeldedatei ist zu groß.",
   "error.mcp.unsupported": "Dieser Server unterstützt keine MCP-Server.",
-  "error.mcp.signInOnHost": "Die Anmeldung bei einem MCP-Server funktioniert nur in dani-dex auf dem Host-Computer.",
+  "error.mcp.signInOnHost": "Die Anmeldung bei einem MCP-Server funktioniert nur in Dani Dex auf dem Host-Computer.",
   "error.mcp.signInPageOnServer":
     "Diese Anmeldeseite öffnet sich nur auf dem Server. Bitte einen Eigentümer oder Admin des Servers, sich anzumelden.",
   "error.mcp.signInPageOnServerSwitch":
     "Diese Anmeldeseite öffnet sich nur auf dem Server. Wechsle zu diesem Server und wähle dann erneut „Anmelden“.",
-  "error.mcp.signInAppUnsupported": "Dieser Server unterstützt keine Anmelde-Apps. Aktualisiere dani-dex auf dem Host.",
-  "error.mcp.redirectRelayed": "dani-dex hat die Anmeldung an den Server gesendet. Du kannst dieses Fenster schließen.",
+  "error.mcp.signInAppUnsupported": "Dieser Server unterstützt keine Anmelde-Apps. Aktualisiere Dani Dex auf dem Host.",
+  "error.mcp.redirectRelayed": "Dani Dex hat die Anmeldung an den Server gesendet. Du kannst dieses Fenster schließen.",
   "error.mcp.relayEnded": "Diese Anmeldung ist beendet. Starte sie erneut.",
   "error.mcp.signInLinkNotReady": "Die Anmeldeseite ist noch nicht geöffnet. Versuche es gleich noch einmal.",
   "error.mcp.relayNoState":
-    "Die Anmeldeseite des Servers schützt ihre Rückkehradresse nicht, darum öffnet dani-dex sie nicht auf diesem Computer.",
+    "Die Anmeldeseite des Servers schützt ihre Rückkehradresse nicht, darum öffnet Dani Dex sie nicht auf diesem Computer.",
   "error.mcp.relayAddressInvalid":
     "Das ist nicht die Adresse am Ende dieser Anmeldung. Kopiere die vollständige Adresse aus dem Browser.",
 } as const satisfies PartialTranslation<typeof source>;

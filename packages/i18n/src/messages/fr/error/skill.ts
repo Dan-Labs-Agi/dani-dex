@@ -50,7 +50,7 @@ export const messages = {
   "error.skill.tooManySkills": "Un agent peut avoir jusqu’à {limit} compétences.",
   "error.skill.unmanagedExists": "Une compétence non gérée existe déjà à l’emplacement {path}.",
   "error.skill.managedSlug":
-    "dani-dex donne à chaque agent sa propre compétence {slug}. Donnez un autre nom à cette compétence.",
+    "Dani Dex donne à chaque agent sa propre compétence {slug}. Donnez un autre nom à cette compétence.",
   "error.skill.templateMarkdownTooLarge": "{name} : SKILL.md dépasse 64 Ko. Raccourcissez-le avant la publication.",
   "error.skill.localNoRevisions": "La compétence locale n’a aucune révision publiée.",
   "error.skill.localNotFound":
@@ -69,13 +69,13 @@ export const messages = {
   "error.skill.pathSymlink": "Les chemins des compétences ne peuvent pas contenir de liens symboliques.",
   "error.skill.folderNotRead": "{provider} ne lit pas {folder}. Copiez ce dossier dans {target}.",
   "error.skill.githubLinkInvalid": "Collez un lien vers un dépôt ou un dossier GitHub.",
-  "error.skill.githubNotFound": "dani-dex ne peut pas ouvrir {repository}. Le dépôt est privé ou n'existe pas.",
+  "error.skill.githubNotFound": "Dani Dex ne peut pas ouvrir {repository}. Le dépôt est privé ou n'existe pas.",
   "error.skill.githubNoSkills": "Il n'y a pas de SKILL.md dans {folder}.",
-  "error.skill.githubUnavailable": "dani-dex ne peut pas lire GitHub pour le moment. Réessayez plus tard.",
+  "error.skill.githubUnavailable": "Dani Dex ne peut pas lire GitHub pour le moment. Réessayez plus tard.",
   "error.skill.githubRateLimited":
-    "GitHub limite la fréquence à laquelle dani-dex peut le lire sans compte. Réessayez dans une heure.",
+    "GitHub limite la fréquence à laquelle Dani Dex peut le lire sans compte. Réessayez dans une heure.",
   "error.skill.githubTooLarge":
-    "dani-dex ne peut pas lire tous les fichiers de {repository}. Le dépôt est trop volumineux.",
+    "Dani Dex ne peut pas lire tous les fichiers de {repository}. Le dépôt est trop volumineux.",
   "error.skill.githubHostTooOld": "Mettez à jour ce serveur pour ajouter des compétences depuis GitHub.",
   "error.skill.publishGithub":
     "{name} vient de GitHub. Vous pouvez publier uniquement les compétences que vous avez créées.",

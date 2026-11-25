@@ -13,7 +13,7 @@ export const messages = {
   "menu.copyImage": "העתקת תמונה",
   "menu.quit": "יציאה מ-dani-dex",
   "menu.quitConfirmTitle": "לצאת מ-dani-dex?",
-  "menu.quitConfirmBody": "סוכנים ושגרות נעצרים עד שתפתח את dani-dex שוב.",
+  "menu.quitConfirmBody": "סוכנים ושגרות נעצרים עד שתפתח את Dani Dex שוב.",
   "menu.quitConfirm": "יציאה",
   "menu.quitHint": "יש להחזיק את ⌘Q או ללחוץ עליו פעמיים כדי לצאת",
   "menu.closeWorkingTitle": {
@@ -22,11 +22,11 @@ export const messages = {
     other: "{count} סוכנים עדיין עובדים",
   },
   "menu.closeWorkingBody":
-    "יציאה מ-dani-dex עוצרת את הסוכנים. אפשר להשאיר אותו פועל כדי שיסיימו. כדי להציג שוב את החלון, יש לפתוח את dani-dex.",
+    "יציאה מ-dani-dex עוצרת את הסוכנים. אפשר להשאיר אותו פועל כדי שיסיימו. כדי להציג שוב את החלון, יש לפתוח את Dani Dex.",
   "menu.closeKeepRunning": "להמשיך לפעול",
-  "menu.trayOpen": "פתיחת dani-dex",
+  "menu.trayOpen": "פתיחת Dani Dex",
   "menu.trayQuit": "יציאה מ-dani-dex",
-  "menu.trayTooltip": "dani-dex",
+  "menu.trayTooltip": "Dani Dex",
   "menu.hideDynamicIsland": "הסתרת Dynamic Island",
   "menu.undo": "ביטול",
   "menu.redo": "ביצוע חוזר",

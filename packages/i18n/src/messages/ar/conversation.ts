@@ -2,7 +2,7 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/conversation";
 
 export const messages = {
-  "conversation.globalSearch.title": "البحث في dani-dex",
+  "conversation.globalSearch.title": "البحث في Dani Dex",
   "conversation.globalSearch.filter": "تصفية النتائج",
   "conversation.globalSearch.tab.all": "الكل",
   "conversation.globalSearch.tab.messages": "الرسائل",
@@ -106,7 +106,7 @@ export const messages = {
   "conversation.threads.error.start": "تعذّر بدء السلسلة.",
   "conversation.threads.error.branch": "تعذّر تفريع الدردشة.",
   "conversation.threads.error.send": "تعذّر إرسال الرسالة إلى السلسلة.",
-  "conversation.threads.error.files": "لا يقبل هذا الخادم الملفات في سلسلة. حدّث dani-dex عليه.",
+  "conversation.threads.error.files": "لا يقبل هذا الخادم الملفات في سلسلة. حدّث Dani Dex عليه.",
   "conversation.threads.error.stop": "تعذّر إيقاف السلسلة.",
   "conversation.threads.error.archive": "تعذّرت أرشفة السلسلة.",
   "conversation.threads.error.restore": "تعذّرت استعادة السلسلة.",

@@ -4,39 +4,39 @@ import type { messages as source } from "../../en/error/update";
 export const messages = {
   "error.update.unsupported": "As atualizações estão disponíveis nas versões instaladas para computador.",
   "error.update.notReady": "Nenhuma atualização está pronta para instalar.",
-  "error.update.restartFailed": "O dani-dex não conseguiu reiniciar para instalar a atualização.",
+  "error.update.restartFailed": "O Dani Dex não conseguiu reiniciar para instalar a atualização.",
   "error.update.downloadStalled": "O download da atualização parou de responder. Tente novamente.",
   "error.update.installFailed":
-    "Não foi possível instalar a atualização. Encerre e abra o dani-dex novamente, depois tente outra vez.",
+    "Não foi possível instalar a atualização. Encerre e abra o Dani Dex novamente, depois tente outra vez.",
   "error.update.notInstalled": "A última reinicialização não instalou a atualização. Reinicie para tentar outra vez.",
   "error.update.downloadFailed": "Não foi possível baixar a atualização. Tente novamente.",
   "error.update.signatureNotConfirmed":
-    "O dani-dex não conseguiu verificar a atualização. Tente novamente. Se o erro continuar, baixe o dani-dex em dani.danlab.dev/download.",
+    "O Dani Dex não conseguiu verificar a atualização. Tente novamente. Se o erro continuar, baixe o Dani Dex em dani.danlab.dev/download.",
   "error.update.checkFailed": "Não foi possível verificar se há atualizações. Tente novamente.",
   "error.update.checkStalled": "A verificação de atualizações parou de responder. Tente novamente.",
   "error.update.checkOffline":
     "Não foi possível acessar o serviço de atualizações. Verifique sua conexão com a internet e tente novamente.",
   "error.update.checkUnavailable":
-    "O serviço de atualizações não respondeu. O dani-dex tentará novamente automaticamente em alguns minutos.",
+    "O serviço de atualizações não respondeu. O Dani Dex tentará novamente automaticamente em alguns minutos.",
   "error.update.checkNoRelease":
-    "Nenhuma atualização publicada foi encontrada para esta plataforma. O dani-dex tentará novamente automaticamente em alguns minutos.",
-  "error.update.managedByNix": "O Nix instala as atualizações desta cópia do dani-dex. Atualize-a com o Nix.",
+    "Nenhuma atualização publicada foi encontrada para esta plataforma. O Dani Dex tentará novamente automaticamente em alguns minutos.",
+  "error.update.managedByNix": "O Nix instala as atualizações desta cópia do Dani Dex. Atualize-a com o Nix.",
   "error.update.managedByHost":
     "As atualizações neste Mac são instaladas pelo computador anfitrião. A atualização permanece pronta para instalação até a manutenção do computador anfitrião ser executada.",
   "error.update.siblingSession":
-    "Outra sessão do dani-dex ainda está em execução neste aplicativo. Encerre o dani-dex em todas as outras contas de usuário do macOS e instale a atualização novamente.",
+    "Outra sessão do Dani Dex ainda está em execução neste aplicativo. Encerre o Dani Dex em todas as outras contas de usuário do macOS e instale a atualização novamente.",
   "error.update.siblingSessionSameAccount":
-    "Outro processo do dani-dex ainda está rodando nesta conta de usuário. Feche-o e instale a atualização de novo.",
+    "Outro processo do Dani Dex ainda está rodando nesta conta de usuário. Feche-o e instale a atualização de novo.",
   "error.update.siblingCheckFailed":
-    "Não foi possível verificar outras sessões do dani-dex. Tente novamente antes de instalar.",
+    "Não foi possível verificar outras sessões do Dani Dex. Tente novamente antes de instalar.",
   "error.update.readOnlyLocation":
-    "O dani-dex não consegue instalar atualizações deste local. Encerre o dani-dex. No Finder, arraste o dani-dex para a pasta Aplicativos (se ele já estiver lá, arraste-o para fora e de volta). Depois, abra o dani-dex e instale a atualização novamente.",
+    "O Dani Dex não consegue instalar atualizações deste local. Encerre o Dani Dex. No Finder, arraste o Dani Dex para a pasta Aplicativos (se ele já estiver lá, arraste-o para fora e de volta). Depois, abra o Dani Dex e instale a atualização novamente.",
   "error.update.appImageMissing":
-    "O dani-dex não pode instalar a atualização porque o arquivo AppImage dele foi movido, renomeado ou substituído. Feche o dani-dex e abra o arquivo AppImage novamente.",
+    "O Dani Dex não pode instalar a atualização porque o arquivo AppImage dele foi movido, renomeado ou substituído. Feche o Dani Dex e abra o arquivo AppImage novamente.",
   "error.update.appImageReadOnly":
-    "O dani-dex não pode instalar atualizações na pasta do arquivo AppImage dele. Feche o dani-dex, mova o arquivo AppImage para uma pasta dentro da sua pasta pessoal, abra-o e instale a atualização novamente.",
+    "O Dani Dex não pode instalar atualizações na pasta do arquivo AppImage dele. Feche o Dani Dex, mova o arquivo AppImage para uma pasta dentro da sua pasta pessoal, abra-o e instale a atualização novamente.",
   "error.update.remoteDisabled":
     "As atualizações feitas por administradores do servidor estão desativadas neste computador.",
-  "error.update.restartStarted": "O dani-dex já está reiniciando para instalar a atualização.",
-  "error.update.alreadyRestarting": "O dani-dex já está reiniciando.",
+  "error.update.restartStarted": "O Dani Dex já está reiniciando para instalar a atualização.",
+  "error.update.alreadyRestarting": "O Dani Dex já está reiniciando.",
 } as const satisfies PartialTranslation<typeof source>;

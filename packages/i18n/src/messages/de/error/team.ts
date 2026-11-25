@@ -9,7 +9,7 @@ export const messages = {
   "error.team.identityCreateFailed": "Die Teamidentität konnte nicht erstellt werden.",
   "error.team.accountChangedDuringCreate":
     "Das angemeldete Konto wurde während der Erstellung dieses Servers geändert.",
-  "error.team.notConfigured": "Dieser dani-dex wurde nicht eingerichtet.",
+  "error.team.notConfigured": "Dieser Dani Dex wurde nicht eingerichtet.",
   "error.team.keyRotationMissing": "Es wartet keine Änderung des Serverschlüssels.",
   "error.team.serverNotActive": "Dieser Server ist für das angemeldete Konto nicht mehr aktiv.",
   "error.team.logoInvalid": "Wähle ein gültiges PNG-, JPEG- oder WebP-Bild mit höchstens 512 KB.",
@@ -55,15 +55,15 @@ export const messages = {
   "error.team.requestFailed": "Anfrage fehlgeschlagen.",
   "error.team.tooManySignInAttempts": "Zu viele Anmeldeversuche. Versuche es später erneut.",
   "error.team.clientUpdateRequired": "Aktualisiere diesen dani-dex-Client, bevor du dich mit diesem Host verbindest.",
-  "error.team.hostUpdateRequired": "Aktualisiere dani-dex auf dem Host, bevor du dich verbindest.",
-  "error.team.serverSafeMode": "Dieser Server ist im abgesicherten Modus, weil dani-dex darauf nicht startet.",
+  "error.team.hostUpdateRequired": "Aktualisiere Dani Dex auf dem Host, bevor du dich verbindest.",
+  "error.team.serverSafeMode": "Dieser Server ist im abgesicherten Modus, weil Dani Dex darauf nicht startet.",
   "error.team.serverSafeModeNewerDatabase":
-    "dani-dex {version} auf diesem Server kann seine Daten nicht öffnen, weil eine neuere dani-dex-Version sie gespeichert hat. Ein neueres dani-dex-Release auf dem Server behebt das.",
+    "Dani Dex {version} auf diesem Server kann seine Daten nicht öffnen, weil eine neuere dani-dex-Version sie gespeichert hat. Ein neueres dani-dex-Release auf dem Server behebt das.",
   "error.team.serverSafeModeStartFailed":
-    "dani-dex {version} auf diesem Server wurde angehalten, nachdem der Start mehrmals fehlgeschlagen ist. Ein neueres dani-dex-Release auf dem Server behebt das.",
+    "Dani Dex {version} auf diesem Server wurde angehalten, nachdem der Start mehrmals fehlgeschlagen ist. Ein neueres dani-dex-Release auf dem Server behebt das.",
   "error.team.sidebarLayoutUnavailable": "Die Anordnung der Seitenleiste ist nicht verfügbar.",
   "error.team.providersUnsupported": "Diese Verbindung unterstützt keine Anbietereinstellungen.",
-  "error.team.providerNotManaged": "dani-dex verwaltet die CLI dieses Anbieters nicht.",
+  "error.team.providerNotManaged": "Dani Dex verwaltet die CLI dieses Anbieters nicht.",
   "error.team.channelsUnsupported": "Diese Verbindung unterstützt keine Kanalchats.",
   "error.team.channelContextUnsupported":
     "Diese Verbindung unterstützt keine neue Unterhaltung und kein Komprimieren in einem Kanal.",
@@ -102,9 +102,9 @@ export const messages = {
   "error.team.libraryFoldersUnsupported": "Diese Verbindung unterstützt keine Bibliotheksordner.",
   "error.team.workflowFoldersUnsupported": "Diese Verbindung unterstützt keine Workflow-Ordner.",
   "error.team.agentNotificationLevelsUnsupported":
-    "Dieser Server kann keine eigene Benachrichtigungsstufe pro Agent speichern. Aktualisiere dani-dex auf dem Computer, auf dem er läuft.",
+    "Dieser Server kann keine eigene Benachrichtigungsstufe pro Agent speichern. Aktualisiere Dani Dex auf dem Computer, auf dem er läuft.",
   "error.team.sidebarPinsUnsupported":
-    "Dieser Server kann deine angehefteten Chats nicht für alle deine Geräte speichern. Aktualisiere dani-dex auf dem Computer, auf dem er läuft.",
+    "Dieser Server kann deine angehefteten Chats nicht für alle deine Geräte speichern. Aktualisiere Dani Dex auf dem Computer, auf dem er läuft.",
   "error.team.agentInstructionsUnsupported":
     "Diese Verbindung unterstützt das Bearbeiten von Agentenanweisungen nicht.",
   "error.team.agentPublishUnsupported": "Diese Verbindung unterstützt das Veröffentlichen von Agenten nicht.",
@@ -117,9 +117,9 @@ export const messages = {
   "error.team.threadMessageSearchUnsupported": "Diese Verbindung unterstützt das Suchen in Nebenthreads nicht.",
   "error.team.sideQuestionUnsupported": "Diese Verbindung unterstützt keine Nebenfragen.",
   "error.team.liveVoiceUnsupported":
-    "Dieser Server unterstützt keine Codex-Live-Sprache. Aktualisiere dani-dex auf dem Computer, auf dem er läuft.",
+    "Dieser Server unterstützt keine Codex-Live-Sprache. Aktualisiere Dani Dex auf dem Computer, auf dem er läuft.",
   "error.team.routineFlowsUnsupported":
-    "Dieser Server unterstützt keine Routinenabläufe. Aktualisiere dani-dex auf dem Computer, auf dem er läuft.",
+    "Dieser Server unterstützt keine Routinenabläufe. Aktualisiere Dani Dex auf dem Computer, auf dem er läuft.",
   "error.team.routineCanvasTooLarge":
     "Diese Routinenansicht ist zu groß, um sie an dieses Gerät zu senden. Kürze die Routinenanweisungen auf dem Computer, auf dem der Server läuft.",
   "error.team.conversationPageTooLarge":
@@ -166,16 +166,16 @@ export const messages = {
   "error.team.browserSessionNotFound": "Browseransichtssitzung nicht gefunden.",
   "error.team.mcpUnsupported": "Diese Verbindung unterstützt keine MCP-Server.",
   "error.team.mcpServerListNeedsUpdate":
-    "Aktualisiere dani-dex auf diesem Gerät, um mehr als {limit} MCP-Server auf diesem Server zu nutzen.",
+    "Aktualisiere Dani Dex auf diesem Gerät, um mehr als {limit} MCP-Server auf diesem Server zu nutzen.",
   "error.team.providerAccountListNeedsUpdate":
-    "Aktualisiere dani-dex auf diesem Gerät, um mehr als {limit} Konten eines Anbieters auf diesem Server zu nutzen.",
+    "Aktualisiere Dani Dex auf diesem Gerät, um mehr als {limit} Konten eines Anbieters auf diesem Server zu nutzen.",
   "error.team.storageUnsupported": "Diese Verbindung unterstützt keinen Speicher.",
   "error.team.machineResourcesUnsupported": "Diese Verbindung unterstützt keine Maschinennutzung.",
   "error.team.machineAlertMemberInvalid":
     "Nur Eigentümer oder Administratoren dieses Servers können Maschinenwarnungen erhalten.",
   "error.team.hostedSitesUnsupported": "Diese Verbindung unterstützt keine Websites.",
   "error.team.hostedSitesUnregistered":
-    "Dieser Server ist nicht bei dani-dex registriert und hat daher keine Websites.",
+    "Dieser Server ist nicht bei Dani Dex registriert und hat daher keine Websites.",
   "error.team.hostedSiteNotFound": "Website nicht gefunden.",
   "error.team.markUnreadUnsupported": "Dieser Client unterstützt das Markieren von Unterhaltungen als ungelesen nicht.",
   "error.team.inviteServiceUnavailable": "Der Einladungsdienst ist nicht verfügbar.",
@@ -202,12 +202,12 @@ export const messages = {
   "error.team.ownerRequired": "Nur der Eigentümer dieses Servers kann das tun.",
   "error.team.requestTooLarge": "Der Anfragetext ist zu groß.",
   "error.team.signInRelayUnsupported":
-    "Dieser Server kann keine Anmeldungen weiterleiten. Aktualisiere dani-dex auf dem Host.",
+    "Dieser Server kann keine Anmeldungen weiterleiten. Aktualisiere Dani Dex auf dem Host.",
   "error.team.connectorsUnsupported":
-    "Die Verbindungen dieses Servers lassen sich hier nicht verwalten. Aktualisiere dani-dex auf dem Host.",
+    "Die Verbindungen dieses Servers lassen sich hier nicht verwalten. Aktualisiere Dani Dex auf dem Host.",
   "error.team.discordAccessUnsupported":
-    "Dieser Server kann keine Discord-Rollen festlegen. Aktualisiere dani-dex auf dem Server.",
-  "error.team.connectorPageRefused": "Der Server hat eine Seite gesendet, die dani-dex nicht öffnet.",
+    "Dieser Server kann keine Discord-Rollen festlegen. Aktualisiere Dani Dex auf dem Server.",
+  "error.team.connectorPageRefused": "Der Server hat eine Seite gesendet, die Dani Dex nicht öffnet.",
   "error.team.signInRelayUnknown": "Diese Anmeldung ist beendet oder existiert nicht.",
   "error.team.signInRelayUsed": "Diese Anmeldung wurde bereits gesendet.",
   "error.team.signInRelayMismatch": "Diese Adresse gehört nicht zu dieser Anmeldung.",

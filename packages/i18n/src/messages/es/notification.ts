@@ -17,8 +17,8 @@ export const messages = {
   "notification.channelMessage": "Envió un mensaje.",
   "notification.usageLimit.title": "La cuenta de {provider} alcanzó su límite",
   "notification.usageLimit.body": {
-    one: "{count} agente espera. dani-dex lo intentará de nuevo más tarde.",
-    other: "{count} agentes esperan. dani-dex lo intentará de nuevo más tarde.",
+    one: "{count} agente espera. Dani Dex lo intentará de nuevo más tarde.",
+    other: "{count} agentes esperan. Dani Dex lo intentará de nuevo más tarde.",
   },
   "notification.usageLimit.bodyResets": {
     one: "{count} agente espera. Se restablece {reset}.",
@@ -30,7 +30,7 @@ export const messages = {
   "notification.machineAlert.body":
     "Superó el nivel de alerta del {level}. Consulta Ajustes del servidor > Almacenamiento.",
   "notification.test": "Las notificaciones funcionan.",
-  "notification.welcome": "dani-dex te avisará aquí cuando un agente te necesite.",
+  "notification.welcome": "Dani Dex te avisará aquí cuando un agente te necesite.",
   "notification.toast.region": "Notificaciones",
   "notification.toast.close": "Cerrar notificación",
 } as const satisfies PartialTranslation<typeof source>;

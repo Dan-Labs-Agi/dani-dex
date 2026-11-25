@@ -7,19 +7,19 @@ export const messages = {
   "error.workflow.annotation": "Los textos, las notas y las formas no pueden tener conexiones.",
   "error.workflow.port": "Un paso no puede recibir este tipo de entrada.",
   "error.workflow.unknownValue":
-    "Este dani-dex no conoce un ajuste de un paso. Actualiza dani-dex y vuelve a intentarlo.",
+    "Este Dani Dex no conoce un ajuste de un paso. Actualiza Dani Dex y vuelve a intentarlo.",
   "error.workflow.branch": "Solo una condición puede tener conexiones de sí y no.",
   "error.workflow.conditionBranch": "Cada conexión de una condición debe ser sí o no.",
   "error.workflow.duplicateEdge": "Estos dos pasos ya tienen esta conexión.",
   "error.workflow.serverTooOld":
-    "Este servidor no admite flujos de trabajo. Actualiza dani-dex en el ordenador que lo ejecuta.",
+    "Este servidor no admite flujos de trabajo. Actualiza Dani Dex en el ordenador que lo ejecuta.",
   "error.workflow.newerSteps":
-    "Este flujo de trabajo tiene pasos de una versión más reciente de dani-dex. Actualiza dani-dex para cambiarlo.",
+    "Este flujo de trabajo tiene pasos de una versión más reciente de Dani Dex. Actualiza Dani Dex para cambiarlo.",
   "error.workflow.nodeUnsupported":
-    "Esta versión de dani-dex aún no puede ejecutar pasos de imagen, archivo ni mensaje.",
-  "error.workflow.interrupted": "dani-dex se detuvo mientras se ejecutaba este paso. Ejecútalo de nuevo.",
+    "Esta versión de Dani Dex aún no puede ejecutar pasos de imagen, archivo ni mensaje.",
+  "error.workflow.interrupted": "Dani Dex se detuvo mientras se ejecutaba este paso. Ejecútalo de nuevo.",
   "error.workflow.agentMissing": "Elige un agente para este paso.",
-  "error.workflow.handoffFailed": "dani-dex no pudo enviar este paso a su agente.",
+  "error.workflow.handoffFailed": "Dani Dex no pudo enviar este paso a su agente.",
   "error.workflow.agentStepEnded": "El mensaje al agente se eliminó antes de que respondiera.",
   "error.workflow.agentStepStopped": "El agente se detuvo antes de responder a este paso. Ejecuta el paso de nuevo.",
   "error.workflow.conditionUnclear": "El modelo no respondió sí o no.",
@@ -46,7 +46,7 @@ export const messages = {
   "error.workflow.modelUnavailable": "El modelo de este paso no está disponible. Elige otro modelo para este paso.",
   "error.workflow.providerBusy": "El proveedor está ocupado. Espera unos minutos y ejecuta el paso de nuevo.",
   "error.workflow.providerOffline":
-    "dani-dex no pudo conectar con el proveedor. Comprueba la conexión a internet y ejecuta el paso de nuevo.",
+    "Dani Dex no pudo conectar con el proveedor. Comprueba la conexión a internet y ejecuta el paso de nuevo.",
   "error.workflow.modelBusy": "Hay otra solicitud al modelo en curso. Ejecuta el paso de nuevo en breve.",
   "error.workflow.mediaFailed": "El modelo no pudo crear la imagen o el vídeo. Ejecuta el paso de nuevo.",
   "error.workflow.mediaNotMade": "El modelo no creó la imagen ni el vídeo. Respondió: {answer}",
@@ -65,7 +65,7 @@ export const messages = {
   "error.workflow.noDecision": "Este paso no espera una decisión.",
   "error.workflow.outputPlaceMissing": "Elige un lugar de mensajería para esta salida.",
   "error.workflow.outputChannelMissing": "Elige un canal para esta salida.",
-  "error.workflow.outputChannelFailed": "dani-dex no pudo publicar el resultado en el canal. Ejecuta el paso de nuevo.",
+  "error.workflow.outputChannelFailed": "Dani Dex no pudo publicar el resultado en el canal. Ejecuta el paso de nuevo.",
   "error.workflow.discordNoMessage":
     "Esta salida actúa sobre el mensaje de Discord que inició la ejecución. Inicia la ejecución desde una mención en Discord o elige Publicar en canal.",
   "error.workflow.slackNoMessage":
@@ -76,7 +76,7 @@ export const messages = {
     "La conexión de mensajería de esta salida está desactivada o se eliminó. Elige un lugar de nuevo.",
   "error.workflow.outputNotRunning":
     "La conexión de mensajería no está en marcha ahora. Inténtalo de nuevo cuando lo esté.",
-  "error.workflow.outputRefused": "El lugar rechazó la publicación. Asegúrate de que dani-dex pueda publicar allí.",
+  "error.workflow.outputRefused": "El lugar rechazó la publicación. Asegúrate de que Dani Dex pueda publicar allí.",
   "error.workflow.outputUncertain":
     "La publicación se detuvo a medio camino. Una parte puede estar ya en el lugar. Revísalo antes de intentarlo de nuevo.",
   "error.workflow.tooLarge":
@@ -97,12 +97,12 @@ export const messages = {
   "error.workflow.githubChoseNothing": "El modelo no eligió ninguna etiqueta ni persona de este repositorio.",
   "error.workflow.githubNotConnected": "Conecta GitHub en el ordenador que ejecuta este flujo de trabajo.",
   "error.workflow.githubNoAccess":
-    "La aplicación de GitHub de dani-dex no puede ver este repositorio ni este elemento. Abre GitHub y dale acceso.",
+    "La aplicación de GitHub de Dani Dex no puede ver este repositorio ni este elemento. Abre GitHub y dale acceso.",
   "error.workflow.githubNoWrite":
-    "La aplicación de GitHub de dani-dex no puede cambiar este repositorio. Abre GitHub y dale acceso.",
+    "La aplicación de GitHub de Dani Dex no puede cambiar este repositorio. Abre GitHub y dale acceso.",
   "error.workflow.githubLocked": "Esta conversación está bloqueada en GitHub.",
   "error.workflow.githubRefused": "GitHub rechazó el cambio: {detail}",
-  "error.workflow.githubUnreachable": "dani-dex no pudo conectar con GitHub. Ejecuta el paso de nuevo.",
+  "error.workflow.githubUnreachable": "Dani Dex no pudo conectar con GitHub. Ejecuta el paso de nuevo.",
   "error.workflow.githubUncertain":
     "El cambio se detuvo a medio camino. Puede que ya esté en GitHub. Revísalo antes de ejecutar el paso de nuevo.",
   "error.workflow.githubNoEvent":
@@ -116,7 +116,7 @@ export const messages = {
     "Sunra usa imágenes de entrada solo con una cuenta personal. Selecciona tu cuenta personal en Sunra o quita las conexiones de imágenes.",
   "error.workflow.sunraFailed": "Sunra no pudo crear el archivo: {reason}",
   "error.workflow.sunraTimeout":
-    "Sunra no terminó el archivo a tiempo. Revisa el proyecto dani-dex en sunra.ai antes de volver a ejecutar el paso.",
+    "Sunra no terminó el archivo a tiempo. Revisa el proyecto Dani Dex en sunra.ai antes de volver a ejecutar el paso.",
   "error.workflow.higgsfieldSignIn": "Inicia sesión en Higgsfield en Apps para usar los modelos de Higgsfield.",
   "error.workflow.higgsfieldNoCredits":
     "Tu cuenta de Higgsfield no tiene créditos suficientes. Añade créditos en higgsfield.ai/pricing y vuelve a ejecutar el paso.",

@@ -5,20 +5,20 @@ export const messages = {
   "error.messaging.notConnected": "Ten obszar roboczy Slack nie jest połączony.",
   "error.messaging.unsupported": "Ten komputer nie może połączyć się ze Slackiem.",
   "error.messaging.relayUnavailable":
-    "dani-dex nie może odbierać zdarzeń Slack na tym komputerze. Zaloguj się, nadaj temu komputerowi nazwę i spróbuj ponownie.",
+    "Dani Dex nie może odbierać zdarzeń Slack na tym komputerze. Zaloguj się, nadaj temu komputerowi nazwę i spróbuj ponownie.",
   "error.messaging.discordNotConnected": "Ten serwer Discord nie jest połączony.",
   "error.messaging.discordUnsupported": "Ten komputer nie może połączyć się z Discordem.",
   "error.messaging.discordRelayUnavailable":
-    "dani-dex nie może odbierać zdarzeń Discord na tym komputerze. Zaloguj się, nadaj temu komputerowi nazwę i spróbuj ponownie.",
+    "Dani Dex nie może odbierać zdarzeń Discord na tym komputerze. Zaloguj się, nadaj temu komputerowi nazwę i spróbuj ponownie.",
   "error.messaging.discordRolesUnsupported":
-    "dani-dex nie może jeszcze pokazać ról Discorda. Spróbuj ponownie później.",
+    "Dani Dex nie może jeszcze pokazać ról Discorda. Spróbuj ponownie później.",
   "error.messaging.telegramNotConnected": "Ten czat Telegram nie jest połączony.",
   "error.messaging.telegramUnsupported": "Ten komputer nie może połączyć się z Telegramem.",
   "error.messaging.telegramRelayUnavailable":
-    "dani-dex nie może połączyć się z Telegramem na tym komputerze. Zaloguj się, nadaj temu komputerowi nazwę i spróbuj ponownie.",
+    "Dani Dex nie może połączyć się z Telegramem na tym komputerze. Zaloguj się, nadaj temu komputerowi nazwę i spróbuj ponownie.",
   "error.messaging.telegramRelayUnreachable":
-    "dani-dex nie może połączyć się ze swoją usługą z tego komputera. Sprawdź połączenie z internetem, VPN, serwer proxy lub zaporę sieciową i spróbuj ponownie.",
-  "error.messaging.telegramServiceUnavailable": "dani-dex nie może teraz połączyć Telegrama. Spróbuj ponownie później.",
+    "Dani Dex nie może połączyć się ze swoją usługą z tego komputera. Sprawdź połączenie z internetem, VPN, serwer proxy lub zaporę sieciową i spróbuj ponownie.",
+  "error.messaging.telegramServiceUnavailable": "Dani Dex nie może teraz połączyć Telegrama. Spróbuj ponownie później.",
   "error.messaging.whatsappNotConnected": "Ten numer WhatsApp nie jest połączony.",
   "error.messaging.whatsappUnsupported": "Ten komputer nie może połączyć się z WhatsApp.",
   "error.messaging.whatsappTooManySenders": "Numer WhatsApp może dopuścić maksymalnie 200 kontaktów i grup.",

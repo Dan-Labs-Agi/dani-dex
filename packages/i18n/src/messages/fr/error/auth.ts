@@ -3,11 +3,11 @@ import type { messages as source } from "../../en/error/auth";
 
 export const messages = {
   "error.auth.serviceUnavailable":
-    "dani-dex n’a pas pu joindre le service de compte. Vérifiez que l’API fonctionne, puis réessayez.",
-  "error.auth.sessionTimeout": "dani-dex n’a pas répondu à temps. Vérifiez votre connexion internet, puis réessayez.",
+    "Dani Dex n’a pas pu joindre le service de compte. Vérifiez que l’API fonctionne, puis réessayez.",
+  "error.auth.sessionTimeout": "Dani Dex n’a pas répondu à temps. Vérifiez votre connexion internet, puis réessayez.",
   "error.auth.networkBlocked":
-    "Un pare-feu ou un proxy de ce réseau a empêché dani-dex de joindre {host}. Demandez à votre administrateur réseau d’autoriser {host}, puis réessayez.",
-  "error.auth.signInFirst": "Connectez-vous d’abord à dani-dex.",
+    "Un pare-feu ou un proxy de ce réseau a empêché Dani Dex de joindre {host}. Demandez à votre administrateur réseau d’autoriser {host}, puis réessayez.",
+  "error.auth.signInFirst": "Connectez-vous d’abord à Dani Dex.",
   "error.auth.signInRequired": "Une connexion est requise.",
   "error.auth.chatColorUnavailable":
     "Le service de compte ne prend pas encore en charge les couleurs de discussion. Réessayez plus tard.",
@@ -17,16 +17,16 @@ export const messages = {
   "error.auth.codeNotVerified": "Impossible de vérifier le code de connexion.",
   "error.auth.serviceError": "Le service de compte a renvoyé une erreur.",
   "error.auth.serviceUnreachable":
-    "dani-dex n’a pas pu joindre le service de compte. Vérifiez votre connexion, puis réessayez.",
+    "Dani Dex n’a pas pu joindre le service de compte. Vérifiez votre connexion, puis réessayez.",
   "error.auth.serviceTimeout": "Le service de compte n’a pas répondu à temps. Réessayez.",
   "error.auth.serviceStatus": "Le service de compte a renvoyé une erreur ({status}). Réessayez plus tard.",
   "error.auth.invalidHostedServer": "Le service de compte a renvoyé un serveur hébergé invalide.",
   "error.auth.invalidServerClaim": "Le service de compte a renvoyé un code de serveur invalide.",
-  "error.auth.codeNotSent": "dani-dex n’a pas pu envoyer le code de connexion.",
+  "error.auth.codeNotSent": "Dani Dex n’a pas pu envoyer le code de connexion.",
   "error.auth.deliveryTimeout":
-    "dani-dex n’a pas pu confirmer l’envoi à temps. Le code peut encore arriver ; vérifiez sa réception avant de le renvoyer.",
+    "Dani Dex n’a pas pu confirmer l’envoi à temps. Le code peut encore arriver ; vérifiez sa réception avant de le renvoyer.",
   "error.auth.deliveryInterrupted":
-    "La connexion s’est terminée avant qu’dani-dex confirme l’envoi. Vérifiez la réception pour ne pas envoyer un autre code.",
+    "La connexion s’est terminée avant qu’Dani Dex confirme l’envoi. Vérifiez la réception pour ne pas envoyer un autre code.",
   "error.auth.deliveryUnknown":
-    "dani-dex n’a pas pu confirmer si le code de connexion a été envoyé. Vérifiez sa réception avant de le renvoyer.",
+    "Dani Dex n’a pas pu confirmer si le code de connexion a été envoyé. Vérifiez sa réception avant de le renvoyer.",
 } as const satisfies PartialTranslation<typeof source>;

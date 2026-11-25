@@ -103,7 +103,7 @@ export const messages = {
   "conversation.threads.error.start": "לא ניתן להתחיל את השרשור.",
   "conversation.threads.error.branch": "לא ניתן ליצור הסתעפות מהצ'אט.",
   "conversation.threads.error.send": "לא ניתן לשלוח את ההודעה לשרשור.",
-  "conversation.threads.error.files": "השרשור בשרת הזה לא מקבל קבצים. יש לעדכן את dani-dex בשרת.",
+  "conversation.threads.error.files": "השרשור בשרת הזה לא מקבל קבצים. יש לעדכן את Dani Dex בשרת.",
   "conversation.threads.error.stop": "לא ניתן לעצור את השרשור.",
   "conversation.threads.error.archive": "לא ניתן להעביר את השרשור לארכיון.",
   "conversation.threads.error.restore": "לא ניתן לשחזר את השרשור.",

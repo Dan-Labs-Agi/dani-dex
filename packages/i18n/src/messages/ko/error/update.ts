@@ -21,12 +21,12 @@ export const messages = {
   "error.update.managedByHost":
     "이 Mac의 업데이트는 호스트가 설치해요. 호스트의 유지 관리가 실행될 때까지 업데이트는 준비된 상태로 남아요.",
   "error.update.siblingSession":
-    "이 애플리케이션에서 다른 dani-dex 세션이 아직 실행 중이에요. 다른 모든 macOS 사용자 계정에서 dani-dex을 종료한 후 업데이트를 다시 설치해 주세요.",
+    "이 애플리케이션에서 다른 Dani Dex 세션이 아직 실행 중이에요. 다른 모든 macOS 사용자 계정에서 dani-dex을 종료한 후 업데이트를 다시 설치해 주세요.",
   "error.update.siblingSessionSameAccount":
-    "이 사용자 계정에서 다른 dani-dex 프로세스가 아직 실행 중이에요. 종료한 후 업데이트를 다시 설치해 주세요.",
-  "error.update.siblingCheckFailed": "다른 dani-dex 세션을 확인할 수 없었어요. 설치하기 전에 다시 시도해 주세요.",
+    "이 사용자 계정에서 다른 Dani Dex 프로세스가 아직 실행 중이에요. 종료한 후 업데이트를 다시 설치해 주세요.",
+  "error.update.siblingCheckFailed": "다른 Dani Dex 세션을 확인할 수 없었어요. 설치하기 전에 다시 시도해 주세요.",
   "error.update.readOnlyLocation":
-    "이 위치에서는 dani-dex 업데이트를 설치할 수 없습니다. dani-dex을 종료하세요. Finder에서 dani-dex을 응용 프로그램 폴더로 드래그하세요(이미 그곳에 있다면 밖으로 꺼냈다가 다시 넣으세요). 그런 다음 dani-dex을 열고 업데이트를 다시 설치하세요.",
+    "이 위치에서는 Dani Dex 업데이트를 설치할 수 없습니다. dani-dex을 종료하세요. Finder에서 dani-dex을 응용 프로그램 폴더로 드래그하세요(이미 그곳에 있다면 밖으로 꺼냈다가 다시 넣으세요). 그런 다음 dani-dex을 열고 업데이트를 다시 설치하세요.",
   "error.update.appImageMissing":
     "AppImage 파일이 이동되었거나 이름이 바뀌었거나 교체되어 dani-dex이 업데이트를 설치할 수 없습니다. dani-dex을 종료한 다음 AppImage 파일을 다시 여세요.",
   "error.update.appImageReadOnly":

@@ -3,12 +3,12 @@ import type { messages as source } from "../../en/error/auth";
 
 export const messages = {
   "error.auth.serviceUnavailable":
-    "dani-dex no pudo acceder al servicio de cuentas. Comprueba que la API esté en funcionamiento e inténtalo de nuevo.",
+    "Dani Dex no pudo acceder al servicio de cuentas. Comprueba que la API esté en funcionamiento e inténtalo de nuevo.",
   "error.auth.sessionTimeout":
-    "dani-dex no respondió a tiempo. Comprueba tu conexión a internet y vuelve a intentarlo.",
+    "Dani Dex no respondió a tiempo. Comprueba tu conexión a internet y vuelve a intentarlo.",
   "error.auth.networkBlocked":
-    "Un cortafuegos o proxy de esta red impidió que dani-dex accediera a {host}. Pide al administrador de la red que permita {host} e inténtalo de nuevo.",
-  "error.auth.signInFirst": "Primero inicia sesión en dani-dex.",
+    "Un cortafuegos o proxy de esta red impidió que Dani Dex accediera a {host}. Pide al administrador de la red que permita {host} e inténtalo de nuevo.",
+  "error.auth.signInFirst": "Primero inicia sesión en Dani Dex.",
   "error.auth.signInRequired": "Es necesario iniciar sesión.",
   "error.auth.chatColorUnavailable":
     "El servicio de cuentas todavía no admite colores de chat. Inténtalo de nuevo más tarde.",
@@ -19,16 +19,16 @@ export const messages = {
   "error.auth.codeNotVerified": "No se pudo verificar el código de inicio de sesión.",
   "error.auth.serviceError": "El servicio de cuentas devolvió un error.",
   "error.auth.serviceUnreachable":
-    "dani-dex no pudo acceder al servicio de cuentas. Comprueba tu conexión e inténtalo de nuevo.",
+    "Dani Dex no pudo acceder al servicio de cuentas. Comprueba tu conexión e inténtalo de nuevo.",
   "error.auth.serviceTimeout": "El servicio de cuentas no respondió a tiempo. Inténtalo de nuevo.",
   "error.auth.serviceStatus": "El servicio de cuentas devolvió un error ({status}). Inténtalo de nuevo más tarde.",
   "error.auth.invalidHostedServer": "El servicio de cuentas devolvió un servidor alojado no válido.",
   "error.auth.invalidServerClaim": "El servicio de cuentas devolvió un código de servidor no válido.",
-  "error.auth.codeNotSent": "dani-dex no pudo enviar el código de inicio de sesión.",
+  "error.auth.codeNotSent": "Dani Dex no pudo enviar el código de inicio de sesión.",
   "error.auth.deliveryTimeout":
-    "dani-dex no pudo confirmar la entrega a tiempo. El código aún puede llegar; comprueba la entrega antes de enviarlo de nuevo.",
+    "Dani Dex no pudo confirmar la entrega a tiempo. El código aún puede llegar; comprueba la entrega antes de enviarlo de nuevo.",
   "error.auth.deliveryInterrupted":
-    "La conexión terminó antes de que dani-dex confirmara la entrega. Comprueba la entrega para evitar enviar otro código.",
+    "La conexión terminó antes de que Dani Dex confirmara la entrega. Comprueba la entrega para evitar enviar otro código.",
   "error.auth.deliveryUnknown":
-    "dani-dex no pudo confirmar si se envió el código de inicio de sesión. Comprueba la entrega antes de enviarlo de nuevo.",
+    "Dani Dex no pudo confirmar si se envió el código de inicio de sesión. Comprueba la entrega antes de enviarlo de nuevo.",
 } as const satisfies PartialTranslation<typeof source>;

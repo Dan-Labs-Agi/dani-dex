@@ -12,14 +12,14 @@ export const messages = {
   "error.attachment.noApp": "אף אפליקציה במחשב הזה לא פתחה את הקובץ. הורידו אותו ואז פתחו אותו ממנהל הקבצים.",
   "error.attachment.tooMany": "אפשר לבחור עד {limit} קבצים.",
   "error.attachment.mediaUnsupported":
-    "השרת הזה אינו תומך בקבצים מצורפים מסוג MP3 או MOV. יש לעדכן את dani-dex במארח ולנסות שוב.",
+    "השרת הזה אינו תומך בקבצים מצורפים מסוג MP3 או MOV. יש לעדכן את Dani Dex במארח ולנסות שוב.",
   "error.attachment.emlUnsupported":
-    "השרת הזה אינו תומך בקבצים מצורפים מסוג EML. יש לעדכן את dani-dex במארח ולנסות שוב.",
+    "השרת הזה אינו תומך בקבצים מצורפים מסוג EML. יש לעדכן את Dani Dex במארח ולנסות שוב.",
   "error.attachment.zipUnsupported":
-    "השרת הזה אינו תומך בקבצים מצורפים מסוג ZIP. יש לעדכן את dani-dex במארח ולנסות שוב.",
+    "השרת הזה אינו תומך בקבצים מצורפים מסוג ZIP. יש לעדכן את Dani Dex במארח ולנסות שוב.",
   "error.attachment.mp4Unsupported":
-    "השרת הזה אינו תומך בקבצים מצורפים מסוג MP4. יש לעדכן את dani-dex במארח ולנסות שוב.",
+    "השרת הזה אינו תומך בקבצים מצורפים מסוג MP4. יש לעדכן את Dani Dex במארח ולנסות שוב.",
   "error.attachment.svgUnsupported":
-    "השרת הזה אינו תומך בקבצים מצורפים מסוג SVG. יש לעדכן את dani-dex במארח ולנסות שוב.",
+    "השרת הזה אינו תומך בקבצים מצורפים מסוג SVG. יש לעדכן את Dani Dex במארח ולנסות שוב.",
   "error.attachment.previewTooLarge": "הקובץ חורג ממגבלת 100 MB.",
 } as const satisfies PartialTranslation<typeof source>;

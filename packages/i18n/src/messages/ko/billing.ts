@@ -150,7 +150,7 @@ export const messages = {
   "billing.order.server.title": "호스팅 서버",
   "billing.order.server.summary": "팀을 위해 dani-dex을 대신 운영해요.",
   "billing.order.server.none": "서버 없음",
-  "billing.order.server.noneDetail": "내 컴퓨터에서 dani-dex 실행",
+  "billing.order.server.noneDetail": "내 컴퓨터에서 Dani Dex 실행",
   "billing.order.server.thisComputer": "내 컴퓨터",
   "billing.order.server.bestValue": "가성비 최고",
   "billing.order.server.bestFor.starter": "1인 사용에 적합",

@@ -15,11 +15,11 @@ export const messages = {
   "connector.github.cancel": "취소",
   "connector.github.connectedAs": "@{login}(으)로 연결됨",
   "connector.github.repositoriesTitle": "저장소",
-  "connector.github.repositoriesDescription": "에이전트는 dani-dex GitHub 앱이 설치된 저장소만 사용할 수 있어요.",
+  "connector.github.repositoriesDescription": "에이전트는 Dani Dex GitHub 앱이 설치된 저장소만 사용할 수 있어요.",
   "connector.github.chooseRepositories": "저장소 선택",
   "connector.github.repositoriesLoading": "GitHub에서 저장소를 읽는 중",
   "connector.github.repositoriesFailed": "dani-dex이 GitHub에서 저장소를 읽지 못했어요.",
-  "connector.github.noRepositories": "아직 dani-dex GitHub 앱이 설치된 저장소가 없어요.",
+  "connector.github.noRepositories": "아직 Dani Dex GitHub 앱이 설치된 저장소가 없어요.",
   "connector.github.moreRepositories": { other: "저장소 {count}개 더 있음" },
   "connector.github.private": "비공개",
   "connector.github.disconnect": "연결 해제",
@@ -222,7 +222,7 @@ export const messages = {
 
   "connector.telegram.title": "Telegram",
   "connector.telegram.description":
-    "dani-dex 봇을 Telegram 그룹에 추가하거나 봇과 1:1 채팅을 시작하세요. Telegram 오케스트레이터가 알맞은 에이전트에게 물어보고 답해요.",
+    "Dani Dex 봇을 Telegram 그룹에 추가하거나 봇과 1:1 채팅을 시작하세요. Telegram 오케스트레이터가 알맞은 에이전트에게 물어보고 답해요.",
   "connector.telegram.statusConnected": "연결됨",
   "connector.telegram.statusAttention": "확인 필요",
   "connector.telegram.summaryConnected": { other: "채팅 {count}개 · Telegram 오케스트레이터가 답변" },
@@ -236,7 +236,7 @@ export const messages = {
   "connector.telegram.groupDescription": "사람들이 봇을 멘션하거나 봇의 메시지에 답장해요.",
   "connector.telegram.directDescription": "이 채팅의 모든 메시지가 Telegram 오케스트레이터에게 전달돼요.",
   "connector.telegram.helpRemoved":
-    "dani-dex 봇이 더 이상 이 채팅에 없어요. 채팅 연결을 해제한 뒤 봇을 다시 추가해 주세요.",
+    "Dani Dex 봇이 더 이상 이 채팅에 없어요. 채팅 연결을 해제한 뒤 봇을 다시 추가해 주세요.",
   "connector.telegram.helpRelayUnavailable":
     "dani-dex이 이 컴퓨터에서 Telegram 메시지를 받을 수 없어요. 로그인하고, 서버 설정에서 이 컴퓨터에 이름을 지정한 뒤 dani-dex을 열어 두세요.",
   "connector.telegram.helpRelayUnavailableHost":
@@ -250,7 +250,7 @@ export const messages = {
   "connector.telegram.disconnectChat": "연결 해제",
   "connector.telegram.disconnectAllTitle": "Telegram 연결 해제",
   "connector.telegram.disconnectAllSummary":
-    "모든 채팅의 연결이 해제돼요. 더 이상 dani-dex 봇으로 에이전트에게 연락할 수 없어요.",
+    "모든 채팅의 연결이 해제돼요. 더 이상 Dani Dex 봇으로 에이전트에게 연락할 수 없어요.",
   "connector.telegram.disconnectAllSummaryOrchestrator":
     "모든 채팅의 연결이 해제돼요. Telegram 오케스트레이터와 그 대화가 dani-dex에서 삭제돼요.",
   "connector.telegram.rowAction": "{action}: {name}",
@@ -269,7 +269,7 @@ export const messages = {
   "connector.telegram.stepAgent": "에이전트",
   "connector.telegram.connectTitle": "Telegram 채팅 연결",
   "connector.telegram.connectDescription":
-    "dani-dex 봇을 그룹에 추가하거나 봇과 1:1 채팅을 시작하세요. 봇 하나가 모든 채팅을 담당해요.",
+    "Dani Dex 봇을 그룹에 추가하거나 봇과 1:1 채팅을 시작하세요. 봇 하나가 모든 채팅을 담당해요.",
   "connector.telegram.connectStepBrowser": "브라우저에서 Telegram이 열려요",
   "connector.telegram.connectStepPick": "그룹을 선택하거나 1:1 채팅에서 시작을 누르세요",
   "connector.telegram.connectStepReturn": "채팅이 연결되면 이 대화상자가 이어져요",
@@ -286,8 +286,8 @@ export const messages = {
   "connector.telegram.doneTitle": "dani-dex이 {chat}에 들어왔어요",
   "connector.telegram.done": "완료",
   "connector.telegram.disconnectTitle": "{chat} 연결을 해제할까요?",
-  "connector.telegram.leaveDescription": "dani-dex 봇이 {chat}에서 나가고, dani-dex이 그곳에서 더 이상 답하지 않아요.",
-  "connector.telegram.disconnectEffect": "{chat}의 사람들이 더 이상 dani-dex 봇으로 내 에이전트에게 연락할 수 없어요.",
+  "connector.telegram.leaveDescription": "Dani Dex 봇이 {chat}에서 나가고, dani-dex이 그곳에서 더 이상 답하지 않아요.",
+  "connector.telegram.disconnectEffect": "{chat}의 사람들이 더 이상 Dani Dex 봇으로 내 에이전트에게 연락할 수 없어요.",
   "connector.telegram.removeEffectKept": "대화와 Telegram 오케스트레이터는 dani-dex에 그대로 남아요.",
   "connector.telegram.removeEffectDeleted": "마지막 채팅이라서 Telegram 오케스트레이터와 대화가 dani-dex에서 삭제돼요.",
   "connector.telegram.keep": "연결 유지",
@@ -355,7 +355,7 @@ export const messages = {
   "connector.whatsapp.kindPersonal": "내 개인 번호",
   "connector.whatsapp.kindPersonalDescription":
     "dani-dex은 “나에게 메시지 보내기” 채팅과 허용한 사람들에게만 답해요. 다른 사람에게는 답장하지 않아요.",
-  "connector.whatsapp.kindDedicated": "dani-dex 전용 번호",
+  "connector.whatsapp.kindDedicated": "Dani Dex 전용 번호",
   "connector.whatsapp.kindDedicatedDescription":
     "dani-dex이 이 번호로 모르는 사람마다 나에게 알려 줄 코드를 답장해요. 여기에서 승인하세요.",
   "connector.whatsapp.methodLabel": "연결 방법",
@@ -434,9 +434,9 @@ export const messages = {
   "connector.whatsapp.deny": "거부",
   "connector.onePassword.title": "1Password",
   "connector.onePassword.description":
-    "서비스 계정을 통해 전용 1Password 보관함을 dani-dex과 공유하면, 에이전트가 dani-dex 브라우저에서 사이트에 로그인할 수 있어요.",
+    "서비스 계정을 통해 전용 1Password 보관함을 dani-dex과 공유하면, 에이전트가 Dani Dex 브라우저에서 사이트에 로그인할 수 있어요.",
   "connector.onePassword.howItWorks":
-    "연결하면 1Password 계정에 “Shared with dani-dex” 보관함과 그 보관함만 읽을 수 있는 서비스 계정이 만들어져요. dani-dex은 이 컴퓨터의 브라우저에서 저장된 로그인 정보를 입력하므로, 그 보관함으로 옮긴 항목만 공유돼요. 에이전트는 비밀번호를 볼 수 없어요.",
+    "연결하면 1Password 계정에 “Shared with Dani Dex” 보관함과 그 보관함만 읽을 수 있는 서비스 계정이 만들어져요. dani-dex은 이 컴퓨터의 브라우저에서 저장된 로그인 정보를 입력하므로, 그 보관함으로 옮긴 항목만 공유돼요. 에이전트는 비밀번호를 볼 수 없어요.",
   "connector.onePassword.connect": "1Password 연결",
   "connector.onePassword.setupTitle": "설정",
   "connector.onePassword.stepCliTitle": "1Password CLI 설치",
@@ -456,7 +456,7 @@ export const messages = {
   "connector.onePassword.checkAgain": "다시 확인",
   "connector.onePassword.stepVaultTitle": "공유 보관함 만들기",
   "connector.onePassword.stepVaultDescription":
-    "dani-dex이 “Shared with dani-dex” 보관함과 그 보관함만 읽을 수 있는 서비스 계정을 만들어요. 1Password에서 승인을 요청해요.",
+    "dani-dex이 “Shared with Dani Dex” 보관함과 그 보관함만 읽을 수 있는 서비스 계정을 만들어요. 1Password에서 승인을 요청해요.",
   "connector.onePassword.useTokenDescription": "이 단계 대신 1Password.com의 서비스 계정 토큰을 붙여넣으세요.",
   "connector.onePassword.useTokenAction": "토큰 사용",
   "connector.onePassword.tokenLabel": "서비스 계정 토큰",
@@ -514,7 +514,7 @@ export const messages = {
   "connector.bitwarden.folderTitle": "공유 폴더",
   "connector.bitwarden.folderDescription":
     "에이전트가 로그인 정보를 사용하게 하려면 Bitwarden에서 이 폴더로 옮기세요. 사용을 멈추려면 폴더에서 제거하세요.",
-  "connector.bitwarden.folderName": "Shared with dani-dex",
+  "connector.bitwarden.folderName": "Shared with Dani Dex",
   "connector.bitwarden.folderKind": "Bitwarden 폴더",
   "connector.bitwarden.clientId": "API 키 client_id",
   "connector.bitwarden.clientSecret": "API 키 client_secret",
@@ -534,7 +534,7 @@ export const messages = {
     "연결을 누르면 브라우저에서 Proton 로그인이 열립니다. 그다음 dani-dex이 공유 보관함을 만들고 읽기 전용 키만 보관합니다.",
   "connector.protonPass.setupDescriptionHost":
     "연결을 누르면 브라우저에서 Proton 로그인이 열립니다. 그다음 {host}이(가) 공유 보관함을 만들고 읽기 전용 키만 보관합니다.",
-  "connector.protonPass.vaultName": "Shared with dani-dex",
+  "connector.protonPass.vaultName": "Shared with Dani Dex",
   "connector.protonPass.vaultSetup": "연결하면 dani-dex이 이 보관함을 만듭니다. 공유할 로그인 정보를 여기로 옮기세요.",
   "connector.protonPass.showSteps": "단계 보기",
   "connector.protonPass.stepsLabel": "연결 단계",

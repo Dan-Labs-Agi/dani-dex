@@ -9,7 +9,7 @@ export const messages = {
   "server.connection.waking": "{name} wird gestartet",
   "server.connection.startProgress": "{step} · {time}",
   "server.connection.providerLimit":
-    "Der Cloud-Anbieter begrenzt gerade neue Starts. dani-dex versucht es bald erneut.",
+    "Der Cloud-Anbieter begrenzt gerade neue Starts. Dani Dex versucht es bald erneut.",
   "server.connection.updating": "{name} wird aktualisiert",
   "server.connection.loading": "{name} wird geladen",
   "server.connection.connecting": "Verbindung mit {name} wird hergestellt",
@@ -22,7 +22,7 @@ export const messages = {
   "server.connection.cachedHint":
     "Geladene Inhalte und Entwürfe bleiben erhalten. Serveraktionen werden nach dem erneuten Verbinden fortgesetzt.",
   "server.connection.computerOffline":
-    "{name} ist offline. Prüfe, ob sein Computer eingeschaltet und dani-dex geöffnet ist und Server veröffentlichen unter Servereinstellungen > Mitglieder aktiviert ist.",
+    "{name} ist offline. Prüfe, ob sein Computer eingeschaltet und Dani Dex geöffnet ist und Server veröffentlichen unter Servereinstellungen > Mitglieder aktiviert ist.",
   "server.connection.conversationFailed": "Die Unterhaltung konnte nicht geladen werden. Versuche es erneut.",
   "server.connection.panelsFailed":
     "Einige Bereiche des Arbeitsbereichs konnten nicht geladen werden. Versuche es erneut.",
@@ -32,14 +32,14 @@ export const messages = {
   "server.connection.details": "Details",
 
   "server.status.steps": "Verbindungsschritte",
-  "server.status.updateCause": "{name} startet neu, um dani-dex {version} zu installieren.",
+  "server.status.updateCause": "{name} startet neu, um Dani Dex {version} zu installieren.",
   "server.status.updateCauseNoVersion": "{name} startet neu, um ein dani-dex-Update zu installieren.",
-  "server.status.wakeCause": "{name} war gestoppt. dani-dex startet den Server wieder.",
+  "server.status.wakeCause": "{name} war gestoppt. Dani Dex startet den Server wieder.",
   "server.status.connectCause": "Diese App verbindet sich mit {name}.",
   "server.status.connectionCause":
     "Diese App hat die Verbindung zu {name} verloren. Sie verbindet sich automatisch erneut.",
   "server.status.stepUpdate": "Update installieren",
-  "server.status.stepUpdateDetail": "dani-dex stoppt, installiert das Update und startet wieder.",
+  "server.status.stepUpdateDetail": "Dani Dex stoppt, installiert das Update und startet wieder.",
   "server.status.stepWake": "Server starten",
   "server.status.stepWakeDetail": "Das kann einige Minuten dauern.",
   "server.status.stepConnect": "Verbinden",
@@ -48,7 +48,7 @@ export const messages = {
   "server.status.stepLoadDetail": "Agenten und Chats werden vom Server geladen.",
   "server.status.elapsed": "Vergangen: {time}",
   "server.compatibility.updateClientTitle": "Diese dani-dex-App aktualisieren",
-  "server.compatibility.updateHostTitle": "dani-dex auf {name} aktualisieren",
+  "server.compatibility.updateHostTitle": "Dani Dex auf {name} aktualisieren",
   "server.compatibility.unsafeDataTitle": "Der Host hat unsichere Daten zurückgegeben",
   "server.compatibility.cannotConnectTitle": "Verbindung mit {name} nicht möglich",
   "server.compatibility.safeModeTitle": "{name} startet nicht",
@@ -57,7 +57,7 @@ export const messages = {
   "server.compatibility.updateHostDescription":
     "Der Host unterstützt nur ältere Protokolle als diese App. Aktualisiere den Host und versuche es erneut.",
   "server.compatibility.unsafeDataDescription":
-    "dani-dex hat diese Verbindung beendet, weil Daten eines bekannten Nachrichtentyps ungültig waren. Deine aktuellen Arbeitsbereichsdaten wurden nicht geändert.",
+    "Dani Dex hat diese Verbindung beendet, weil Daten eines bekannten Nachrichtentyps ungültig waren. Deine aktuellen Arbeitsbereichsdaten wurden nicht geändert.",
   "server.compatibility.clientVersion": "Client-Version",
   "server.compatibility.hostVersion": "Host-Version",
   "server.compatibility.negotiatedProtocol": "Ausgehandeltes Protokoll",
@@ -84,7 +84,7 @@ export const messages = {
   "server.join.account": "Konto",
   "server.join.emailBound": "Diese Einladung funktioniert nur für den E-Mail-Empfänger.",
   "server.join.unknownDate": "Unbekannt",
-  "server.add.title": "dani-dex rund um die Uhr auf einem externen Server ausführen",
+  "server.add.title": "Dani Dex rund um die Uhr auf einem externen Server ausführen",
   "server.add.description":
     "dani-dex-Server halten deine Agenten und Routinen am Laufen, auch wenn dein Computer aus ist. Wir kümmern uns um Infrastruktur und Wartung, damit dein Server ohne technische Einrichtung bereit ist.",
   "server.add.billing.label": "Abrechnungszeitraum",
@@ -121,19 +121,19 @@ export const messages = {
   "server.local.creating": "Server wird erstellt…",
   "server.local.createFailed": "Der Server konnte nicht erstellt werden.",
   "server.local.createFailedRetry":
-    "Etwas ist schiefgelaufen. Versuche es erneut. Wenn es wieder fehlschlägt, starte dani-dex neu.",
+    "Etwas ist schiefgelaufen. Versuche es erneut. Wenn es wieder fehlschlägt, starte Dani Dex neu.",
   "server.local.limitReached":
     "Auf diesem Computer sind höchstens {limit} Server möglich. Löschen Sie einen, um einen neuen zu erstellen.",
   "server.local.deleteConfirmTitle": "{name} löschen?",
   "server.local.deleteConfirmDescription":
-    "dani-dex stoppt den Server und verschiebt seine Agenten, Chats und Dateien in den Papierkorb.",
+    "Dani Dex stoppt den Server und verschiebt seine Agenten, Chats und Dateien in den Papierkorb.",
   "server.local.deleting": "Server wird gelöscht…",
   "server.local.deletedTitle": "{name} gelöscht",
   "server.install.title": "Neuer Server auf einem anderen Computer",
   "server.install.description":
-    "Führe diesen Befehl auf einem Linux-Computer oder VPS aus, der dir gehört. Er installiert dani-dex und fügt den Server zu diesem Konto hinzu.",
+    "Führe diesen Befehl auf einem Linux-Computer oder VPS aus, der dir gehört. Er installiert Dani Dex und fügt den Server zu diesem Konto hinzu.",
   "server.install.making": "Befehl für dieses Konto wird erstellt…",
-  "server.install.failed": "dani-dex konnte keinen Befehl erstellen. Prüfe die Internetverbindung.",
+  "server.install.failed": "Dani Dex konnte keinen Befehl erstellen. Prüfe die Internetverbindung.",
   "server.install.copyForAgent": "Für einen KI-Agenten kopieren",
   "server.install.expiresIn": "Funktioniert einmal. Läuft in {time} ab.",
   "server.install.newCommand": "Neuer Befehl",
@@ -143,10 +143,10 @@ export const messages = {
   "server.install.offline": "{name} ist offline.",
   "server.install.expired": "Dieser Befehl ist abgelaufen. Erstelle einen neuen.",
   "server.install.agentPrompt":
-    'Installiere dani-dex auf diesem Linux-Server und melde ihn bei meinem dani-dex-Konto an.\nFühre diesen Befehl als root aus. Er stellt keine Fragen und dauert einige Minuten:\n\n{command}\n\nEr endet mit der Zeile "dani-dex is connected to your account." und dem Exit-Code 0.\nDer Befehl funktioniert einmal, 15 Minuten lang. Speichere ihn nirgends.',
+    'Installiere Dani Dex auf diesem Linux-Server und melde ihn bei meinem dani-dex-Konto an.\nFühre diesen Befehl als root aus. Er stellt keine Fragen und dauert einige Minuten:\n\n{command}\n\nEr endet mit der Zeile "Dani Dex is connected to your account." und dem Exit-Code 0.\nDer Befehl funktioniert einmal, 15 Minuten lang. Speichere ihn nirgends.',
   "server.install.setUpWithAgent": "Mit einem Agenten einrichten",
   "server.install.sshAgentPrompt":
-    "Verbinde dich per SSH mit meinem Linux-Server und installiere dort dani-dex als Server.\n\nSSH-Adresse (user@host):",
+    "Verbinde dich per SSH mit meinem Linux-Server und installiere dort Dani Dex als Server.\n\nSSH-Adresse (user@host):",
   "server.add.limit.title": "Dieses Konto hat die maximale Anzahl von Servern",
   "server.add.limit.description": {
     one: "Ein Konto kann {count} kostenpflichtigen Server haben. Lösche zuerst einen Server, um einen weiteren hinzuzufügen.",
@@ -167,15 +167,15 @@ export const messages = {
   "server.hosted.defaultName": "Cloud-Server",
   "server.hosted.defaultNameNumbered": "Cloud-Server {number}",
   "server.hosted.step.create": "Maschine erstellen",
-  "server.hosted.step.start": "dani-dex starten",
+  "server.hosted.step.start": "Dani Dex starten",
   "server.hosted.step.connect": "Mit deinem Konto verbinden",
   "server.hosted.detail.create.reserve": "Private Maschine wird reserviert",
-  "server.hosted.detail.create.copy": "dani-dex wird auf die Maschine kopiert",
+  "server.hosted.detail.create.copy": "Dani Dex wird auf die Maschine kopiert",
   "server.hosted.detail.create.key": "Einmaliger Anmeldeschlüssel wird hinzugefügt",
   "server.hosted.detail.start.boot": "Maschine wird eingeschaltet",
   "server.hosted.detail.start.restore": "Daten werden wiederhergestellt",
-  "server.hosted.detail.start.app": "dani-dex wird gestartet",
-  "server.hosted.detail.start.wait": "Warten auf eine Antwort von dani-dex",
+  "server.hosted.detail.start.app": "Dani Dex wird gestartet",
+  "server.hosted.detail.start.wait": "Warten auf eine Antwort von Dani Dex",
   "server.hosted.detail.connect.signIn": "Anmeldung mit deinem Konto läuft",
   "server.hosted.detail.connect.publish": "Server wird deinem Konto hinzugefügt",
   "server.hosted.detail.connect.check": "Verbindung wird geprüft",
@@ -242,7 +242,7 @@ export const messages = {
   "server.plan.deletedOn": "Löschung am {date}",
   "server.plan.dialogTitle": "Lass deine Agenten nicht gehen",
   "server.plan.dialogDescription":
-    "{name} wurde gestoppt, weil der Tarif beendet ist. Am {date} löscht dani-dex die Agenten mit allen Chats und Dateien.",
+    "{name} wurde gestoppt, weil der Tarif beendet ist. Am {date} löscht Dani Dex die Agenten mit allen Chats und Dateien.",
   "server.plan.dialogDaysLeft": {
     one: "Noch {count} Tag",
     other: "Noch {count} Tage",
@@ -282,7 +282,7 @@ export const messages = {
   "server.compatibility.versionMismatchDescription":
     "Die Verbindung verwendet Protokoll {protocol}. Einige neuere Funktionen sind möglicherweise nicht verfügbar. Client {clientVersion}; Host {hostVersion}.",
   "server.compatibility.versionMismatchUpdateHostDescription":
-    "Aktualisiere dani-dex auf {name}, um alle Funktionen zu verwenden. Die Verbindung verwendet Protokoll {protocol}. Client {clientVersion}; Host {hostVersion}.",
+    "Aktualisiere Dani Dex auf {name}, um alle Funktionen zu verwenden. Die Verbindung verwendet Protokoll {protocol}. Client {clientVersion}; Host {hostVersion}.",
   "server.compatibility.versionMismatchUpdateClientDescription":
     "Aktualisiere diese dani-dex-App, um alle Funktionen zu verwenden. Die Verbindung verwendet Protokoll {protocol}. Client {clientVersion}; Host {hostVersion}.",
   "server.connection.failedTitle": "Die Verbindung ist fehlgeschlagen",
@@ -304,7 +304,7 @@ export const messages = {
   "server.settings.desktopDescription": "Richte den Desktop dieses Servers ein oder verbinde dich damit.",
   "server.settings.storageTitle": "Speicher",
   "server.settings.storageDescription":
-    "Sieh nach, was dani-dex auf der Festplatte dieses Servers speichert, und gib Speicherplatz frei.",
+    "Sieh nach, was Dani Dex auf der Festplatte dieses Servers speichert, und gib Speicherplatz frei.",
   "server.settings.hostedSitesTitle": "Websites",
   "server.settings.hostedSitesDescription":
     "Die statischen Websites, die Agenten dieses Servers auf openbot.site veröffentlicht haben.",
@@ -342,9 +342,9 @@ export const messages = {
   "server.settings.nameTooLong": "Verwende höchstens {limit} Zeichen.",
   "server.settings.actionFailedTitle": "Serveraktion fehlgeschlagen",
   "server.settings.actionFailed": "Die Serveraktion ist fehlgeschlagen.",
-  "server.settings.imageReadFailed": "dani-dex konnte dieses Bild nicht lesen.",
+  "server.settings.imageReadFailed": "Dani Dex konnte dieses Bild nicht lesen.",
   "server.settings.copyFailedTitle": "Kopieren fehlgeschlagen",
-  "server.settings.copyFailed": "dani-dex konnte diesen Wert nicht kopieren.",
+  "server.settings.copyFailed": "Dani Dex konnte diesen Wert nicht kopieren.",
   "server.settings.unavailableTitle": "Servereinstellungen nicht verfügbar",
   "server.settings.reset": "Zurücksetzen",
   "server.settings.unsavedChanges": "Nicht gespeicherte Änderungen",
@@ -495,7 +495,7 @@ export const messages = {
   "server.settings.restartTitle": "Neu starten",
   "server.settings.restarting": "Wird neu gestartet…",
   "server.settings.restartedTitle": "{name} startet neu",
-  "server.settings.restartHiddenDescription": "dani-dex verbindet sich automatisch wieder, wenn der Server zurück ist.",
+  "server.settings.restartHiddenDescription": "Dani Dex verbindet sich automatisch wieder, wenn der Server zurück ist.",
   "server.settings.restartHide": "Ausblenden",
   "server.settings.restartProgressTitle": "{name} wird neu gestartet",
   "server.settings.restartProgressDescription": "{time} · meist etwa eine Minute. Du kannst dieses Fenster ausblenden.",
@@ -559,7 +559,7 @@ export const messages = {
       "Dieser Server hat die maximale Anzahl von {count} Mitgliedern. Entferne ein Mitglied, um eine neue Person einzuladen.",
   },
   "server.invite.qrLabel": "Einladungs-QR-Code",
-  "server.invite.qrDescription": "Scanne diesen Code in dani-dex Mobile, um diesem Server beizutreten.",
+  "server.invite.qrDescription": "Scanne diesen Code in Dani Dex Mobile, um diesem Server beizutreten.",
   "server.invite.accepted": "Einladung angenommen",
   "server.invite.expired": "Einladung abgelaufen",
   "server.invite.sent": "Einladung gesendet",
@@ -567,7 +567,7 @@ export const messages = {
   "server.invite.acceptedDescription":
     "Das Mitglied ist diesem Server beigetreten. Erstelle einen neuen Link, um eine weitere Person einzuladen.",
   "server.invite.expiredDescription": "Erstelle einen neuen Link, um jemanden einzuladen.",
-  "server.invite.linkReadyDescription": "Teile den Link oder scanne den QR-Code in dani-dex Mobile.",
+  "server.invite.linkReadyDescription": "Teile den Link oder scanne den QR-Code in Dani Dex Mobile.",
   "server.invite.pendingTitle": "Ausstehende Einladungen",
   "server.invite.pendingCount": "{total} ausstehend",
   "server.invite.noPending": "Keine ausstehenden Einladungen.",
@@ -596,7 +596,7 @@ export const messages = {
   "server.desktop.connectionUnavailable": "Verbindung nicht verfügbar",
   "server.desktop.hostOffline": "Host ist offline",
   "server.desktop.hostOfflineDescription": "Verbinde dich erneut mit dem Host, bevor du seinen Desktop öffnest.",
-  "server.desktop.hostUpdateDescription": "Aktualisiere dani-dex auf dem Host, um die Fernsteuerung zu verwenden.",
+  "server.desktop.hostUpdateDescription": "Aktualisiere Dani Dex auf dem Host, um die Fernsteuerung zu verwenden.",
   "server.desktop.serviceAvailable": "Dienst verfügbar",
   "server.desktop.serviceNotReady": "Dienst nicht bereit",
   "server.desktop.serviceNotReadyDescription":
@@ -611,7 +611,7 @@ export const messages = {
   "server.desktop.accessMembers": "Alle Mitglieder",
   "server.desktop.askLabel": "Auf diesem Computer fragen",
   "server.desktop.askDescription":
-    "Jede Sitzung wartet, bis eine Person an diesem Computer sie erlaubt. Ohne Antwort innerhalb von 30 Sekunden lehnt dani-dex sie ab.",
+    "Jede Sitzung wartet, bis eine Person an diesem Computer sie erlaubt. Ohne Antwort innerhalb von 30 Sekunden lehnt Dani Dex sie ab.",
   "server.desktop.activeTitle": "Aktive Remotedesktop-Sitzungen: {active}",
   "server.desktop.activeDescription": "Beendet jede Sitzung sofort. Mitglieder können erneut fragen.",
   "server.desktop.stopAll": "Alle Fernsteuerungen beenden",
@@ -623,9 +623,9 @@ export const messages = {
   "server.settings.providersSwitchNote": "Wechsle zu {name}, um seine KI-Anbieter zu verwalten.",
   "server.settings.providersSwitch": "Zu diesem Server wechseln",
   "server.settings.updatesTitle": "Updates",
-  "server.settings.updatesDescription": "Aktualisiere dani-dex auf dem Computer, auf dem dieser Server läuft.",
-  "server.update.hostTitle": "dani-dex auf {name}",
-  "server.update.version": "dani-dex {version}",
+  "server.settings.updatesDescription": "Aktualisiere Dani Dex auf dem Computer, auf dem dieser Server läuft.",
+  "server.update.hostTitle": "Dani Dex auf {name}",
+  "server.update.version": "Dani Dex {version}",
   "server.update.status.idle": "Suche nach Updates, um die neueste Version zu finden.",
   "server.update.status.checking": "Updates werden gesucht…",
   "server.update.status.available": "{version} ist verfügbar.",
@@ -633,22 +633,22 @@ export const messages = {
   "server.update.status.downloadingUnknown": "{version} wird heruntergeladen…",
   "server.update.status.ready": "{version} wurde heruntergeladen.",
   "server.update.status.installing": "{name} wird neu gestartet, um das Update zu installieren.",
-  "server.update.status.upToDate": "dani-dex ist auf {name} aktuell.",
+  "server.update.status.upToDate": "Dani Dex ist auf {name} aktuell.",
   "server.update.status.checkFailed": "{name} konnte nicht nach Updates suchen. Versuche es erneut.",
   "server.update.status.downloadFailed": "{name} konnte das Update nicht herunterladen. Versuche es erneut.",
   "server.update.status.installFailed":
-    "{name} konnte das Update nicht installieren. Stelle sicher, dass kein anderer Benutzer dieses Computers dani-dex ausführt, und versuche es erneut.",
+    "{name} konnte das Update nicht installieren. Stelle sicher, dass kein anderer Benutzer dieses Computers Dani Dex ausführt, und versuche es erneut.",
   "server.update.releaseCheckFailed":
     "{name} konnte den Versions-Feed nicht lesen. Prüfe die Netzwerkverbindung des Hosts und versuche es erneut.",
   "server.update.releaseUnavailable":
     "Diese Version kann nicht nach neuen Versionen suchen. Bitte den Host-Administrator, nach einer kompatiblen Version zu suchen.",
   "server.update.externalTitle": "Der Host steuert die Installation",
   "server.update.path.hostManager":
-    "dani-dex Host Manager installiert Updates, wenn alle Benutzer inaktiv sind. Bitte den Host-Administrator, den Status von Host Manager zu prüfen, wenn ein Update nicht startet.",
+    "Dani Dex Host Manager installiert Updates, wenn alle Benutzer inaktiv sind. Bitte den Host-Administrator, den Status von Host Manager zu prüfen, wenn ein Update nicht startet.",
   "server.update.path.hosted":
     "Der gehostete Dienst lädt Updates im Hintergrund herunter. Ein heruntergeladenes Update startet beim nächsten Serverstart. Warte, bis aktive Aufgaben beendet sind, bevor du den Server stoppst und fortsetzt. Bleibt er bei einer alten Version, kontaktiere den Host-Administrator.",
   "server.update.path.system":
-    "Führe auf dem Host sudo dani-dex update aus, um die neueste Version zu installieren. Dieser Befehl beendet dani-dex. Warte zuerst, bis aktive Aufgaben beendet sind. Automatische Downloads werden beim nächsten Systemstart installiert.",
+    "Führe auf dem Host sudo Dani Dex update aus, um die neueste Version zu installieren. Dieser Befehl beendet Dani Dex. Warte zuerst, bis aktive Aufgaben beendet sind. Automatische Downloads werden beim nächsten Systemstart installiert.",
   "server.update.path.container":
     "Lade auf dem Docker-Host das neue dani-dex-Image herunter und erstelle den Container mit denselben Datenvolumes neu. Warte zuerst, bis aktive Aufgaben beendet sind. Behalte die vorhandenen Volumes, um deine Daten zu erhalten.",
   "server.update.path.manual":
@@ -671,29 +671,29 @@ export const messages = {
   "server.update.waitingFor": "Warten auf {reasons}.",
   "server.update.disabledTitle": "Remote-Updates sind deaktiviert",
   "server.update.disabledDescription":
-    "Der Benutzer von {name} hat Updates durch Servermitglieder deaktiviert. Bitte ihn, dani-dex zu aktualisieren oder auf seinem Computer Einstellungen > Updates zu öffnen und „Updates durch Servermitglieder erlauben“ zu aktivieren.",
+    "Der Benutzer von {name} hat Updates durch Servermitglieder deaktiviert. Bitte ihn, Dani Dex zu aktualisieren oder auf seinem Computer Einstellungen > Updates zu öffnen und „Updates durch Servermitglieder erlauben“ zu aktivieren.",
   "server.update.managedTitle": "Ein Host Manager steuert Updates",
-  "server.update.managedDescription": "dani-dex Host Manager aktualisiert {name}. Kontaktiere den Host-Administrator.",
+  "server.update.managedDescription": "Dani Dex Host Manager aktualisiert {name}. Kontaktiere den Host-Administrator.",
   "server.update.unsupportedTitle": "{name} kann sich nicht selbst aktualisieren",
   "server.update.unsupportedDescription":
     "Diese dani-dex-Version hat keine Update-Funktion. Installiere eine neue Version auf {name}.",
   "server.update.restarting": "Wird neu gestartet…",
   "server.update.loadFailed": "Der Update-Status von {name} wurde nicht geladen.",
   "server.update.hostAction": "Host aktualisieren",
-  "server.update.dialog.offerTitle": "{name} auf dani-dex {version} aktualisieren",
+  "server.update.dialog.offerTitle": "{name} auf Dani Dex {version} aktualisieren",
   "server.update.dialog.offerDescription":
-    "{name} nutzt dani-dex {current}. Zuerst wird das Update heruntergeladen, dann startet {name} neu.",
+    "{name} nutzt Dani Dex {current}. Zuerst wird das Update heruntergeladen, dann startet {name} neu.",
   "server.update.dialog.offerReadyDescription":
-    "{name} nutzt dani-dex {current}. Das Update ist heruntergeladen. {name} startet neu, um es zu installieren.",
+    "{name} nutzt Dani Dex {current}. Das Update ist heruntergeladen. {name} startet neu, um es zu installieren.",
   "server.update.dialog.progressTitle": "{name} wird aktualisiert",
   "server.update.dialog.progressDescription": "{time} · Du kannst dieses Fenster ausblenden.",
-  "server.update.dialog.doneTitle": "{name} nutzt jetzt dani-dex {version}",
+  "server.update.dialog.doneTitle": "{name} nutzt jetzt Dani Dex {version}",
   "server.update.dialog.doneDescription": "Das Update hat {time} gedauert.",
   "server.update.dialog.failedTitle": "{name} wurde nicht aktualisiert",
   "server.update.dialog.restartFailed": "{name} ist nicht wieder online. Prüfe den Host und versuche es dann erneut.",
-  "server.update.dialog.notInstalled": "{name} wurde mit dani-dex {current} neu gestartet. Versuche das Update erneut.",
+  "server.update.dialog.notInstalled": "{name} wurde mit Dani Dex {current} neu gestartet. Versuche das Update erneut.",
   "server.update.dialog.steps": "Update-Schritte",
-  "server.update.dialog.downloadStep": "dani-dex {version} herunterladen",
+  "server.update.dialog.downloadStep": "Dani Dex {version} herunterladen",
   "server.update.dialog.downloadPending": "Agenten arbeiten während des Downloads weiter.",
   "server.update.dialog.downloadPreparing": "Download wird vorbereitet…",
   "server.update.dialog.downloadRunning": "{progress} · Agenten arbeiten weiter.",
@@ -702,10 +702,10 @@ export const messages = {
   "server.update.dialog.restartPending": "Mitglieder verlieren die Verbindung für etwa eine Minute.",
   "server.update.dialog.restartWaiting": "Warten auf {reasons}.",
   "server.update.dialog.restartSoon": "Der Neustart beginnt gleich.",
-  "server.update.dialog.restartRunning": "dani-dex {version} wird gestartet…",
+  "server.update.dialog.restartRunning": "Dani Dex {version} wird gestartet…",
   "server.update.dialog.onlineStep": "Wieder online",
   "server.update.dialog.onlinePending": "Mitglieder verbinden sich automatisch erneut.",
-  "server.update.dialog.onlineDone": "Nach {time} auf dani-dex {version}.",
+  "server.update.dialog.onlineDone": "Nach {time} auf Dani Dex {version}.",
   "server.update.dialog.waitIdle": "Warten, bis die Agenten inaktiv sind",
   "server.update.dialog.waitIdleDescription":
     "Der Neustart wartet, bis Agentendurchläufe und Routinen-Ausführungen abgeschlossen sind.",
@@ -731,15 +731,15 @@ export const messages = {
   "server.update.reason.fileTransfer": "eine Dateiübertragung",
   "server.update.reason.browserControl": "Browsersteuerung durch einen Agenten",
   "server.update.reason.updateOperation": "einen weiteren Update-Schritt",
-  "server.update.reason.initialization": "den Start von dani-dex",
+  "server.update.reason.initialization": "den Start von Dani Dex",
   "server.update.reason.other": "andere Aufgaben",
   "server.restartNotice.waitingTitle": "{name} startet neu, um ein Update zu installieren",
-  "server.restartNotice.waitingVersionTitle": "{name} startet neu, um dani-dex {version} zu installieren",
+  "server.restartNotice.waitingVersionTitle": "{name} startet neu, um Dani Dex {version} zu installieren",
   "server.restartNotice.waitingDescription":
-    "Der Neustart wartet, bis seine Agenten inaktiv sind. Du wirst kurz getrennt. Danach verbindet sich dani-dex automatisch erneut.",
+    "Der Neustart wartet, bis seine Agenten inaktiv sind. Du wirst kurz getrennt. Danach verbindet sich Dani Dex automatisch erneut.",
   "server.restartNotice.restartingTitle": "{name} wird neu gestartet, um ein Update zu installieren",
   "server.restartNotice.restartingDescription":
-    "dani-dex verbindet sich automatisch erneut, sobald {name} wieder verfügbar ist.",
+    "Dani Dex verbindet sich automatisch erneut, sobald {name} wieder verfügbar ist.",
   "server.restartNotice.backTitle": "{name} ist wieder online",
   "server.settings.personalityTitle": "Persönlichkeit",
   "server.settings.personalityDescription": "Lege fest, wie die Agenten auf diesem Server mit dir sprechen.",

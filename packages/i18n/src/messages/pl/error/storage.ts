@@ -4,5 +4,5 @@ import type { messages as source } from "../../en/error/storage";
 export const messages = {
   "error.storage.unsupported": "Ten serwer nie obsługuje magazynu.",
   "error.storage.agentMissing": "Agent nie istnieje.",
-  "error.storage.unreadableFile": "dani-dex nie może odczytać pliku {path}. Plik jest uszkodzony.",
+  "error.storage.unreadableFile": "Dani Dex nie może odczytać pliku {path}. Plik jest uszkodzony.",
 } as const satisfies PartialTranslation<typeof source>;

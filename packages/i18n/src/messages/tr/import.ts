@@ -69,11 +69,11 @@ export const messages = {
   "import.result.channel": "Kanal",
   "import.result.notImportedTitle": "İçe aktarılmadı",
   "import.result.warnings": "Bazı öğeler taşınmadı",
-  "import.source.ledeServer": "dani-dex bunları sunucuya kopyalar. Bir şey değişmeden önce her öğeyi görürsünüz.",
+  "import.source.ledeServer": "Dani Dex bunları sunucuya kopyalar. Bir şey değişmeden önce her öğeyi görürsünüz.",
   "import.source.hermesNoteServer":
     "Sunucudaki Hermes klasörünü okuyun ya da Hermes'ten bir .zip dosyası dışa aktarın.",
   "import.source.hermesNoteExport": "Hermes'ten bir .zip dosyası dışa aktarın.",
   "import.hermes.notFoundServer": "Bu sunucuda Hermes profili yok",
   "import.hermes.notFoundServerNote":
-    "dani-dex, sunucunun Hermes klasörünü okur. Hermes'i bu bilgisayardan içe aktarmak için Hermes'ten bir .zip dosyası dışa aktarın.",
+    "Dani Dex, sunucunun Hermes klasörünü okur. Hermes'i bu bilgisayardan içe aktarmak için Hermes'ten bir .zip dosyası dışa aktarın.",
 } as const satisfies PartialTranslation<typeof source>;

@@ -24,7 +24,7 @@ export const messages = {
   "marketplace.description.apps": "Połącz narzędzia i usługi, z którymi pracują Twoi agenci.",
   "marketplace.description.agents": "Gotowi agenci z własnymi instrukcjami i umiejętnościami.",
   "marketplace.description.skills": "Instrukcje, które uczą agenta zadania lub narzędzia.",
-  "marketplace.plugins.missing": "Tej wtyczki nie ma w katalogu dani-dex.",
+  "marketplace.plugins.missing": "Tej wtyczki nie ma w katalogu Dani Dex.",
   "marketplace.agents.loadingDetail": "Wczytywanie szczegółów agenta…",
   "marketplace.agents.skills": "Umiejętności",
   "marketplace.agents.routines": "Rutyny",
@@ -40,15 +40,15 @@ export const messages = {
   "marketplace.agents.all": "Wszyscy agenci",
   "marketplace.agents.missing": "Tego agenta nie ma w Marketplace.",
   "marketplace.agents.trust.reviewed":
-    "Utworzony przez innego użytkownika dani-dex. dani-dex sprawdził go przed publikacją.",
+    "Utworzony przez innego użytkownika Dani Dex. Dani Dex sprawdził go przed publikacją.",
   "marketplace.agents.trust.reviewedBeforeAdd":
-    "Utworzony przez innego użytkownika dani-dex. dani-dex sprawdził go przed publikacją. Po dodaniu może działać w Twoim imieniu.",
-  "marketplace.agents.trust.pending": "Udostępniony przez autora, zanim dani-dex go sprawdził.",
+    "Utworzony przez innego użytkownika Dani Dex. Dani Dex sprawdził go przed publikacją. Po dodaniu może działać w Twoim imieniu.",
+  "marketplace.agents.trust.pending": "Udostępniony przez autora, zanim Dani Dex go sprawdził.",
   "marketplace.agents.trust.pendingBeforeAdd":
-    "Udostępniony przez autora, zanim dani-dex go sprawdził. Po dodaniu może działać w Twoim imieniu.",
+    "Udostępniony przez autora, zanim Dani Dex go sprawdził. Po dodaniu może działać w Twoim imieniu.",
   "marketplace.agents.source.pending": "Jeszcze niesprawdzony",
   "marketplace.skill.loading": "Wczytywanie umiejętności",
-  "marketplace.try.readFailed": "dani-dex nie mógł odczytać umiejętności tego agenta. Spróbuj ponownie.",
+  "marketplace.try.readFailed": "Dani Dex nie mógł odczytać umiejętności tego agenta. Spróbuj ponownie.",
   "marketplace.try.enable": "Włącz tę umiejętność w ustawieniach agenta, aby ją wypróbować.",
   "marketplace.try.repair": "Napraw tę umiejętność w ustawieniach agenta, aby ją wypróbować.",
   "marketplace.try.update": "Zaktualizuj tę umiejętność, aby wypróbować tę wersję.",
@@ -149,25 +149,25 @@ export const messages = {
   "marketplace.app.setup.account": "Zaloguj się w przeglądarce na konto {name}.",
   "marketplace.app.setup.key": "Wymaga klucza API z konta {name}.",
   "marketplace.app.setup.keySaved": "{field} – zapisano na: {host}.",
-  "marketplace.app.account.removeDescription": "dani-dex usunie dane logowania tego konta – miejsce: {host}.",
+  "marketplace.app.account.removeDescription": "Dani Dex usunie dane logowania tego konta – miejsce: {host}.",
   "marketplace.app.setup.desktop": "Działa w aplikacji desktopowej {name} pod adresem {address}.",
   "marketplace.app.setup.desktopConnected": "Połączono z {address}.",
   "marketplace.app.setup.open": "Nie wymaga logowania ani klucza.",
   "marketplace.app.blocked.update":
-    "{host} ma starszą wersję dani-dex, która nie może łączyć aplikacji. Zaktualizuj dani-dex na {host} albo poproś właściciela o aktualizację.",
+    "{host} ma starszą wersję Dani Dex, która nie może łączyć aplikacji. Zaktualizuj Dani Dex na {host} albo poproś właściciela o aktualizację.",
   "marketplace.app.blocked.member":
-    "Tylko właściciel lub administrator {host} może tam łączyć aplikacje. Poproś jednego z nich o połączenie {name} albo o aktualizację dani-dex na {host}, aby członkowie mogli łączyć aplikacje.",
-  "marketplace.app.blocked.mac": "{name} działa tylko na Macu, na którym działa dani-dex.",
+    "Tylko właściciel lub administrator {host} może tam łączyć aplikacje. Poproś jednego z nich o połączenie {name} albo o aktualizację Dani Dex na {host}, aby członkowie mogli łączyć aplikacje.",
+  "marketplace.app.blocked.mac": "{name} działa tylko na Macu, na którym działa Dani Dex.",
   "marketplace.app.connectAgain": "Połącz ponownie",
   "marketplace.app.automation.askOnInstall": "Poproś macOS o dostęp przy instalacji",
   "marketplace.app.automation.title": "Dostęp do aplikacji Apple",
   "marketplace.app.automation.description":
     "macOS pokazuje jedno pytanie dla każdej aplikacji. Zamknięta aplikacja otwiera się na chwilę, a potem się zamyka.",
   "marketplace.app.automation.request": "Poproś o dostęp",
-  "marketplace.app.automation.allowed": "dani-dex może teraz sterować wszystkimi aplikacjami Apple.",
+  "marketplace.app.automation.allowed": "Dani Dex może teraz sterować wszystkimi aplikacjami Apple.",
   "marketplace.app.automation.refused":
-    "macOS nie dał dostępu do: {apps}. Zezwól dani-dex w Ustawienia systemowe › Prywatność i ochrona › Automatyzacja.",
-  "marketplace.app.automation.failed": "dani-dex nie mógł zapytać macOS o: {apps}. Spróbuj ponownie.",
+    "macOS nie dał dostępu do: {apps}. Zezwól Dani Dex w Ustawienia systemowe › Prywatność i ochrona › Automatyzacja.",
+  "marketplace.app.automation.failed": "Dani Dex nie mógł zapytać macOS o: {apps}. Spróbuj ponownie.",
   "marketplace.app.automation.app.calendar": "Kalendarz",
   "marketplace.app.automation.app.contacts": "Kontakty",
   "marketplace.app.automation.app.mail": "Mail",
@@ -227,7 +227,7 @@ export const messages = {
   "marketplace.plugin.cobrain.prompt.saveNote": "Zapisz w Cobrain notatkę o tym, co dziś zrobiliśmy i co zostało.",
   "marketplace.plugin.honcho.tagline": "Twoja pamięć we wszystkich narzędziach AI",
   "marketplace.plugin.honcho.description":
-    "Honcho od Plastic Labs daje agentom długotrwałą pamięć o tobie, którą mogą dzielić inne połączone narzędzia AI. Agenci zapisują to, czego się dowiedzą, a Honcho wyciąga z tego wnioski i buduje model twoich preferencji, celów i sposobu pracy. Agenci zadają mu pytania, zanim zaczną. Agenci dani-dex mają też własną pamięć; Honcho to pamięć, która idzie za tobą do innych narzędzi. Wiadomości zapisane przez agentów trafiają na twoje konto Honcho.",
+    "Honcho od Plastic Labs daje agentom długotrwałą pamięć o tobie, którą mogą dzielić inne połączone narzędzia AI. Agenci zapisują to, czego się dowiedzą, a Honcho wyciąga z tego wnioski i buduje model twoich preferencji, celów i sposobu pracy. Agenci zadają mu pytania, zanim zaczną. Agenci Dani Dex mają też własną pamięć; Honcho to pamięć, która idzie za tobą do innych narzędzi. Wiadomości zapisane przez agentów trafiają na twoje konto Honcho.",
   "marketplace.plugin.honcho.app":
     "Zapisywanie i odpytywanie długotrwałej pamięci w przestrzeniach roboczych Honcho przez jeden serwer MCP.",
   "marketplace.plugin.honcho.prompt.recall": "Zanim zaczniemy, zapytaj Honcho, co wie o tym, jak lubię pracować.",
@@ -236,7 +236,7 @@ export const messages = {
   "marketplace.plugin.honcho.hint.apiKey": "Utwórz klucz na app.honcho.dev.",
   "marketplace.plugin.hindsight.tagline": "Pamięć, która uczy się z czasem",
   "marketplace.plugin.hindsight.description":
-    "Hindsight od Vectorize daje agentom długotrwałą pamięć w Hindsight Cloud. Agenci zapamiętują fakty i zdarzenia, przywołują je według znaczenia, czasu i obiektu oraz analizują je, aby tworzyć modele mentalne. Wspomnienia są przechowywane w bankach, a agenci mogą utworzyć bank dla każdego projektu lub osoby. Agenci dani-dex mają też własną pamięć; Hindsight to pamięć, którą mogą dzielić inne połączone narzędzia AI. To, co agenci zapamiętają, trafia na twoje konto Hindsight Cloud.",
+    "Hindsight od Vectorize daje agentom długotrwałą pamięć w Hindsight Cloud. Agenci zapamiętują fakty i zdarzenia, przywołują je według znaczenia, czasu i obiektu oraz analizują je, aby tworzyć modele mentalne. Wspomnienia są przechowywane w bankach, a agenci mogą utworzyć bank dla każdego projektu lub osoby. Agenci Dani Dex mają też własną pamięć; Hindsight to pamięć, którą mogą dzielić inne połączone narzędzia AI. To, co agenci zapamiętają, trafia na twoje konto Hindsight Cloud.",
   "marketplace.plugin.hindsight.app":
     "Zapamiętywanie, przywoływanie i analiza wspomnień w bankach Hindsight Cloud przez jeden serwer MCP.",
   "marketplace.plugin.hindsight.prompt.recall": "Zanim zaczniemy, przywołaj z Hindsight, co wiemy o tym projekcie.",
@@ -254,7 +254,7 @@ export const messages = {
   "marketplace.plugin.figma.prompt.assets": "Wyeksportuj ikony marketingowe w 2x do pakietu aplikacji.",
   "marketplace.plugin.paper.tagline": "Płótno projektowe oparte na HTML i CSS",
   "marketplace.plugin.paper.description":
-    "Paper pozwala agentom czytać i zapisywać plik projektu otwarty w Paper Desktop: sprawdzać plansze, zaznaczenia, obliczone style, JSX i tokeny oraz tworzyć lub zmieniać ramki, tekst i style. Zainstaluj Paper Desktop, otwórz go raz i otwórz plik przed rozpoczęciem. dani-dex uruchamia Paper CLI instalowane przez Paper Desktop. Paper nie wymaga klucza. Narzędzia zapisu zmieniają otwarty plik, więc sprawdź każdy zapis, zanim go zatwierdzisz.",
+    "Paper pozwala agentom czytać i zapisywać plik projektu otwarty w Paper Desktop: sprawdzać plansze, zaznaczenia, obliczone style, JSX i tokeny oraz tworzyć lub zmieniać ramki, tekst i style. Zainstaluj Paper Desktop, otwórz go raz i otwórz plik przed rozpoczęciem. Dani Dex uruchamia Paper CLI instalowane przez Paper Desktop. Paper nie wymaga klucza. Narzędzia zapisu zmieniają otwarty plik, więc sprawdź każdy zapis, zanim go zatwierdzisz.",
   "marketplace.plugin.paper.app":
     "Czyta i zapisuje otwarty plik Paper Desktop przez lokalny serwer MCP przekazywany przez Paper CLI. Wymaga Paper Desktop z otwartym plikiem.",
   "marketplace.plugin.paper.prompt.implement":
@@ -294,7 +294,7 @@ export const messages = {
     "Podsumuj ostatnie dziesięć rozmów mojego agenta głosowego wsparcia.",
   "marketplace.plugin.appleApps.tagline": "Mail, Kalendarz i więcej na Twoim Macu",
   "marketplace.plugin.appleApps.description":
-    "Apple apps pozwala agentom korzystać z aplikacji Mail, Kalendarz, Kontakty, Przypomnienia, Notatki, Wiadomości i Safari na tym Macu. Działa tylko w macOS. dani-dex uruchamia mcp-icloud, serwer społeczności, którego nie tworzy Apple ani dani-dex. Serwer steruje aplikacjami przez AppleScript na tym komputerze i nie wymaga konta ani klucza. Podczas instalacji dani-dex może od razu poprosić macOS o dostęp do wszystkich tych aplikacji, z jednym pytaniem dla każdej. Jeśli tego nie zrobisz, macOS zapyta, gdy agent po raz pierwszy użyje aplikacji. Aby zmienić to później, otwórz Ustawienia systemowe › Prywatność i ochrona › Automatyzacja. Agenci mogą wysyłać e-maile i wiadomości iMessage oraz zmieniać lub usuwać wydarzenia, kontakty i przypomnienia, więc sprawdź każdy zapis, zanim go zatwierdzisz. To, co odczytują narzędzia, na przykład treść e-maili, trafia do dostawcy modelu agenta.",
+    "Apple apps pozwala agentom korzystać z aplikacji Mail, Kalendarz, Kontakty, Przypomnienia, Notatki, Wiadomości i Safari na tym Macu. Działa tylko w macOS. Dani Dex uruchamia mcp-icloud, serwer społeczności, którego nie tworzy Apple ani Dani Dex. Serwer steruje aplikacjami przez AppleScript na tym komputerze i nie wymaga konta ani klucza. Podczas instalacji Dani Dex może od razu poprosić macOS o dostęp do wszystkich tych aplikacji, z jednym pytaniem dla każdej. Jeśli tego nie zrobisz, macOS zapyta, gdy agent po raz pierwszy użyje aplikacji. Aby zmienić to później, otwórz Ustawienia systemowe › Prywatność i ochrona › Automatyzacja. Agenci mogą wysyłać e-maile i wiadomości iMessage oraz zmieniać lub usuwać wydarzenia, kontakty i przypomnienia, więc sprawdź każdy zapis, zanim go zatwierdzisz. To, co odczytują narzędzia, na przykład treść e-maili, trafia do dostawcy modelu agenta.",
   "marketplace.plugin.appleApps.app":
     "Mail, Kalendarz, Kontakty, Przypomnienia, Notatki, Wiadomości i Safari przez lokalny serwer mcp-icloud. Wymaga macOS i dostępu w Automatyzacji.",
   "marketplace.plugin.appleApps.prompt.unread": "Podsumuj moje dzisiejsze nieprzeczytane e-maile w Apple Mail.",
@@ -585,8 +585,8 @@ export const messages = {
   "marketplace.skills.source.all": "Wszystkie",
   "marketplace.skills.source.verified": "Zweryfikowane",
   "marketplace.skills.source.public": "Publiczne",
-  "marketplace.skills.source.verifiedLong": "Zweryfikowana przez dani-dex",
-  "marketplace.skills.source.publicLong": "Sprawdzona przez dani-dex",
+  "marketplace.skills.source.verifiedLong": "Zweryfikowana przez Dani Dex",
+  "marketplace.skills.source.publicLong": "Sprawdzona przez Dani Dex",
   "marketplace.skills.sortLabel": "Sortuj",
   "marketplace.skills.sortName": "Sortuj: {name}",
   "marketplace.skills.sort.installs": "Najczęściej używane",
@@ -615,7 +615,7 @@ export const messages = {
   "marketplace.skills.github.search": "Szukaj lub wklej link do GitHub",
   "marketplace.skills.github.reading": "Szukanie umiejętności w repozytorium",
   "marketplace.skills.github.trust":
-    "dani-dex nie sprawdził umiejętności z GitHub. Przeczytaj umiejętność, zanim ją dodasz.",
+    "Dani Dex nie sprawdził umiejętności z GitHub. Przeczytaj umiejętność, zanim ją dodasz.",
   "marketplace.skills.github.source": "GitHub · {repository}, commit {commit}",
   "marketplace.skills.github.open": "GitHub",
   "marketplace.skills.github.openName": "Otwórz {repository} w GitHub",

@@ -2,14 +2,14 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/webClient";
 
 export const messages = {
-  "webClient.loading": "dani-dex wird geladen…",
+  "webClient.loading": "Dani Dex wird geladen…",
   "webClient.loadingLine.wake": "Agenten werden geweckt…",
   "webClient.loadingLine.coffee": "Kaffee für die Agenten wird eingeschenkt…",
   "webClient.loadingLine.tokens": "Tokens werden an den Fingern abgezählt…",
   "webClient.loadingLine.prompts": "Prompts werden entwirrt…",
   "webClient.loadingLine.sleepy": "Der schläfrige Agent wird nett gebeten…",
   "webClient.loadingLine.almost": "Fast geschafft. Wahrscheinlich.",
-  "webClient.slowLoad.title": "dani-dex braucht länger als üblich",
+  "webClient.slowLoad.title": "Dani Dex braucht länger als üblich",
   "webClient.slowLoad.body": "Prüfe deine Internetverbindung und lade die Seite dann neu.",
   "webClient.slowLoad.reload": "Neu laden",
   "webClient.login.failed": "Anmeldung fehlgeschlagen.",
@@ -23,7 +23,7 @@ export const messages = {
   "webClient.pane.workspace": "Arbeitsbereich",
   "webClient.phoneApp.title": "Nutze die dani-dex-App",
   "webClient.phoneApp.description":
-    "Auf dem Handy funktioniert dani-dex am besten in der App. Melde dich mit derselben E-Mail an.",
+    "Auf dem Handy funktioniert Dani Dex am besten in der App. Melde dich mit derselben E-Mail an.",
   "webClient.phoneApp.ios": "Für iPhone laden",
   "webClient.phoneApp.android": "Für Android laden",
   "webClient.phoneApp.continue": "Im Browser fortfahren",
@@ -32,19 +32,19 @@ export const messages = {
   "webClient.notice.hostsFailed": "Deine Server konnten nicht geladen werden",
   "webClient.notice.connectComputer": "Verbinde einen Server",
   "webClient.connect.description":
-    "Starte dani-dex auf deinem Computer, um über diesen Browser mit deinen Agenten zu chatten. Du kannst auch mit einer Einladung einem Server beitreten.",
+    "Starte Dani Dex auf deinem Computer, um über diesen Browser mit deinen Agenten zu chatten. Du kannst auch mit einer Einladung einem Server beitreten.",
   "webClient.connect.descriptionHosted":
-    "Erstelle einen gehosteten Server, um über diesen Browser mit deinen Agenten zu chatten. Du kannst dani-dex auch auf deinem Computer starten oder mit einer Einladung einem Server beitreten.",
-  "webClient.connect.stepInstall": "Installiere und öffne dani-dex auf deinem Computer.",
+    "Erstelle einen gehosteten Server, um über diesen Browser mit deinen Agenten zu chatten. Du kannst Dani Dex auch auf deinem Computer starten oder mit einer Einladung einem Server beitreten.",
+  "webClient.connect.stepInstall": "Installiere und öffne Dani Dex auf deinem Computer.",
   "webClient.connect.stepSignIn": "Melde dich mit deiner E-Mail-Adresse an.",
   "webClient.connect.stepRemote":
-    "Öffne in dani-dex Servereinstellungen > Mitglieder und aktiviere Server veröffentlichen.",
-  "webClient.notice.download": "dani-dex herunterladen",
+    "Öffne in Dani Dex Servereinstellungen > Mitglieder und aktiviere Server veröffentlichen.",
+  "webClient.notice.download": "Dani Dex herunterladen",
   "webClient.notice.createServer": "Gehosteten Server erstellen",
   "webClient.notice.join": "Mit Einladung beitreten",
   "webClient.notice.refreshHosts": "Server aktualisieren",
   "webClient.otherTab.title": "{name} ist in einem anderen Tab geöffnet",
-  "webClient.otherTab.description": "dani-dex kann einen Server jeweils nur in einem Tab verwenden.",
+  "webClient.otherTab.description": "Dani Dex kann einen Server jeweils nur in einem Tab verwenden.",
   "webClient.otherTab.useHere": "Hier verwenden",
   "webClient.agent.modelsFailed": "Die Modelle des Servers konnten nicht geladen werden.",
   "webClient.agent.refreshFailed":
@@ -54,7 +54,7 @@ export const messages = {
   "webClient.error.usageOffline": "Verbinde dich mit deinem Server, um die Nutzung anzuzeigen.",
   "webClient.error.desktopOnly": "Diese Aktion ist in der Desktop-App verfügbar.",
   "webClient.settings.preferences.title": "Einstellungen",
-  "webClient.settings.preferences.description": "Wähle die Sprache und Töne von dani-dex in diesem Browser.",
+  "webClient.settings.preferences.description": "Wähle die Sprache und Töne von Dani Dex in diesem Browser.",
   "webClient.error.checkConversation": "Prüfe die Unterhaltung, bevor du erneut sendest.",
   "webClient.error.hostReported": "Der Server hat einen Fehler gemeldet. Prüfe die Unterhaltung und den Serverstatus.",
   "webClient.error.requestFailed": "Die Anfrage ist fehlgeschlagen.",
@@ -86,7 +86,7 @@ export const messages = {
   "webClient.error.identityChanged": "Die Identität des Servers hat sich geändert. Verbindung abgelehnt.",
   "webClient.error.connectionUnavailable": "Die Serververbindung ist nicht verfügbar.",
   "webClient.error.incompatible":
-    "Dieser Server ist nicht mit dani-dex Web kompatibel. Aktualisiere den Server und lade diese Seite neu.",
+    "Dieser Server ist nicht mit Dani Dex Web kompatibel. Aktualisiere den Server und lade diese Seite neu.",
   "webClient.error.sendUnconfirmed":
     "Die Zustellung der Nachricht ist nicht bestätigt. Aktualisiere, bevor du sie erneut sendest.",
   "webClient.error.fileType": "Aktualisiere den Server, um diesen Dateityp anzuhängen.",

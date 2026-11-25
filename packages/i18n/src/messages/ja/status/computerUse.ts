@@ -7,9 +7,9 @@ export const messages = {
   "status.computerUse.driverNoAnswer": "Computer Use ドライバーが応答しませんでした。{reason}",
   "status.computerUse.driverStopped": "Computer Use ドライバーが停止しました。",
   "status.computerUse.unsupported": "Computer Use は macOS、Windows、Linux で使用できます。",
-  "status.computerUse.driverMissing": "この dani-dex ビルドには Computer Use ドライバーが含まれていません。",
+  "status.computerUse.driverMissing": "この Dani Dex ビルドには Computer Use ドライバーが含まれていません。",
   "status.computerUse.inputRefused":
-    "このデスクトップでは、dani-dex は他のアプリで入力やクリックができません。Web サイトでの作業は、エージェントに dani-dex ブラウザーを使うよう頼んでください。",
+    "このデスクトップでは、Dani Dex は他のアプリで入力やクリックができません。Web サイトでの作業は、エージェントに Dani Dex ブラウザーを使うよう頼んでください。",
   "status.computerUse.progressActing": "このコンピューターのアプリを操作しています…",
   "status.computerUse.progressDeciding": "アプリでの次の操作を決めています…",
 } as const satisfies PartialTranslation<typeof source>;

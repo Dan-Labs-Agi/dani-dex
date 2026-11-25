@@ -3,12 +3,12 @@ import type { messages as source } from "../../en/error/auth";
 
 export const messages = {
   "error.auth.serviceUnavailable":
-    "dani-dex nie może połączyć się z usługą kont. Sprawdź, czy API działa, i spróbuj ponownie.",
+    "Dani Dex nie może połączyć się z usługą kont. Sprawdź, czy API działa, i spróbuj ponownie.",
   "error.auth.sessionTimeout":
-    "dani-dex nie odpowiedział na czas. Sprawdź połączenie z internetem, a potem spróbuj ponownie.",
+    "Dani Dex nie odpowiedział na czas. Sprawdź połączenie z internetem, a potem spróbuj ponownie.",
   "error.auth.networkBlocked":
-    "Zapora lub serwer proxy w tej sieci blokuje połączenie dani-dex z {host}. Poproś administratora sieci o zezwolenie na {host} i spróbuj ponownie.",
-  "error.auth.signInFirst": "Najpierw zaloguj się do dani-dex.",
+    "Zapora lub serwer proxy w tej sieci blokuje połączenie Dani Dex z {host}. Poproś administratora sieci o zezwolenie na {host} i spróbuj ponownie.",
+  "error.auth.signInFirst": "Najpierw zaloguj się do Dani Dex.",
   "error.auth.signInRequired": "Wymagane jest zalogowanie.",
   "error.auth.chatColorUnavailable": "Usługa kont nie obsługuje jeszcze kolorów czatu. Spróbuj ponownie później.",
   "error.auth.accountChangedDuringRegister": "Zalogowane konto zmieniło się podczas rejestrowania tego serwera.",
@@ -16,16 +16,16 @@ export const messages = {
   "error.auth.codeNotVerified": "Nie udało się zweryfikować kodu logowania.",
   "error.auth.serviceError": "Usługa kont zwróciła błąd.",
   "error.auth.serviceUnreachable":
-    "dani-dex nie może połączyć się z usługą kont. Sprawdź połączenie i spróbuj ponownie.",
+    "Dani Dex nie może połączyć się z usługą kont. Sprawdź połączenie i spróbuj ponownie.",
   "error.auth.serviceTimeout": "Usługa kont nie odpowiedziała na czas. Spróbuj ponownie.",
   "error.auth.serviceStatus": "Usługa kont zwróciła błąd ({status}). Spróbuj ponownie później.",
   "error.auth.invalidHostedServer": "Usługa kont zwróciła nieprawidłowy serwer hostowany.",
   "error.auth.invalidServerClaim": "Usługa kont zwróciła nieprawidłowy kod serwera.",
-  "error.auth.codeNotSent": "dani-dex nie mógł wysłać kodu logowania.",
+  "error.auth.codeNotSent": "Dani Dex nie mógł wysłać kodu logowania.",
   "error.auth.deliveryTimeout":
-    "dani-dex nie zdołał na czas potwierdzić dostarczenia. Kod może jeszcze dotrzeć; sprawdź skrzynkę, zanim wyślesz go ponownie.",
+    "Dani Dex nie zdołał na czas potwierdzić dostarczenia. Kod może jeszcze dotrzeć; sprawdź skrzynkę, zanim wyślesz go ponownie.",
   "error.auth.deliveryInterrupted":
-    "Połączenie zakończyło się, zanim dani-dex potwierdził dostarczenie. Sprawdź skrzynkę, aby nie wysyłać kolejnego kodu.",
+    "Połączenie zakończyło się, zanim Dani Dex potwierdził dostarczenie. Sprawdź skrzynkę, aby nie wysyłać kolejnego kodu.",
   "error.auth.deliveryUnknown":
-    "dani-dex nie mógł potwierdzić, czy kod logowania został wysłany. Sprawdź skrzynkę, zanim wyślesz go ponownie.",
+    "Dani Dex nie mógł potwierdzić, czy kod logowania został wysłany. Sprawdź skrzynkę, zanim wyślesz go ponownie.",
 } as const satisfies PartialTranslation<typeof source>;

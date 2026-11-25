@@ -40,7 +40,7 @@ export const messages = {
   "agentSettings.folders.inWorkspace": "{folder} נמצאת בסביבת העבודה, ולכן {agent} כבר יכול לשנות אותה",
   "agentSettings.folders.inShared": "{folder} נמצאת בתיקייה המשותפת, ולכן {agent} כבר יכול לשנות אותה",
   "agentSettings.folders.inFolder": "{folder} נמצאת ב-{parent}, שכבר נוספה",
-  "agentSettings.folders.protected": "אי אפשר להוסיף את {folder}: היא מכילה נתוני dani-dex או קבצים של סוכנים אחרים",
+  "agentSettings.folders.protected": "אי אפשר להוסיף את {folder}: היא מכילה נתוני Dani Dex או קבצים של סוכנים אחרים",
   "agentSettings.folders.missing": "{folder} אינה תיקייה במחשב הזה",
   "agentSettings.folders.limit": {
     one: "אפשר להוסיף תיקייה אחת לכל היותר",
@@ -160,7 +160,7 @@ export const messages = {
   "agentSettings.runtime.notAvailable": "עדיין לא זמין",
   "agentSettings.runtime.fullAccessNote": "הסוכן פועל עם גישה מלאה למחשב מתוך סביבת העבודה שלו והתיקייה המשותפת.",
   "agentSettings.runtime.askNote":
-    "הוא שואל אותך לפני שהוא משתמש בכלי של dani-dex או מפרסם אתר, וכשהספק שלו מבקש אישור.",
+    "הוא שואל אותך לפני שהוא משתמש בכלי של Dani Dex או מפרסם אתר, וכשהספק שלו מבקש אישור.",
   "agentSettings.runtime.fullNote": "הוא פועל בלי לשאול, מלבד שאלות שהוא מפנה אליך.",
 
   "agentSettings.access.workspace": "סביבת עבודה בלבד",
@@ -224,7 +224,7 @@ export const messages = {
   "agentSettings.runtime.workspaceEnforcedCommand": "פקודה שחייבת לכתוב בחוץ שואלת אותך קודם.",
   "agentSettings.runtime.workspaceEnforcedClaude": "עריכת קובץ בחוץ שואלת אותך קודם. פקודה אינה יכולה לכתוב בחוץ.",
   "agentSettings.runtime.workspaceUnlimited":
-    "שליטה במחשב והדפדפן של dani-dex אינם מוגבלים; אפשר לכבות את שליטה במחשב בהמשך.",
+    "שליטה במחשב והדפדפן של Dani Dex אינם מוגבלים; אפשר לכבות את שליטה במחשב בהמשך.",
   "agentSettings.computerUse.title": "שליטה במחשב",
   "agentSettings.computerUse.description": "לאפשר לסוכן הזה לשלוט באפליקציות במחשב הזה",
   "agentSettings.automation.title": "סקריפטים מקומיים",
@@ -234,7 +234,7 @@ export const messages = {
   "agentSettings.agentNewChat.description": "לאפשר לסוכן להתחיל צ'אט חדש כשהצ'אט שלו מתארך. קודם הוא שומר הערות.",
   "agentSettings.quickAcknowledgement.title": "הצגת התוכנית לפני משימות ארוכות",
   "agentSettings.quickAcknowledgement.description": "לפני משימה ארוכה, הסוכן מציג את התוכנית שלו.",
-  "agentSettings.builtinMemory.title": "הזיכרון של dani-dex",
+  "agentSettings.builtinMemory.title": "הזיכרון של Dani Dex",
   "agentSettings.builtinMemory.description":
     "הסוכן שומר וקורא את הזיכרונות שלו. כבו כדי להשתמש רק באפליקציית זיכרון, כמו Mem0. הזיכרונות השמורים נשארים.",
   "agentSettings.browserProfile.label": "פרופיל דפדפן",

@@ -5,7 +5,7 @@ export const messages = {
   "error.import.manifestNotJson": "{manifest} ist kein gültiges JSON.",
   "error.import.notAgentExport": "{manifest} ist kein dani-dex-Agentenexport.",
   "error.import.newerExportSkill":
-    "Dieser Export wurde mit einer neueren Exportfähigkeit erstellt. Aktualisiere dani-dex und versuche es erneut.",
+    "Dieser Export wurde mit einer neueren Exportfähigkeit erstellt. Aktualisiere Dani Dex und versuche es erneut.",
   "error.import.noAgents": "Der Export enthält keine Agenten.",
   "error.import.tooManyAgents": "Der Export enthält mehr als {limit} Agenten.",
   "error.import.tooManyChannels": "Der Export enthält mehr als {limit} Kanäle.",
@@ -51,7 +51,7 @@ export const messages = {
   "error.import.uploadDiskSpace":
     "Der Export braucht {size} GB freien Speicher auf dem Server, und {free} GB sind frei. Gib auf dem Server Speicher frei und wähle den Export dann erneut.",
   "error.import.remoteZipTooLargeOldHost":
-    "Dieser Server nimmt Exporte bis 100 MB an. Aktualisiere dani-dex auf dem Server, um einen größeren Export zu importieren.",
+    "Dieser Server nimmt Exporte bis 100 MB an. Aktualisiere Dani Dex auf dem Server, um einen größeren Export zu importieren.",
   "error.import.skillKept":
     "{name}: Der Server hat die Fähigkeit „{skill}“ bereits. Der Agent verwendet daher diese Fähigkeit. Bitte einen Administrator, sie zu aktualisieren.",
   "error.import.skillRenamed":
@@ -60,7 +60,7 @@ export const messages = {
     "Eine Übertragungsdatei für einen beigetretenen Server muss kleiner als 100 MB sein. Deaktiviere die Dateien der Arbeitsbereiche oder exportiere weniger Agenten.",
   "error.import.transferNotFile": "Diese Datei ist keine dani-dex-Übertragungsdatei.",
   "error.import.transferNewer":
-    "Eine neuere Version von dani-dex hat diese Datei erstellt. Aktualisiere dani-dex und versuche es erneut.",
+    "Eine neuere Version von Dani Dex hat diese Datei erstellt. Aktualisiere Dani Dex und versuche es erneut.",
   "error.import.transferEmpty": "Die Datei enthält keine Agenten und keine Einstellungen.",
   "error.import.transferTooLarge":
     "Eine Übertragungsdatei muss kleiner als 2 GB sein und weniger als 50.000 Dateien enthalten. Deaktiviere die Dateien der Arbeitsbereiche oder exportiere weniger Agenten.",

@@ -46,7 +46,7 @@ export const messages = {
   "error.skill.tooManySkills": "Agent może mieć maksymalnie {limit} umiejętności.",
   "error.skill.unmanagedExists": "Niezarządzana umiejętność już istnieje w {path}.",
   "error.skill.managedSlug":
-    "dani-dex daje każdemu agentowi własną umiejętność {slug}. Nadaj tej umiejętności inną nazwę.",
+    "Dani Dex daje każdemu agentowi własną umiejętność {slug}. Nadaj tej umiejętności inną nazwę.",
   "error.skill.templateMarkdownTooLarge": "{name}: SKILL.md jest większy niż 64 KB. Skróć go przed publikacją.",
   "error.skill.localNoRevisions": "Lokalna umiejętność nie ma opublikowanych wersji.",
   "error.skill.localNotFound": "Ta lokalna umiejętność nie istnieje. Sprawdź jej ID na liście lokalnych umiejętności.",
@@ -64,12 +64,12 @@ export const messages = {
   "error.skill.folderNotRead": "{provider} nie czyta folderu {folder}. Skopiuj ten folder do {target}.",
   "error.skill.githubLinkInvalid": "Wklej link do repozytorium lub folderu w GitHub.",
   "error.skill.githubNotFound":
-    "dani-dex nie może otworzyć {repository}. Repozytorium jest prywatne albo nie istnieje.",
+    "Dani Dex nie może otworzyć {repository}. Repozytorium jest prywatne albo nie istnieje.",
   "error.skill.githubNoSkills": "W {folder} nie ma pliku SKILL.md.",
-  "error.skill.githubUnavailable": "dani-dex nie może teraz odczytać GitHub. Spróbuj ponownie później.",
+  "error.skill.githubUnavailable": "Dani Dex nie może teraz odczytać GitHub. Spróbuj ponownie później.",
   "error.skill.githubRateLimited":
-    "GitHub ogranicza, jak często dani-dex może go odczytać bez konta. Spróbuj ponownie za godzinę.",
-  "error.skill.githubTooLarge": "dani-dex nie może odczytać wszystkich plików {repository}. Repozytorium jest za duże.",
+    "GitHub ogranicza, jak często Dani Dex może go odczytać bez konta. Spróbuj ponownie za godzinę.",
+  "error.skill.githubTooLarge": "Dani Dex nie może odczytać wszystkich plików {repository}. Repozytorium jest za duże.",
   "error.skill.githubHostTooOld": "Zaktualizuj ten serwer, aby dodawać umiejętności z GitHub.",
   "error.skill.publishGithub": "{name} pochodzi z GitHub. Możesz publikować tylko umiejętności, które utworzysz.",
 } as const satisfies PartialTranslation<typeof source>;

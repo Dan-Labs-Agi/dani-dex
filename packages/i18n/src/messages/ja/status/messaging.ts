@@ -5,14 +5,14 @@ export const messages = {
   "status.messaging.working": "対応しています…",
   "status.messaging.queued": "待機中: 前のリクエストの完了を待っています。回答はここに届きます。",
   "status.messaging.busy": "待機中のリクエストが多すぎます。しばらくしてからもう一度お試しください。",
-  "status.messaging.failed": "dani-dex はこのリクエストを完了できませんでした。詳細は dani-dex のホストにあります。",
-  "status.messaging.noAnswer": "dani-dex はテキストの回答を返さずに終了しました。",
+  "status.messaging.failed": "Dani Dex はこのリクエストを完了できませんでした。詳細は Dani Dex のホストにあります。",
+  "status.messaging.noAnswer": "Dani Dex はテキストの回答を返さずに終了しました。",
   "status.messaging.noAgent":
-    "ここで回答できるエージェントはまだいません。dani-dex で Slack Orchestrator を追加してください。",
+    "ここで回答できるエージェントはまだいません。Dani Dex で Slack Orchestrator を追加してください。",
   "status.messaging.delegated": "チームメイトが対応しています。回答はここに届きます。",
   "status.messaging.stopped": "停止しました。",
   "status.messaging.stop": "停止",
-  "status.messaging.approvalTitle": "dani-dex が続行の承認を求めています。",
+  "status.messaging.approvalTitle": "Dani Dex が続行の承認を求めています。",
   "status.messaging.approvalTitleTeammate": "チームメイトの {agent} が続行の承認を求めています。",
   "status.messaging.approvalCommand": "コマンドを実行",
   "status.messaging.approvalFileChange": "ファイルを変更",
@@ -21,31 +21,31 @@ export const messages = {
   "status.messaging.deny": "拒否",
   "status.messaging.approvedBy": "{user} が承認しました。",
   "status.messaging.deniedBy": "{user} が拒否しました。",
-  "status.messaging.answeredOnHost": "dani-dex のホストで回答されました。",
+  "status.messaging.answeredOnHost": "Dani Dex のホストで回答されました。",
   "status.messaging.requestInactive": "このリクエストはもう有効ではありません。",
-  "status.messaging.onlyRequester": "これを行えるのは {user} だけです。dani-dex のホストでも回答できます。",
-  "status.messaging.hostOnly": "このリクエストに回答できるのは dani-dex のホストだけです。",
+  "status.messaging.onlyRequester": "これを行えるのは {user} だけです。Dani Dex のホストでも回答できます。",
+  "status.messaging.hostOnly": "このリクエストに回答できるのは Dani Dex のホストだけです。",
   "status.messaging.filesSkipped": "一部のファイルは送信されませんでした: {names}。",
   "status.messaging.orchestratorName": "Slack Orchestrator",
   "status.messaging.orchestratorTitle": "Slack で回答し、チームに依頼します",
   "status.messaging.discordNoAgent":
-    "ここで回答できるエージェントはまだいません。dani-dex で Discord Orchestrator を追加してください。",
+    "ここで回答できるエージェントはまだいません。Dani Dex で Discord Orchestrator を追加してください。",
   "status.messaging.discordOrchestratorName": "Discord Orchestrator",
   "status.messaging.discordOrchestratorTitle": "Discord で回答し、チームに依頼します",
   "status.messaging.integrationsSection": "連携",
-  "status.messaging.signInReceived": "dani-dex は Slack のインストールを受け取りました。このタブは閉じてかまいません。",
+  "status.messaging.signInReceived": "Dani Dex は Slack のインストールを受け取りました。このタブは閉じてかまいません。",
   "status.messaging.signInUnknown":
-    "この Slack のインストールは dani-dex が開始したものではありません。dani-dex でもう一度開始してください。",
+    "この Slack のインストールは Dani Dex が開始したものではありません。Dani Dex でもう一度開始してください。",
   "status.messaging.telegramNoAgent":
-    "ここで回答できるエージェントはまだいません。dani-dex で マーケットプレイス > アプリ > Telegram を開き、エージェントを追加 をクリックしてください。",
+    "ここで回答できるエージェントはまだいません。Dani Dex で マーケットプレイス > アプリ > Telegram を開き、エージェントを追加 をクリックしてください。",
   "status.messaging.telegramLinked":
-    "dani-dex はこのチャットに接続されています。エージェントに依頼するには、{bot} をメンションするか、dani-dex のメッセージに返信してください。",
+    "Dani Dex はこのチャットに接続されています。エージェントに依頼するには、{bot} をメンションするか、Dani Dex のメッセージに返信してください。",
   "status.messaging.telegramNotLinked":
-    "dani-dex はこのチャットに接続されていません。接続するには、dani-dex アプリを開き、マーケットプレイス → アプリ → Telegram で「グループに追加」または「ダイレクトチャットを開く」を選択してください。",
+    "Dani Dex はこのチャットに接続されていません。接続するには、Dani Dex アプリを開き、マーケットプレイス → アプリ → Telegram で「グループに追加」または「ダイレクトチャットを開く」を選択してください。",
   "status.messaging.telegramOrchestratorName": "Telegram Orchestrator",
   "status.messaging.telegramOrchestratorTitle": "Telegram で回答し、チームに依頼します",
   "status.messaging.whatsappNoAgent":
-    "ここで回答できるエージェントはまだいません。dani-dex で WhatsApp Orchestrator を追加してください。",
+    "ここで回答できるエージェントはまだいません。Dani Dex で WhatsApp Orchestrator を追加してください。",
   "status.messaging.whatsappApprovalMenu": "承認する場合は 1、拒否する場合は 2 と返信してください。",
   "status.messaging.whatsappStopMenu": "停止するには「stop」と返信してください。",
   "status.messaging.whatsappPairingCode":
@@ -53,13 +53,13 @@ export const messages = {
   "status.messaging.whatsappPairingApproved": "この番号にリクエストを送れるようになりました。",
   "status.messaging.whatsappOwnChat": "自分にメッセージ",
   "status.messaging.whatsappWelcomeOwn":
-    "👋 *dani-dex が接続しました*\n\nここに書いてエージェントに依頼できます。WhatsApp Orchestrator が答えるか、適切なエージェントに仕事を渡します。\n\n依頼を止めるには *stop* と送ってください。",
+    "👋 *Dani Dex が接続しました*\n\nここに書いてエージェントに依頼できます。WhatsApp Orchestrator が答えるか、適切なエージェントに仕事を渡します。\n\n依頼を止めるには *stop* と送ってください。",
   "status.messaging.whatsappWelcomeDedicated":
-    "👋 *dani-dex が接続しました*\n\nOpenBot で許可した人がこの番号に書けるようになりました。新しい人にはコードが届きます。dani-dex の「リクエスト」で承認してください。\n\n依頼を止めるには *stop* と送ってください。",
+    "👋 *Dani Dex が接続しました*\n\nOpenBot で許可した人がこの番号に書けるようになりました。新しい人にはコードが届きます。Dani Dex の「リクエスト」で承認してください。\n\n依頼を止めるには *stop* と送ってください。",
   "status.messaging.whatsappOtherOpenBot":
-    "この WhatsApp 番号には別の dani-dex もリンクされているため、回答が 2 件届くことがあります。直すには、スマートフォンの WhatsApp で「リンク済みデバイス」を開き、使っていない dani-dex をログアウトしてください。",
+    "この WhatsApp 番号には別の Dani Dex もリンクされているため、回答が 2 件届くことがあります。直すには、スマートフォンの WhatsApp で「リンク済みデバイス」を開き、使っていない Dani Dex をログアウトしてください。",
   "status.messaging.whatsappPaused":
-    "短時間にメッセージが多すぎたため、dani-dex はここで 10 分間応答を止めています。この番号に別の dani-dex もリンクされている場合は、スマートフォンの WhatsApp で「リンク済みデバイス」を開き、使っていない dani-dex をログアウトしてください。",
+    "短時間にメッセージが多すぎたため、Dani Dex はここで 10 分間応答を止めています。この番号に別の Dani Dex もリンクされている場合は、スマートフォンの WhatsApp で「リンク済みデバイス」を開き、使っていない Dani Dex をログアウトしてください。",
   "status.messaging.whatsappOrchestratorName": "WhatsApp Orchestrator",
   "status.messaging.whatsappOrchestratorTitle": "WhatsApp で回答し、チームに依頼します",
 } as const satisfies PartialTranslation<typeof source>;

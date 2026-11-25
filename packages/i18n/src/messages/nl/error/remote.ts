@@ -18,14 +18,14 @@ export const messages = {
   "error.remote.linuxNeedsX11":
     "Extern bureaublad op Linux heeft een X11-sessie nodig. Wayland wordt niet ondersteund.",
   "error.remote.runtimeMissing":
-    "De runtime van Sunshine en Moonlight Web ontbreekt of wordt niet ondersteund op deze host. Installeer de volledige release van dani-dex op een Mac, een Windows x64-host of een Linux x64-host en start dani-dex opnieuw.",
+    "De runtime van Sunshine en Moonlight Web ontbreekt of wordt niet ondersteund op deze host. Installeer de volledige release van Dani Dex op een Mac, een Windows x64-host of een Linux x64-host en start Dani Dex opnieuw.",
   "error.remote.testActive": "Er loopt een test van extern bureaublad. Probeer het opnieuw als die klaar is.",
   "error.remote.screenRecordingDenied":
-    "De host heeft dani-dex niet toegestaan het scherm op te nemen. Geef toestemming voor schermopname op de host en probeer het opnieuw.",
+    "De host heeft Dani Dex niet toegestaan het scherm op te nemen. Geef toestemming voor schermopname op de host en probeer het opnieuw.",
   "error.remote.windowsSessionDisconnected":
     "De Windows-sessie op de host is verbroken, dus er is geen scherm om te delen. Meld je aan bij Windows op het scherm van de host en probeer het opnieuw.",
   "error.remote.windowsCaptureDenied":
-    "Windows op de host laat dani-dex het scherm niet opnemen. Ontgrendel Windows op het scherm van de host, sluit elke beheerdersprompt en probeer het opnieuw. Blijft het probleem, start de host dan opnieuw op.",
+    "Windows op de host laat Dani Dex het scherm niet opnemen. Ontgrendel Windows op het scherm van de host, sluit elke beheerdersprompt en probeer het opnieuw. Blijft het probleem, start de host dan opnieuw op.",
   "error.remote.macScreenLocked":
     "De Mac is vergrendeld en kan zijn scherm dus niet delen. Ontgrendel de Mac op zijn scherm en probeer het opnieuw.",
   "error.remote.streamTooSlowLowerQuality":
@@ -46,7 +46,7 @@ export const messages = {
   "error.remote.moonlightStartFailed":
     "Moonlight Web is niet gestart op de host. Controleer de logs van extern bureaublad op de host en probeer het opnieuw.",
   "error.remote.pairingFailed":
-    "Moonlight kon niet koppelen met Sunshine op de host. Probeer het opnieuw. Blijft het probleem, start dani-dex dan opnieuw op de host.",
+    "Moonlight kon niet koppelen met Sunshine op de host. Probeer het opnieuw. Blijft het probleem, start Dani Dex dan opnieuw op de host.",
   "error.remote.runtimeStartFailed":
     "De runtime voor extern bureaublad is niet gestart op de host. Controleer de logs van extern bureaublad op de host en probeer het opnieuw.",
   "error.remote.hostUnreachable": "De host is niet bereikbaar.",
@@ -76,9 +76,9 @@ export const messages = {
     "De identiteit van de host van de uitnodiging is gewijzigd tijdens het accepteren.",
   "error.remote.localServerRemove": "De lokale server kan niet worden verwijderd.",
   "error.remote.desktopSetupHostUpdate":
-    "Werk dani-dex bij op de host om de instelling van extern bureaublad te controleren.",
+    "Werk Dani Dex bij op de host om de instelling van extern bureaublad te controleren.",
   "error.remote.desktopTestHostUpdate":
-    "Werk dani-dex bij op de host om de instelling van extern bureaublad te testen.",
+    "Werk Dani Dex bij op de host om de instelling van extern bureaublad te testen.",
   "error.remote.viewerProxyUnavailable": "De lokale proxy voor de externe viewer is niet beschikbaar.",
   "error.remote.viewerTransportInvalid": "Het transport van de externe viewer is ongeldig.",
   "error.remote.viewerProxyNoPort": "De lokale proxy voor de externe viewer heeft geen poort gekregen.",
@@ -96,12 +96,12 @@ export const messages = {
   "error.remote.requestTimeout": "Het externe verzoek duurde te lang.",
   "error.remote.requestFailed": "Het externe verzoek is mislukt.",
   "error.remote.hostKeyMissing":
-    "dani-dex kan deze server niet controleren, omdat de beveiligingssleutel ontbreekt of is gewijzigd. Vraag de eigenaar van de server om de server te controleren.",
+    "Dani Dex kan deze server niet controleren, omdat de beveiligingssleutel ontbreekt of is gewijzigd. Vraag de eigenaar van de server om de server te controleren.",
   "error.remote.connectionNotStarted":
-    "dani-dex kon de verbinding met deze server niet starten. Als dit blijft gebeuren, sluit dani-dex af en open het opnieuw.",
+    "Dani Dex kon de verbinding met deze server niet starten. Als dit blijft gebeuren, sluit Dani Dex af en open het opnieuw.",
   "error.remote.connectionServiceUnreachable":
-    "Deze computer kan de verbindingsdienst van dani-dex niet bereiken. Controleer de internetverbinding. dani-dex verbindt automatisch opnieuw.",
-  "error.remote.serverAnswerTimeout": "De server heeft niet op tijd geantwoord. dani-dex verbindt automatisch opnieuw.",
+    "Deze computer kan de verbindingsdienst van Dani Dex niet bereiken. Controleer de internetverbinding. Dani Dex verbindt automatisch opnieuw.",
+  "error.remote.serverAnswerTimeout": "De server heeft niet op tijd geantwoord. Dani Dex verbindt automatisch opnieuw.",
   "error.remote.connectionCancelled": "De externe verbinding is geannuleerd.",
   "error.remote.hostDisconnected":
     "De verbinding met de server is verbroken. Controleer of de actie is voltooid en probeer het dan opnieuw.",
@@ -184,7 +184,7 @@ export const messages = {
   "error.remote.signalInvalidMessage": "Signal gaf een ongeldig bericht terug.",
   "error.remote.sessionInvalid": "De externe sessie is ongeldig.",
   "error.remote.ticketInvalid": "Het verbindingsticket is ongeldig.",
-  "error.remote.mobileUpdateRequired": "Werk dani-dex Mobile of de desktop-app bij voordat je verbinding maakt.",
+  "error.remote.mobileUpdateRequired": "Werk Dani Dex Mobile of de desktop-app bij voordat je verbinding maakt.",
   "error.remote.connectionStepFailed": "Kan deze verbindingsstap niet voltooien.",
   "error.remote.signalNotConnected": "Signal is niet verbonden.",
   "error.remote.signalFrameUnreadable": "Signal stuurde een frame dat deze peer niet kan lezen.",
@@ -193,9 +193,9 @@ export const messages = {
   "error.remote.hostBusy": "De host is bezig met een andere verbinding. Probeer het zo opnieuw.",
   "error.remote.signalPermissionDenied": "Je account heeft geen toegang tot deze host. Vraag de eigenaar om toegang.",
   "error.remote.signalRateLimited":
-    "Te veel verbindingspogingen. dani-dex probeert het over {seconds} seconden opnieuw.",
+    "Te veel verbindingspogingen. Dani Dex probeert het over {seconds} seconden opnieuw.",
   "error.remote.signalProtocolError":
-    "Signal en deze app zijn het niet eens over het verbindingsprotocol. Werk dani-dex bij en probeer het opnieuw.",
+    "Signal en deze app zijn het niet eens over het verbindingsprotocol. Werk Dani Dex bij en probeer het opnieuw.",
   "error.remote.signalRefused": "Signal heeft de verbinding geweigerd.",
   "error.remote.signalClosed": "De verbinding met Signal is gesloten voordat de host antwoordde.",
   "error.remote.relayUnavailable": "Signal stuurde geen relayservers voor deze verbinding. Probeer het later opnieuw.",
@@ -203,8 +203,8 @@ export const messages = {
     "Er kon geen directe verbinding met de host worden gemaakt. Een firewall, VPN of proxy kan deze blokkeren.",
   "error.remote.iceDisconnected": "De directe verbinding met de host is verbroken.",
   "error.remote.webrtcBlocked":
-    "Dit apparaat blokkeert de verbinding die dani-dex nodig heeft. Als de isolatiemodus aan staat, zet die dan uit voor dani-dex via Instellingen > Privacy en beveiliging > Isolatiemodus.",
-  "error.remote.directoryUnreachable": "dani-dex kan de dani-dex-service niet bereiken. Controleer je verbinding.",
+    "Dit apparaat blokkeert de verbinding die Dani Dex nodig heeft. Als de isolatiemodus aan staat, zet die dan uit voor Dani Dex via Instellingen > Privacy en beveiliging > Isolatiemodus.",
+  "error.remote.directoryUnreachable": "Dani Dex kan de dani-dex-service niet bereiken. Controleer je verbinding.",
   "error.remote.directoryTimeout": "De dani-dex-service reageerde niet op tijd. Probeer het opnieuw.",
   "error.remote.inviteAlreadyUsed": "Deze uitnodiging is al gebruikt. Vraag om een nieuwe uitnodiging.",
   "error.remote.inviteNotFound": "Deze uitnodiging bestaat niet of is verlopen. Vraag om een nieuwe uitnodiging.",
@@ -224,16 +224,16 @@ export const messages = {
   "error.remote.hostedServerRemoval": "Gebruik Facturering om een gehoste server te verwijderen.",
   "error.remote.hostRemoved": "De eigenaar heeft deze server uit het account verwijderd.",
   "error.remote.ownerTransferSelf": "Deze server is al van jou. Voer het e-mailadres van de nieuwe eigenaar in.",
-  "error.remote.ownerTransferHosted": "Een server die dani-dex host, kan niet van eigenaar wisselen.",
+  "error.remote.ownerTransferHosted": "Een server die Dani Dex host, kan niet van eigenaar wisselen.",
   "error.remote.ownerTransferInvalid":
     "Deze eigendomsoverdracht is niet meer beschikbaar. Vraag de eigenaar om hem opnieuw te sturen.",
   "error.remote.channelsUnsupported": "Werk deze desktopserver bij om kanalen te gebruiken.",
   "error.remote.channelDeleteUnsupported": "Werk deze desktopserver bij om kanalen te verwijderen.",
   "error.remote.historyRefreshFailed": "Het bericht is verstuurd, maar de chatgeschiedenis kon niet worden vernieuwd.",
   "error.remote.taskHistoryRefreshFailed": "De taak is gewijzigd, maar de chatgeschiedenis kon niet worden vernieuwd.",
-  "error.remote.serverNotLoaded": "dani-dex kon de server niet laden. Probeer het opnieuw.",
+  "error.remote.serverNotLoaded": "Dani Dex kon de server niet laden. Probeer het opnieuw.",
   "error.remote.localServerNotStarted":
-    "De server op deze computer is niet gestart. Probeer het opnieuw. Start hij niet, start dani-dex dan opnieuw op deze computer.",
+    "De server op deze computer is niet gestart. Probeer het opnieuw. Start hij niet, start Dani Dex dan opnieuw op deze computer.",
   "error.remote.localServerAccountRemovalFailed":
     "De server is op zijn computer verwijderd, maar het account toont hem nog. Verwijder hem opnieuw om hem uit het account te halen.",
 } as const satisfies PartialTranslation<typeof source>;

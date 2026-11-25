@@ -24,7 +24,7 @@ export const messages = {
   "computerUse.restartRequired.title": "다시 시작해야 해요",
   "computerUse.restartRequired.description":
     "macOS가 아직 클릭과 입력을 막고 있어요. 다시 시작한 뒤에도 그러면 '손쉬운 사용'에서 dani-dex을 제거하고 다시 추가하세요.",
-  "computerUse.restartRequired.action": "dani-dex 다시 시작",
+  "computerUse.restartRequired.action": "Dani Dex 다시 시작",
   "computerUse.compact.title": "컴퓨터 제어 켜기",
   "computerUse.compact.description": "dani-dex이 이 컴퓨터의 앱을 보고 조작하도록 허용해요.",
   "computerUse.granted": "허용됨",

@@ -17,14 +17,14 @@ export const messages = {
   "error.remote.sessionCapacity": "Host ma już cztery aktywne sesje.",
   "error.remote.linuxNeedsX11": "Zdalny pulpit w systemie Linux wymaga sesji X11. Wayland nie jest obsługiwany.",
   "error.remote.runtimeMissing":
-    "Brakuje środowiska Sunshine i Moonlight Web lub nie jest ono obsługiwane na tym hoście. Zainstaluj pełne wydanie dani-dex na Macu, hoście Windows x64 lub hoście Linux x64, a następnie uruchom ponownie dani-dex.",
+    "Brakuje środowiska Sunshine i Moonlight Web lub nie jest ono obsługiwane na tym hoście. Zainstaluj pełne wydanie Dani Dex na Macu, hoście Windows x64 lub hoście Linux x64, a następnie uruchom ponownie Dani Dex.",
   "error.remote.testActive": "Test zdalnego pulpitu jest aktywny. Spróbuj ponownie po jego zakończeniu.",
   "error.remote.screenRecordingDenied":
-    "Host nie zezwolił dani-dex na nagrywanie ekranu. Przyznaj na hoście uprawnienie do nagrywania ekranu, a następnie spróbuj ponownie.",
+    "Host nie zezwolił Dani Dex na nagrywanie ekranu. Przyznaj na hoście uprawnienie do nagrywania ekranu, a następnie spróbuj ponownie.",
   "error.remote.windowsSessionDisconnected":
     "Sesja Windows na hoście jest rozłączona, więc nie ma ekranu do udostępnienia. Zaloguj się do Windows na ekranie hosta, a następnie spróbuj ponownie.",
   "error.remote.windowsCaptureDenied":
-    "Windows na hoście nie pozwala dani-dex nagrywać ekranu. Odblokuj Windows na ekranie hosta, zamknij wszystkie monity administratora, a następnie spróbuj ponownie. Jeśli problem nie ustąpi, uruchom ponownie host.",
+    "Windows na hoście nie pozwala Dani Dex nagrywać ekranu. Odblokuj Windows na ekranie hosta, zamknij wszystkie monity administratora, a następnie spróbuj ponownie. Jeśli problem nie ustąpi, uruchom ponownie host.",
   "error.remote.macScreenLocked":
     "Mac jest zablokowany, więc nie może udostępnić ekranu. Odblokuj Maca na jego ekranie, a następnie spróbuj ponownie.",
   "error.remote.streamTooSlowLowerQuality":
@@ -45,7 +45,7 @@ export const messages = {
   "error.remote.moonlightStartFailed":
     "Moonlight Web nie uruchomił się na hoście. Sprawdź logi zdalnego pulpitu na hoście, a następnie spróbuj ponownie.",
   "error.remote.pairingFailed":
-    "Moonlight nie mógł sparować się z Sunshine na hoście. Spróbuj ponownie. Jeśli problem nie ustąpi, uruchom ponownie dani-dex na hoście.",
+    "Moonlight nie mógł sparować się z Sunshine na hoście. Spróbuj ponownie. Jeśli problem nie ustąpi, uruchom ponownie Dani Dex na hoście.",
   "error.remote.runtimeStartFailed":
     "Środowisko zdalnego pulpitu nie uruchomiło się na hoście. Sprawdź logi zdalnego pulpitu na hoście, a następnie spróbuj ponownie.",
   "error.remote.hostUnreachable": "Host jest nieosiągalny.",
@@ -53,7 +53,7 @@ export const messages = {
   "error.remote.invalidData": "Host zwrócił nieprawidłowe dane.",
   "error.remote.unsafeData": "Host zwrócił dane, których ta aplikacja nie może bezpiecznie użyć.",
   "error.remote.requestFailedStatus": "Żądanie do zdalnego serwera nie powiodło się ({status}).",
-  "error.remote.appUpdateRequired": "Zaktualizuj tę aplikację dani-dex, zanim połączysz się z hostem.",
+  "error.remote.appUpdateRequired": "Zaktualizuj tę aplikację Dani Dex, zanim połączysz się z hostem.",
   "error.remote.identityNotVerified": "Nie udało się zweryfikować tożsamości serwera.",
   "error.remote.webRtcUnavailable": "Transport WebRTC jest niedostępny.",
   "error.remote.invalidCompatibility": "Host zwrócił nieprawidłowe informacje o zgodności.",
@@ -71,9 +71,9 @@ export const messages = {
   "error.remote.inviteAcceptedOtherHost": "Usługa kont zaakceptowała inny host.",
   "error.remote.inviteIdentityChanged": "Tożsamość hosta zaproszenia zmieniła się podczas akceptacji.",
   "error.remote.localServerRemove": "Nie można usunąć lokalnego serwera.",
-  "error.remote.desktopSetupHostUpdate": "Zaktualizuj dani-dex na hoście, aby sprawdzić konfigurację zdalnego pulpitu.",
+  "error.remote.desktopSetupHostUpdate": "Zaktualizuj Dani Dex na hoście, aby sprawdzić konfigurację zdalnego pulpitu.",
   "error.remote.desktopTestHostUpdate":
-    "Zaktualizuj dani-dex na hoście, aby przetestować konfigurację zdalnego pulpitu.",
+    "Zaktualizuj Dani Dex na hoście, aby przetestować konfigurację zdalnego pulpitu.",
   "error.remote.viewerProxyUnavailable": "Lokalny serwer proxy zdalnego podglądu jest niedostępny.",
   "error.remote.viewerTransportInvalid": "Transport zdalnego podglądu jest nieprawidłowy.",
   "error.remote.viewerProxyNoPort": "Lokalny serwer proxy zdalnego podglądu nie otrzymał portu.",
@@ -92,12 +92,12 @@ export const messages = {
   "error.remote.requestTimeout": "Przekroczono limit czasu zdalnego żądania.",
   "error.remote.requestFailed": "Zdalne żądanie nie powiodło się.",
   "error.remote.hostKeyMissing":
-    "dani-dex nie może zweryfikować tego serwera, ponieważ brakuje jego klucza bezpieczeństwa lub klucz się zmienił. Poproś właściciela serwera o sprawdzenie serwera.",
+    "Dani Dex nie może zweryfikować tego serwera, ponieważ brakuje jego klucza bezpieczeństwa lub klucz się zmienił. Poproś właściciela serwera o sprawdzenie serwera.",
   "error.remote.connectionNotStarted":
-    "dani-dex nie mógł nawiązać połączenia z tym serwerem. Jeśli problem się powtarza, zamknij dani-dex i otwórz go ponownie.",
+    "Dani Dex nie mógł nawiązać połączenia z tym serwerem. Jeśli problem się powtarza, zamknij Dani Dex i otwórz go ponownie.",
   "error.remote.connectionServiceUnreachable":
-    "Ten komputer nie może połączyć się z usługą połączeń dani-dex. Sprawdź jego połączenie z internetem. dani-dex połączy się ponownie automatycznie.",
-  "error.remote.serverAnswerTimeout": "Serwer nie odpowiedział na czas. dani-dex połączy się ponownie automatycznie.",
+    "Ten komputer nie może połączyć się z usługą połączeń Dani Dex. Sprawdź jego połączenie z internetem. Dani Dex połączy się ponownie automatycznie.",
+  "error.remote.serverAnswerTimeout": "Serwer nie odpowiedział na czas. Dani Dex połączy się ponownie automatycznie.",
   "error.remote.connectionCancelled": "Zdalne połączenie zostało anulowane.",
   "error.remote.hostDisconnected":
     "Połączenie z serwerem zostało przerwane. Sprawdź, czy działanie się zakończyło, i spróbuj ponownie.",
@@ -149,11 +149,11 @@ export const messages = {
   "error.remote.permanentInviteNoEmail": "Stałych zaproszeń nie można wysyłać e-mailem.",
   "error.remote.selfHostedInviteNoEmail":
     "Zaproszenia z samodzielnie hostowanej usługi kont nie można wysłać e-mailem. Skopiuj link.",
-  "error.remote.inviteOtherService": "To zaproszenie należy do innej usługi dani-dex.",
+  "error.remote.inviteOtherService": "To zaproszenie należy do innej usługi Dani Dex.",
   "error.remote.inviteFingerprintMismatch": "Tożsamość hosta zaproszenia nie pasuje do jego odcisku.",
   "error.remote.inviteHostKeyMissing": "Brakuje klucza hosta zaproszenia.",
   "error.remote.inviteKeyConflict": "Zaproszenie koliduje z zaufanym kluczem hosta.",
-  "error.remote.serviceRequestFailed": "Żądanie do usługi dani-dex nie powiodło się.",
+  "error.remote.serviceRequestFailed": "Żądanie do usługi Dani Dex nie powiodło się.",
   "error.remote.downloadTimeout": "Przekroczono limit czasu pobierania załącznika. Spróbuj ponownie.",
   "error.remote.attachmentConnectionClosed": "Połączenie załączników zostało zamknięte.",
   "error.remote.tooManyDownloads": "Zbyt wiele pobierań załączników.",
@@ -179,7 +179,7 @@ export const messages = {
   "error.remote.signalInvalidMessage": "Signal zwrócił nieprawidłową wiadomość.",
   "error.remote.sessionInvalid": "Zdalna sesja jest nieprawidłowa.",
   "error.remote.ticketInvalid": "Bilet połączenia jest nieprawidłowy.",
-  "error.remote.mobileUpdateRequired": "Zaktualizuj dani-dex Mobile lub aplikację desktopową przed połączeniem.",
+  "error.remote.mobileUpdateRequired": "Zaktualizuj Dani Dex Mobile lub aplikację desktopową przed połączeniem.",
   "error.remote.connectionStepFailed": "Nie udało się ukończyć tego kroku połączenia.",
   "error.remote.signalNotConnected": "Signal nie jest połączony.",
   "error.remote.signalFrameUnreadable": "Signal wysłał ramkę, której ten węzeł nie może odczytać.",
@@ -187,9 +187,9 @@ export const messages = {
   "error.remote.dataChannelFailed": "Kanał {kind} uległ awarii.",
   "error.remote.hostBusy": "Host obsługuje inne połączenie. Spróbuj ponownie za chwilę.",
   "error.remote.signalPermissionDenied": "Twoje konto nie ma dostępu do tego hosta. Poproś właściciela o dostęp.",
-  "error.remote.signalRateLimited": "Zbyt wiele prób połączenia. dani-dex spróbuje ponownie za {seconds} s.",
+  "error.remote.signalRateLimited": "Zbyt wiele prób połączenia. Dani Dex spróbuje ponownie za {seconds} s.",
   "error.remote.signalProtocolError":
-    "Signal i ta aplikacja nie zgadzają się co do protokołu połączenia. Zaktualizuj dani-dex, a następnie spróbuj ponownie.",
+    "Signal i ta aplikacja nie zgadzają się co do protokołu połączenia. Zaktualizuj Dani Dex, a następnie spróbuj ponownie.",
   "error.remote.signalRefused": "Signal odrzucił połączenie.",
   "error.remote.signalClosed": "Połączenie z Signal zamknęło się, zanim host odpowiedział.",
   "error.remote.relayUnavailable":
@@ -198,27 +198,27 @@ export const messages = {
     "Nie udało się nawiązać bezpośredniego połączenia z hostem. Może je blokować zapora, VPN lub serwer proxy.",
   "error.remote.iceDisconnected": "Bezpośrednie połączenie z hostem zostało utracone.",
   "error.remote.webrtcBlocked":
-    "To urządzenie blokuje połączenie, którego potrzebuje dani-dex. Jeśli tryb blokady jest włączony, wyłącz go dla dani-dex w Ustawienia > Prywatność i ochrona > Tryb blokady.",
-  "error.remote.directoryUnreachable": "dani-dex nie mógł połączyć się z usługą dani-dex. Sprawdź połączenie.",
-  "error.remote.directoryTimeout": "Usługa dani-dex nie odpowiedziała na czas. Spróbuj ponownie.",
+    "To urządzenie blokuje połączenie, którego potrzebuje Dani Dex. Jeśli tryb blokady jest włączony, wyłącz go dla Dani Dex w Ustawienia > Prywatność i ochrona > Tryb blokady.",
+  "error.remote.directoryUnreachable": "Dani Dex nie mógł połączyć się z usługą Dani Dex. Sprawdź połączenie.",
+  "error.remote.directoryTimeout": "Usługa Dani Dex nie odpowiedziała na czas. Spróbuj ponownie.",
   "error.remote.inviteAlreadyUsed": "To zaproszenie zostało już użyte. Poproś o nowe zaproszenie.",
   "error.remote.inviteNotFound": "To zaproszenie nie istnieje lub wygasło. Poproś o nowe zaproszenie.",
   "error.remote.licenseUsersFull":
     "Licencja właściciela serwera nie ma wolnego użytkownika. Poproś właściciela o dodanie użytkownika do licencji.",
   "error.remote.memberLimitReached": "Ten host osiągnął limit członków. Poproś właściciela o zwolnienie miejsca.",
-  "error.remote.hostNotRegistered": "Ten host nie jest już zarejestrowany w usłudze dani-dex.",
+  "error.remote.hostNotRegistered": "Ten host nie jest już zarejestrowany w usłudze Dani Dex.",
   "error.remote.membershipEnded": "Nie jesteś już członkiem tego hosta. Poproś właściciela o nowe zaproszenie.",
   "error.remote.membershipChanged":
     "Ktoś inny zmienił tego członka w tym samym czasie. Wczytaj członków ponownie i spróbuj jeszcze raz.",
   "error.remote.accountSessionInactive": "Twoje logowanie nie jest już aktywne. Zaloguj się ponownie.",
   "error.remote.hostOtherAccount": "Ten host należy do innego konta.",
-  "error.remote.remoteNotConfigured": "Zdalne połączenia nie są skonfigurowane w tej usłudze dani-dex.",
+  "error.remote.remoteNotConfigured": "Zdalne połączenia nie są skonfigurowane w tej usłudze Dani Dex.",
   "error.remote.hostRefused": "Host odrzucił żądanie ({status}).",
   "error.remote.formUnavailable": "Ten formularz nie jest już dostępny.",
   "error.remote.hostedServerRemoval": "Użyj sekcji Rozliczenia, aby usunąć hostowany serwer.",
   "error.remote.hostRemoved": "Właściciel usunął ten serwer z konta.",
   "error.remote.ownerTransferSelf": "Ten serwer już należy do Ciebie. Wpisz e-mail nowego właściciela.",
-  "error.remote.ownerTransferHosted": "Serwer hostowany przez dani-dex nie może zmienić właściciela.",
+  "error.remote.ownerTransferHosted": "Serwer hostowany przez Dani Dex nie może zmienić właściciela.",
   "error.remote.ownerTransferInvalid":
     "To przekazanie własności nie jest już dostępne. Poproś właściciela, aby wysłał je ponownie.",
   "error.remote.channelsUnsupported": "Zaktualizuj ten serwer desktopowy, aby używać kanałów.",
@@ -227,7 +227,7 @@ export const messages = {
   "error.remote.taskHistoryRefreshFailed": "Zadanie zostało zmienione, ale nie udało się odświeżyć historii czatu.",
   "error.remote.serverNotLoaded": "Nie udało się wczytać serwera. Spróbuj ponownie.",
   "error.remote.localServerNotStarted":
-    "Serwer na tym komputerze się nie uruchomił. Spróbuj ponownie. Jeśli nadal się nie uruchamia, uruchom ponownie dani-dex na tym komputerze.",
+    "Serwer na tym komputerze się nie uruchomił. Spróbuj ponownie. Jeśli nadal się nie uruchamia, uruchom ponownie Dani Dex na tym komputerze.",
   "error.remote.localServerAccountRemovalFailed":
     "Serwer został usunięty na swoim komputerze, ale konto nadal go pokazuje. Usuń go ponownie, aby usunąć go z konta.",
 } as const satisfies PartialTranslation<typeof source>;

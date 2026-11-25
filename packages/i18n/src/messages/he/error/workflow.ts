@@ -6,16 +6,16 @@ export const messages = {
   "error.workflow.versionMissing": "הגרסה הזו של תהליך העבודה כבר לא קיימת.",
   "error.workflow.annotation": "אי אפשר לחבר טקסט, הערות וצורות.",
   "error.workflow.port": "שלב לא יכול לקבל סוג קלט כזה.",
-  "error.workflow.unknownValue": "ה-dani-dex הזה לא מכיר הגדרה של שלב. יש לעדכן את dani-dex ולנסות שוב.",
+  "error.workflow.unknownValue": "ה-dani-dex הזה לא מכיר הגדרה של שלב. יש לעדכן את Dani Dex ולנסות שוב.",
   "error.workflow.branch": "רק לתנאי יכולים להיות חיבורי כן ולא.",
   "error.workflow.conditionBranch": "כל חיבור היוצא מתנאי חייב להיות כן או לא.",
   "error.workflow.duplicateEdge": "שני השלבים האלה כבר מחוברים כך.",
-  "error.workflow.serverTooOld": "השרת הזה אינו תומך בתהליכי עבודה. יש לעדכן את dani-dex במחשב שמפעיל אותו.",
-  "error.workflow.newerSteps": "בתהליך העבודה הזה יש שלבים מ-dani-dex חדש יותר. יש לעדכן את dani-dex כדי לשנות אותו.",
-  "error.workflow.nodeUnsupported": "הגרסה הזו של dani-dex עדיין לא יכולה להריץ שלבי תמונה, קובץ והודעה.",
-  "error.workflow.interrupted": "dani-dex נעצר בזמן שהשלב הזה רץ. יש להריץ אותו שוב.",
+  "error.workflow.serverTooOld": "השרת הזה אינו תומך בתהליכי עבודה. יש לעדכן את Dani Dex במחשב שמפעיל אותו.",
+  "error.workflow.newerSteps": "בתהליך העבודה הזה יש שלבים מ-dani-dex חדש יותר. יש לעדכן את Dani Dex כדי לשנות אותו.",
+  "error.workflow.nodeUnsupported": "הגרסה הזו של Dani Dex עדיין לא יכולה להריץ שלבי תמונה, קובץ והודעה.",
+  "error.workflow.interrupted": "Dani Dex נעצר בזמן שהשלב הזה רץ. יש להריץ אותו שוב.",
   "error.workflow.agentMissing": "יש לבחור סוכן לשלב הזה.",
-  "error.workflow.handoffFailed": "dani-dex לא הצליח לשלוח את השלב הזה לסוכן שלו.",
+  "error.workflow.handoffFailed": "Dani Dex לא הצליח לשלוח את השלב הזה לסוכן שלו.",
   "error.workflow.agentStepEnded": "ההודעה של הסוכן לשלב הזה הוסרה לפני שהוא ענה.",
   "error.workflow.agentStepStopped": "הסוכן נעצר לפני שענה על השלב הזה. יש להריץ את השלב שוב.",
   "error.workflow.conditionUnclear": "המודל לא ענה כן או לא.",
@@ -55,7 +55,7 @@ export const messages = {
   "error.workflow.noDecision": "השלב הזה לא ממתין להחלטה.",
   "error.workflow.outputPlaceMissing": "יש לבחור מקום הודעות לפלט הזה.",
   "error.workflow.outputChannelMissing": "בחרו ערוץ לפלט הזה.",
-  "error.workflow.outputChannelFailed": "dani-dex לא הצליח לפרסם את התוצאה בערוץ. הריצו את השלב שוב.",
+  "error.workflow.outputChannelFailed": "Dani Dex לא הצליח לפרסם את התוצאה בערוץ. הריצו את השלב שוב.",
   "error.workflow.discordNoMessage":
     "הפלט הזה פועל על הודעת Discord שהפעילה את ההרצה. יש להפעיל את ההרצה מאזכור ב-Discord, או לבחור ״פרסום בערוץ״.",
   "error.workflow.slackNoMessage":
@@ -82,10 +82,10 @@ export const messages = {
   "error.workflow.githubNotConnected": "יש לחבר את GitHub במחשב שמפעיל את תהליך העבודה הזה.",
   "error.workflow.githubNoAccess":
     "ל-dani-dex GitHub App אין גישה למאגר או לפריט הזה. יש לפתוח את GitHub ולתת לו גישה.",
-  "error.workflow.githubNoWrite": "dani-dex GitHub App לא יכול לשנות את המאגר הזה. יש לפתוח את GitHub ולתת לו גישה.",
+  "error.workflow.githubNoWrite": "Dani Dex GitHub App לא יכול לשנות את המאגר הזה. יש לפתוח את GitHub ולתת לו גישה.",
   "error.workflow.githubLocked": "השיחה הזו נעולה ב-GitHub.",
   "error.workflow.githubRefused": "GitHub דחה את השינוי: {detail}",
-  "error.workflow.githubUnreachable": "dani-dex לא הצליח להגיע ל-GitHub. יש להריץ את השלב שוב.",
+  "error.workflow.githubUnreachable": "Dani Dex לא הצליח להגיע ל-GitHub. יש להריץ את השלב שוב.",
   "error.workflow.githubUncertain":
     "השינוי נעצר באמצע. ייתכן שהוא נמצא ב-GitHub. יש לבדוק שם לפני שמריצים את השלב שוב.",
   "error.workflow.githubNoEvent": "ב-GitHub אין issue או pull request שהטריגר הזה מתחיל מהם.",
@@ -98,7 +98,7 @@ export const messages = {
     "Sunra משתמש בתמונות קלט רק עם חשבון אישי. צריך לבחור את החשבון האישי ב-Sunra או להסיר את חיבורי התמונות.",
   "error.workflow.sunraFailed": "Sunra לא הצליח ליצור את הקובץ: {reason}",
   "error.workflow.sunraTimeout":
-    "Sunra לא סיים את הקובץ בזמן. כדאי לבדוק את הפרויקט dani-dex ב-sunra.ai לפני שמריצים את השלב שוב.",
+    "Sunra לא סיים את הקובץ בזמן. כדאי לבדוק את הפרויקט Dani Dex ב-sunra.ai לפני שמריצים את השלב שוב.",
   "error.workflow.higgsfieldSignIn": "יש להתחבר ל-Higgsfield ב״אפליקציות״ כדי להשתמש במודלים של Higgsfield.",
   "error.workflow.higgsfieldNoCredits":
     "בחשבון Higgsfield אין מספיק קרדיטים. אפשר להוסיף קרדיטים ב-higgsfield.ai/pricing ואז להריץ את השלב שוב.",

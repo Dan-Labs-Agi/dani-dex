@@ -18,9 +18,9 @@ export const messages = {
   "dialog.saveExportSkill": "Guardar la habilidad de exportación",
   "dialog.saveTransfer": "Guardar el archivo de transferencia",
   "dialog.chooseTransfer": "Elegir un archivo de transferencia",
-  "dialog.filter.transfer": "Archivos de transferencia de dani-dex",
+  "dialog.filter.transfer": "Archivos de transferencia de Dani Dex",
   "dialog.saveWorkflow": "Guardar el archivo del flujo de trabajo",
-  "dialog.filter.workflow": "Archivos de flujo de trabajo de dani-dex",
+  "dialog.filter.workflow": "Archivos de flujo de trabajo de Dani Dex",
   "dialog.chooseExternalLinkApp": "Elige un navegador",
   "dialog.filter.applications": "Aplicaciones",
 } as const satisfies PartialTranslation<typeof source>;
