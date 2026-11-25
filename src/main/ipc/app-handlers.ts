@@ -77,7 +77,7 @@ const EXTERNAL_DESTINATIONS: Record<ExternalDestination, string | ((translate: A
   message: "https://x.com/norbertbodziony",
   changelog: "https://dani.danlab.dev/changelog",
   guides: "https://dani.danlab.dev/guides",
-  discord: "https://discord.openbot.run",
+  discord: "https://dani.danlab.dev",
   github: "https://github.com/somdipto/dani-dex",
   x: "https://x.com/OpenBot_",
   threads: "https://www.threads.com/@dani.danlab.dev",

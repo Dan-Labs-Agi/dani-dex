@@ -49,7 +49,7 @@ import { localDay, RESOURCE_ENUMS, RESOURCE_PROPERTY_NAMES, type ResourcePropert
 import { UNCLEAN_EXIT_ENUMS, type UncleanExitProperties } from "./run-marker";
 import { SERVICE_STEP_PROPERTY_NAMES, SERVICE_STEPS, START_KINDS, type StartupProperties } from "./startup-timing";
 
-const OPENPANEL_API_URL = "https://analytics.openbot.run/api";
+const OPENPANEL_API_URL = "https://auth.dani.danlab.dev/analytics/api";
 const OPENPANEL_CLIENT_ID = "6c989975-87ef-4f0c-857e-ab449a65b5c2";
 const OPENPANEL_ORIGIN = "openbot-app://app";
 const PROVIDER_EVENT_PATTERN = new RegExp(`^(?:${AGENT_PROVIDERS.join("|")})_(?:diagnostic|exited|start_failed)$`, "u");

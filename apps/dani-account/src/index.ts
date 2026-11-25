@@ -151,6 +151,8 @@ export default {
     const url = new URL(req.url);
     const p = url.pathname;
     if (p === "/healthz") return json({ ok: true });
+    // Analytics sink: the app talks to us, nothing is stored or forwarded.
+    if (p.startsWith("/analytics/")) return new Response(null, { status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "*" } });
     if (p === "/v1/releases" && req.method === "GET") {
       // Public release feed for the landing page and in-app updater (CORS open, read only).
       const cors = { "access-control-allow-origin": "*", "cache-control": "public, max-age=60" };
@@ -169,7 +171,7 @@ export default {
     const bearer = (req.headers.get("authorization") || "").slice(7);
     const rr = await handleRemote(req, env, url, uid, bearer);
     if (rr) return rr;
-    if (!uid) return json({ error: "unauthorized" }, 401);
+    if (!uid) return apiError(401, "unauthorized", "Sign in to continue.");
 
     if (p === "/v1/me") {
       const u = await env.DB.prepare("SELECT id,email,name FROM users WHERE id=?").bind(uid).first<any>();

@@ -150,7 +150,7 @@ const WEB_EXTERNAL_DESTINATIONS: Partial<Record<ExternalDestination, string>> = 
   message: "https://x.com/norbertbodziony",
   changelog: "https://dani.danlab.dev/changelog",
   guides: "https://dani.danlab.dev/guides",
-  discord: "https://discord.openbot.run",
+  discord: "https://dani.danlab.dev",
   x: "https://x.com/OpenBot_",
 };
 
