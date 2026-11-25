@@ -1,9 +1,9 @@
 # Releasing dani-dex
 
 For iOS builds uploaded to TestFlight through GitHub Actions, see
-[the mobile release guide](../apps/mobile/README.md#github-actions-testflight-release). For Android
+[the mobile release guide](https://github.com/Dan-Labs-Agi/Dani-mobile). For Android
 builds uploaded to Google Play, see
-[the Google Play release guide](../apps/mobile/README.md#github-actions-google-play-release).
+[the Google Play release guide](https://github.com/Dan-Labs-Agi/Dani-mobile).
 The mobile workflows are separate from the desktop tag release described below.
 
 dani-dex updates are published through GitHub Releases and installed with `electron-updater`.
@@ -455,7 +455,7 @@ A fix with no native change can go to the phones of a store version with no stor
 over-the-air update: `bun run mobile:ota:publish`. Its notes get a section with a fourth number, such
 as `1.5.0.1`, from `bun run mobile:release:ota`; the store version and `app.json` do not change. The
 steps, the limits and the rollback are in
-[the mobile README](../apps/mobile/README.md#over-the-air-updates).
+[the mobile README](https://github.com/Dan-Labs-Agi/Dani-mobile).
 
 The same step sets that version for the store in `MOBILE_LATEST_VERSIONS` and in the `upTo` of each
 feature in `apps/auth-api/src/server/mobile-features-config.ts`. The merge deploys the account
@@ -466,7 +466,7 @@ The Android version in `MOBILE_LATEST_VERSIONS` is also the version of the APK t
 offers for a phone with no Google Play. The APK of a store build is a draft GitHub release, which is
 not public. The merge of this step makes it public (the `Publish the Android APK` workflow), before
 the account service deploys. That workflow fails when the version has no draft
-`android-v<version>`: see [Android APK](../apps/mobile/README.md#android-apk).
+`android-v<version>`: see [Android APK](https://github.com/Dan-Labs-Agi/Dani-mobile).
 
 `scripts/check-release-notes.ts` stops a release when the section is missing, empty or appears two
 times, or when it has an unknown group, a group with no items, an item with no text or outside a
@@ -560,7 +560,7 @@ One-time setup:
    select Copy Role ID. Add the ID as the repository variable `DISCORD_RELEASE_ROLE_ID`.
 
 The mobile app has its own post, file, webhook and workflow. It waits until both stores have the
-version. See [the mobile Discord announcement](../apps/mobile/README.md#discord-announcement).
+version. See [the mobile Discord announcement](https://github.com/Dan-Labs-Agi/Dani-mobile).
 
 ## Publish a version
 
@@ -841,7 +841,7 @@ They are `null` (nothing blocked) until we raise one.
 To raise a minimum:
 
 1. Raise it only in a PR that deletes old code or needs the newer client. The support window is 2
-   months (see [Team API support window](../AGENTS.md#non-negotiable)).
+   months (see [Team API support window](AGENTS.md#non-negotiable)).
 2. Set the value to a released version that is 60 days old or older: the date in `CHANGELOG.md` for
    `desktop` and `host`, the store date in `apps/mobile/CHANGELOG.md` for `ios` and `android`.
    Over-the-air versions do not count.

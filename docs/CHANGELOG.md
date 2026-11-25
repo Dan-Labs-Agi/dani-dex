@@ -2,7 +2,7 @@
 
 All notable changes to dani-dex will be documented here. The project follows
 [Semantic Versioning](https://semver.org/). Notes for the next release are in
-[`changelog.d/`](changelog.d/README.md).
+[`changelog.d/`](../changelog.d/README.md).
 
 ## [Unreleased]
 

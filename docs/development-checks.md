@@ -1,6 +1,6 @@
 # Development check design notes
 
-These notes explain the checks referenced by [repository instructions](../AGENTS.md#checks).
+These notes explain the checks referenced by [repository instructions](AGENTS.md#checks).
 Read the relevant section when changing CI, dependencies, or lint rules. Routine tasks use the
 short command list in `AGENTS.md`.
 

@@ -73,7 +73,7 @@ Dani-Dex uses the existing local CLI login. It does not copy provider credential
 
 For setup problems, data reset, and uninstall instructions, see
 [Troubleshooting](TROUBLESHOOTING.md). Dani-Dex's data and network behavior is documented in
-[Privacy](../PRIVACY.md).
+[Privacy](PRIVACY.md).
 
 ## Development
 
@@ -181,9 +181,9 @@ Optional scripts, references, and assets follow the Codex skill folder structure
 | `bun run preview` | Preview the built Electron client with the green preview icon. |
 | `bun run mobile:go` | Start the mobile app in Expo Go and clear the Metro cache. |
 | `bun mobile:ios` | Build and launch the iOS simulator app without RocketSim. |
-| `bun run mobile:ios:build:local` | Build a production iOS `.ipa` locally for upload with Transporter. See [TestFlight setup](../apps/mobile/README.md#local-testflight-build). |
-| `bun run mobile:ios:release:testflight` | Start the GitHub Actions iOS build from `main` and upload to TestFlight. Requires authenticated GitHub CLI. See [iOS release setup](../apps/mobile/README.md#github-actions-testflight-release). |
-| `bun mobile:ios:rocketsim` | Start RocketSim and build and launch the iOS simulator app with RocketSim Connect. See [mobile setup](../apps/mobile/README.md#development). |
+| `bun run mobile:ios:build:local` | Build a production iOS `.ipa` locally for upload with Transporter. See [TestFlight setup](https://github.com/Dan-Labs-Agi/Dani-mobile). |
+| `bun run mobile:ios:release:testflight` | Start the GitHub Actions iOS build from `main` and upload to TestFlight. Requires authenticated GitHub CLI. See [iOS release setup](https://github.com/Dan-Labs-Agi/Dani-mobile). |
+| `bun mobile:ios:rocketsim` | Start RocketSim and build and launch the iOS simulator app with RocketSim Connect. See [mobile setup](https://github.com/Dan-Labs-Agi/Dani-mobile). |
 | `bun run mobile:go:tunnel` | Start the mobile app in Expo Go through a Metro tunnel and clear the cache. The Dani-Dex API and Signal still need their own reachable addresses. |
 | `bun run dev:api` | Start the TanStack Start API and its local D1 database on `127.0.0.1:3100`. |
 | `bun run api:start` | Build and preview the Cloudflare Worker locally. |
@@ -243,7 +243,7 @@ LAN interface. Restart the runner after changing networks so newly generated QR 
 current address.
 
 Production mobile analytics setup and required OpenPanel credentials are documented in
-[Dani-Dex Mobile](../apps/mobile/README.md#openpanel-product-analytics).
+[Dani-Dex Mobile](https://github.com/Dan-Labs-Agi/Dani-mobile).
 
 `mobile:go:tunnel` exposes only the Expo development server. It does not expose the local account
 API, Signal, or TURN. A phone on 5G cannot use the default LAN addresses. For a test across networks,
@@ -382,7 +382,7 @@ cannot access `window.danidex` or managed local attachments.
 
 ## Security
 
-Read [SECURITY.md](../SECURITY.md) before reporting a vulnerability. Do not put credentials, private
+Read [SECURITY.md](SECURITY.md) before reporting a vulnerability. Do not put credentials, private
 files, conversation contents, or sensitive diagnostics in a public issue.
 
 Full local access is an explicit current product decision, not a security boundary. Reports are

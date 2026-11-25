@@ -15,7 +15,7 @@ You can open a pull request without an issue for:
 - Small improvements, alignments, and clean-ups that do not change how a feature works.
 - Translations and documentation.
 - A new provider, MCP app, or connector. Follow
-  [Integrations](docs/architecture/integrations.md) ("Add a provider", "Add an application",
+  [Integrations](architecture/integrations.md) ("Add a provider", "Add an application",
   "Add a connector").
 
 These need an issue with the `approved` label before you write code:
@@ -165,7 +165,7 @@ explicit threat-model note in the pull request.
 ## Translations
 
 English is the source text. A French or Japanese catalog can be partial: a key it does not have
-shows in English. To add a key, a translation or a language, follow [docs/i18n.md](docs/i18n.md) and
+shows in English. To add a key, a translation or a language, follow [docs/i18n.md](i18n.md) and
 run `bun run i18n:check`.
 
 ## Dependencies

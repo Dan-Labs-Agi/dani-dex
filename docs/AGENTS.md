@@ -42,7 +42,7 @@ and state which default you set aside. Do not argue by citing this file.
 - **Keep PolyForm Noncommercial 1.0.0.** Do not add incompatible dependencies or relicense files.
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md#security-sensitive-changes) when a change touches the trust
-boundary or a security test, and [architecture change rules](docs/architecture/change-rules.md#change-rules) when
+boundary or a security test, and [architecture change rules](architecture/change-rules.md#change-rules) when
 adding a module or moving ownership between workspaces.
 
 ## Product constraints
@@ -80,7 +80,7 @@ windows, its OS dialogs or its native notifications.
 
 - Ship the remote path in the same change as the local one: the host route in `src/main/team-api/`,
   a new optional capability in `packages/contracts/src/team-protocol/` (see
-  [packages/contracts/AGENTS.md](packages/contracts/AGENTS.md)), the `remote` branch of the IPC
+  [packages/contracts/AGENTS.md](../packages/contracts/AGENTS.md)), the `remote` branch of the IPC
   handler, and each client: the desktop with a joined server, the web client
   (`src/renderer/src/features/web-client/`), and mobile (`apps/mobile`) when the action fits a phone.
 - Do not add a `remote` branch that always throws or returns empty data, or a `kind === "local"`
@@ -133,7 +133,7 @@ conversation controller stay in the renderer. Component extraction must preserve
 UI, styles, and behavior unless the user requests a design change. Native mobile shares brand
 tokens and contracts; it does not render SolidJS DOM components.
 
-Read [packages/ui/AGENTS.md](packages/ui/AGENTS.md) before changing shared UI.
+Read [packages/ui/AGENTS.md](../packages/ui/AGENTS.md) before changing shared UI.
 
 ## Phone screens
 
@@ -176,7 +176,7 @@ These files keep their comments: vendored code, fixtures, released schemas, rele
 
 Text that a user reads comes from `@openbot/i18n` catalog keys, on desktop, web and mobile. Do not
 write a literal. Errors that the main process, backend or team client send use `sourceText(key)`.
-Read [docs/i18n.md](docs/i18n.md) before adding a key or a language.
+Read [docs/i18n.md](i18n.md) before adding a key or a language.
 
 ## Checks
 
@@ -207,7 +207,7 @@ as a routine completion or PR step.
    `src/backend` is staged. It stops the commit if Biome fixes a file that also has unstaged
    changes; stage the fixes you want and commit again.
 
-[Check design notes](docs/development-checks.md#check-coverage) explain CI coverage, command aliases,
+[Check design notes](development-checks.md#check-coverage) explain CI coverage, command aliases,
 and the separate Node and Bun type environments. Read them when changing checks or dependencies.
 
 ## Surfaces to check
@@ -266,14 +266,14 @@ State which surfaces a change touches. Check all affected consumers and reverse 
   `Network.setCookies` on that tab: agents share that session. If that session has expired, ask the
   developer to do the phone check, then save the session again.
 
-See [account service setup](apps/auth-api/README.md) for loading and deployment details.
+See [account service setup](../apps/auth-api/README.md) for loading and deployment details.
 
 ### Leaseweb servers
 
 Take only a Leaseweb VPS that has no reference, and set its reference before any other work on it.
 Never take a VPS that has a reference, also `pool`. The reference scheme is in
-[Leaseweb references](docs/hosted-servers.md#leaseweb-references). To set up a VPS as the server of one
-customer, use the [custom-server](.agents/skills/custom-server/SKILL.md) skill. The customer is the
+[Leaseweb references](hosted-servers.md#leaseweb-references). To set up a VPS as the server of one
+customer, use the [custom-server](../.agents/skills/custom-server/SKILL.md) skill. The customer is the
 owner, through a server claim; never sign the server in to an operator account.
 
 ### Local processes
@@ -291,8 +291,8 @@ owner, through a server claim; never sign the server in to an operator account.
 - Reuse a running dev instance. `bun run dev` opens a profile tied to this worktree; `--shared`
   opens the shared `dani-dex Dev` profile. Use the ports the stack reports rather than a fixed port.
 
-See [README.md — Commands](docs/DEVELOPMENT.md#commands) for the flags these commands take, and
-[docs/architecture/change-rules.md](docs/architecture/change-rules.md#change-rules) for why the registry works this way, when a dev command
+See [README.md — Commands](DEVELOPMENT.md#commands) for the flags these commands take, and
+[docs/architecture/change-rules.md](architecture/change-rules.md#change-rules) for why the registry works this way, when a dev command
 does not behave as expected.
 
 ## Terms
@@ -301,35 +301,35 @@ does not behave as expected.
   `bots.json`, `legacy-import:bots:v1`, and `~/dani-dex/Bots` path prefixes.
 - **teammate** and **group** are prompt and UI words, never types.
 
-Use [docs/glossary.md](docs/glossary.md) when naming a new type, table, IPC channel or product
+Use [docs/glossary.md](glossary.md) when naming a new type, table, IPC channel or product
 string, or when a term in the code disagrees with the UI.
 
 ## Task-specific instructions
 
 Read the instruction file for each directory you change. Use the
-[workspace map](docs/architecture/structure.md#workspace-map) to find its owner.
+[workspace map](architecture/structure.md#workspace-map) to find its owner.
 
 | File | Scope |
 | --- | --- |
-| [src/renderer/AGENTS.md](src/renderer/AGENTS.md) | SolidJS, stores, components, palette |
-| [src/main/AGENTS.md](src/main/AGENTS.md) | Renderer-to-main boundary and main-process ownership |
-| [src/main/ipc/AGENTS.md](src/main/ipc/AGENTS.md) | Handler binding and endpoint registration |
-| [src/backend/AGENTS.md](src/backend/AGENTS.md) | SQLite migrations and database creation |
-| [packages/contracts/AGENTS.md](packages/contracts/AGENTS.md) | Frozen Team API protocols and IPC mirrors |
-| [apps/auth-api/AGENTS.md](apps/auth-api/AGENTS.md) | Account Worker and D1 deployment races |
-| [src/preload/AGENTS.md](src/preload/AGENTS.md) | Preload bridge and payload decoding |
-| [packages/ui/AGENTS.md](packages/ui/AGENTS.md) | Shared SolidJS controls and feature components |
-| [packages/team-client/AGENTS.md](packages/team-client/AGENTS.md) | Team WebRTC client and framing |
-| [apps/mobile/AGENTS.md](apps/mobile/AGENTS.md) | Expo and build/simulator permissions |
-| [remote/api/AGENTS.md](remote/api/AGENTS.md) | Signal and TURN credentials |
+| [src/renderer/AGENTS.md](../src/renderer/AGENTS.md) | SolidJS, stores, components, palette |
+| [src/main/AGENTS.md](../src/main/AGENTS.md) | Renderer-to-main boundary and main-process ownership |
+| [src/main/ipc/AGENTS.md](../src/main/ipc/AGENTS.md) | Handler binding and endpoint registration |
+| [src/backend/AGENTS.md](../src/backend/AGENTS.md) | SQLite migrations and database creation |
+| [packages/contracts/AGENTS.md](../packages/contracts/AGENTS.md) | Frozen Team API protocols and IPC mirrors |
+| [apps/auth-api/AGENTS.md](../apps/auth-api/AGENTS.md) | Account Worker and D1 deployment races |
+| [src/preload/AGENTS.md](../src/preload/AGENTS.md) | Preload bridge and payload decoding |
+| [packages/ui/AGENTS.md](../packages/ui/AGENTS.md) | Shared SolidJS controls and feature components |
+| [packages/team-client/AGENTS.md](../packages/team-client/AGENTS.md) | Team WebRTC client and framing |
+| [apps/mobile/AGENTS.md](https://github.com/Dan-Labs-Agi/Dani-mobile) | Expo and build/simulator permissions |
+| [remote/api/AGENTS.md](../remote/api/AGENTS.md) | Signal and TURN credentials |
 
 Write release notes in a new `changelog.d/<branch>.md` file, not in `CHANGELOG.md`, as
-[docs/RELEASING.md](docs/RELEASING.md#release-notes) says. Notes for the iPhone app go in
+[docs/RELEASING.md](RELEASING.md#release-notes) says. Notes for the iPhone app go in
 `apps/mobile/changelog.d/<branch>.md`. CI fails a PR with no notes unless it
 has the `no-changelog` label. A version bump with no notes fails.
 
 Before a version bump or tag, use
-[release-upgrade-safety](.agents/skills/release-upgrade-safety/SKILL.md) to audit upgrade and data-loss
+[release-upgrade-safety](../.agents/skills/release-upgrade-safety/SKILL.md) to audit upgrade and data-loss
 risks since the last release.
 
 ## Tests
@@ -340,7 +340,7 @@ risks since the last release.
   `.openbot-build/`.
 - Vitest files are permitted only for these protected areas:
   - Database migrations: data-preservation fixtures for every affected released schema, plus the
-    failure and rollback cases that [src/backend/AGENTS.md](src/backend/AGENTS.md) lists. A
+    failure and rollback cases that [src/backend/AGENTS.md](../src/backend/AGENTS.md) lists. A
     migration always needs them.
   - The renderer-to-main trust boundary: sender validation, navigation and permission policy, CSP,
     sandboxing, and preload payload decoding.
@@ -365,7 +365,7 @@ risks since the last release.
 - Each UI check needs both `renderer` and `renderer-clean` fixtures in `tools/ui-foundation/fixtures`.
   Verify with `scripts/ui-foundation-check.test.ts`.
 
-Read [check design notes](docs/development-checks.md#lint-and-ui-rules) when changing these checks.
+Read [check design notes](development-checks.md#lint-and-ui-rules) when changing these checks.
 They describe the enforced syntax, fixture behavior, and reasons for removed rules.
 
 ## Pull requests

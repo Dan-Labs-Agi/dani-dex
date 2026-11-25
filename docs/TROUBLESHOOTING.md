@@ -297,7 +297,7 @@ Ask the network administrator to allow these hosts over HTTPS (TCP 443) and WebS
 
 Teams and remote servers also send WebRTC traffic to the other device or to the TURN relay that
 Signal names, on the UDP and TCP ports that it names. A filter that blocks WebRTC makes these
-connections slow or stops them. Conversations stay on the computer; the [privacy policy](../PRIVACY.md) lists what each
+connections slow or stops them. Conversations stay on the computer; the [privacy policy](PRIVACY.md) lists what each
 host receives.
 
 If the filter puts `dani.danlab.dev` in a blocked category, the administrator can ask the vendor to

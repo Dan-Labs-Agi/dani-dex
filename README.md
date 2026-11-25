@@ -109,7 +109,7 @@ See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the layers, and the [development
 Then open Dani Dex and pick an AI. OpenCode's free models work right away. For ChatGPT, Claude or Grok, click Connect and sign in with that service. Tell the Chief agent what you want, like "Turn these release notes into a launch plan."
 
 > [!WARNING]
-> Dani Dex is an early preview. Agents can read and change files, run programs, use the internet and control the browser on your computer without asking before each step. Give them tasks you trust, keep backups, and read [SECURITY.md](SECURITY.md).
+> Dani Dex is an early preview. Agents can read and change files, run programs, use the internet and control the browser on your computer without asking before each step. Give them tasks you trust, keep backups, and read [SECURITY.md](docs/SECURITY.md).
 
 <details>
 <summary><b>Install from a terminal</b></summary>
@@ -137,7 +137,7 @@ The scripts download the current release and check the checksum before they inst
 
 <br>
 
-Building from source, commands, architecture, local data paths, releases and shared Mac hosts are in the [development guide](docs/DEVELOPMENT.md). See also [RELEASING.md](docs/RELEASING.md) and [the changelog](CHANGELOG.md).
+Building from source, commands, architecture, local data paths, releases and shared Mac hosts are in the [development guide](docs/DEVELOPMENT.md). See also [RELEASING.md](docs/RELEASING.md) and [the changelog](docs/CHANGELOG.md).
 
 </details>
 
@@ -157,7 +157,7 @@ macOS 13 or newer (Apple silicon and Intel), Windows 10 or newer (x64), Android 
 
 ## Privacy
 
-Dani Dex keeps your agents, chats and files on your computer. The AI provider you pick (OpenAI, Anthropic, xAI or OpenCode) receives what the agent sends it, and web pages the agent visits see that visit. Dani Dex never copies your provider passwords. Details are in [PRIVACY.md](PRIVACY.md). Need help? See [Troubleshooting](docs/TROUBLESHOOTING.md) or [SUPPORT.md](SUPPORT.md).
+Dani Dex keeps your agents, chats and files on your computer. The AI provider you pick (OpenAI, Anthropic, xAI or OpenCode) receives what the agent sends it, and web pages the agent visits see that visit. Dani Dex never copies your provider passwords. Details are in [PRIVACY.md](docs/PRIVACY.md). Need help? See [Troubleshooting](docs/TROUBLESHOOTING.md) or [SUPPORT.md](docs/SUPPORT.md).
 
 <br>
 
@@ -165,7 +165,7 @@ Dani Dex keeps your agents, chats and files on your computer. The AI provider yo
 
 **Early but real.** The loop works end to end: message, agent, reply, tools, approvals, computer use. Expect rough edges. Linux and iOS are still being built.
 
-Contributions welcome. See [CONTRIBUTING.md](CONTRIBUTING.md). Community behavior is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
+Contributions welcome. See [CONTRIBUTING.md](docs/CONTRIBUTING.md). Community behavior is governed by the [Code of Conduct](docs/CODE_OF_CONDUCT.md).
 
 <br>
 

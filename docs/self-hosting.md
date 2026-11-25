@@ -18,7 +18,7 @@ self-hosted account service with its own keys. See
 - The browser client at `dani.danlab.dev/app` does not work with your service.
 - Hosted servers, the dani-dex GitHub App, Slack, the dani-dex Telegram bot and the iPhone Live
   Activity relay stay off. Each needs secrets that only we have.
-- The other network connections in [PRIVACY.md](../PRIVACY.md) do not change.
+- The other network connections in [PRIVACY.md](PRIVACY.md) do not change.
 
 ## What you need
 
