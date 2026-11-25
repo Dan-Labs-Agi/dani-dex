@@ -10,3 +10,11 @@ database_id = "cd92a21a-9d25-4fa4-a578-5da21fca870d"
 migrations_dir = "migrations"
 
 # Secrets (wrangler secret put): GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, STATE_SECRET
+
+[[durable_objects.bindings]]
+name = "SIGNAL"
+class_name = "SignalRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["SignalRoom"]

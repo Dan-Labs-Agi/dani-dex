@@ -1,6 +1,8 @@
 // Dani Dex account + sync Worker. One Google account = one user id on mobile and desktop.
 // Secrets and provider tokens are never synced: kinds below are the only accepted ones.
-export interface Env {
+import { handleRemote, SignalRoom, type REnv } from "./remote";
+export { SignalRoom };
+export interface Env extends REnv {
   DB: D1Database;
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
@@ -104,11 +106,14 @@ export default {
     if (p === "/v1/google/callback" && req.method === "GET") return googleCallback(url, env);
 
     const uid = await authUser(req, env);
+    const bearer = (req.headers.get("authorization") || "").slice(7);
+    const rr = await handleRemote(req, env, url, uid, bearer);
+    if (rr) return rr;
     if (!uid) return json({ error: "unauthorized" }, 401);
 
     if (p === "/v1/me") {
-      const u = await env.DB.prepare("SELECT id,email,name FROM users WHERE id=?").bind(uid).first();
-      return json(u);
+      const u = await env.DB.prepare("SELECT id,email,name FROM users WHERE id=?").bind(uid).first<any>();
+      return json({ id: u.id, email: u.email, name: u.name ?? null, avatarUrl: null, analyticsEnabled: null });
     }
     if (p === "/v1/logout" && req.method === "POST") {
       await env.DB.prepare("DELETE FROM sessions WHERE token_hash=?")
