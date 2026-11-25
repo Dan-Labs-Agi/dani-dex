@@ -38,13 +38,6 @@ jobs:
         with:
           persist-credentials: false
 
-      # A React Native release build needs more disk than the runner leaves free.
-      - name: Free runner disk
-        shell: bash
-        run: |
-          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /opt/hostedtoolcache/CodeQL
-          df -h "$GITHUB_WORKSPACE"
-
       - name: Set up Bun and Node
         uses: ./.github/actions/setup-bun
 
@@ -60,6 +53,22 @@ jobs:
       # Each Gradle worker runs a CMake build with one compiler per core. Skia,
       # Reanimated and Worklets compiled together with R8 can use all 16 GB of the
       # runner, and then the runner stops the job. Two workers keep all cores busy.
+
+      # The release build needs ~12 GB beyond checkout: node_modules, expo
+      # prebuild, the NDK toolchain output and the Gradle cache. Drop every
+      # preinstalled toolchain the build never touches (kept AFTER the setup
+      # steps so hostedtoolcache consumers already fetched what they need).
+      - name: Free runner disk
+        shell: bash
+        run: |
+          docker system prune -af --volumes || true
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost \
+            /usr/share/swift /usr/share/miniconda /opt/az /opt/microsoft /opt/google \
+            /usr/local/share/chromium /usr/local/share/powershell /opt/vcpkg /usr/share/sbt \
+            "$AGENT_TOOLSDIRECTORY" \
+            /usr/local/lib/android/sdk/system-images /usr/local/lib/android/sdk/emulator || true
+          df -h "$GITHUB_WORKSPACE"
+
       - name: Give Gradle more memory
         shell: bash
         run: |
@@ -67,7 +76,7 @@ jobs:
           echo 'org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=768m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8' >> ~/.gradle/gradle.properties
           echo 'org.gradle.workers.max=1' >> ~/.gradle/gradle.properties
           echo 'enableProguardInReleaseBuilds=false' >> ~/.gradle/gradle.properties
-          sudo fallocate -l 8G /swapfile-build
+          sudo fallocate -l 4G /swapfile-build
           sudo chmod 600 /swapfile-build
           sudo mkswap /swapfile-build
           sudo swapon /swapfile-build
