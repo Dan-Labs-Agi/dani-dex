@@ -64,8 +64,9 @@ jobs:
         shell: bash
         run: |
           mkdir -p ~/.gradle
-          echo 'org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=2g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8' >> ~/.gradle/gradle.properties
-          echo 'org.gradle.workers.max=2' >> ~/.gradle/gradle.properties
+          echo 'org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=768m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8' >> ~/.gradle/gradle.properties
+          echo 'org.gradle.workers.max=1' >> ~/.gradle/gradle.properties
+          echo 'enableProguardInReleaseBuilds=false' >> ~/.gradle/gradle.properties
           sudo fallocate -l 8G /swapfile-build
           sudo chmod 600 /swapfile-build
           sudo mkswap /swapfile-build
@@ -93,7 +94,7 @@ jobs:
       - name: Assemble the release APK
         working-directory: apps/mobile/android
         run: |
-          ./gradlew assembleRelease --no-daemon
+          ./gradlew assembleRelease --no-daemon --max-workers=1
           APK_PATH="$RUNNER_TEMP/dani-dex.apk"
           cp app/build/outputs/apk/release/app-release.apk "$APK_PATH"
           ls -la "$APK_PATH"
