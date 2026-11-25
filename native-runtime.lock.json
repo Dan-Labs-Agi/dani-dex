@@ -468,7 +468,7 @@
       "tag": "remote-desktop-runtime-1a675ecdf05e7b581279162ec3ffc3fb235681acceb48450aaeb9421d43b1d2c",
       "inputDigest": "1a675ecdf05e7b581279162ec3ffc3fb235681acceb48450aaeb9421d43b1d2c",
       "manifestAsset": "remote-desktop-runtime-manifest.json",
-      "manifestSha256": "00b994cdf4c43ae3aad4887c410fa3c3ef0c4570085894b83bb7dee4dc433331"
+      "manifestSha256": "0def59a3ed76155a350ace0ba9c70f75ff7b28ca593115803206dd5a46c49b02"
     }
   },
   "bun": {
