@@ -356,8 +356,7 @@ export const messages = defineMessages("settings", {
   "settings.mobileConnect.phones.description": "Phones that use Dani Dex with this account.",
   "settings.mobileConnect.phones.add": "Add phone",
   "settings.mobileConnect.glasses.title": "Glasses",
-  "settings.mobileConnect.glasses.description":
-    "Use Dani glasses with your agents from this computer.",
+  "settings.mobileConnect.glasses.description": "Use Dani glasses with your agents from this computer.",
   "settings.mobileConnect.glasses.button": "Connect Glasses, coming soon",
   "settings.mobileConnect.phones.empty.title": "No phones yet",
   "settings.mobileConnect.phones.empty.description": "Chat with your agents and follow their work from your phone.",
