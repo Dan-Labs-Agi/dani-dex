@@ -33,6 +33,8 @@ export const messages = {
   "mobile.auth.signIn.helpStep2": "2. Ayarlar → Mobile Connect bölümüne gidin.",
   "mobile.auth.signIn.helpStep3": "3. “QR kodu oluştur” seçeneğini seçin, ardından kodu buradan tarayın.",
   "mobile.auth.signIn.emailButton": "E-posta ile devam et",
+  "mobile.auth.signIn.googleButton": "Google ile devam et",
+  "mobile.auth.signIn.googleFailed": "Google ile giriş tamamlanamadı. Tekrar dene.",
   "mobile.auth.done.title": "Bağlandı",
   "mobile.auth.done.body": "Oturum açtınız.",
   "mobile.auth.email.title": "E-posta ile oturum açın",

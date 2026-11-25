@@ -34,12 +34,13 @@ import {
   geminiSavedKeyLimitFailure,
 } from "./acp-flavor-antigravity";
 import { OPENCODE_ACP_FLAVOR } from "./acp-flavor-opencode";
+import { KILOCODE_ACP_FLAVOR } from "./acp-flavor-kilocode";
 import { acpSessionSteers, steerAcpSession } from "./acp-session-steering";
 import type { AcpArgv, AcpExtensionMethod } from "./acp-sign-in";
 import { CODEX_VARIABLE_PROVIDER, readCodexModelSource } from "./agent/codex-model-source";
 import type { ImageFitter } from "./agent/image-reader";
 import { readMuseAccount } from "./agent/muse-login";
-import { claudeModelName, modelsAfterOpenCodeDiscoveryFailure, serviceTierFields } from "./agent/provider-models";
+import { claudeModelName, modelsAfterKilocodeDiscoveryFailure, modelsAfterOpenCodeDiscoveryFailure, serviceTierFields } from "./agent/provider-models";
 import type { TurnContext } from "./agent/turn-context";
 import type { AgentClient } from "./agent-client";
 import { ANTIGRAVITY_TOKEN_FILE, importAntigravityToken } from "./antigravity-token-import";
@@ -66,6 +67,7 @@ import {
   resolveMistralCli,
   resolveMuseCli,
   resolveOpencodeCli,
+  resolveKilocodeCli,
   resolvePiCli,
 } from "./cli";
 import { clineFreeModels } from "./cline-free-models";
@@ -115,6 +117,7 @@ import {
   mistralHomeDirectory,
   mistralStatePaths,
   museStatePaths,
+  kilocodeStatePaths,
   OPENCODE_CONFINED_ENV,
   openCodeStatePaths,
   type ProcessConfinement,
@@ -906,6 +909,52 @@ export const BUILT_IN_PROVIDER_DRIVERS: readonly BuiltInProviderDriver[] = [
         servesModel: context.servesModel,
       }),
     authState: (account) => ({ kind: "opencode", email: account?.email ?? null }),
+    validateAccount: () => undefined,
+  },
+  {
+    id: "kilocode",
+    signIn: { kind: "external" },
+    catalog: {
+      hiddenWhenSignedOut: true,
+      partialListAtStart: true,
+      relistAfterStart: true,
+      fallback: modelsAfterKilocodeDiscoveryFailure,
+    },
+    resolveCli: resolveKilocodeCli,
+    createClient: (cli, timeout, context, confinement) =>
+      new AcpAgentClient(cli, timeout, {
+        provider: "kilocode",
+        flavor: KILOCODE_ACP_FLAVOR,
+        argv: ["acp"],
+        env: {},
+        ...(confinement ? { confine: (target) => confineSpawnTarget(target, confinement, kilocodeStatePaths()) } : {}),
+        extraEnv: () => ({
+          ...context.agentEnvironment?.(),
+          ...(confinement ? OPENCODE_CONFINED_ENV : {}),
+        }),
+        signInMessage: sourceText("error.provider.kilocodeNoModels"),
+        servesModel: context.servesModel,
+        mcpServers: context.mcpServers,
+        fitImage: context.fitImage,
+        reportMcpDrops: context.reportMcpDrops,
+        mcpToolRuntimes: context.mcpToolRuntimes,
+        mcpEndpoint: context.mcpEndpoint,
+        steer: steerAcpSession,
+        steers: acpSessionSteers,
+        history: context.history?.("kilocode"),
+      }),
+    createProfileClient: (cli, timeout, context) =>
+      new AcpAgentClient(cli, timeout, {
+        provider: "kilocode",
+        flavor: KILOCODE_ACP_FLAVOR,
+        argv: ["acp"],
+        profileGeneration: true,
+        env: {},
+        extraEnv: () => ({ ...context.agentEnvironment?.() }),
+        signInMessage: sourceText("error.provider.kilocodeNoModels"),
+        servesModel: context.servesModel,
+      }),
+    authState: (account) => ({ kind: "kilocode", email: account?.email ?? null }),
     validateAccount: () => undefined,
   },
   {

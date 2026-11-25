@@ -9,11 +9,11 @@ const APPLE_APP_SITE_ASSOCIATION = {
         paths: ["/join"],
       },
       {
-        appID: "ZTRDTUL87R.run.openbot.mobile",
+        appID: "ZTRDTUL87R.dev.danlab.dex",
         paths: ["/join", "/agents/*"],
       },
       {
-        appID: "8A47NKRZSJ.run.openbot.mobile",
+        appID: "8A47NKRZSJ.dev.danlab.dex",
         paths: ["/join", "/agents/*"],
       },
     ],

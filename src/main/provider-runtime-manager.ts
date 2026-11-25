@@ -199,6 +199,7 @@ export class ProviderRuntimeManager extends EventEmitter<ProviderRuntimeManagerE
       claude: emptyStatus(unsupportedMessage),
       grok: emptyStatus(unsupportedMessage),
       opencode: emptyStatus(unsupportedMessage),
+      kilocode: emptyStatus(unsupportedMessage),
       antigravity: emptyStatus(unsupportedMessage),
       cursor: emptyStatus(unsupportedMessage),
       cline: emptyStatus(unsupportedMessage),

@@ -27,6 +27,7 @@ import {
   parseCursorManifestVersion,
   parseGrokVersion,
   parseKimiVersion,
+  parseKilocodeVersion,
   parseOpencodeVersion,
 } from "../backend/cli";
 import { sha256File } from "../backend/file-hash";
@@ -127,6 +128,7 @@ const stageBunx = Effect.fn("ProviderRuntime.stageBunx")((binary: string, bunx: 
 );
 
 export const OPENCODE_CLI_PACKAGE = "@opencode/cli";
+export const KILOCODE_CLI_PACKAGE = "@kilocode/cli";
 
 interface NpmPackageCheck {
   name: string;
@@ -431,6 +433,118 @@ const PROVIDER_RUNTIME_DESCRIPTORS: Record<ManagedRuntimeId, ProviderRuntimeDesc
       }
     }),
     parseVersion: parseOpencodeVersion,
+  },
+  kilocode: {
+    runtime: "kilocode",
+    spec: (target, lock) => {
+      const artifact = lock.kilocode.artifacts[target];
+      return {
+        runtime: "kilocode",
+        target,
+        version: lock.kilocode.version,
+        packageVersion: lock.kilocode.version,
+        source: "lock",
+        url: `${lock.kilocode.registry}/${artifact.package}/-/${artifact.asset}`,
+        archiveDigest: { algorithm: "sha256", hex: artifact.assetSha256 },
+        downloadBytes: artifact.downloadBytes,
+        installedBytes: artifact.installedBytes,
+        executableName: artifact.executable,
+      };
+    },
+    stage: Effect.fn("ProviderRuntime.kilocode.stage")(function* ({
+      spec,
+      downloadedPath,
+      staging,
+      lock,
+      downloadSmallFile,
+    }: ProviderStageContext): Effect.fn.Return<void, ProviderRuntimeFailure> {
+      const artifact = lock.kilocode.artifacts[spec.target];
+      const license = lock.kilocode.licensePackage;
+      const umbrella = yield* downloadSmallFile(
+        `${lock.kilocode.registry}/${license.name}/-/cli-${license.version}.tgz`,
+        null,
+      );
+      yield* withNpmPackage(
+        downloadedPath,
+        staging,
+        {
+          name: artifact.package,
+          version: spec.packageVersion,
+          archivePathError: sourceText("error.provider.kilocodeArchivePath"),
+          mismatchError: sourceText("error.provider.kilocodePackageMismatch"),
+        },
+        (packageRoot: string) =>
+          Effect.gen(function* () {
+            yield* runtimeIO(() => mkdir(join(staging, "bin"), { recursive: true }));
+            yield* Effect.all(
+              [
+                runtimeIO(() =>
+                  copyFile(join(packageRoot, "bin", artifact.executable), join(staging, "bin", artifact.executable)),
+                ),
+                runtimeIO(() =>
+                  writeFile(
+                    join(staging, "kilocode-package.json"),
+                    layoutManifest({
+                      version: spec.version,
+                      target: spec.target,
+                      executable: `bin/${artifact.executable}`,
+                    }),
+                  ),
+                ),
+              ],
+              { concurrency: "unbounded" },
+            );
+            if (spec.target !== "win32-x64")
+              yield* runtimeIO(() => chmod(join(staging, "bin", artifact.executable), 0o755));
+          }),
+      );
+      const umbrellaRoot = `${staging}.umbrella`;
+      const umbrellaPath = join(umbrellaRoot, "cli.tgz");
+      yield* Effect.acquireUseRelease(
+        runtimeIO(() => mkdir(umbrellaRoot, { recursive: true })),
+        () =>
+          Effect.gen(function* () {
+            yield* runtimeIO(() => writeFile(umbrellaPath, umbrella, { mode: 0o600 }));
+            yield* withNpmPackage(
+              umbrellaPath,
+              staging,
+              {
+                name: license.name,
+                version: license.version,
+                archivePathError: sourceText("error.provider.kilocodeArchivePath"),
+                mismatchError: sourceText("error.provider.kilocodePackageMismatch"),
+              },
+              (packageRoot: string) =>
+                runtimeIO(() => copyFile(join(packageRoot, "LICENSE"), join(staging, "LICENSE"))),
+            );
+          }),
+        () => runtimeIO(() => rm(umbrellaRoot, { recursive: true, force: true })).pipe(Effect.orDie),
+      );
+    }),
+    verify: Effect.fn("ProviderRuntime.kilocode.verify")(function* (
+      root: string,
+      spec: RuntimeSpec,
+      lock: AgentRuntimeLock,
+    ): Effect.fn.Return<void, ProviderRuntimeFailure> {
+      const artifact = lock.kilocode.artifacts[spec.target];
+      const executable = join(root, "bin", spec.executableName);
+      if (
+        (yield* sha256File(executable).pipe(Effect.mapError(({ cause }) => new ProviderRuntimeFailure({ cause })))) !==
+        artifact.binarySha256
+      ) {
+        return yield* new ProviderRuntimeFailure({ cause: new Error(sourceText("error.provider.kilocodeChecksum")) });
+      }
+      if (
+        (yield* sha256File(join(root, "LICENSE")).pipe(
+          Effect.mapError(({ cause }) => new ProviderRuntimeFailure({ cause })),
+        )) !== lock.kilocode.licenseSha256
+      ) {
+        return yield* new ProviderRuntimeFailure({
+          cause: new Error(sourceText("error.provider.kilocodeLicenseChecksum")),
+        });
+      }
+    }),
+    parseVersion: parseKilocodeVersion,
   },
   grok: {
     runtime: "grok",

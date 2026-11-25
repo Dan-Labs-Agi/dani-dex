@@ -10,6 +10,7 @@ function snapshot(availableVersion?: string | number | null) {
       claude: { ...runtime, availableVersion },
       grok: runtime,
       opencode: runtime,
+      kilocode: runtime,
       antigravity: runtime,
       cursor: runtime,
       cline: runtime,

@@ -41,6 +41,7 @@ export interface WorkerBindings {
   SERVER_CLAIMS_ADMIN_TOKEN?: string;
   SITE_REPORT_HASH_SECRET?: string;
   COMPANY_SIGN_IN_SECRET?: string;
+  GOOGLE_MOBILE_CLIENT_IDS?: string;
   HOSTED_ARCHIVE_KEY_SECRET?: string;
   B2_WORKER_KEY_ID_EU?: string;
   B2_WORKER_APPLICATION_KEY_EU?: string;
@@ -226,6 +227,11 @@ export type EmailVerificationResult =
   | { status: "verified"; session: { sessionToken: string; user: AuthUser }; created: boolean }
   | { status: "invalid" | "expired" | "too_many_attempts" };
 
+export type ExternalEmailLoginResult = {
+  session: { sessionToken: string; user: AuthUser };
+  created: boolean;
+};
+
 export type EmailChallengeDeliveryState = "pending" | "sent" | "failed";
 
 export interface EmailChallengeRecord {
@@ -266,6 +272,12 @@ export interface AuthRepository {
     session: { id: string; token: string; expiresAt: number };
     device?: MobileAuthDeviceIdentity;
   }): Effect.Effect<EmailVerificationResult, AuthStoreError>;
+  verifyExternalEmailLogin(input: {
+    email: string;
+    now: number;
+    session: { id: string; token: string; expiresAt: number };
+    device?: MobileAuthDeviceIdentity;
+  }): Effect.Effect<ExternalEmailLoginResult, AuthStoreError>;
   incrementRateLimit(
     keyHash: string,
     windowStart: number,

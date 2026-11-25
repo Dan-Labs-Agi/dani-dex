@@ -33,6 +33,8 @@ export const messages = {
   "mobile.auth.signIn.helpStep2": "2. 설정 → 모바일 연결로 이동해요.",
   "mobile.auth.signIn.helpStep3": "3. QR 코드 생성을 선택한 다음 여기서 스캔해요.",
   "mobile.auth.signIn.emailButton": "이메일로 계속",
+  "mobile.auth.signIn.googleButton": "Google로 계속하기",
+  "mobile.auth.signIn.googleFailed": "Google 로그인이 완료되지 않았습니다. 다시 시도해 주세요.",
   "mobile.auth.done.title": "연결됨",
   "mobile.auth.done.body": "로그인했어요.",
   "mobile.auth.email.title": "이메일로 로그인",
