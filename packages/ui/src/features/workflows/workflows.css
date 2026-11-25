@@ -197,11 +197,6 @@
   color: var(--openbot-text-primary);
 }
 
-.wfn-stage .wfn-hud .wfn-hud-tool svg {
-  width: var(--openbot-icon-md);
-  height: var(--openbot-icon-md);
-}
-
 .wfn-stage .wfn-hud-title .wfn-hud-switcher {
   gap: var(--openbot-space-1-5);
   min-width: 0;
@@ -238,10 +233,6 @@
 }
 
 .wfn-canvas[data-tool="pan"] .wfn-viewport[data-panning],
-.wfn-canvas[data-tool="pan"] .wfn-viewport[data-panning] * {
-  cursor: grabbing;
-}
-
 .wfn-canvas[data-tool="draw"] .wfn-viewport {
   cursor: crosshair;
 }
@@ -998,6 +989,10 @@
   pointer-events: auto;
 }
 
+.wfn-canvas[data-tool="pan"] .wfn-viewport[data-panning] * {
+  cursor: grabbing;
+}
+
 .wfn-opening {
   position: absolute;
   inset: 0;
@@ -1022,6 +1017,11 @@
 }
 
 .wfn-stage .wfn-empty-icon svg {
+  width: var(--openbot-icon-md);
+  height: var(--openbot-icon-md);
+}
+
+.wfn-stage .wfn-hud .wfn-hud-tool svg {
   width: var(--openbot-icon-md);
   height: var(--openbot-icon-md);
 }
