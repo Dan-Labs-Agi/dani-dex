@@ -1,8 +1,8 @@
 import { TRANSLATED_LOCALES, type TranslatedLocale } from "@openbot/i18n";
 import { installPointerFocusGuard } from "@openbot/ui/pointer-focus";
 import type { Preview } from "storybook-solidjs-vite";
-import { StaticI18nProvider } from "../src/renderer/src/i18n-context";
-import "../src/renderer/src/styles.css";
+import { StaticI18nProvider } from "../../src/renderer/src/i18n-context";
+import "../../src/renderer/src/styles.css";
 import "./preview.css";
 
 installPointerFocusGuard();

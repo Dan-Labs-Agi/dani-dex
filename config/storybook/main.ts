@@ -6,9 +6,9 @@ import { chatVisualPages } from "./chat-visual-pages";
 
 const config = {
   stories: [
-    "../src/renderer/**/*.stories.@(ts|tsx)",
-    "../apps/auth-api/src/**/*.stories.@(ts|tsx)",
-    "../apps/status/src/**/*.stories.@(ts|tsx)",
+    "../../src/renderer/**/*.stories.@(ts|tsx)",
+    "../../apps/auth-api/src/**/*.stories.@(ts|tsx)",
+    "../../apps/status/src/**/*.stories.@(ts|tsx)",
   ],
   addons: ["@storybook/addon-a11y"],
   previewHead: (head) => `${head}\n<link rel="icon" type="image/svg+xml" href="./favicon.svg" />`,

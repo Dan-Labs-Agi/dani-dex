@@ -1,7 +1,7 @@
 ---
 include:
   - "src/renderer/**"
-  - ".storybook/**"
+  - "config/storybook/**"
 ---
 
 ## Renderer UI review

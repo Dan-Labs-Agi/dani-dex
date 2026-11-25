@@ -274,7 +274,7 @@
       ]
     },
     {
-      "includes": ["src/renderer/**", "packages/ui/**", "packages/brand/**", "apps/auth-api/**", ".storybook/**"],
+      "includes": ["src/renderer/**", "packages/ui/**", "packages/brand/**", "apps/auth-api/**", "config/storybook/**"],
       "plugins": [
         "./tools/biome/anti-slop/rules/no-collections-in-stores.grit",
         "./tools/biome/anti-slop/rules/no-cleanup-in-effect-callbacks.grit"
