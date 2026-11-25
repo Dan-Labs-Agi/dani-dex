@@ -65,8 +65,9 @@ jobs:
           sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost \
             /usr/share/swift /usr/share/miniconda /opt/az /opt/microsoft /opt/google \
             /usr/local/share/chromium /usr/local/share/powershell /opt/vcpkg /usr/share/sbt \
-            "$AGENT_TOOLSDIRECTORY" \
             /usr/local/lib/android/sdk/system-images /usr/local/lib/android/sdk/emulator || true
+          # Keep the JDK setup-java installed: JAVA_HOME points into the toolcache.
+          sudo find "$AGENT_TOOLSDIRECTORY" -mindepth 1 -maxdepth 1 ! -name 'Java_Temurin-Hotspot_jdk' -exec rm -rf {} + || true
           df -h "$GITHUB_WORKSPACE"
 
       - name: Give Gradle more memory
