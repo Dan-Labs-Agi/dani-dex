@@ -185,12 +185,6 @@
   stroke-width: var(--openbot-icon-stroke);
 }
 
-.agent-import-card .ui-button svg {
-  width: var(--openbot-icon-sm);
-  height: var(--openbot-icon-sm);
-  stroke-width: var(--openbot-icon-stroke);
-}
-
 .agent-import-picker.ui-button {
   display: flex;
   width: 100%;
@@ -320,6 +314,12 @@ label.agent-import-row:has(input:disabled) {
 .agent-import-name-hint svg {
   width: var(--openbot-icon-xs);
   height: var(--openbot-icon-xs);
+  stroke-width: var(--openbot-icon-stroke);
+}
+
+.agent-import-card .ui-button svg {
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
   stroke-width: var(--openbot-icon-stroke);
 }
 

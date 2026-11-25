@@ -1838,7 +1838,7 @@ system and goes back to the pool for the next new server or the next move. The W
 ### Archive of an ended pool server
 
 A machine does not wait 14 days with the data of an ended plan. `sync` moves the data into an encrypted
-archive in Backblaze B2 and gives the machine back to the pool ([plan 012](../plans/012-pool-server-archive.md)).
+archive in Backblaze B2 and gives the machine back to the pool ([plan 012](./plans/012-pool-server-archive.md)).
 A renewal before the archive is deleted restores the server on a free pool machine (plan 012 item 4,
 live since 2026-11-19). Run `sync --apply` each day, so that each ended plan frees its machine and each
 restored or due archive is deleted.

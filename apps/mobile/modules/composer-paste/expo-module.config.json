@@ -1,9 +1,0 @@
-{
-  "platforms": ["apple", "android"],
-  "apple": {
-    "modules": ["ComposerPasteModule"]
-  },
-  "android": {
-    "modules": ["dev.danlab.dex.composerpaste.ComposerPasteModule"]
-  }
-}

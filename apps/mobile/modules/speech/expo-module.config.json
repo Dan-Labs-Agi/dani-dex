@@ -1,9 +1,0 @@
-{
-  "platforms": ["apple", "android"],
-  "apple": {
-    "modules": ["SpeechModule"]
-  },
-  "android": {
-    "modules": ["dev.danlab.dex.speech.SpeechModule"]
-  }
-}

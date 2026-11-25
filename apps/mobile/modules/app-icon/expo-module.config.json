@@ -1,9 +1,0 @@
-{
-  "platforms": ["apple", "android"],
-  "apple": {
-    "modules": ["AppIconModule"]
-  },
-  "android": {
-    "modules": ["dev.danlab.dex.appicon.AppIconModule"]
-  }
-}

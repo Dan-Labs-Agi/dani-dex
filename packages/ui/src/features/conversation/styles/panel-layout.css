@@ -112,7 +112,6 @@
   .agent-activity-entry,
   .agent-activity-content,
   .agent-activity-avatar,
-  .agent-activity-entry .agent-activity-avatar,
   .agent-row-thinking-dots i,
   .agent-row-agent-status-responded,
   .agent-row-agent-status-unread,
@@ -125,7 +124,15 @@
     transition: none;
   }
 
-  .agent-activity-avatar,
+  .agent-activity-avatar {
+    transform: none;
+  }
+
+  .agent-activity-entry .agent-activity-avatar {
+    animation: none;
+    transition: none;
+  }
+
   .agent-activity-entry[data-state="exiting"] .agent-activity-avatar {
     transform: none;
   }

@@ -520,13 +520,6 @@
   outline-offset: 2px;
 }
 
-.ui-checkbox-visual svg {
-  width: var(--openbot-icon-xs);
-  height: var(--openbot-icon-xs);
-
-  stroke-width: 2.5;
-}
-
 :where(.ui-input, .ui-textarea, .ui-native-select) {
   width: 100%;
   min-width: 0;
@@ -732,11 +725,6 @@ html.ui-textarea-resizing {
   color: var(--openbot-text-muted);
 }
 
-.ui-select-trigger-icon svg {
-  width: 100%;
-  height: 100%;
-}
-
 .ui-select-content {
   z-index: var(--openbot-layer-popover);
   max-height: 320px;
@@ -773,17 +761,6 @@ html.ui-textarea-resizing {
   flex: 0 0 auto;
   border-bottom: 1px solid var(--openbot-border);
   padding: var(--openbot-space-1);
-}
-
-.ui-search-select-search > svg {
-  position: absolute;
-  top: 50%;
-  inset-inline-start: var(--openbot-space-3);
-  width: var(--openbot-icon-sm);
-  height: var(--openbot-icon-sm);
-  color: var(--openbot-text-muted);
-  transform: translateY(-50%);
-  pointer-events: none;
 }
 
 .ui-search-select-input {
@@ -878,11 +855,6 @@ html.ui-textarea-resizing {
   align-items: center;
   justify-content: center;
   color: currentColor;
-}
-
-.ui-select-item-indicator svg {
-  width: 100%;
-  height: 100%;
 }
 
 @keyframes ui-select-content-in {
@@ -1268,6 +1240,34 @@ html.ui-textarea-resizing {
   width: var(--openbot-icon-lg);
   height: var(--openbot-icon-lg);
   stroke-width: var(--openbot-icon-stroke-lg);
+}
+
+.ui-select-item-indicator svg {
+  width: 100%;
+  height: 100%;
+}
+
+.ui-search-select-search > svg {
+  position: absolute;
+  top: 50%;
+  inset-inline-start: var(--openbot-space-3);
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
+  color: var(--openbot-text-muted);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.ui-select-trigger-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.ui-checkbox-visual svg {
+  width: var(--openbot-icon-xs);
+  height: var(--openbot-icon-xs);
+
+  stroke-width: 2.5;
 }
 
 .ui-item-content {
