@@ -107,8 +107,10 @@ if (process.env.FRESH === "1") {
 
 // Phase B: launch the app directly against the seeded dev API (bun run dev:api).
 // The dev-services app service exits on the free runner, so the script drives its own
-// electron instance, the same way the sign-in and first-run phases do. The seeded
-// profile is keyed by the worktree path, so this launch finds the seeded state.
+// electron instance, the same way the sign-in and first-run phases do. This launch
+// opens the shared seeded profile, then drives the launch gates (language step, dev
+// sign-in) itself: the dev API returns a developmentCode on the sign-in response,
+// which this script captures from the app's own network traffic.
 const { app, page } = await launchApp({
   OPENBOT_AUTH_API_URL: process.env.OPENBOT_AUTH_API_URL ?? "http://127.0.0.1:3100",
 });
@@ -117,14 +119,51 @@ for (const w of app.windows()) {
   if (w.url().includes("helper.html")) island = w;
 }
 
-// Wait for the seeded, signed-in home screen.
+let devCode: string | undefined;
+page.on("response", async (res) => {
+  try {
+    const body = await res.json();
+    if (body && typeof body.developmentCode === "string") devCode = body.developmentCode;
+  } catch {}
+});
+
+// Wait for the seeded, signed-in home screen, driving each gate the app shows.
 let ready = false;
-for (let i = 0; i < 120; i++) {
+let signInRequested = false;
+for (let i = 0; i < 120 && !ready; i++) {
   await page.waitForTimeout(5_000);
   const text = await page.evaluate(() => document.body?.innerText ?? "").catch(() => "");
+  if (i % 6 === 0) console.log("gate", i, JSON.stringify(text.slice(0, 120)));
   if (/agents|new agent|chief|research/i.test(text) && !/sign in/i.test(text)) {
     ready = true;
     break;
+  }
+  if (/choose your language/i.test(text)) {
+    await clickFirst(page, [/^Continue$/, /continue/i], "language continue");
+    continue;
+  }
+  if (/sign in|one-time code|email/i.test(text)) {
+    if (!signInRequested) {
+      const email = page
+        .locator('input[type="email"], input[name="email"], input[placeholder*="@"]')
+        .first();
+      if ((await email.count()) > 0) {
+        await email.fill("openbot-dev-host@example.com");
+        signInRequested = true;
+        await clickFirst(page, [/send sign-in code/i, /send code/i, /^Continue$/], "send code");
+      }
+    } else if (devCode) {
+      const codeInput = page
+        .locator(
+          'input[autocomplete="one-time-code"], input[inputmode="numeric"], input[name="code"], input[placeholder*="code" i]',
+        )
+        .first();
+      if ((await codeInput.count()) > 0) {
+        await codeInput.fill(devCode);
+        devCode = undefined;
+        await clickFirst(page, [/verify/i, /^Continue$/, /sign in/i], "verify code");
+      }
+    }
   }
 }
 console.log("ready:", ready);
