@@ -1,0 +1,7 @@
+{
+  "name": "@dani-dex/account",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": { "deploy": "wrangler deploy", "migrate": "wrangler d1 migrations apply dani-account --remote" },
+  "devDependencies": { "wrangler": "^4.0.0", "@cloudflare/workers-types": "^4.20241112.0", "typescript": "^5.6.0" }
+}
