@@ -72,6 +72,16 @@ export const messages = {
   "error.provider.opencodePackageMismatch": "OpenCode パッケージがランタイムカタログと一致しません。",
   "error.provider.opencodeChecksum": "OpenCode ランタイムのチェックサムが一致しません。",
   "error.provider.opencodeLicenseChecksum": "OpenCode ライセンスのチェックサムが一致しません。",
+  "error.provider.kilocodeArchivePath": "KiloCode アーカイブのパスが想定外です。",
+  "error.provider.kilocodePackageMismatch": "KiloCode パッケージがランタイムカタログと一致しません。",
+  "error.provider.kilocodeChecksum": "KiloCode ランタイムのチェックサムが一致しません。",
+  "error.provider.kilocodeLicenseChecksum": "KiloCode ライセンスのチェックサムが一致しません。",
+  "error.provider.kilocodeNotStarted":
+    "KiloCode を起動できませんでした。ターミナルで `kilo --version` を実行してください。",
+  "error.provider.kilocodeMissing":
+    "KiloCode がダウンロードされていません。続行するには Dani Dex でダウンロードしてください。",
+  "error.provider.kilocodeVersionUnreadable": "Kilo Code CLI のバージョンを読み取れません。",
+  "error.provider.kilocodeNoModels": "KiloCode がモデルを提示しませんでした。Dani Dex は代替モデルを推測しません。",
   "error.provider.grokChecksum": "Grok ランタイムのチェックサムが一致しません。",
   "error.provider.grokLicenseChecksum": "Grok ライセンスのチェックサムが一致しません。",
   "error.provider.grokNoticesChecksum": "Grok 通知ファイルのチェックサムが一致しません。",

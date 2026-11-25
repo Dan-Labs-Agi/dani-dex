@@ -72,6 +72,16 @@ export const messages = {
   "error.provider.opencodePackageMismatch": "Das OpenCode-Paket stimmt nicht mit dem Laufzeitkatalog überein.",
   "error.provider.opencodeChecksum": "Die Prüfsumme der OpenCode-Laufzeit stimmt nicht überein.",
   "error.provider.opencodeLicenseChecksum": "Die Prüfsumme der OpenCode-Lizenz stimmt nicht überein.",
+  "error.provider.kilocodeArchivePath": "Das KiloCode-Archiv hat einen unerwarteten Pfad.",
+  "error.provider.kilocodePackageMismatch": "Das KiloCode-Paket passt nicht zum Laufzeitkatalog.",
+  "error.provider.kilocodeChecksum": "Die Prüfsumme der KiloCode-Laufzeit stimmt nicht überein.",
+  "error.provider.kilocodeLicenseChecksum": "Die Prüfsumme der KiloCode-Lizenz stimmt nicht überein.",
+  "error.provider.kilocodeNotStarted":
+    "KiloCode konnte nicht gestartet werden. Führe `kilo --version` in einem Terminal aus.",
+  "error.provider.kilocodeMissing":
+    "KiloCode ist nicht heruntergeladen. Lade es in Dani Dex herunter, um fortzufahren.",
+  "error.provider.kilocodeVersionUnreadable": "Die Version der Kilo-Code-CLI konnte nicht gelesen werden.",
+  "error.provider.kilocodeNoModels": "KiloCode hat keine Modelle gemeldet. Dani Dex errät kein Ersatzmodell.",
   "error.provider.grokChecksum": "Die Prüfsumme der Grok-Laufzeit stimmt nicht überein.",
   "error.provider.grokLicenseChecksum": "Die Prüfsumme der Grok-Lizenz stimmt nicht überein.",
   "error.provider.grokNoticesChecksum": "Die Prüfsumme der Grok-Hinweise stimmt nicht überein.",

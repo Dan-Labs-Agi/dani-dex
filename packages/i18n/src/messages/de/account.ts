@@ -82,6 +82,10 @@ export const messages = {
   "account.login.checkDelivery": "Zustellung prüfen",
   "account.login.checkAgainIn": "In {time} erneut prüfen",
   "account.login.sendCode": "Anmeldecode senden",
+  "account.login.continueWithGoogle": "Mit Google fortfahren",
+  "account.login.or": "oder",
+  "account.login.googleDescription":
+    "Schließe die Anmeldung mit Google auf der Seite ab, die sich in deinem Browser geöffnet hat.",
   "account.login.tryAgainIn": "In {time} erneut versuchen",
   "account.login.checkingDelivery": "Zustellung wird geprüft…",
   "account.login.sendingCode": "Code wird gesendet…",
