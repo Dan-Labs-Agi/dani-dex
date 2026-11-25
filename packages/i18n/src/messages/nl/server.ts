@@ -706,7 +706,7 @@ export const messages = {
   "server.update.path.container":
     "Haal op de Docker-host de nieuwe dani-dex-image op en maak de container opnieuw met dezelfde datavolumes. Wacht eerst tot actief werk klaar is. Behoud de bestaande volumes om je gegevens te bewaren.",
   "server.update.path.manual":
-    "Deze installatie kan zichzelf niet vervangen. Vraag de beheerder van de host om de compatibele release te installeren vanaf github.com/somdipto/dani-dex/releases. Behoud de bestaande dani-dex-gegevens.",
+    "Deze installatie kan zichzelf niet vervangen. Vraag de beheerder van de host om de compatibele release te installeren vanaf github.com/Dan-Labs-Agi/dani-dex/releases. Behoud de bestaande dani-dex-gegevens.",
   "server.update.path.unavailable":
     "Dit is een ontwikkelbuild. Gebruik een geïnstalleerde dani-dex-release om naar updates te zoeken.",
   "server.update.check": "Zoek naar updates",

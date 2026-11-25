@@ -126,13 +126,13 @@ export function ImportHermesAgents() {
       />
 
       <pre>
-        <code>/skills install somdipto/dani-dex/resources/agent-import/hermes-agent</code>
+        <code>/skills install Dan-Labs-Agi/dani-dex/resources/agent-import/hermes-agent</code>
       </pre>
 
       <p>Hermes scans the skill before installing it. If you prefer the terminal, use:</p>
 
       <pre>
-        <code>hermes skills install somdipto/dani-dex/resources/agent-import/hermes-agent</code>
+        <code>hermes skills install Dan-Labs-Agi/dani-dex/resources/agent-import/hermes-agent</code>
       </pre>
 
       <p>After installing the skill, follow the ZIP export steps below.</p>

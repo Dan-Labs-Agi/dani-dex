@@ -1095,7 +1095,7 @@ try {
           embeds: [
             {
               title: "Login fails after the update",
-              url: "https://github.com/somdipto/dani-dex/issues/1",
+              url: "https://github.com/Dan-Labs-Agi/dani-dex/issues/1",
               description: "The app closes at start.",
             },
           ],

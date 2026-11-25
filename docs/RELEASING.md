@@ -31,7 +31,7 @@ newest version that is not blocked, also when that version is older. A CLI that 
 
 ## One-time GitHub setup
 
-Create the `release` environment in `somdipto/dani-dex`, then add these environment secrets:
+Create the `release` environment in `Dan-Labs-Agi/dani-dex`, then add these environment secrets:
 
 - `CSC_LINK` — a base64-encoded Developer ID Application `.p12` file.
 - `MAC_PROVISIONING_PROFILE` — the base64-encoded Developer ID provisioning profile for
@@ -56,9 +56,9 @@ After the first push, a package administrator must open the
 [dani-dex package](https://github.com/orgs/nightly-labs/packages/container/package/openbot):
 
 1. Open **Package settings** and set **Change visibility** to **Public**.
-2. Check that the package is linked to `somdipto/dani-dex`. The Dockerfile sets the
+2. Check that the package is linked to `Dan-Labs-Agi/dani-dex`. The Dockerfile sets the
    `org.opencontainers.image.source` label for this link.
-3. Under **Manage Actions access**, check that `somdipto/dani-dex` has write access.
+3. Under **Manage Actions access**, check that `Dan-Labs-Agi/dani-dex` has write access.
 
 If **Public** is disabled by organization administrators, an organization owner must enable
 **Public** under **Package creation** in the
@@ -74,8 +74,8 @@ Check access with an empty Docker configuration, so a saved login cannot hide th
 
 ```sh
 anonymous_config=$(mktemp -d)
-docker --config "$anonymous_config" manifest inspect ghcr.io/somdipto/dani-dex:latest
-docker --config "$anonymous_config" manifest inspect ghcr.io/somdipto/dani-dex:0.30.0
+docker --config "$anonymous_config" manifest inspect ghcr.io/Dan-Labs-Agi/dani-dex:latest
+docker --config "$anonymous_config" manifest inspect ghcr.io/Dan-Labs-Agi/dani-dex:0.30.0
 rm -rf "$anonymous_config"
 ```
 
@@ -635,13 +635,13 @@ The workflow:
 10. builds a Docker image (`docker/Dockerfile`) from each Linux AppImage on a runner of that
     architecture, after it checks the AppImage against its `SHA256SUMS` file. It starts each image
     with `docker/seccomp.json`, waits for `dani-dex status`, and stops it, which must exit with 0;
-11. after the GitHub Release is published, pushes both images to `ghcr.io/somdipto/dani-dex`
+11. after the GitHub Release is published, pushes both images to `ghcr.io/Dan-Labs-Agi/dani-dex`
     with the tags `<version>-amd64` and `<version>-arm64`, joins them under `<version>`, `v<version>`,
     `latest` and `sha-<commit>`, and attests the build provenance of that image. It then checks
     anonymous access to both architectures. See [Docker](docker.md).
 
 Users can verify a downloaded artifact with
-`gh attestation verify <file> --repo somdipto/dani-dex`.
+`gh attestation verify <file> --repo Dan-Labs-Agi/dani-dex`.
 
 Before a tag, run the release path without publishing:
 
@@ -802,7 +802,7 @@ To stop a bad release on each path at once, before the patch is ready, make the 
 the latest one:
 
 ```sh
-gh release edit vX.Y.(Z-1) --latest --repo somdipto/dani-dex
+gh release edit vX.Y.(Z-1) --latest --repo Dan-Labs-Agi/dani-dex
 ```
 
 electron-updater then sees an older version and offers no update. The update script of hosted and

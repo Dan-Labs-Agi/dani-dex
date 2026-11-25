@@ -81,7 +81,7 @@ interface FixtureIssue {
 }
 
 const issue = (fields: FixtureIssue) => ({
-  html_url: `https://github.com/somdipto/dani-dex/issues/${fields.number}`,
+  html_url: `https://github.com/Dan-Labs-Agi/dani-dex/issues/${fields.number}`,
   state: "open",
   state_reason: null,
   user: MEMBER,
@@ -413,7 +413,7 @@ interface IncidentFixture {
   resolvedAt?: string | null;
 }
 const incident = (fields: IncidentFixture) => ({
-  url: `https://github.com/somdipto/dani-dex/issues/${fields.id}`,
+  url: `https://github.com/Dan-Labs-Agi/dani-dex/issues/${fields.id}`,
   kind: "incident",
   impact: "partial",
   resolvedAt: null,

@@ -488,7 +488,7 @@ export function parseServerClaim(value: unknown): ServerClaim | null {
 }
 
 export const INSTALL_SERVER_SCRIPT_URL =
-  "https://raw.githubusercontent.com/somdipto/dani-dex/main/scripts/install-server.sh";
+  "https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/main/scripts/install-server.sh";
 
 function shellWord(value: string): string {
   return `'${value.replaceAll("'", "'\\''")}'`;

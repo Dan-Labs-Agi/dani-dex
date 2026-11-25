@@ -1426,7 +1426,7 @@ Network traffic can also occur when:
   [bug reports about the phone app](#bug-reports-about-the-phone-app)); the service refuses such a
   report without them. The service opens it as a public
   issue, or a comment on the issue that the agent chose, in the
-  `somdipto/dani-dex` repository on GitHub, as the dani-dex GitHub App, so the issue does not show
+  `Dan-Labs-Agi/dani-dex` repository on GitHub, as the dani-dex GitHub App, so the issue does not show
   the account. The service does not store or log the text. It adds a hidden owner mark to the end of
   the text: a random value and a keyed hash of that value and the account ID. The mark does not name
   the account, and the service stores nothing for it. When the user removes the report (Fix or remove on the
@@ -1453,7 +1453,7 @@ Network traffic can also occur when:
   OpenCode and Cline, `x.ai/cli` for Grok, `raw.githubusercontent.com/agentclientprotocol/registry` and
   `downloads.cursor.com` (for the download size) for Cursor, `static.devin.ai` (the manifest, and the
   download size) for Devin, and it reads a list of blocked
-  versions from `raw.githubusercontent.com/somdipto/dani-dex`. These requests contain no account, agent,
+  versions from `raw.githubusercontent.com/Dan-Labs-Agi/dani-dex`. These requests contain no account, agent,
   conversation or file data;
 - an agent shows a visual reply, an agent checks its page with `html_preview`, or a user opens an
   HTML attachment, shared file or workspace file in the file preview. The page is HTML that the
@@ -1882,7 +1882,7 @@ Review folders before deleting them and keep a backup of anything you need.
 
 ## Questions
 
-Use [GitHub Discussions](https://github.com/somdipto/dani-dex/discussions) for privacy questions.
+Use [GitHub Discussions](https://github.com/Dan-Labs-Agi/dani-dex/discussions) for privacy questions.
 Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md), without attaching
 credentials, conversations, or unrelated private files.
 

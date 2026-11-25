@@ -1881,7 +1881,7 @@ export const messages = {
   "mobile.server.update.path.container":
     "على مضيف Docker، اسحب صورة dani-dex الجديدة وأنشئ الحاوية مجددًا بوحدات تخزين البيانات نفسها. انتظر انتهاء العمل النشط أولًا. أبقِ وحدات التخزين الحالية للحفاظ على بياناتك.",
   "mobile.server.update.path.manual":
-    "لا يستطيع هذا التثبيت استبدال نفسه. اطلب من مسؤول المضيف تثبيت الإصدار المتوافق من github.com/somdipto/dani-dex/releases. أبقِ بيانات dani-dex الحالية.",
+    "لا يستطيع هذا التثبيت استبدال نفسه. اطلب من مسؤول المضيف تثبيت الإصدار المتوافق من github.com/Dan-Labs-Agi/dani-dex/releases. أبقِ بيانات dani-dex الحالية.",
   "mobile.server.update.path.unavailable": "هذا إصدار تطوير. استخدم إصدار dani-dex مثبّتًا للتحقق من وجود تحديثات.",
   "mobile.server.update.check": "التحقق من وجود تحديثات",
   "mobile.server.update.start": "التحديث عند الخمول",

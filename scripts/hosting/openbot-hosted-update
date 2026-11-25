@@ -4,7 +4,7 @@ export LC_ALL=C DEBIAN_FRONTEND=noninteractive
 umask 022
 
 INSTALL=/opt/dani-dex
-RELEASES=https://github.com/somdipto/dani-dex/releases
+RELEASES=https://github.com/Dan-Labs-Agi/dani-dex/releases
 LOCK=/run/openbot-update.lock
 SCRATCH=/var/tmp
 RESTORE=/var/lib/ascii-lazy
