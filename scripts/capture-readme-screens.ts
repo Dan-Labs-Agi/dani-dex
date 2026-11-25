@@ -21,8 +21,17 @@ const dump = async (page: Page, name: string) => {
   writeFileSync(`shots/${name}.buttons.txt`, JSON.stringify(buttons.slice(0, 80), null, 1));
 };
 
-const shot = async (page: Page, name: string, settleMs = 2_000) => {
+// Wait until the renderer has actually painted: the DOM can hold the full UI while the
+// window still shows only the backdrop. Two animation frames plus settle time.
+const paint = async (page: Page, settleMs: number) => {
+  await page.evaluate(
+    () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve(null)))),
+  ).catch(() => {});
   await page.waitForTimeout(settleMs);
+};
+
+const shot = async (page: Page, name: string, settleMs = 2_000) => {
+  await paint(page, settleMs);
   await page.screenshot({ path: `shots/${name}.png` });
   await dump(page, name);
   console.log("captured", name);
@@ -75,7 +84,7 @@ if (process.env.SIGNIN === "1") {
     const text = await page.evaluate(() => document.body?.innerText ?? "").catch(() => "");
     if (text.includes("Sign in")) break;
   }
-  await shot(page, "01-sign-in", 1_000);
+  await shot(page, "01-sign-in", 6_000);
   await app.close();
   process.exit(0);
 }
@@ -91,7 +100,7 @@ if (process.env.FRESH === "1") {
     const text = await page.evaluate(() => document.body?.innerText ?? "").catch(() => "");
     if (text.length > 50) break;
   }
-  await shot(page, "02-first-run-setup", 1_000);
+  await shot(page, "02-first-run-setup", 6_000);
   await app.close();
   process.exit(0);
 }
@@ -115,8 +124,8 @@ await page.setViewportSize({ width: WIDTH, height: HEIGHT });
 
 // Wait for the seeded, signed-in home screen.
 let ready = false;
-for (let i = 0; i < 60; i++) {
-  await page.waitForTimeout(3_000);
+for (let i = 0; i < 120; i++) {
+  await page.waitForTimeout(5_000);
   const text = await page.evaluate(() => document.body?.innerText ?? "").catch(() => "");
   if (/agents|new agent|chief|research/i.test(text) && !/sign in/i.test(text)) {
     ready = true;

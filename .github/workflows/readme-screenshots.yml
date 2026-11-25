@@ -48,11 +48,12 @@ jobs:
       - name: Capture every seeded screen
         run: |
           set -euo pipefail
-          for i in $(seq 1 60); do
-            if curl -sf http://127.0.0.1:9333/json/version > /dev/null 2>&1; then break; fi
+          # The seed runs before the app launches and can take several minutes.
+          for i in $(seq 1 240); do
+            if curl -sf http://127.0.0.1:9333/json/list 2>/dev/null | grep -q "index.html\|localhost"; then break; fi
             sleep 3
           done
-          curl -s http://127.0.0.1:9333/json/version || true
+          curl -s http://127.0.0.1:9333/json/list | head -c 2000 || true
           bun scripts/capture-readme-screens.ts
 
       - name: Capture first-run setup on a fresh profile
