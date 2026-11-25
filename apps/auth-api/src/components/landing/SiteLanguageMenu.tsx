@@ -17,6 +17,7 @@ const LANGUAGE_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 function rememberLanguage(locale: SiteLocale) {
   const secure = location.protocol === "https:" ? "; Secure" : "";
+  // biome-ignore lint/suspicious/noDocumentCookie: Cookie Store API is not available in every supported browser
   document.cookie = `${SITE_LOCALE_COOKIE}=${locale}; Path=/; Max-Age=${LANGUAGE_COOKIE_MAX_AGE}; SameSite=Lax${secure}`;
 }
 

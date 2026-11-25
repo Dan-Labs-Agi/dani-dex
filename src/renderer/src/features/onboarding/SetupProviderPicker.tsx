@@ -176,7 +176,7 @@ export function createSetupProviders(
         signInPending: status?.signInPending,
         checkError: status?.checkError,
         availableVersion: props.providerAvailableVersions?.[provider.id] ?? null,
-        freeModels: provider.id === "opencode",
+        freeModels: provider.id === "opencode" || provider.id === "kilocode",
         callout:
           provider.id === "opencode"
             ? { title: t("onboarding.provider.tryFree"), detail: t("onboarding.provider.noSignIn") }

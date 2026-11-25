@@ -8,6 +8,7 @@ import type {
   EmailChallengeDeliveryState,
   EmailChallengeRecord,
   EmailVerificationResult,
+  ExternalEmailLoginResult,
   MobileAuthDevice,
   MobileAuthDeviceIdentity,
   MobileAuthSessionResult,
@@ -271,6 +272,50 @@ export class D1AuthRepository implements AuthRepository {
       }
       return {
         status: "verified",
+        session: { sessionToken: input.session.token, user },
+        created,
+      };
+    },
+    (operation) => operation.pipe(Effect.provide(this.#layer)),
+  ).bind(this);
+
+  readonly verifyExternalEmailLogin = Effect.fn("D1AuthRepository.verifyExternalEmailLogin")(
+    function* (
+      this: D1AuthRepository,
+      input: {
+        email: string;
+        now: number;
+        session: { id: string; token: string; expiresAt: number };
+        device?: MobileAuthDeviceIdentity;
+      },
+    ): Effect.fn.Return<ExternalEmailLoginResult, AuthStoreError, AuthDatabase> {
+      const database = yield* AuthDatabase;
+      const { user, created } = yield* this.#upsertEmailUserEffect(input.email, input.now);
+      const tokenHash = yield* sha256(input.session.token).pipe(
+        Effect.mapError(() => new AuthStoreError({ message: "Account store operation failed." })),
+      );
+      const insertSession = database
+        .prepare(
+          `INSERT INTO auth_sessions(
+          id, user_id, token_hash, expires_at, created_at, last_used_at
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(input.session.id, user.id, tokenHash, input.session.expiresAt, input.now, input.now);
+      const device = input.device;
+      if (device) {
+        const [inserted, registered] = yield* storeCall(() =>
+          database.batch([
+            insertSession,
+            ...mobileSessionStatements(database, { now: input.now, session: input.session, device }, null),
+          ]),
+        );
+        if (inserted?.meta.changes !== 1 || registered?.meta.changes !== 1) {
+          return yield* new AuthStoreError({ message: "Account store operation failed." });
+        }
+      } else {
+        yield* storeCall(() => insertSession.run());
+      }
+      return {
         session: { sessionToken: input.session.token, user },
         created,
       };

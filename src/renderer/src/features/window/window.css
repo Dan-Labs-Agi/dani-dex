@@ -48,22 +48,6 @@
     padding-inline-start: var(--openbot-space-6);
   }
 
-  .app-window > .window-rail:not([hidden]) ~ .app-frame-edge {
-    --top-row-controls-start: 10px;
-
-    --top-row-history-width: 0px;
-    --top-row-toggle-width: 0px;
-    --top-row-update-width: 0px;
-    --top-row-tabs-start: calc(
-      var(--top-row-controls-start) +
-      var(--top-row-history-width) +
-      var(--top-row-toggle-width) +
-      var(--top-row-update-width) +
-      var(--openbot-space-2) -
-      3px
-    );
-  }
-
   .app-window
     > .window-rail:not([hidden])
     ~ :is(.web-app-frame, .app-frame-edge:not(.app-frame-platform-darwin)):not(.app-frame-with-server-rail) {
@@ -210,16 +194,6 @@
 
   .app-window
     > .window-rail:not([hidden])
-    ~ .app-frame-edge[data-window-page-kind="agents"].app-frame-sidebar-compact
-    :is(
-      .conversation-panel > :is(.conversation-header, .first-agent-setup-header),
-      .direct-conversation > .direct-conversation-header
-    ) {
-    --conversation-header-shift: max(0px, calc(var(--top-row-tabs-start) - var(--left-panel-width)));
-  }
-
-  .app-window
-    > .window-rail:not([hidden])
     ~ .app-frame-edge[data-window-page-kind="agents"]
     .conversation-panel
     > .conversation-header {
@@ -240,6 +214,16 @@
       max-width var(--panel-resize-duration, var(--openbot-duration-overlay)) cubic-bezier(0.32, 0.72, 0, 1);
   }
 
+  .app-window
+    > .window-rail:not([hidden])
+    ~ .app-frame-edge[data-window-page-kind="agents"].app-frame-sidebar-compact
+    :is(
+      .conversation-panel > :is(.conversation-header, .first-agent-setup-header),
+      .direct-conversation > .direct-conversation-header
+    ) {
+    --conversation-header-shift: max(0px, calc(var(--top-row-tabs-start) - var(--left-panel-width)));
+  }
+
   .app-window > .window-rail:not([hidden]) ~ .app-frame-edge[data-window-page-kind="agents"].app-frame-sidebar-closed {
     grid-template-columns: 0 0 minmax(0, 1fr);
   }
@@ -248,25 +232,6 @@
     > .window-rail:not([hidden])
     ~ .app-frame-edge[data-window-page-kind="agents"].app-frame-sidebar-closed.app-frame-with-server-rail {
     grid-template-columns: var(--server-rail-width) 0 0 minmax(0, 1fr);
-  }
-
-  .app-window
-    > .window-rail:not([hidden])
-    ~ .app-frame-edge[data-window-page-kind="agents"].app-frame-sidebar-closed
-    > .sidebar
-    > :not(.sidebar-topbar) {
-    visibility: hidden;
-  }
-
-  .app-window
-    > .window-rail:not([hidden])
-    ~ .app-frame-edge[data-window-page-kind="agents"].app-frame-sidebar-closed
-    > .left-panel-resizer,
-  .app-window
-    > .window-rail:not([hidden])
-    ~ .app-frame-edge[data-window-page-kind="agents"].app-frame-sidebar-closed
-    > .sidebar::before {
-    display: none;
   }
 
   .app-window
@@ -285,6 +250,22 @@
     padding-block: 0 calc(var(--window-edge) + 1px);
     padding-inline: 0 calc(var(--window-edge) + 1px);
     background: var(--window-frame);
+  }
+
+  .app-window > .window-rail:not([hidden]) ~ .app-frame-edge {
+    --top-row-controls-start: 10px;
+
+    --top-row-history-width: 0px;
+    --top-row-toggle-width: 0px;
+    --top-row-update-width: 0px;
+    --top-row-tabs-start: calc(
+      var(--top-row-controls-start) +
+      var(--top-row-history-width) +
+      var(--top-row-toggle-width) +
+      var(--top-row-update-width) +
+      var(--openbot-space-2) -
+      3px
+    );
   }
 
   .app-window > .app-frame-edge::before {
@@ -744,11 +725,30 @@
     visibility: hidden;
   }
 
+  .app-window
+    > .window-rail:not([hidden])
+    ~ .app-frame-edge[data-window-page-kind="agents"].app-frame-sidebar-closed
+    > .sidebar
+    > :not(.sidebar-topbar) {
+    visibility: hidden;
+  }
+
   .app-frame-edge:not([data-window-page-kind="agents"]) > .sidebar :is(.sidebar-new-button, .sidebar-filter-button) {
     display: none;
   }
 
   .app-frame-edge:not([data-window-page-kind="agents"]) > .sidebar::before {
+    display: none;
+  }
+
+  .app-window
+    > .window-rail:not([hidden])
+    ~ .app-frame-edge[data-window-page-kind="agents"].app-frame-sidebar-closed
+    > .left-panel-resizer,
+  .app-window
+    > .window-rail:not([hidden])
+    ~ .app-frame-edge[data-window-page-kind="agents"].app-frame-sidebar-closed
+    > .sidebar::before {
     display: none;
   }
 

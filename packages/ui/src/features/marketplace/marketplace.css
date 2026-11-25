@@ -322,11 +322,6 @@ body[data-skills-marketplace] :is(.integration-dialog-backdrop, .integration-wiz
   stroke-width: var(--openbot-icon-stroke-lg);
 }
 
-.marketplace-skill-mark[data-kind="icon"] > img {
-  width: 100%;
-  height: 100%;
-}
-
 .marketplace-skill-mark[data-kind="none"] > * {
   width: 60%;
   height: 60%;
@@ -655,6 +650,11 @@ body[data-skills-marketplace] :is(.integration-dialog-backdrop, .integration-wiz
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+.marketplace-skill-mark[data-kind="icon"] > img {
+  width: 100%;
+  height: 100%;
 }
 
 .marketplace-empty > p {
@@ -1342,8 +1342,12 @@ html:active-view-transition-type(marketplace-group) [data-marketplace-shared] .m
   }
 }
 
-.skills-marketplace .ui-button > svg,
 .marketplace-search > svg {
+  width: 16px;
+  height: 16px;
+}
+
+.skills-marketplace .ui-button > svg {
   width: 16px;
   height: 16px;
 }

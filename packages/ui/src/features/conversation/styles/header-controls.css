@@ -494,11 +494,6 @@
   opacity: 0.48;
 }
 
-.provider-model-rail-button:not(.provider-model-rail-button-selected, .provider-model-rail-button-unavailable):hover
-  .provider-model-mark {
-  opacity: 0.8;
-}
-
 .provider-model-rail-button-selected .provider-model-mark {
   fill: var(--openbot-text-primary);
   opacity: 1;
@@ -510,6 +505,11 @@
 
 .provider-model-rail-button-unavailable:is(:hover, .provider-model-rail-button-selected) .provider-model-mark {
   opacity: 0.6;
+}
+
+.provider-model-rail-button:not(.provider-model-rail-button-selected, .provider-model-rail-button-unavailable):hover
+  .provider-model-mark {
+  opacity: 0.8;
 }
 
 .provider-model-rail-button:is(

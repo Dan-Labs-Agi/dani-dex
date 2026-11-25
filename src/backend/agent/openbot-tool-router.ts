@@ -1399,7 +1399,7 @@ export class OpenBotToolRouter {
     if (!feedback) return openBotToolFailure("title and text must not be empty.");
     if (!this.#requestedByPerson(senderAgentId, params.turnId, params.threadId))
       return openBotToolFailure(
-        "Only a person's message, in your dani-dex chat or a thread they opened, can send feedback. Describe the problem in your reply instead. Do not open an dani-dex issue with GitHub tools, gh, or a browser: the repository closes issues that do not use its forms. A person can report it at https://github.com/somdipto/dani-dex/issues/new/choose.",
+        "Only a person's message, in your dani-dex chat or a thread they opened, can send feedback. Describe the problem in your reply instead. Do not open a dani-dex issue with GitHub tools, gh, or a browser: the repository closes issues that do not use its forms. A person can report it at https://github.com/somdipto/dani-dex/issues/new/choose.",
       );
     if (!sender.signedIn()) return form(FEEDBACK_SIGNED_OUT_NEXT);
     const searchKey = `${senderAgentId}\n${params.turnId}`;
