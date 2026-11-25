@@ -142,6 +142,8 @@ win:
         - x64
 nsis:
   oneClick: false
+  installerSidebar: build/installerSidebar.bmp
+  uninstallerSidebar: build/uninstallerSidebar.bmp
   allowToChangeInstallationDirectory: true
 linux:
   category: Development
