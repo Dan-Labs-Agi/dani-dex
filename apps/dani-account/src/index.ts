@@ -1,5 +1,6 @@
 // Dani Dex account + sync Worker. One Google account = one user id on mobile and desktop.
 // Secrets and provider tokens are never synced: kinds below are the only accepted ones.
+import { PRIVACY_HTML, TERMS_HTML } from "./legal";
 import { handleRemote, SignalRoom, type REnv } from "./remote";
 export { SignalRoom };
 export interface Env extends REnv {
@@ -160,6 +161,8 @@ export default {
       if (!r.ok) return new Response(JSON.stringify({ platforms: {} }), { headers: { ...cors, "content-type": "application/json" } });
       return new Response(await r.text(), { headers: { ...cors, "content-type": "application/json" } });
     }
+    if ((p === "/privacy" || p === "/terms") && req.method === "GET")
+      return new Response(p === "/privacy" ? PRIVACY_HTML : TERMS_HTML, { headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=3600" } });
     if (p === "/v1/google/start" && req.method === "GET") return googleStart(url, env);
     if (p === "/v1/google/callback" && req.method === "GET") return googleCallback(url, env);
     if (p === "/v1/auth/email/start" && req.method === "POST")
