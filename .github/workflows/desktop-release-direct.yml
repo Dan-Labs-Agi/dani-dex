@@ -1,0 +1,120 @@
+name: Desktop release direct
+
+# Builds the unsigned desktop installers on GitHub runners and puts them on the download host at
+# https://dl.dani.danlab.dev/desktop/, so the landing page can offer them without access to this
+# private repository. Unsigned: macOS asks to open via right-click, Windows shows SmartScreen once;
+# the landing page explains both. Only built installers go to the bucket, never source.
+# Secrets: R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY.
+on:
+  push:
+    branches:
+      - build/desktop-releases
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CI: "1"
+  R2_ACCOUNT_ID: a2f714474bf94011597fd5cd1a92b56b
+  R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+  R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+  CSC_IDENTITY_AUTO_DISCOVERY: "false"
+
+jobs:
+  mac:
+    name: Mac ${{ matrix.arch }} dmg
+    runs-on: macos-15
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [arm64, x64]
+    concurrency:
+      group: desktop-release-mac-${{ matrix.arch }}
+      cancel-in-progress: true
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Bun and Node
+        uses: ./.github/actions/setup-bun
+
+      - name: Build the app and package the dmg
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          set -euo pipefail
+          bun run voice:prepare-runtime
+          bun run prepare:remote-desktop-runtime
+          bun run verify:remote-desktop-runtime
+          bun run prepare:cua-driver
+          bun run build
+          bunx electron-builder --mac dmg --"$ARCH" --config.mac.identity=null --config.mac.notarize=false --publish never
+          ls -la dist/*.dmg
+
+      - name: Publish to the download host and update feed
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          set -euo pipefail
+          VERSION=$(bun -e 'console.log(JSON.parse(require("fs").readFileSync("package.json","utf8")).version)')
+          pip3 install --quiet boto3
+          python3 scripts/publish-feed.py --platform "mac-$ARCH" \
+            --file "dist/dani-dex-$VERSION-$ARCH.dmg" --key "desktop/Dani-Dex-mac-$ARCH.dmg" --version "$VERSION"
+
+      - name: Verify the public URL
+        env:
+          ARCH: ${{ matrix.arch }}
+        run: |
+          set -euo pipefail
+          code=$(curl -s -o /dev/null -w '%{http_code}' "https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-$ARCH.dmg")
+          echo "https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-$ARCH.dmg -> $code"
+          test "$code" = 200
+
+  windows:
+    name: Windows x64 installer
+    runs-on: windows-latest
+    timeout-minutes: 60
+    concurrency:
+      group: desktop-release-windows
+      cancel-in-progress: true
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Bun and Node
+        uses: ./.github/actions/setup-bun
+
+      - name: Build the app and package the installer
+        shell: bash
+        run: |
+          set -euo pipefail
+          bun run voice:prepare-runtime
+          bun scripts/prepare-remote-desktop-runtime.ts win32 x64
+          bun run verify:remote-desktop-runtime --windows
+          bun scripts/install-cua-driver.ts win32 x64
+          bun run build
+          bunx electron-builder --win nsis --x64 --publish never
+          ls -la dist/*.exe
+
+      - name: Publish to the download host and update feed
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION=$(bun -e 'console.log(JSON.parse(require("fs").readFileSync("package.json","utf8")).version)')
+          python -m pip install --quiet boto3
+          python scripts/publish-feed.py --platform windows \
+            --file "dist/dani-dex-$VERSION-x64.exe" --key "desktop/Dani-Dex-win-x64.exe" --version "$VERSION"
+
+      - name: Verify the public URL
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -s -o /dev/null -w '%{http_code}' "https://dl.dani.danlab.dev/desktop/Dani-Dex-win-x64.exe")
+          echo "https://dl.dani.danlab.dev/desktop/Dani-Dex-win-x64.exe -> $code"
+          test "$code" = 200
