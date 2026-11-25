@@ -1,6 +1,7 @@
 // Dani Dex account + sync Worker. One Google account = one user id on mobile and desktop.
 // Secrets and provider tokens are never synced: kinds below are the only accepted ones.
 import { PRIVACY_HTML, TERMS_HTML } from "./legal";
+import { emailStart, emailVerify } from "./emailcode";
 import { handleRemote, SignalRoom, type REnv } from "./remote";
 export { SignalRoom };
 export interface Env extends REnv {
@@ -8,6 +9,8 @@ export interface Env extends REnv {
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
   STATE_SECRET: string;
+  RESEND_API_KEY?: string;
+  MAIL_FROM?: string;
 }
 
 const CALLBACK = "https://auth.dani.danlab.dev/v1/google/callback";
@@ -131,6 +134,14 @@ async function googleCallback(url: URL, env: Env): Promise<Response> {
   if (claims.aud !== env.GOOGLE_CLIENT_ID || !claims.sub || claims.email_verified === false) return json({ error: "bad_token" }, 401);
   let user = await env.DB.prepare("SELECT id FROM users WHERE google_sub=?").bind(claims.sub).first<{ id: string }>();
   if (!user) {
+    const byEmail = await env.DB.prepare("SELECT id FROM users WHERE lower(email)=? AND google_sub LIKE 'email:%' LIMIT 1")
+      .bind(String(claims.email).toLowerCase()).first<{ id: string }>();
+    if (byEmail) {
+      await env.DB.prepare("UPDATE users SET google_sub=?, name=COALESCE(name,?) WHERE id=?").bind(claims.sub, claims.name ?? null, byEmail.id).run();
+      user = byEmail;
+    }
+  }
+  if (!user) {
     const id = crypto.randomUUID();
     await env.DB.prepare("INSERT INTO users(id,google_sub,email,name,created_at) VALUES(?,?,?,?,?)")
       .bind(id, claims.sub, claims.email, claims.name ?? null, now()).run();
@@ -164,7 +175,8 @@ export default {
     if (p === "/v1/google/start" && req.method === "GET") return googleStart(url, env);
     if (p === "/v1/google/callback" && req.method === "GET") return googleCallback(url, env);
     if (p === "/v1/auth/email/start" && req.method === "POST")
-      return apiError(409, "company_sign_in_required", "Continue in your browser with Google.");
+      return emailStart(req, env, json, apiError);
+    if (p === "/v1/auth/email/verify" && req.method === "POST") return emailVerify(req, env, json, apiError);
     if (p === "/v1/auth/company/start" && req.method === "POST") return companyStart(req, env);
     if (p === "/v1/auth/company/exchange" && req.method === "POST") return companyExchange(req, env);
 
