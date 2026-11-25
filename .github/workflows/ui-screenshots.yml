@@ -32,6 +32,10 @@ jobs:
           bun run build
 
       - name: Capture the screens
+        env:
+          # The packaged default works too, but set it explicitly so a default change
+          # never blanks the capture.
+          OPENBOT_AUTH_API_URL: https://auth.dani.danlab.dev
         run: xvfb-run -a --server-args="-screen 0 1440x900x24" bun scripts/capture-ui-screenshots.ts
 
       - name: Save the screenshots
