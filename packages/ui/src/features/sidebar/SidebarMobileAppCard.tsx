@@ -18,7 +18,7 @@ const STAND_IN_CREW: readonly CrewAgent[] = [
   CHIEF_SEED,
   OPTIONAL_CHARACTER_SEEDS[3],
   OPTIONAL_CHARACTER_SEEDS[4],
-].map((seed) => ({ avatarSeed: seed, avatarHue: null, avatarColor: null, avatarUrl: null }));
+].map((seed): CrewAgent => ({ avatarSeed: seed ?? CHIEF_SEED, avatarHue: null, avatarColor: null, avatarUrl: null }));
 
 const PLATFORMS: readonly {
   platform: MobilePlatformLogoVariant;
