@@ -212,6 +212,12 @@ export default {
     const url = new URL(req.url);
     const p = url.pathname;
     if (p === "/healthz") return json({ ok: true });
+    // Analytics sink: the app talks to us, nothing is stored or forwarded.
+    if (p.startsWith("/analytics/"))
+      return new Response(null, {
+        status: 204,
+        headers: { "access-control-allow-origin": "*", "access-control-allow-headers": "*" },
+      });
     if (p === "/health/live" && req.method === "GET") return json({ service: "dani-auth-api", status: "ok" });
     if (p === "/v1/releases" && req.method === "GET") {
       // Public release feed for the landing page and in-app updater (CORS open, read only).

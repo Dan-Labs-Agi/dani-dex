@@ -10,7 +10,7 @@ export function openPanelTransport(options: {
   const send = options.fetch ?? globalThis.fetch;
   return (report, signal) =>
     telemetryIO(async () => {
-      const response = await send(options.endpoint ?? "https://analytics.openbot.run/api/track", {
+      const response = await send(options.endpoint ?? "https://auth.dani.danlab.dev/analytics/api/track", {
         method: "POST",
         signal,
         credentials: "omit",
