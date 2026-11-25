@@ -382,3 +382,9 @@
     transition: none;
   }
 }
+
+.first-agent-avatar-upload {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}

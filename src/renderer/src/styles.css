@@ -98,6 +98,7 @@
 @import "@openbot/ui/features/browser/browser-profiles.css";
 @import "@openbot/ui/features/vault/vault.css";
 @import "@openbot/ui/features/agents/agent-template.css";
+@import "@openbot/ui/features/agents/agent-avatar-motion.css";
 @import "@openbot/ui/features/agents/agent-delete-undo-toast.css";
 @import "@openbot/ui/features/github-star/github-star-toast.css";
 @import "@openbot/ui/features/social-follow/social-follow-toast.css";

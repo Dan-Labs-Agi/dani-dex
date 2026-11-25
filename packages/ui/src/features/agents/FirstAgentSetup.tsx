@@ -9,13 +9,15 @@ import type {
   AgentStatus,
   AvatarColor,
   AvatarHue,
+  AvatarImageInput,
   ClientAgentModelOption,
   CustomAgentSummary,
   CustomProviderSummary,
   ProviderRuntimeStatus,
 } from "@openbot/contracts/ipc";
 import type { AppTextKey, AppTranslate } from "@openbot/i18n";
-import { Button, Field, Input, Textarea } from "@openbot/ui";
+import { Button, Field, Input, Textarea, toast } from "@openbot/ui";
+import { avatarImageDataUrl, normalizeAvatarFile } from "@openbot/ui/avatar-image";
 import { createSignal, For, onSettled, Show } from "solid-js";
 import {
   AVATAR_COLOR_CHOICES,
@@ -37,6 +39,7 @@ export interface FirstAgentDraft {
   avatarSeed: string;
   avatarHue: AvatarHue | null;
   avatarColor?: AvatarColor | null | undefined;
+  avatarImage?: AvatarImageInput | null | undefined;
   suggestionId: string | null;
   provider: AgentProviderId;
   model: AgentModelId;
@@ -182,7 +185,19 @@ function matchesSuggestion(draft: FirstAgentDraft, suggestion: FirstAgentSuggest
 }
 
 export function FirstAgentSetup(props: FirstAgentSetupProps) {
-  const { t, sourceText } = useText();
+  const { t, sourceText, errorMessage } = useText();
+  let avatarFileInput: HTMLInputElement | undefined;
+  const avatarImageUrl = () => (props.value.avatarImage ? avatarImageDataUrl(props.value.avatarImage) : null);
+  async function chooseAvatarImage(file: File | undefined): Promise<void> {
+    if (!file) return;
+    try {
+      updateDraft({ avatarImage: await normalizeAvatarFile(file) });
+    } catch (error) {
+      toast.error(errorMessage(error, t("agentSettings.avatar.processFailed")));
+    } finally {
+      if (avatarFileInput) avatarFileInput.value = "";
+    }
+  }
   let suggestionList: HTMLUListElement | undefined;
   let activeSuggestionPointer: number | null = null;
   let suggestionDragStartX = 0;
@@ -422,9 +437,45 @@ export function FirstAgentSetup(props: FirstAgentSetupProps) {
               seed={props.value.avatarSeed}
               hue={props.value.avatarHue}
               color={props.value.avatarColor ?? null}
+              url={avatarImageUrl()}
               motion="idle"
               animationOffset={0.4}
             />
+          </div>
+
+          <div class="first-agent-avatar-upload">
+            <Input
+              ref={(element: HTMLInputElement) => (avatarFileInput = element)}
+              class="sr-only"
+              type="file"
+              aria-label={t("agentSettings.avatar.attachFiles")}
+              accept="image/png,image/jpeg,image/gif,image/webp"
+              onChange={(event: Event & { currentTarget: HTMLInputElement }) =>
+                void chooseAvatarImage(event.currentTarget.files?.[0])
+              }
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              class="no-drag"
+              disabled={props.submitting}
+              onClick={() => avatarFileInput?.click()}
+            >
+              {t("agentSettings.avatar.uploadImage")}
+            </Button>
+            <Show when={props.value.avatarImage}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                class="no-drag"
+                disabled={props.submitting}
+                onClick={() => updateDraft({ avatarImage: null })}
+              >
+                {t("common.remove")}
+              </Button>
+            </Show>
           </div>
 
           <fieldset class="first-agent-avatar-fieldset first-agent-color-fieldset" disabled={props.submitting}>

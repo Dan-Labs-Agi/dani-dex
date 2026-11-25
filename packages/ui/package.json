@@ -497,6 +497,7 @@
     "./components/search-picker.css": "./src/components/search-picker.css",
     "./features/agents/agent-delete-undo-toast.css": "./src/features/agents/agent-delete-undo-toast.css",
     "./features/agents/agent-template.css": "./src/features/agents/agent-template.css",
+    "./features/agents/agent-avatar-motion.css": "./src/features/agents/agent-avatar-motion.css",
     "./features/agents/first-agent-setup.css": "./src/features/agents/first-agent-setup.css",
     "./styles/settings-panel.css": "./src/styles/settings-panel.css",
     "./styles/provider-code-login.css": "./src/styles/provider-code-login.css",

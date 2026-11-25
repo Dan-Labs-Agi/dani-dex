@@ -61,6 +61,7 @@ const AgentActions = createSimpleContext({
       applyUserHiddenAgents,
       ownAgentLevels,
       applyOwnAgentLevels,
+      setAgentAvatar,
     } = useAgents();
     const { initializeConversation, removeConversation } = useConversation();
     const threads = useAgentThreads();
@@ -92,6 +93,7 @@ const AgentActions = createSimpleContext({
       setAgentSetupError(null);
       try {
         const newAgent = addNewAgent(await requestNewAgent(submitted));
+        if (submitted.avatarImage) await setAgentAvatar(newAgent.id, submitted.avatarImage);
         openCreatedAgent(newAgent.id);
         const properties = analyticsAgentProperties(newAgent.id);
         analytics.track("agent_action", { action: "create", result: "succeeded", ...(properties ?? {}) });
