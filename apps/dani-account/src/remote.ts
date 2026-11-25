@@ -203,7 +203,7 @@ export async function handleRemote(
       await env.DB.prepare("INSERT INTO telegram_codes(code_hash,host_id,user_id,expires_at) VALUES(?,?,?,?)")
         .bind(await sha256(code), h.host_id, h.user_id, now() + 15 * 60)
         .run();
-      return json({ botUsername: "danirex_bot", code });
+      return json({ botUsername: "danidexbot", code });
     }
     if (tg[2] === "telegram-disconnect") {
       if (typeof b.chatId === "string")
