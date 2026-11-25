@@ -158,7 +158,11 @@ import type { GlobalSearchRoutine } from "@openbot/ui/components/GlobalSearch";
 import type { AgentMessage, ComposerThreadMessageMatch } from "@openbot/ui/data";
 import { accountUsageProviderRows } from "@openbot/ui/features/account/account-usage-view";
 import { computeAgentAvatarMoods } from "@openbot/ui/features/agents/agent-avatar-mood";
-import { createFirstAgentDraft, type FirstAgentDraft } from "@openbot/ui/features/agents/FirstAgentSetup";
+import {
+  createAdditionalAgentDraft,
+  createFirstAgentDraft,
+  type FirstAgentDraft,
+} from "@openbot/ui/features/agents/FirstAgentSetup";
 import { BillingDialog } from "@openbot/ui/features/billing/BillingDialog";
 import { createBillingStore } from "@openbot/ui/features/billing/billing-store";
 import { LicenseSection } from "@openbot/ui/features/billing/LicenseSection";
@@ -414,7 +418,7 @@ const SEARCH_ROUTINE_REQUESTS = 4;
 const SIDEBAR_WAIT_MS = 5000;
 
 function newAgentAvatar(): Pick<FirstAgentDraft, "avatarSeed" | "avatarHue" | "avatarColor"> {
-  const { avatarSeed, avatarHue } = createFirstAgentDraft();
+  const { avatarSeed, avatarHue } = createAdditionalAgentDraft();
   return { avatarSeed, avatarHue, avatarColor: null };
 }
 
@@ -3745,7 +3749,11 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
                   liveStatus={providerAdmin.status()}
                   accountChoice={agentAccountChoice()}
                   accountUsage={agentAccountUsage()}
-                  initialDraft={{ ...createFirstAgentDraft(), ...untrack(agentAvatar) }}
+                  initialDraft={
+                    firstAgent()
+                      ? createFirstAgentDraft()
+                      : { ...createAdditionalAgentDraft(), ...untrack(agentAvatar) }
+                  }
                   onDraftChange={({ avatarSeed, avatarHue, avatarColor }) =>
                     setAgentAvatar({ avatarSeed, avatarHue, avatarColor })
                   }

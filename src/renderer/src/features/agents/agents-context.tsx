@@ -13,7 +13,11 @@ import {
 import { AGENT_HIDDEN_WORK_CAPABILITY } from "@openbot/contracts/team-protocol/current";
 import { PROVIDER_ACCOUNTS_CAPABILITY } from "@openbot/contracts/team-protocol/provider-accounts-v1";
 import type { AgentProfile } from "@openbot/ui/data";
-import { createFirstAgentDraft, type FirstAgentDraft } from "@openbot/ui/features/agents/FirstAgentSetup";
+import {
+  createAdditionalAgentDraft,
+  createFirstAgentDraft,
+  type FirstAgentDraft,
+} from "@openbot/ui/features/agents/FirstAgentSetup";
 import { createEffect, createMemo, createSignal, untrack } from "solid-js";
 import { desktopAnalytics } from "../../analytics";
 import { FALLBACK_STATUS } from "../../app-defaults";
@@ -229,7 +233,7 @@ const Agents = createSimpleContext({
       windowPage.showAgents();
       if (agentSetupOpen()) return;
       setDirectTyping(false);
-      setAgentSetupDraft(createFirstAgentDraft());
+      setAgentSetupDraft(createAdditionalAgentDraft());
       setAgentSetupError(null);
       openedAgentChatId = null;
       setAgentSetupOpen(true);
@@ -239,7 +243,7 @@ const Agents = createSimpleContext({
       if (creatingAgent() || agentList().length === 0) return;
       setAgentSetupOpen(false);
       setAgentSetupError(null);
-      setAgentSetupDraft(createFirstAgentDraft());
+      setAgentSetupDraft(createAdditionalAgentDraft());
     }
 
     async function updateAgent(agentId: string, updates: Omit<UpdateAgentInput, "agentId">): Promise<void> {

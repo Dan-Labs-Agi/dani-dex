@@ -9,6 +9,7 @@ interface CharacterSprites {
   footLeft: string;
   footRight: string;
   arm: string;
+  crown: string | null;
 }
 
 const faces: readonly CharacterSprites[] = [
@@ -21,6 +22,7 @@ const faces: readonly CharacterSprites[] = [
     footLeft: new URL("./characters/dani-foot-l.png", import.meta.url).href,
     footRight: new URL("./characters/dani-foot-r.png", import.meta.url).href,
     arm: new URL("./characters/dani-arm.png", import.meta.url).href,
+    crown: new URL("./characters/dani-crown.png", import.meta.url).href,
   },
   {
     bodyClass: "agent-avatar-char-sprout",
@@ -31,6 +33,7 @@ const faces: readonly CharacterSprites[] = [
     footLeft: new URL("./characters/sprout-foot-l.png", import.meta.url).href,
     footRight: new URL("./characters/sprout-foot-r.png", import.meta.url).href,
     arm: new URL("./characters/sprout-arm.png", import.meta.url).href,
+    crown: null,
   },
   {
     bodyClass: "agent-avatar-char-tuft",
@@ -41,6 +44,7 @@ const faces: readonly CharacterSprites[] = [
     footLeft: new URL("./characters/tuft-foot-l.png", import.meta.url).href,
     footRight: new URL("./characters/tuft-foot-r.png", import.meta.url).href,
     arm: new URL("./characters/tuft-arm.png", import.meta.url).href,
+    crown: null,
   },
   {
     bodyClass: "agent-avatar-char-sweep",
@@ -51,6 +55,7 @@ const faces: readonly CharacterSprites[] = [
     footLeft: new URL("./characters/sweep-foot-l.png", import.meta.url).href,
     footRight: new URL("./characters/sweep-foot-r.png", import.meta.url).href,
     arm: new URL("./characters/sweep-arm.png", import.meta.url).href,
+    crown: null,
   },
   {
     bodyClass: "agent-avatar-char-cap",
@@ -61,6 +66,7 @@ const faces: readonly CharacterSprites[] = [
     footLeft: new URL("./characters/cap-foot-l.png", import.meta.url).href,
     footRight: new URL("./characters/cap-foot-r.png", import.meta.url).href,
     arm: new URL("./characters/cap-arm.png", import.meta.url).href,
+    crown: null,
   },
   {
     bodyClass: "agent-avatar-char-shades",
@@ -71,6 +77,7 @@ const faces: readonly CharacterSprites[] = [
     footLeft: new URL("./characters/shades-foot-l.png", import.meta.url).href,
     footRight: new URL("./characters/shades-foot-r.png", import.meta.url).href,
     arm: new URL("./characters/shades-arm.png", import.meta.url).href,
+    crown: null,
   },
   {
     bodyClass: "agent-avatar-char-bow",
@@ -81,6 +88,7 @@ const faces: readonly CharacterSprites[] = [
     footLeft: new URL("./characters/bow-foot-l.png", import.meta.url).href,
     footRight: new URL("./characters/bow-foot-r.png", import.meta.url).href,
     arm: new URL("./characters/bow-arm.png", import.meta.url).href,
+    crown: null,
   },
 ];
 
@@ -98,6 +106,10 @@ export const CHARACTER_SEEDS: readonly string[] = faces.map((_, index) => {
   }
   return "character";
 });
+
+/** The purple king is Chief, the default first agent. The other six are options for later agents. */
+export const CHIEF_SEED: string = CHARACTER_SEEDS[0] ?? "character";
+export const OPTIONAL_CHARACTER_SEEDS: readonly string[] = CHARACTER_SEEDS.slice(1);
 
 function sprites(seed: string): CharacterSprites {
   const found = faces[seedIndex(seed)] ?? faces[0];

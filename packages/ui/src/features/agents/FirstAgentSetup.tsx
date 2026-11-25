@@ -18,17 +18,13 @@ import type { AppTextKey, AppTranslate } from "@openbot/i18n";
 import { Button, Field, Input, Textarea, toast } from "@openbot/ui";
 import { avatarImageDataUrl, normalizeAvatarFile } from "@openbot/ui/avatar-image";
 import { createSignal, For, onSettled, Show } from "solid-js";
-import {
-  AVATAR_COLOR_CHOICES,
-  avatarHeadColor,
-  isAvatarColorChoice,
-} from "../../bloub-avatar";
+import { AVATAR_COLOR_CHOICES, avatarHeadColor, isAvatarColorChoice } from "../../bloub-avatar";
 import { ProviderModelPicker } from "../../components/ProviderModelPicker";
 import { currentText, useText } from "../../text";
 import { prefersReducedMotion } from "../../utils";
 import { AgentAvatar } from "./AgentAvatar";
-import { CHARACTER_SEEDS } from "./character-faces";
 import { avatarColorChoiceLabel } from "./avatar-hue-label";
+import { CHARACTER_SEEDS, CHIEF_SEED, OPTIONAL_CHARACTER_SEEDS } from "./character-faces";
 import { InstructionsLimit, instructionsTooLong } from "./InstructionsLimit";
 
 export interface FirstAgentDraft {
@@ -78,7 +74,7 @@ export interface FirstAgentSetupProps {
   onCancel?: (() => void) | undefined;
 }
 
-export const FIRST_AGENT_AVATAR_SEEDS = CHARACTER_SEEDS;
+const FIRST_AGENT_AVATAR_SEEDS = CHARACTER_SEEDS;
 
 const SUGGESTION_MOMENTUM_FRICTION = 0.88;
 const SUGGESTION_MOMENTUM_MINIMUM = 0.01;
@@ -87,16 +83,27 @@ const SUGGESTION_DRAG_THRESHOLD = 8;
 const MOTION_FRAME_DURATION = 1000 / 60;
 const FACE_CHOICE_EYE_SCALE = 1.25;
 
-export function createFirstAgentDraft(random: () => number = Math.random): FirstAgentDraft {
-  const index = Math.min(FIRST_AGENT_AVATAR_SEEDS.length - 1, Math.floor(random() * FIRST_AGENT_AVATAR_SEEDS.length));
+const CHIEF_NAME = "Chief of Staff";
+
+/** The first agent of every account is Chief of Staff, the purple king. */
+export function createFirstAgentDraft(): FirstAgentDraft {
   return {
-    name: currentText().t("agent.setup.nameFallback"),
+    name: CHIEF_NAME,
     purpose: "",
-    avatarSeed: FIRST_AGENT_AVATAR_SEEDS[index] ?? "first-bot",
+    avatarSeed: CHIEF_SEED,
     avatarHue: null,
     suggestionId: null,
     provider: "codex",
     model: agentProviderDescriptor("codex").defaultModel,
+  };
+}
+
+export function createAdditionalAgentDraft(random: () => number = Math.random): FirstAgentDraft {
+  const index = Math.min(OPTIONAL_CHARACTER_SEEDS.length - 1, Math.floor(random() * OPTIONAL_CHARACTER_SEEDS.length));
+  return {
+    ...createFirstAgentDraft(),
+    name: currentText().t("agent.setup.nameFallback"),
+    avatarSeed: OPTIONAL_CHARACTER_SEEDS[index] ?? CHIEF_SEED,
   };
 }
 
@@ -426,108 +433,110 @@ export function FirstAgentSetup(props: FirstAgentSetupProps) {
             />
           </div>
 
-          <div class="first-agent-avatar-upload">
-            <Input
-              ref={(element: HTMLInputElement) => (avatarFileInput = element)}
-              class="sr-only"
-              type="file"
-              aria-label={t("agentSettings.avatar.attachFiles")}
-              accept="image/png,image/jpeg,image/gif,image/webp"
-              onChange={(event: Event & { currentTarget: HTMLInputElement }) =>
-                void chooseAvatarImage(event.currentTarget.files?.[0])
-              }
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              class="no-drag"
-              disabled={props.submitting}
-              onClick={() => avatarFileInput?.click()}
-            >
-              {t("agentSettings.avatar.uploadImage")}
-            </Button>
-            <Show when={props.value.avatarImage}>
+          <Show when={props.mode === "additional"}>
+            <div class="first-agent-avatar-upload">
+              <Input
+                ref={(element: HTMLInputElement) => (avatarFileInput = element)}
+                class="sr-only"
+                type="file"
+                aria-label={t("agentSettings.avatar.attachFiles")}
+                accept="image/png,image/jpeg,image/gif,image/webp"
+                onChange={(event: Event & { currentTarget: HTMLInputElement }) =>
+                  void chooseAvatarImage(event.currentTarget.files?.[0])
+                }
+              />
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 class="no-drag"
                 disabled={props.submitting}
-                onClick={() => updateDraft({ avatarImage: null })}
+                onClick={() => avatarFileInput?.click()}
               >
-                {t("common.remove")}
+                {t("agentSettings.avatar.uploadImage")}
               </Button>
-            </Show>
-          </div>
-
-          <fieldset class="first-agent-avatar-fieldset first-agent-color-fieldset" disabled={props.submitting}>
-            <legend class="sr-only">{t("agent.setup.color")}</legend>
-            <div class="first-agent-color-options">
-              <Button
-                variant="ghost"
-                type="button"
-                size="sm"
-                class="first-agent-color-choice"
-                aria-label={t("agent.setup.colorAutomatic")}
-                aria-pressed={automaticColor() ? "true" : "false"}
-                data-cuelume-tap="select"
-                onClick={() => updateDraft({ avatarHue: null, avatarColor: null })}
-              >
-                <span
-                  class="first-agent-color-swatch"
-                  style={{ background: avatarHeadColor(props.value.avatarSeed, null) }}
-                />
-              </Button>
-              <For each={AVATAR_COLOR_CHOICES}>
-                {(option) => (
-                  <Button
-                    variant="ghost"
-                    type="button"
-                    size="sm"
-                    class="first-agent-color-choice"
-                    aria-label={t("agent.setup.colorOption", { color: t(avatarColorChoiceLabel(option)) })}
-                    aria-pressed={
-                      isAvatarColorChoice(option, props.value.avatarHue, props.value.avatarColor) ? "true" : "false"
-                    }
-                    data-cuelume-tap="select"
-                    onClick={() => updateDraft({ avatarHue: option.hue, avatarColor: option.color })}
-                  >
-                    <span class="first-agent-color-swatch" style={{ background: option.swatch }} />
-                  </Button>
-                )}
-              </For>
+              <Show when={props.value.avatarImage}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  class="no-drag"
+                  disabled={props.submitting}
+                  onClick={() => updateDraft({ avatarImage: null })}
+                >
+                  {t("common.remove")}
+                </Button>
+              </Show>
             </div>
-          </fieldset>
 
-          <fieldset class="first-agent-avatar-fieldset first-agent-face-fieldset" disabled={props.submitting}>
-            <legend class="sr-only">{t("agent.setup.face")}</legend>
-            <div class="first-agent-face-options">
-              <For each={FIRST_AGENT_AVATAR_SEEDS}>
-                {(seed, index) => (
-                  <Button
-                    variant="ghost"
-                    type="button"
-                    size="sm"
-                    class="first-agent-face-choice"
-                    aria-label={t("agent.setup.faceOption", { number: index() + 1 })}
-                    aria-pressed={props.value.avatarSeed === seed ? "true" : "false"}
-                    data-cuelume-tap="select"
-                    onClick={() => updateDraft({ avatarSeed: seed })}
-                  >
-                    <AgentAvatar
-                      seed={seed}
-                      hue={props.value.avatarHue}
-                      color={props.value.avatarColor ?? null}
-                      motion="idle"
-                      animationOffset={index() * 0.16}
-                      eyeScale={FACE_CHOICE_EYE_SCALE}
-                    />
-                  </Button>
-                )}
-              </For>
-            </div>
-          </fieldset>
+            <fieldset class="first-agent-avatar-fieldset first-agent-color-fieldset" disabled={props.submitting}>
+              <legend class="sr-only">{t("agent.setup.color")}</legend>
+              <div class="first-agent-color-options">
+                <Button
+                  variant="ghost"
+                  type="button"
+                  size="sm"
+                  class="first-agent-color-choice"
+                  aria-label={t("agent.setup.colorAutomatic")}
+                  aria-pressed={automaticColor() ? "true" : "false"}
+                  data-cuelume-tap="select"
+                  onClick={() => updateDraft({ avatarHue: null, avatarColor: null })}
+                >
+                  <span
+                    class="first-agent-color-swatch"
+                    style={{ background: avatarHeadColor(props.value.avatarSeed, null) }}
+                  />
+                </Button>
+                <For each={AVATAR_COLOR_CHOICES}>
+                  {(option) => (
+                    <Button
+                      variant="ghost"
+                      type="button"
+                      size="sm"
+                      class="first-agent-color-choice"
+                      aria-label={t("agent.setup.colorOption", { color: t(avatarColorChoiceLabel(option)) })}
+                      aria-pressed={
+                        isAvatarColorChoice(option, props.value.avatarHue, props.value.avatarColor) ? "true" : "false"
+                      }
+                      data-cuelume-tap="select"
+                      onClick={() => updateDraft({ avatarHue: option.hue, avatarColor: option.color })}
+                    >
+                      <span class="first-agent-color-swatch" style={{ background: option.swatch }} />
+                    </Button>
+                  )}
+                </For>
+              </div>
+            </fieldset>
+
+            <fieldset class="first-agent-avatar-fieldset first-agent-face-fieldset" disabled={props.submitting}>
+              <legend class="sr-only">{t("agent.setup.face")}</legend>
+              <div class="first-agent-face-options">
+                <For each={OPTIONAL_CHARACTER_SEEDS}>
+                  {(seed, index) => (
+                    <Button
+                      variant="ghost"
+                      type="button"
+                      size="sm"
+                      class="first-agent-face-choice"
+                      aria-label={t("agent.setup.faceOption", { number: index() + 1 })}
+                      aria-pressed={props.value.avatarSeed === seed ? "true" : "false"}
+                      data-cuelume-tap="select"
+                      onClick={() => updateDraft({ avatarSeed: seed })}
+                    >
+                      <AgentAvatar
+                        seed={seed}
+                        hue={props.value.avatarHue}
+                        color={props.value.avatarColor ?? null}
+                        motion="idle"
+                        animationOffset={index() * 0.16}
+                        eyeScale={FACE_CHOICE_EYE_SCALE}
+                      />
+                    </Button>
+                  )}
+                </For>
+              </div>
+            </fieldset>
+          </Show>
 
           <div class="first-agent-fields">
             <Field label={t("agent.setup.name")} required>

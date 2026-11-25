@@ -1,4 +1,5 @@
 import { SIDEBAR_UNASSIGNED_SECTION_ID, type SidebarLayoutSnapshot } from "@openbot/contracts/ipc";
+import { CHIEF_SEED } from "../agents/character-faces";
 import type { SidebarPinnedItem } from "./sidebar-pins";
 
 export function sortByLayoutOrder<T extends { id: string }>(items: readonly T[], agentOrder: readonly string[]): T[] {
@@ -19,7 +20,7 @@ export function sidebarSectionResolver(layout: SidebarLayoutSnapshot): (chatId: 
   };
 }
 
-export function sidebarAgentOrder<T extends { id: string }>(
+export function sidebarAgentOrder<T extends { id: string; avatarSeed?: string | undefined }>(
   agents: readonly T[],
   view: {
     layout: SidebarLayoutSnapshot;
@@ -30,6 +31,11 @@ export function sidebarAgentOrder<T extends { id: string }>(
   const byId = new Map(agents.map((agent) => [agent.id, agent]));
   const pinned: T[] = [];
   const pinnedIds = new Set<string>();
+  const chief = agents.find((agent) => agent.avatarSeed === CHIEF_SEED && !view.hiddenAgentIds.has(agent.id));
+  if (chief) {
+    pinned.push(chief);
+    pinnedIds.add(chief.id);
+  }
   for (const ref of view.pinnedItems) {
     const agent = ref.kind === "agent" ? byId.get(ref.id) : undefined;
     if (!agent || view.hiddenAgentIds.has(agent.id) || pinnedIds.has(agent.id)) continue;

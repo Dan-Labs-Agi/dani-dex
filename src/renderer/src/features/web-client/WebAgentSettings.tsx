@@ -2,6 +2,7 @@ import { isKnownAgentProvider } from "@openbot/contracts/agent-providers";
 import type { AccountUsage, AgentStatus, ClientAgentModelOption, CustomProviderSummary } from "@openbot/contracts/ipc";
 import { AGENT_WELCOME_CAPABILITY, TEAM_AGENT_CREATE_MODEL_CAPABILITY } from "@openbot/contracts/team-protocol/current";
 import {
+  createAdditionalAgentDraft,
   createFirstAgentDraft,
   FIRST_AGENT_SUGGESTIONS,
   type FirstAgentDraft,
@@ -39,7 +40,7 @@ export function WebAgentSettings(props: {
     uncertain: boolean;
     modelTouched: boolean;
   }>({
-    draft: props.initialDraft ?? createFirstAgentDraft(),
+    draft: props.initialDraft ?? (props.first ? createFirstAgentDraft() : createAdditionalAgentDraft()),
     models: [],
     status: null,
     busy: false,

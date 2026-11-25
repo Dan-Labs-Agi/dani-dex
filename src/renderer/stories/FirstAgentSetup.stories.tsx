@@ -12,7 +12,7 @@ import { fn } from "storybook/test";
 import type { Meta, StoryObj } from "storybook-solidjs-vite";
 import { STORY_AGENT_STATUS, STORY_MODELS } from "./fixtures";
 
-const DEFAULT_FIRST_AGENT_DRAFT = createFirstAgentDraft(() => 0);
+const DEFAULT_FIRST_AGENT_DRAFT = createFirstAgentDraft();
 
 function draftFromSuggestion(suggestion: FirstAgentSuggestion): FirstAgentDraft {
   const { t } = currentText();

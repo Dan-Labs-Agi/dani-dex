@@ -68,7 +68,7 @@ export function AgentAvatar(props: AgentAvatarProps) {
   };
   const tint = () => {
     const target = targetHue();
-    return target === null ? undefined : `hue-rotate(${Math.round(target - sprites().hue)}deg)`;
+    return target === null ? "none" : `hue-rotate(${Math.round(target - sprites().hue)}deg)`;
   };
   const motionClass = () => MOTION_CLASS[props.motion === "idle" ? "idle" : "hover"];
   const className = () => `agent-avatar ${motionClass()} ${props.class ?? ""}`;
@@ -77,16 +77,10 @@ export function AgentAvatar(props: AgentAvatarProps) {
     <Show
       when={url() && !imageFailed()}
       fallback={
-        <span
-          class={className()}
-          style={props.style}
-          data-avatar="character"
-          data-mood={mood()}
-          aria-hidden="true"
-        >
+        <span class={className()} style={props.style} data-avatar="character" data-mood={mood()} aria-hidden="true">
           <span
             class={`agent-avatar-body ${sprites().bodyClass}`}
-            style={{ "--avatar-phase": `${(hashPhase(seed()) % 3000) / -1000}s`, filter: tint() }}
+            style={{ "--avatar-phase": `${(hashPhase(seed()) % 3000) / -1000}s`, "--avatar-tint": tint() }}
           >
             <img class="agent-avatar-foot agent-avatar-foot-l" src={sprites().footLeft} alt="" draggable={false} />
             <img class="agent-avatar-foot agent-avatar-foot-r" src={sprites().footRight} alt="" draggable={false} />
@@ -96,6 +90,9 @@ export function AgentAvatar(props: AgentAvatarProps) {
             </Show>
             <Show when={sprites().happy}>
               {(happy) => <img class="agent-avatar-happy" src={happy()} alt="" draggable={false} />}
+            </Show>
+            <Show when={sprites().crown}>
+              {(crown) => <img class="agent-avatar-layer agent-avatar-crown" src={crown()} alt="" draggable={false} />}
             </Show>
             <img class="agent-avatar-layer agent-avatar-arm" src={sprites().arm} alt="" draggable={false} />
           </span>
