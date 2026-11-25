@@ -31,6 +31,20 @@
       "env": {
         "EXPO_PUBLIC_APP_ENV": "production"
       }
+    },
+    "apk-direct": {
+      "bun": "1.4.2",
+      "autoIncrement": true,
+      "channel": "production",
+      "environment": "production",
+      "env": {
+        "EXPO_PUBLIC_APP_ENV": "production",
+        "NODE_OPTIONS": "--max-old-space-size=3072",
+        "GRADLE_OPTS": "-Dorg.gradle.jvmargs=\"-Xmx4g -XX:MaxMetaspaceSize=1g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8\" -Dorg.gradle.daemon=false"
+      },
+      "android": {
+        "buildType": "apk"
+      }
     }
   },
   "submit": {
