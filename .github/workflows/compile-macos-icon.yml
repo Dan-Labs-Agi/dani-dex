@@ -1,0 +1,27 @@
+name: Compile macOS icon assets
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  compile:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.4.2"
+      - run: bun install --frozen-lockfile
+      - run: bun run scripts/compile-macos-icon.ts
+      - name: Commit generated assets
+        run: |
+          git config user.name "somdipto"
+          git config user.email "somdiptonandy@gmail.com"
+          git add build/macos/Assets.car build/icon-production.icns build/icon-production-macos-safe-area.png
+          if git diff --cached --quiet; then
+            echo "No icon changes"
+          else
+            git commit -m "Compile macOS icon assets from the production icon"
+            git push
+          fi
