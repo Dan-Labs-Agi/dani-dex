@@ -498,6 +498,8 @@
     "./features/agents/agent-delete-undo-toast.css": "./src/features/agents/agent-delete-undo-toast.css",
     "./features/agents/agent-template.css": "./src/features/agents/agent-template.css",
     "./features/agents/first-agent-setup.css": "./src/features/agents/first-agent-setup.css",
+    "./features/agents/character-catalogue.css": "./src/features/agents/character-catalogue.css",
+    "./features/agents/CharacterCatalogue": "./src/features/agents/CharacterCatalogue.tsx",
     "./styles/settings-panel.css": "./src/styles/settings-panel.css",
     "./styles/provider-code-login.css": "./src/styles/provider-code-login.css",
     "./features/custom-providers/custom-providers.css": "./src/features/custom-providers/custom-providers.css",

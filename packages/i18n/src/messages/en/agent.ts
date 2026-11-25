@@ -2,6 +2,15 @@ import { defineMessages } from "../../message";
 
 export const messages = defineMessages("agent", {
   "agent.access.workspaceOnly": "Workspace only",
+  "agent.characters.title": "Choose a character",
+  "agent.characters.description": "Browse every character and pick one for this agent.",
+  "agent.characters.search": "Search by color, hat or eyes",
+  "agent.characters.colorFilter": "Filter by color",
+  "agent.characters.allColors": "All colors",
+  "agent.characters.none": "No character matches that search.",
+  "agent.characters.count": "{count} characters",
+  "agent.characters.use": "Use this character",
+  "agent.characters.viewMore": "View more",
   "agent.setup.nameFallback": "New agent",
   "agent.setup.titleAdditional": "Create a new agent",
   "agent.setup.titleFirst": "Create your first agent",

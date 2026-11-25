@@ -1,4 +1,3 @@
-import type { ExpressionId } from "@norbert_bodziony/bloub";
 import { agentProviderDescriptor } from "@openbot/contracts/agent-providers";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import type {
@@ -20,14 +19,14 @@ import { createSignal, For, onSettled, Show } from "solid-js";
 import {
   AVATAR_COLOR_CHOICES,
   avatarHeadColor,
-  avatarSeedForFace,
   isAvatarColorChoice,
-  type SupportedAvatarSilhouetteId,
 } from "../../bloub-avatar";
 import { ProviderModelPicker } from "../../components/ProviderModelPicker";
 import { currentText, useText } from "../../text";
 import { prefersReducedMotion } from "../../utils";
 import { AgentAvatar } from "./AgentAvatar";
+import { CharacterCatalogue } from "./CharacterCatalogue";
+import { characterSeed } from "./character-faces";
 import { avatarColorChoiceLabel } from "./avatar-hue-label";
 import { InstructionsLimit, instructionsTooLong } from "./InstructionsLimit";
 
@@ -77,22 +76,8 @@ export interface FirstAgentSetupProps {
   onCancel?: (() => void) | undefined;
 }
 
-const FIRST_AGENT_FACES: ReadonlyArray<{ shape: SupportedAvatarSilhouetteId; expression: ExpressionId }> = [
-  { shape: "cercle", expression: "attentif" },
-  { shape: "squircle", expression: "curieux" },
-  { shape: "triangle", expression: "neutre" },
-  { shape: "hexagone", expression: "surpris" },
-  { shape: "carre", expression: "attentif" },
-  { shape: "galet", expression: "curieux" },
-  { shape: "pentagone", expression: "neutre" },
-  { shape: "capsule", expression: "attentif" },
-  { shape: "losange", expression: "curieux" },
-  { shape: "nuage", expression: "surpris" },
-  { shape: "squircle", expression: "neutre" },
-  { shape: "cercle", expression: "curieux" },
-];
-
-export const FIRST_AGENT_AVATAR_SEEDS = FIRST_AGENT_FACES.map((face) => avatarSeedForFace("first-bot", face));
+// A short first row of characters; "View more" opens all of them.
+export const FIRST_AGENT_AVATAR_SEEDS: readonly string[] = Array.from({ length: 12 }, (_, index) => characterSeed(index));
 
 const SUGGESTION_MOMENTUM_FRICTION = 0.88;
 const SUGGESTION_MOMENTUM_MINIMUM = 0.01;
@@ -193,6 +178,7 @@ export function FirstAgentSetup(props: FirstAgentSetupProps) {
   let suggestionDragMoved = false;
   let suppressSuggestionClick = false;
   let suggestionMomentumFrame: number | null = null;
+  const [catalogueOpen, setCatalogueOpen] = createSignal(false);
   const [canScrollSuggestionsBack, setCanScrollSuggestionsBack] = createSignal(false);
   const [canScrollSuggestionsForward, setCanScrollSuggestionsForward] = createSignal(false);
   const [draggingSuggestions, setDraggingSuggestions] = createSignal(false);
@@ -492,8 +478,23 @@ export function FirstAgentSetup(props: FirstAgentSetupProps) {
                   </Button>
                 )}
               </For>
+              <Button
+                variant="ghost"
+                type="button"
+                size="sm"
+                class="first-agent-face-more"
+                onClick={() => setCatalogueOpen(true)}
+              >
+                {t("agent.characters.viewMore")}
+              </Button>
             </div>
           </fieldset>
+          <CharacterCatalogue
+            open={catalogueOpen()}
+            onOpenChange={setCatalogueOpen}
+            currentSeed={props.value.avatarSeed}
+            onChoose={(seed) => updateDraft({ avatarSeed: seed })}
+          />
 
           <div class="first-agent-fields">
             <Field label={t("agent.setup.name")} required>

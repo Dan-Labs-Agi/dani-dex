@@ -98,6 +98,7 @@ import {
 } from "@openbot/ui/components/SettingsPanel";
 import type { AgentProfile } from "@openbot/ui/data";
 import { AgentAvatar } from "@openbot/ui/features/agents/AgentAvatar";
+import { CharacterCatalogue } from "@openbot/ui/features/agents/CharacterCatalogue";
 import { InstructionsLimit, instructionsTooLong } from "@openbot/ui/features/agents/InstructionsLimit";
 import {
   type BrowserProfileChoice,
@@ -268,6 +269,7 @@ interface TextSaveRequest {
 export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
   const { t, errorMessage } = useText();
   const agentDefaults = () => props.agentDefaults ?? DEFAULT_AGENT_DEFAULTS;
+  const [characterCatalogueOpen, setCharacterCatalogueOpen] = createSignal(false);
   const [newChatOpen, setNewChatOpen] = createSignal(false);
   const [deleteHistoryOpen, setDeleteHistoryOpen] = createSignal(false);
   const [draft, setDraft] = createStore<AgentSettingsDraft>({
@@ -1097,6 +1099,15 @@ export default function AgentSettingsPanel(props: AgentSettingsPanelProps) {
                         <small>{t("agentSettings.avatar.imageHint")}</small>
                       </span>
                     </Button>
+                    <Button variant="outline" type="button" onClick={() => setCharacterCatalogueOpen(true)}>
+                      {t("agent.characters.viewMore")}
+                    </Button>
+                    <CharacterCatalogue
+                      open={characterCatalogueOpen()}
+                      onOpenChange={setCharacterCatalogueOpen}
+                      currentSeed={draft.avatar.seed}
+                      onChoose={(seed) => void selectGeneratedAvatar(seed, avatarFace().color)}
+                    />
                     <div class="avatar-editor-divider" />
                     <div class="avatar-editor-heading">
                       <span>{t("agentSettings.avatar.shape")}</span>
