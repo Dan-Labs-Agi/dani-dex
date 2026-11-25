@@ -75,7 +75,7 @@ see a staged file: the file is under a fixed part of the project's tsconfig `inc
 workspace package, in a workspace package that it depends on (also through other workspace
 packages), or in a folder that it imports through a relative path. That last list is in the script:
 `scripts` imports mobile and account Worker modules, the account Worker imports the site router, a
-renderer story imports a preload helper, and `.storybook/preview.tsx` imports the renderer.
+renderer story imports a preload helper, and `config/storybook/preview.tsx` imports the renderer.
 A root `tsconfig*.json`, `package.json` or `bun.lock` selects all projects. A mobile codegen input,
 such as `app.json` or the brand CSS, selects mobile. `biome.json` and GritQL files select no project:
 TypeScript does not read them. The script runs the projects one at a time and reports each one that
@@ -166,7 +166,7 @@ These long suites belong in CI; local desktop runs can reach their time limits u
 
 The `Detect changed areas` job lets a pull request skip the lanes it cannot affect. It compares the
 merge commit with its first parent and first removes Markdown that no build or test reads: `docs/`,
-`plans/` and `changelog.d/` Markdown, every `AGENTS.md`, and the root Markdown files except
+`docs/plans/` and `changelog.d/` Markdown, every `AGENTS.md`, and the root Markdown files except
 `CHANGELOG.md`, which the API bundles, and `CLA.md`. Markdown under `resources/` is not removed either, because the
 renderer bundles it. Then it selects the lanes:
 
@@ -177,7 +177,7 @@ renderer bundles it. Then it selects the lanes:
 | `desktop` | Browser smoke, Local scripts CLI E2E, Team API and reverse actions E2E | outside `apps/auth-api`, `apps/mobile`, `apps/mobile-updates`, `apps/site-router`, `apps/status`, `remote` and `docker` |
 | `api` | API | in `apps/auth-api`, `apps/site-router`, `src/renderer` or `resources`, or a `CHANGELOG.md` |
 | `remote` | Signal E2E | in `remote` or `scripts` |
-| `storybook` | Storybook build | in `src`, `apps/auth-api`, `apps/status`, `.storybook`, `resources`, `marketplace` or `build` |
+| `storybook` | Storybook build | in `src`, `apps/auth-api`, `apps/status`, `config/storybook`, `resources`, `marketplace` or `build` |
 | `surfaces` | Surfaces, Mobile update server E2E, Mobile runtime version | in `apps/mobile`, `apps/mobile-updates`, `apps/site-router`, `apps/status`, `remote` or `scripts` |
 
 A path every workspace reads (`package.json`, `bun.lock`, `bunfig.toml`, `.nvmrc`, `tsconfig*.json`, `biome.json`,

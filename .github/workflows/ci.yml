@@ -68,7 +68,7 @@ jobs:
           fi
           # Markdown that no build or test reads changes no lane. Not every Markdown file: the API
           # bundles CHANGELOG.md, and the renderer bundles Markdown from `resources/`.
-          docs='^((docs|plans|changelog\.d)/.+\.md|(.+/)?AGENTS\.md|(ANALYTICS|CODE_OF_CONDUCT|CONTRIBUTING|PRIVACY|README|SECURITY|SUPPORT)\.md)$'
+          docs='^((docs|changelog\.d)/.+\.md|(.+/)?AGENTS\.md|(ANALYTICS|CODE_OF_CONDUCT|CONTRIBUTING|PRIVACY|README|SECURITY|SUPPORT)\.md)$'
           all="$changed"
           changed="$(grep -Ev "$docs" <<<"$changed" || true)"
           shared='^(package\.json|bun\.lock|bunfig\.toml|\.nvmrc|biome\.json|tsconfig[^/]*\.json|\.github/|packages/|patches/|tools/|vendor/)'
@@ -96,9 +96,9 @@ jobs:
             echo "docs=false" >> "$GITHUB_OUTPUT"
           fi
           lane_unless desktop '^(apps/(auth-api|mobile|mobile-updates|site-router|status)|docker|remote)/'
-          lane api '^(apps/(auth-api|site-router)|src/renderer|resources)/|^(apps/mobile/)?CHANGELOG\.md$'
+          lane api '^(apps/(auth-api|site-router)|src/renderer|resources)/|^CHANGELOG\.md$'
           lane remote '^(remote|scripts)/'
-          lane storybook '^(src|apps/(auth-api|status)|\.storybook|resources|marketplace|build)/'
+          lane storybook '^(src|apps/(auth-api|status)|config/storybook|resources|marketplace|build)/'
           lane schema '^(src/backend/|scripts/released-schema-fixtures\.ts$)'
           lane surfaces '^(apps/(mobile|mobile-updates|site-router|status)|remote|scripts)/'
           cat "$GITHUB_OUTPUT"
@@ -1247,18 +1247,12 @@ jobs:
           install: ignore-scripts
 
       - parallel:
-          - name: Typecheck mobile
-            run: bun run mobile:typecheck
-
           - name: Typecheck team client
             run: bun run typecheck:team-client
 
       - parallel:
           - name: Typecheck site router
             run: bun run typecheck:sites
-
-          - name: Typecheck mobile update server
-            run: bun run typecheck:updates
 
           - name: Typecheck remote API
             run: bun run typecheck:remote

@@ -1,150 +1,173 @@
-# Dani-Dex
+<div align="center">
 
-**Your own AI team, on your own computer.** Tell Dani-Dex what you need in plain words. Its agents
-plan the work, use your apps, files and browser, talk to each other, and come back with the job done.
+<a href="https://dl.dani.danlab.dev/latest.json">
+  <img src="docs/assets/readme/hero.webp" width="100%" alt="Dani Dex: your own team of AI agents, on your computer and your phone. Download buttons for Mac, Windows and Android; Linux and iOS coming soon.">
+</a>
 
-## Download
-
-Click your system. The latest installer starts at once. No Dani-Dex account.
-
-<p align="center">
-  <a href="https://github.com/somdipto/dani-dex/releases/latest/download/Dani-Dex-mac-universal.dmg"><img alt="Download for macOS" width="560" src="docs/readme/download-macos.png"></a>
-  <br>
-  <a href="https://github.com/somdipto/dani-dex/releases/latest/download/Dani-Dex-windows-x64.exe"><img alt="Download for Windows" width="560" src="docs/readme/download-windows.png"></a>
-  <br>
-  <a href="https://github.com/somdipto/dani-dex/releases/latest/download/Dani-Dex-linux-x86_64.AppImage"><img alt="Download for Linux" width="560" src="docs/readme/download-linux.png"></a>
-</p>
-
-<p align="center">
-macOS 13 or newer, Apple silicon and Intel · Windows 10 or newer, x64 · Linux x64
 <br>
-<a href="https://github.com/somdipto/dani-dex/releases/latest">Checksums and every file</a>
-</p>
+<br>
 
-### Install from a terminal
+<a href="https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-arm64.dmg"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-mac-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-mac-light.png"><img src="docs/assets/readme/btn-mac-light.png" width="226" alt="Download for macOS (Apple silicon)"></picture></a>&nbsp;
+<a href="https://dl.dani.danlab.dev/desktop/Dani-Dex-win-x64.exe"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-win-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-win-light.png"><img src="docs/assets/readme/btn-win-light.png" width="226" alt="Download for Windows (installer)"></picture></a>&nbsp;
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-lin-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-lin-light.png"><img src="docs/assets/readme/btn-lin-light.png" width="226" alt="Linux, coming soon"></picture>
 
-`npx dani-dex-onboard` is the one-command installer. It is not on npm yet, so that command does not
-work today. It needs [Node.js](https://nodejs.org).
+<a href="https://dl.dani.danlab.dev/android/dani-dex.apk"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-and-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-and-light.png"><img src="docs/assets/readme/btn-and-light.png" width="226" alt="Download for Android (APK)"></picture></a>&nbsp;
+<picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-ios-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-ios-light.png"><img src="docs/assets/readme/btn-ios-light.png" width="226" alt="iOS, coming soon"></picture>
 
-Until that package is published, use the script for your system. The script downloads the current
-release and checks the checksum before it installs.
+<sub>Also: [Mac (Intel)](https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-x64.dmg) · [Checksums and versions](https://dl.dani.danlab.dev/latest.json) · [All releases](https://github.com/Dan-Labs-Agi/dani-dex/releases)</sub>
+
+<br>
+
+**[What it does](#what-it-does)** &nbsp;·&nbsp; **[How it works](#how-it-works)** &nbsp;·&nbsp; **[Install](#install)** &nbsp;·&nbsp; **[Platforms](#platform-support)** &nbsp;·&nbsp; **[Contribute](#status-and-contributing)**
+
+</div>
+
+<br>
+
+## One chatbot in one box is the wrong shape for agents.
+
+Dani Dex is a team of agents that works on your own computer. Tell it what you need in plain words. Its agents plan the work, use your apps, files and browser, talk to each other, and come back with the job done.
+
+**Give each agent a job. Watch them work. Approve what matters.**
+
+- **Your work stays where it is.** Your files, apps and logins stay on your computer. Nothing is uploaded to a cloud machine first.
+- **Your choice of AI.** Use ChatGPT (Codex), Claude, Grok or OpenCode, and pick a different one for each agent. OpenCode's free models work with no account at all.
+- **Agents with hands.** With your permission, agents see the screen and click and type in your apps (Computer Use), and read the web in their own browser.
+
+<br>
+
+## What it does
+
+### Hand off the busywork
+
+"Sort these receipts into a spreadsheet." "Rename and file every PDF in Downloads." "Turn my meeting notes into a to-do list." The agent does it on your computer, with your files, and shows you the result.
+
+### Research and write
+
+Ask for a market scan, a competitor comparison, a launch plan or a first draft. Agents read the web, collect sources and hand back a finished document.
+
+### Build things
+
+Agents write and run code, fix bugs, make websites and test their own work, using the coding tools developers already trust.
+
+### A small team, not one chatbot
+
+Give each agent a job: researcher, writer, developer, assistant. The Chief agent splits a big goal into parts, hands them out, and puts the pieces together.
+
+### And the rest
+
+<table>
+<tr>
+<td width="28%"><b>Computer Use</b></td>
+<td>Agents can work in software that has no API. Every use needs your permission.</td>
+</tr>
+<tr>
+<td width="28%"><b>Talk instead of type</b></td>
+<td>Speak a request and Dani Dex turns it into text on your computer.</td>
+</tr>
+<tr>
+<td width="28%"><b>Free models, free of accounts</b></td>
+<td>No Dani Dex account. Download it, open it, start. No subscription.</td>
+</tr>
+<tr>
+<td width="28%"><b>Updates itself</b></td>
+<td>Dani Dex offers each new version inside the app and restarts into it.</td>
+</tr>
+</table>
+
+<br>
+
+## How it works
+
+<img src="docs/assets/readme/architecture.webp" width="100%" alt="Architecture: the desktop and Android apps send commands to a local server and receive live events. The server runs your agents on your AI logins, asks permission, and talks to the account and update services over HTTPS.">
+
+The app talks to a local server on your computer. The server runs your agents, keeps their transcripts and keys on your machine, and asks you before anything that matters. The phone app pairs with your computer and works with the same agents.
+
+<details>
+<summary><b>Where everything lives</b></summary>
+
+<br>
+
+See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for the layers, and the [development guide](docs/DEVELOPMENT.md) for local data paths.
+
+</details>
+
+<br>
+
+## Install
+
+**Download an installer** with the buttons at the top. Downloads come from `dl.dani.danlab.dev`. The apps are not code-signed yet, so the first launch shows a warning.
+
+- **Mac:** open the file and drag Dani Dex to Applications. The first time, Control-click Dani Dex in Applications and choose **Open**. If macOS still blocks it, go to **System Settings > Privacy & Security** and click **Open Anyway**. Needs macOS 13 or newer.
+- **Windows:** run the installer. If a blue SmartScreen window appears, click **More info**, then **Run anyway**.
+- **Android:** download the APK and open it. Allow installs from your browser or file manager when Android asks. If Play Protect warns, choose **Install anyway**.
+- **Linux and iOS:** coming soon.
+
+Then open Dani Dex and pick an AI. OpenCode's free models work right away. For ChatGPT, Claude or Grok, click Connect and sign in with that service. Tell the Chief agent what you want, like "Turn these release notes into a launch plan."
+
+> [!WARNING]
+> Dani Dex is an early preview. Agents can read and change files, run programs, use the internet and control the browser on your computer without asking before each step. Give them tasks you trust, keep backups, and read [SECURITY.md](SECURITY.md).
+
+<details>
+<summary><b>Install from a terminal</b></summary>
+
+<br>
 
 macOS, Linux or WSL:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/somdipto/dani-dex/main/scripts/onboard.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/main/scripts/onboard.sh | bash
 ```
 
 Windows (PowerShell):
 
 ```powershell
-irm https://raw.githubusercontent.com/somdipto/dani-dex/main/scripts/onboard.ps1 | iex
+irm https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/main/scripts/onboard.ps1 | iex
 ```
 
-<img width="1600" height="1200" alt="Dani-Dex on the desktop: the agent list, a conversation, and the screen to create an agent" src="https://github.com/user-attachments/assets/2a14a0b2-a69c-4dc2-acc1-4b2dd1113dda" />
+The scripts download the current release and check the checksum before they install.
 
-[![CI](https://github.com/somdipto/dani-dex/actions/workflows/ci.yml/badge.svg)](https://github.com/somdipto/dani-dex/actions/workflows/ci.yml)
-[![Latest release](https://img.shields.io/github/v/release/somdipto/dani-dex?label=latest)](https://github.com/somdipto/dani-dex/releases/latest)
+</details>
 
-## What you can get done
+<details>
+<summary><b>Run from source</b></summary>
 
-- **Hand off the busywork.** "Sort these receipts into a spreadsheet." "Rename and file every PDF
-  in Downloads." "Turn my meeting notes into a to-do list." The agent does it on your computer,
-  with your files, and shows you the result.
-- **Research and write.** Ask for a market scan, a competitor comparison, a launch plan or a first
-  draft. Agents read the web in their own browser, collect sources and hand back a finished
-  document.
-- **Build things.** Agents write and run code, fix bugs, make websites and test their own work,
-  using the coding tools developers already trust.
-- **Run a small team, not one chatbot.** Give each agent a job - researcher, writer, developer,
-  assistant. The Chief agent splits a big goal into parts, hands them out, and puts the pieces
-  together.
-- **Use your computer like you do.** With your permission, agents can see the screen and click and
-  type in your apps (Computer Use), so they can work in software that has no API.
-- **Talk instead of type.** Speak a request and Dani-Dex turns it into text on your computer.
+<br>
 
-## Why Dani-Dex
+Building from source, commands, architecture, local data paths, releases and shared Mac hosts are in the [development guide](docs/DEVELOPMENT.md). See also [RELEASING.md](docs/RELEASING.md) and [the changelog](CHANGELOG.md).
 
-- **It works where your work is.** Your files, your apps and your logins stay on your computer.
-  Nothing has to be uploaded to a cloud machine first.
-- **Bring the AI you already pay for.** Use ChatGPT (Codex), Claude, Grok or OpenCode, and pick a
-  different one for each agent. Dani-Dex uses the login you already have. OpenCode's free models
-  work with no account at all.
-- **No Dani-Dex account.** Download it, open it, start. No sign-up, no subscription.
-- **Source available.** Anyone can read the code and change it for noncommercial use.
-- **Updates itself.** From version 0.17.2 on, Dani-Dex offers each new version inside the app and
-  restarts into it.
+</details>
 
-### How it compares
+<br>
 
-Checked in September 2026 against public pages about each product.
+## Platform support
 
-| | Dani-Dex | [Grok Bot](https://x.ai/news/introducing-grok-bot) | [Instinct](https://instinct.com/) |
-| --- | --- | --- | --- |
-| Where the agent works | Your own computer | A persistent cloud computer, shared by all your bots ([xAI docs](https://docs.x.ai/grok-bot/overview)) | Connected to your email, calendar and messaging, and you talk to it over iMessage and WhatsApp ([WIRED](https://www.wired.com/story/i-finally-found-an-ai-agent-worth-the-risk/)) |
-| Runs on your laptop | Yes | No, its bots run on the cloud computer ([xAI docs](https://docs.x.ai/grok-bot/overview)) | Connects to your apps and devices ([instinct.com](https://instinct.com/)) |
-| Getting in | Free download, no Dani-Dex account | Through [x.ai/bot](https://x.ai/bot) | Invite-only when WIRED reviewed it |
+| Capability | macOS | Windows | Android | Linux | iOS |
+| :-- | :-- | :-- | :-- | :-- | :-- |
+| Desktop app with agents | Supported | Supported | n/a | Coming soon | n/a |
+| Phone app (pairs with your computer) | n/a | n/a | Supported (APK) | n/a | Coming soon |
+| Computer Use | Supported | Supported | n/a | Coming soon | n/a |
 
-**Where Dani-Dex is different from Grok Bot:** Grok Bot's bots work on a cloud computer that xAI
-runs. Dani-Dex's agents work on your own computer, next to the files and desktop apps you already
-have, and they can run on a ChatGPT, Claude, Grok or OpenCode login.
+macOS 13 or newer (Apple silicon and Intel), Windows 10 or newer (x64), Android 7 or newer (arm64).
 
-## Our mission
-
-We are building a **self-improving personal assistant**: one that learns how you work, gets better
-at your tasks each time it does them, and takes on more of your work as it earns your trust. It
-should run where your life already is, with the AI you choose, and stay yours.
-
-Dani-Dex is the first step: a team of agents on your computer that can already do real work.
-
-## Get started
-
-1. Click the download button for your computer.
-2. Install it:
-   - **Mac:** open the file and drag Dani-Dex to Applications. The first time, Control-click
-     Dani-Dex in Applications and choose **Open**. If macOS still blocks it, go to **System
-     Settings > Privacy & Security** and click **Open Anyway**. One app works on both Apple silicon
-     and Intel Macs.
-   - **Windows:** run the installer. If a blue SmartScreen window appears, click **More info**,
-     then **Run anyway**.
-   - **Linux:** make the AppImage executable and run it. Some newer Ubuntu and Debian versions need
-     one extra step, described in the [Linux notes](docs/DEVELOPMENT.md#linux-launch-details).
-3. Open Dani-Dex and pick an AI. OpenCode's free models work right away. For ChatGPT, Claude or
-   Grok, click Connect and sign in with that service.
-4. Tell the Chief agent what you want, like "Turn these release notes into a launch plan."
-
-Dani-Dex runs on macOS 13 or newer, Windows 10 or newer (x64) and x64 Linux. The apps are not
-code-signed yet, which is why Mac and Windows show a warning the first time.
-
-> [!WARNING]
-> Dani-Dex is an early preview. Agents can read and change files, run programs, use the internet and
-> control the browser on your computer without asking before each step. Give them tasks you trust,
-> keep backups, and read [SECURITY.md](SECURITY.md).
+<br>
 
 ## Privacy
 
-Dani-Dex keeps your agents, chats and files on your computer. The AI provider you pick (OpenAI,
-Anthropic, xAI or OpenCode) receives what the agent sends it, and web pages the agent visits see
-that visit. Dani-Dex never copies your provider passwords. Details are in [PRIVACY.md](PRIVACY.md).
+Dani Dex keeps your agents, chats and files on your computer. The AI provider you pick (OpenAI, Anthropic, xAI or OpenCode) receives what the agent sends it, and web pages the agent visits see that visit. Dani Dex never copies your provider passwords. Details are in [PRIVACY.md](PRIVACY.md). Need help? See [Troubleshooting](docs/TROUBLESHOOTING.md) or [SUPPORT.md](SUPPORT.md).
 
-Need help? See [Troubleshooting](docs/TROUBLESHOOTING.md) or [SUPPORT.md](SUPPORT.md).
+<br>
 
-## For developers
+## Status and contributing
 
-Building from source, commands, architecture, local data paths, releases and shared Mac hosts are
-in the [development guide](docs/DEVELOPMENT.md). See also [ARCHITECTURE.md](docs/ARCHITECTURE.md),
-[RELEASING.md](docs/RELEASING.md) and [the changelog](CHANGELOG.md).
+**Early but real.** The loop works end to end: message, agent, reply, tools, approvals, computer use. Expect rough edges. Linux and iOS are still being built.
 
-## Contributing
+Contributions welcome. See [CONTRIBUTING.md](CONTRIBUTING.md). Community behavior is governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Community behavior is governed by the
-[Code of Conduct](CODE_OF_CONDUCT.md).
+<br>
 
-## Upstream and third-party notices
+## License
 
-The retained upstream license is in [LICENSE](LICENSE). Required upstream attribution and
-third-party notices are in [NOTICE](NOTICE). Rebranding does not change these terms.
+The retained upstream license is in [LICENSE](LICENSE). Required attribution and third-party notices are in [NOTICE](NOTICE).
 
-Dani-Dex is an independent source-available project and is not affiliated with, endorsed by, or
-sponsored by OpenAI. OpenAI, ChatGPT, and Codex are used only to describe compatibility with their
-respective products and services.
+<sub>Dani Dex is an independent source-available project and is not affiliated with, endorsed by, or sponsored by OpenAI. OpenAI, ChatGPT, and Codex are used only to describe compatibility with their respective products and services.</sub>
