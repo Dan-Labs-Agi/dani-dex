@@ -26,8 +26,8 @@ import {
   parseCodexVersion,
   parseCursorManifestVersion,
   parseGrokVersion,
-  parseKimiVersion,
   parseKilocodeVersion,
+  parseKimiVersion,
   parseOpencodeVersion,
 } from "../backend/cli";
 import { sha256File } from "../backend/file-hash";

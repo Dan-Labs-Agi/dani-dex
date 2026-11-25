@@ -22,7 +22,13 @@ function b64url(u: Uint8Array): string {
   return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 async function hashCode(env: EmailEnv, id: string, code: string): Promise<string> {
-  const k = await crypto.subtle.importKey("raw", enc.encode(env.STATE_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  const k = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(env.STATE_SECRET),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
   return b64url(new Uint8Array(await crypto.subtle.sign("HMAC", k, enc.encode(`${id}:${code}`))));
 }
 async function sha256(s: string): Promise<string> {
@@ -42,17 +48,23 @@ export async function emailStart(req: Request, env: EmailEnv, json: Json, apiErr
   const b = (await req.json().catch(() => null)) as any;
   const email = typeof b?.email === "string" ? b.email.trim().toLowerCase() : "";
   if (!validEmail(email)) return apiError(400, "invalid_email", "Enter a valid email address.");
-  if (!env.RESEND_API_KEY) return apiError(503, "email_unavailable", "Email codes are not available right now. Use Continue with Google.");
-  const recent = await env.DB.prepare("SELECT created_at FROM email_challenges WHERE email=? AND created_at>? ORDER BY created_at DESC LIMIT 6")
-    .bind(email, now() - 3600).all<{ created_at: number }>();
+  if (!env.RESEND_API_KEY)
+    return apiError(503, "email_unavailable", "Email codes are not available right now. Use Continue with Google.");
+  const recent = await env.DB.prepare(
+    "SELECT created_at FROM email_challenges WHERE email=? AND created_at>? ORDER BY created_at DESC LIMIT 6",
+  )
+    .bind(email, now() - 3600)
+    .all<{ created_at: number }>();
   const rows = recent.results ?? [];
   if (rows.length >= 6) return apiError(429, "rate_limited", "Too many codes requested. Try again later.");
-  if (rows[0] && now() - rows[0].created_at < RESEND_GAP) return apiError(429, "rate_limited", "Wait a moment before asking for another code.");
+  if (rows[0] && now() - rows[0].created_at < RESEND_GAP)
+    return apiError(429, "rate_limited", "Wait a moment before asking for another code.");
   const id = crypto.randomUUID();
   const code = sixDigits();
   const expiresAt = now() + CODE_TTL;
   await env.DB.prepare("INSERT INTO email_challenges(id,email,code_hash,created_at,expires_at) VALUES(?,?,?,?,?)")
-    .bind(id, email, await hashCode(env, id, code), now(), expiresAt).run();
+    .bind(id, email, await hashCode(env, id, code), now(), expiresAt)
+    .run();
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, "content-type": "application/json" },
@@ -73,10 +85,12 @@ export async function emailStart(req: Request, env: EmailEnv, json: Json, apiErr
 
 export async function emailVerify(req: Request, env: EmailEnv, json: Json, apiError: Err): Promise<Response> {
   const b = (await req.json().catch(() => null)) as any;
-  if (!b || typeof b.challengeId !== "string" || typeof b.code !== "string") return apiError(400, "invalid_request", "Invalid sign-in request.");
+  if (!b || typeof b.challengeId !== "string" || typeof b.code !== "string")
+    return apiError(400, "invalid_request", "Invalid sign-in request.");
   const bad = () => apiError(400, "invalid_code", "That code is not right. Check it and try again.");
   const c = await env.DB.prepare("SELECT id,email,code_hash,attempts,expires_at,used FROM email_challenges WHERE id=?")
-    .bind(b.challengeId).first<any>();
+    .bind(b.challengeId)
+    .first<any>();
   if (!c || c.used) return bad();
   if (now() > c.expires_at) return apiError(400, "sign_in_code_expired", "That code expired. Ask for a new one.");
   if (c.attempts >= MAX_ATTEMPTS) return apiError(429, "rate_limited", "Too many wrong tries. Ask for a new code.");
@@ -84,15 +98,22 @@ export async function emailVerify(req: Request, env: EmailEnv, json: Json, apiEr
   if ((await hashCode(env, c.id, b.code.trim())) !== c.code_hash) return bad();
   const used = await env.DB.prepare("UPDATE email_challenges SET used=1 WHERE id=? AND used=0").bind(c.id).run();
   if (!used.meta.changes) return bad();
-  let u = await env.DB.prepare("SELECT id,email,name FROM users WHERE lower(email)=? ORDER BY created_at LIMIT 1").bind(c.email).first<any>();
+  let u = await env.DB.prepare("SELECT id,email,name FROM users WHERE lower(email)=? ORDER BY created_at LIMIT 1")
+    .bind(c.email)
+    .first<any>();
   if (!u) {
     const id = crypto.randomUUID();
     await env.DB.prepare("INSERT INTO users(id,google_sub,email,name,created_at) VALUES(?,?,?,?,?)")
-      .bind(id, `email:${c.email}`, c.email, null, now()).run();
+      .bind(id, `email:${c.email}`, c.email, null, now())
+      .run();
     u = { id, email: c.email, name: null };
   }
   const session = b64url(crypto.getRandomValues(new Uint8Array(32)));
   await env.DB.prepare("INSERT INTO sessions(token_hash,user_id,created_at,expires_at) VALUES(?,?,?,?)")
-    .bind(await sha256(session), u.id, now(), now() + SESSION_TTL).run();
-  return json({ sessionToken: session, user: { id: u.id, email: u.email, name: u.name ?? null, avatarUrl: null, analyticsEnabled: null } });
+    .bind(await sha256(session), u.id, now(), now() + SESSION_TTL)
+    .run();
+  return json({
+    sessionToken: session,
+    user: { id: u.id, email: u.email, name: u.name ?? null, avatarUrl: null, analyticsEnabled: null },
+  });
 }
