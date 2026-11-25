@@ -38,8 +38,6 @@
   stroke-width: var(--openbot-icon-stroke-lg);
 }
 
-
-
 .browser-preview-list > .browser-empty-state > strong {
   color: var(--openbot-text-secondary);
   font-size: var(--openbot-text-md);
