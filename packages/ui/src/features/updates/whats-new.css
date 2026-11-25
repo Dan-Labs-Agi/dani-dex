@@ -205,7 +205,6 @@
   color: var(--openbot-text-muted);
 }
 
-.whats-new-actions .ui-button svg,
 .whats-new-toggle svg {
   width: var(--openbot-icon-sm);
   height: var(--openbot-icon-sm);
@@ -215,6 +214,13 @@
 
 .whats-new-toggle svg {
   transition: transform var(--openbot-duration-fast) var(--openbot-ease-out);
+}
+
+.whats-new-actions .ui-button svg {
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
+  flex: 0 0 auto;
+  stroke-width: var(--openbot-icon-stroke);
 }
 
 .whats-new-toggle[data-expanded] svg {

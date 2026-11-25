@@ -217,8 +217,8 @@ function readBody(request: IncomingMessage): Promise<string> {
 function startControlPlane(port: number): Promise<Server> {
   const server = createServer(async (request, response) => {
     const body = await readBody(request);
-    const timestamp = String(request.headers["openbot-timestamp"] ?? "");
-    const signature = String(request.headers["openbot-signature"] ?? "");
+    const timestamp = String(request.headers["dani-dex-timestamp"] ?? "");
+    const signature = String(request.headers["dani-dex-signature"] ?? "");
     const signed =
       signature === hmac(AUTH_WEBHOOK_SECRET, `${timestamp}.${body}`, "base64url") &&
       Math.abs(Date.now() / 1_000 - Number(timestamp)) < 300;

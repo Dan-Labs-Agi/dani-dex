@@ -31,6 +31,8 @@ export const messages = {
   "mobile.auth.signIn.helpStep2": "2. 进入“设置 → Mobile Connect”。",
   "mobile.auth.signIn.helpStep3": "3. 选择“生成二维码”，然后在这里扫描。",
   "mobile.auth.signIn.emailButton": "用邮箱继续",
+  "mobile.auth.signIn.googleButton": "使用 Google 继续",
+  "mobile.auth.signIn.googleFailed": "Google 登录未完成。请重试。",
   "mobile.auth.done.title": "已连接",
   "mobile.auth.done.body": "你已登录。",
   "mobile.auth.email.title": "用邮箱登录",

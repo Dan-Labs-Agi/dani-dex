@@ -75,7 +75,7 @@ whole computer. No shared MCP file format exists: Claude Code reads `.mcp.json` 
 `~/.claude.json`, Codex reads `config.toml`, OpenCode reads `opencode.json`, and Cursor, Cline and
 Gemini CLI read their own folders. dani-dex writes none of these files. It gives the servers to each
 provider when the session starts. Claude starts with `strictMcpConfig`, so it ignores `.mcp.json`
-and its user settings (see `plans/003-mcp-works-on-a-clean-machine.md`). The panel masks header and
+and its user settings (see `docs/plans/003-mcp-works-on-a-clean-machine.md`). The panel masks header and
 environment values, `src/backend/mcp-redaction.ts` removes them from logs, and OAuth tokens are in
 `safeStorage`.
 

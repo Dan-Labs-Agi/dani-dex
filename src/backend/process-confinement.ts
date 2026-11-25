@@ -77,6 +77,22 @@ export function openCodeDataDirectory(env: NodeJS.ProcessEnv = process.env, home
   return join(env.XDG_DATA_HOME?.trim() || join(home, ".local/share"), "opencode");
 }
 
+export function kilocodeStatePaths(env: NodeJS.ProcessEnv = process.env, home = homedir()): ProviderStatePaths {
+  return {
+    writable: [
+      kilocodeDataDirectory(env, home),
+      join(env.XDG_STATE_HOME?.trim() || join(home, ".local/state"), "kilo"),
+      join(env.XDG_CONFIG_HOME?.trim() || join(home, ".config"), "kilo"),
+      OPENCODE_CONFINED_CACHE,
+    ],
+    protected: [],
+  };
+}
+
+function kilocodeDataDirectory(env: NodeJS.ProcessEnv = process.env, home = homedir()): string {
+  return join(env.XDG_DATA_HOME?.trim() || join(home, ".local/share"), "kilo");
+}
+
 export function antigravityStatePaths(env: NodeJS.ProcessEnv = process.env, home = homedir()): ProviderStatePaths {
   const geminiHome = env.GEMINI_HOME?.trim() || join(home, ".gemini");
   const acp = join(geminiHome, "antigravity-acp");
@@ -418,6 +434,9 @@ const PROJECT_SETTINGS = [
   ".opencode",
   "opencode.json",
   "opencode.jsonc",
+  ".kilo",
+  "kilo.json",
+  "kilo.jsonc",
   ".cursor",
   ".cline",
   ".clinerules",

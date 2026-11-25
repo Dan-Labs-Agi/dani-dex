@@ -2,8 +2,8 @@
 "use strict";
 
 try {
-  const { readFileSync } = require("fs");
-  const os = require("os");
+  const { readFileSync } = require("node:fs");
+  const os = require("node:os");
 
   const cgroupCpuLimit = () => {
     const line = readFileSync("/proc/self/cgroup", "utf8")
@@ -26,6 +26,6 @@ try {
   const limit = Math.max(1, Math.min(cgroupCpuLimit(), parallelism ? parallelism() : Number.POSITIVE_INFINITY));
   if (limit < cpus().length) os.cpus = () => cpus().slice(0, limit);
   if (parallelism && limit < parallelism()) os.availableParallelism = () => limit;
-  const { syncBuiltinESMExports } = require("module");
+  const { syncBuiltinESMExports } = require("node:module");
   if (typeof syncBuiltinESMExports === "function") syncBuiltinESMExports();
 } catch {}

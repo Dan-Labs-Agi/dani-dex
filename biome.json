@@ -63,7 +63,8 @@
       },
       "complexity": {
         "noBannedTypes": "error",
-        "noUselessTypeConstraint": "error"
+        "noUselessTypeConstraint": "error",
+        "noImportantStyles": "off"
       },
       "nursery": {
         "noFloatingPromises": "error",
@@ -73,7 +74,8 @@
       },
       "style": {
         "noNonNullAssertion": "error",
-        "useAsConstAssertion": "error"
+        "useAsConstAssertion": "error",
+        "noDescendingSpecificity": "off"
       },
       "suspicious": {
         "noExplicitAny": "error",
@@ -274,7 +276,7 @@
       ]
     },
     {
-      "includes": ["src/renderer/**", "packages/ui/**", "packages/brand/**", "apps/auth-api/**", ".storybook/**"],
+      "includes": ["src/renderer/**", "packages/ui/**", "packages/brand/**", "apps/auth-api/**", "config/storybook/**"],
       "plugins": [
         "./tools/biome/anti-slop/rules/no-collections-in-stores.grit",
         "./tools/biome/anti-slop/rules/no-cleanup-in-effect-callbacks.grit"

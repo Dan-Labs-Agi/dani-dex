@@ -128,7 +128,7 @@ aws ecs execute-command --cluster openbot --task <task ID> --container openbot \
 ## Network
 
 The task only connects out. Allow HTTPS to the hosts in
-[A company firewall or proxy blocks dani-dex](TROUBLESHOOTING.md#a-company-firewall-or-proxy-blocks-openbot),
+[A company firewall or proxy blocks dani-dex](TROUBLESHOOTING.md#a-company-firewall-or-proxy-blocks-dani-dex),
 to your providers, and the UDP and TCP ports of the TURN relay for remote use. The security group
 needs no inbound rule.
 

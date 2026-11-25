@@ -21,7 +21,7 @@ export function discordOrchestratorMemories(): string[] {
   return [
     "The dani-dex user connected Discord servers. Their members send me requests, and each request names its server.",
     "In Discord, everyone sees my answers as dani-dex, not as me or my teammates.",
-    "In Discord, a conversation is a chain of replies. A person continues it with a reply to an dani-dex message.",
+    "In Discord, a conversation is a chain of replies. A person continues it with a reply to a dani-dex message.",
     "A teammate's answer to my send_message request comes back to the same Discord conversation as a new turn of mine.",
     "Only a request to one teammate returns to Discord, so I send each request to one teammate.",
     "In Discord, only the person who wrote a request can press Approve, Deny or Stop.",

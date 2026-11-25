@@ -26,11 +26,6 @@
   height: 62px;
 }
 
-.agent-settings-avatar .agent-avatar > svg {
-  width: 128%;
-  height: 128%;
-}
-
 .agent-settings-avatar:hover:not(:has(.agent-avatar-custom)) {
   filter: brightness(1.08);
 }
@@ -1256,10 +1251,6 @@
   white-space: nowrap;
 }
 
-.agent-skill-row-disabled .agent-skill-title strong {
-  color: var(--openbot-text-muted);
-}
-
 .agent-skill-more {
   display: inline-flex;
   align-items: center;
@@ -1277,6 +1268,11 @@
 .agent-skill-more svg {
   width: var(--openbot-icon-sm);
   height: var(--openbot-icon-sm);
+}
+
+.agent-settings-avatar .agent-avatar > svg {
+  width: 128%;
+  height: 128%;
 }
 
 .agent-skill-row:hover .agent-skill-more,
@@ -1517,6 +1513,10 @@
   font-size: var(--openbot-text-md);
   font-weight: 500;
   line-height: 18px;
+}
+
+.agent-skill-row-disabled .agent-skill-title strong {
+  color: var(--openbot-text-muted);
 }
 
 .agent-settings-notifications div > span {
