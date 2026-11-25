@@ -52,6 +52,7 @@ import {
 import { type BackgroundTray, createBackgroundTray } from "./background-tray";
 import { removeClaudeCodeSessionEnvironment } from "./claude-session-environment";
 import { guardConsoleOutput } from "./console-output";
+import { receiveDaniAccountAuthToken } from "./dani-account";
 import { type DeepLink, findDeepLink, parseDeepLink } from "./deep-link-router";
 import { requestNotificationPermission, showRetainedNotification } from "./desktop-notifications";
 import {
@@ -483,7 +484,7 @@ let systemSessionEnding = false;
 let systemSessionEndFlushStarted = false;
 let relaunchRequested = false;
 let quitStarted = false;
-type RendererDeepLink = Exclude<DeepLink, { kind: "mcp-auth" | "slack-workspace" | "discord-guild" }>;
+type RendererDeepLink = Exclude<DeepLink, { kind: "account-auth" | "mcp-auth" | "slack-workspace" | "discord-guild" }>;
 
 let pendingDeepLink: RendererDeepLink | null = takeRendererDeepLink(findDeepLink(process.argv, inviteLinkOptions));
 let deepLinkReceiverReady = false;
@@ -1210,8 +1211,10 @@ async function presentApplication(): Promise<void> {
     process.platform === "linux" ||
     ((process.platform === "darwin" || process.platform === "win32") && app.isPackaged)
   ) {
-    if (!app.setAsDefaultProtocolClient("openbot")) {
-      logger.warn("Unable to register the openbot:// scheme. Invitation links will not open dani-dex.");
+    for (const scheme of ["dani-dex", "openbot"]) {
+      if (!app.setAsDefaultProtocolClient(scheme)) {
+        logger.warn(`Unable to register the ${scheme}:// scheme. Invitation links will not open dani-dex.`);
+      }
     }
   }
 }
@@ -1304,6 +1307,12 @@ function forwardCentralAuth(state: CentralAuthState): void {
 }
 
 function acceptDeepLink(link: DeepLink): void {
+  if (link.kind === "account-auth") {
+    receiveDaniAccountAuthToken(link.token).catch((error: unknown) => {
+      logger.warn("Dani account sign-in from the deep link failed.", error);
+    });
+    return;
+  }
   if (link.kind === "mcp-auth") {
     receiveMcpAuthorizationCode(link.state, link.code);
     return;
@@ -1350,7 +1359,11 @@ function isDeepLinkKind<Kind extends RendererDeepLink["kind"]>(
 }
 
 function takeRendererDeepLink(link: DeepLink | null): RendererDeepLink | null {
-  return link && link.kind !== "mcp-auth" && link.kind !== "slack-workspace" && link.kind !== "discord-guild"
+  return link &&
+    link.kind !== "account-auth" &&
+    link.kind !== "mcp-auth" &&
+    link.kind !== "slack-workspace" &&
+    link.kind !== "discord-guild"
     ? link
     : null;
 }

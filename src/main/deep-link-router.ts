@@ -1,9 +1,11 @@
 import { parseAgentTemplateUrl } from "@openbot/contracts/agent-template-links";
+import { parseDaniAccountAuthDeepLink } from "@openbot/contracts/dani-account";
 import { type InviteLinkOptions, parseInviteUrl } from "@openbot/contracts/invite-links";
 import { type MarketplaceListingLink, parseMarketplaceUrl } from "@openbot/contracts/marketplace-links";
 import { parsePluginUrl } from "@openbot/contracts/plugin-links";
 
 export type DeepLink =
+  | { kind: "account-auth"; token: string }
   | { kind: "invite"; url: string }
   | { kind: "plugin"; slug: string }
   | { kind: "agent-template"; id: string }
@@ -19,6 +21,9 @@ const SLACK_WORKSPACE_HOST = "slack-workspace";
 const DISCORD_GUILD_HOST = "discord-guild";
 
 export function parseDeepLink(value: string, options: InviteLinkOptions = {}): DeepLink | null {
+  const accountAuthToken = parseDaniAccountAuthDeepLink(value);
+  if (accountAuthToken) return { kind: "account-auth", token: accountAuthToken };
+
   try {
     parseInviteUrl(value, options);
     return { kind: "invite", url: value };
