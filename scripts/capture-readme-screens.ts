@@ -152,15 +152,17 @@ for (let i = 0; i < 120 && !ready; i++) {
         signInRequested = true;
         await clickFirst(page, [/send sign-in code/i, /send code/i, /^Continue$/], "send code");
       }
-    } else if (devCode) {
-      const codeInput = page
-        .locator(
-          'input[autocomplete="one-time-code"], input[inputmode="numeric"], input[name="code"], input[placeholder*="code" i]',
-        )
-        .first();
-      if ((await codeInput.count()) > 0) {
-        await codeInput.fill(devCode);
+    } else {
+      // The dev build prints the one-time code on the page itself. The 8-box
+      // widget auto-advances while typing, so type the characters, no dash.
+      const shown = /Development code:\s*([A-Z0-9]{4})-([A-Z0-9]{4})/.exec(text);
+      const code = shown ? shown[1] + shown[2] : devCode?.replace(/-/g, "");
+      if (code) {
+        const box = page.locator('input[maxlength="1"], input[autocomplete="one-time-code"]').first();
+        if ((await box.count()) > 0) await box.click().catch(() => {});
+        await page.keyboard.type(code, { delay: 60 });
         devCode = undefined;
+        await page.waitForTimeout(1_000);
         await clickFirst(page, [/verify/i, /^Continue$/, /sign in/i], "verify code");
       }
     }
