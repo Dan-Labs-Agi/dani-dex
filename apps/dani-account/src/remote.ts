@@ -5,6 +5,7 @@ export interface REnv {
   DB: D1Database;
   REMOTE_TICKET_PRIVATE_JWK: string;
   SIGNAL: DurableObjectNamespace;
+  TELEGRAM_CLAIM_SECRET?: string;
 }
 
 const enc = new TextEncoder();
@@ -166,6 +167,52 @@ export async function handleRemote(
       user: userView(await getUser(env, t.user_id)),
       host: { hostId: t.host_id, fingerprint: t.fingerprint },
     });
+  }
+  // Telegram: the app asks for a code, the user sends it to the bot, the bot claims it here.
+  if (p === "/v1/telegram/claim" && m === "POST") {
+    const secret = env.TELEGRAM_CLAIM_SECRET || "";
+    if (!secret || bearer !== secret) return json({ error: "unauthorized" }, 401);
+    const b = await body();
+    if (typeof b.code !== "string" || !/^[A-Za-z0-9_-]{32,64}$/.test(b.code)) return json({ error: "invalid_code" }, 400);
+    if (typeof b.chatId !== "string" || !/^-?[0-9]{1,20}$/.test(b.chatId)) return json({ error: "invalid_chat" }, 400);
+    const botId = typeof b.botId === "string" && /^[0-9]{1,20}$/.test(b.botId) ? b.botId : "0";
+    const ch = await sha256(b.code);
+    const row = await env.DB.prepare("SELECT * FROM telegram_codes WHERE code_hash=?").bind(ch).first<any>();
+    if (!row || row.expires_at < now()) return json({ error: "code_expired" }, 400);
+    await env.DB.prepare("DELETE FROM telegram_codes WHERE code_hash=?").bind(ch).run();
+    const title = typeof b.title === "string" && b.title.trim() ? b.title.trim().slice(0, 80) : b.chatId;
+    await env.DB.prepare(
+      "INSERT OR REPLACE INTO telegram_chats(host_id,chat_id,bot_id,user_id,title,linked_at) VALUES(?,?,?,?,?,?)",
+    )
+      .bind(row.host_id, b.chatId, botId, row.user_id, title, now())
+      .run();
+    const h = await env.DB.prepare("SELECT name FROM remote_hosts WHERE host_id=?").bind(row.host_id).first<any>();
+    return json({ ok: true, hostName: h?.name ?? "your computer" });
+  }
+  const tg = p.match(/^\/v2\/remote\/hosts\/([^/]+)\/(telegram-link|telegram-route|telegram-disconnect)\/?$/);
+  if (tg && m === "POST") {
+    const b = await body();
+    const h = await hostByMachineToken(env, decodeURIComponent(tg[1]), b.machineToken);
+    if (!h) return json({ error: "unauthorized" }, 401);
+    if (tg[2] === "telegram-link") {
+      const code = rand(32);
+      await env.DB.prepare("DELETE FROM telegram_codes WHERE host_id=? OR expires_at<?").bind(h.host_id, now()).run();
+      await env.DB.prepare("INSERT INTO telegram_codes(code_hash,host_id,user_id,expires_at) VALUES(?,?,?,?)")
+        .bind(await sha256(code), h.host_id, h.user_id, now() + 15 * 60)
+        .run();
+      return json({ botUsername: "danirex_bot", code });
+    }
+    if (tg[2] === "telegram-disconnect") {
+      if (typeof b.chatId === "string")
+        await env.DB.prepare("DELETE FROM telegram_chats WHERE host_id=? AND chat_id=?").bind(h.host_id, b.chatId).run();
+      return json({ ok: true });
+    }
+    const rows = (
+      await env.DB.prepare("SELECT chat_id,bot_id,linked_at FROM telegram_chats WHERE host_id=?").bind(h.host_id).all<any>()
+    ).results;
+    const chats = rows.map((c: any) => ({ id: c.chat_id, botId: c.bot_id, linkedAt: c.linked_at }));
+    const { jwt, exp } = await signJwt(env, { hid: h.host_id, chats }, 300);
+    return json({ ticket: jwt, expiresAt: exp * 1000, chats: chats.map((c: any) => `${c.botId}:${c.id}:${c.linkedAt}`) });
   }
   let r = p.match(/^\/v2\/remote\/hosts\/([^/]+)\/(ticket|signal-homes)\/?$/);
   if (r && m === "POST") {
