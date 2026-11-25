@@ -7,7 +7,6 @@
 }
 
 .agent-avatar-layer,
-.agent-avatar-foot,
 .agent-avatar-blink {
   position: absolute;
   inset: 0;
@@ -44,10 +43,6 @@
   transform-origin: 73.2% 61.8%;
 }
 
-.agent-avatar-foot {
-  transform-origin: 50% 70%;
-}
-
 /* Idle: every character moves side to side in its own way. */
 .agent-avatar-motion-idle .agent-avatar-char-dani,
 .agent-avatar-motion-hover .agent-avatar-char-dani {
@@ -78,22 +73,9 @@
   animation: agent-avatar-bow 3.6s ease-in-out infinite;
 }
 
-.agent-avatar-motion-idle .agent-avatar-foot-l,
-.agent-avatar-motion-hover .agent-avatar-foot-l {
-  animation: agent-avatar-step 0.9s ease-in-out infinite;
-}
-.agent-avatar-motion-idle .agent-avatar-foot-r,
-.agent-avatar-motion-hover .agent-avatar-foot-r {
-  animation: agent-avatar-step 0.9s ease-in-out infinite reverse;
-}
-
 /* Hover: stand still, smile and wave the right hand high. */
 .agent-avatar-motion-hover:hover .agent-avatar-body {
   animation: agent-avatar-hello 1.2s ease-in-out infinite;
-}
-.agent-avatar-motion-hover:hover .agent-avatar-foot-l,
-.agent-avatar-motion-hover:hover .agent-avatar-foot-r {
-  animation: none;
 }
 .agent-avatar-motion-hover:hover .agent-avatar-blink {
   animation: none;
@@ -208,16 +190,6 @@
   }
 }
 
-@keyframes agent-avatar-step {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4%);
-  }
-}
-
 @keyframes agent-avatar-hello {
   0%,
   100% {
@@ -252,7 +224,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .agent-avatar-body,
-  .agent-avatar-foot,
   .agent-avatar-arm,
   .agent-avatar-blink {
     animation: none !important;

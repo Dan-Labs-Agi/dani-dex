@@ -6,8 +6,6 @@ interface CharacterSprites {
   body: string;
   blink: string | null;
   happy: string | null;
-  footLeft: string;
-  footRight: string;
   arm: string;
   crown: string | null;
 }
@@ -19,8 +17,6 @@ const faces: readonly CharacterSprites[] = [
     body: new URL("./characters/dani.png", import.meta.url).href,
     blink: new URL("./characters/dani-blink.png", import.meta.url).href,
     happy: new URL("./characters/dani-happy.png", import.meta.url).href,
-    footLeft: new URL("./characters/dani-foot-l.png", import.meta.url).href,
-    footRight: new URL("./characters/dani-foot-r.png", import.meta.url).href,
     arm: new URL("./characters/dani-arm.png", import.meta.url).href,
     crown: new URL("./characters/dani-crown.png", import.meta.url).href,
   },
@@ -30,8 +26,6 @@ const faces: readonly CharacterSprites[] = [
     body: new URL("./characters/sprout.png", import.meta.url).href,
     blink: new URL("./characters/sprout-blink.png", import.meta.url).href,
     happy: new URL("./characters/sprout-happy.png", import.meta.url).href,
-    footLeft: new URL("./characters/sprout-foot-l.png", import.meta.url).href,
-    footRight: new URL("./characters/sprout-foot-r.png", import.meta.url).href,
     arm: new URL("./characters/sprout-arm.png", import.meta.url).href,
     crown: null,
   },
@@ -41,8 +35,6 @@ const faces: readonly CharacterSprites[] = [
     body: new URL("./characters/tuft.png", import.meta.url).href,
     blink: new URL("./characters/tuft-blink.png", import.meta.url).href,
     happy: new URL("./characters/tuft-happy.png", import.meta.url).href,
-    footLeft: new URL("./characters/tuft-foot-l.png", import.meta.url).href,
-    footRight: new URL("./characters/tuft-foot-r.png", import.meta.url).href,
     arm: new URL("./characters/tuft-arm.png", import.meta.url).href,
     crown: null,
   },
@@ -52,8 +44,6 @@ const faces: readonly CharacterSprites[] = [
     body: new URL("./characters/sweep.png", import.meta.url).href,
     blink: new URL("./characters/sweep-blink.png", import.meta.url).href,
     happy: new URL("./characters/sweep-happy.png", import.meta.url).href,
-    footLeft: new URL("./characters/sweep-foot-l.png", import.meta.url).href,
-    footRight: new URL("./characters/sweep-foot-r.png", import.meta.url).href,
     arm: new URL("./characters/sweep-arm.png", import.meta.url).href,
     crown: null,
   },
@@ -63,8 +53,6 @@ const faces: readonly CharacterSprites[] = [
     body: new URL("./characters/cap.png", import.meta.url).href,
     blink: new URL("./characters/cap-blink.png", import.meta.url).href,
     happy: new URL("./characters/cap-happy.png", import.meta.url).href,
-    footLeft: new URL("./characters/cap-foot-l.png", import.meta.url).href,
-    footRight: new URL("./characters/cap-foot-r.png", import.meta.url).href,
     arm: new URL("./characters/cap-arm.png", import.meta.url).href,
     crown: null,
   },
@@ -74,8 +62,6 @@ const faces: readonly CharacterSprites[] = [
     body: new URL("./characters/shades.png", import.meta.url).href,
     blink: null,
     happy: null,
-    footLeft: new URL("./characters/shades-foot-l.png", import.meta.url).href,
-    footRight: new URL("./characters/shades-foot-r.png", import.meta.url).href,
     arm: new URL("./characters/shades-arm.png", import.meta.url).href,
     crown: null,
   },
@@ -85,8 +71,6 @@ const faces: readonly CharacterSprites[] = [
     body: new URL("./characters/bow.png", import.meta.url).href,
     blink: new URL("./characters/bow-blink.png", import.meta.url).href,
     happy: new URL("./characters/bow-happy.png", import.meta.url).href,
-    footLeft: new URL("./characters/bow-foot-l.png", import.meta.url).href,
-    footRight: new URL("./characters/bow-foot-r.png", import.meta.url).href,
     arm: new URL("./characters/bow-arm.png", import.meta.url).href,
     crown: null,
   },

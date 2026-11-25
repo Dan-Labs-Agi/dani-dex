@@ -82,8 +82,6 @@ export function AgentAvatar(props: AgentAvatarProps) {
             class={`agent-avatar-body ${sprites().bodyClass}`}
             style={{ "--avatar-phase": `${(hashPhase(seed()) % 3000) / -1000}s`, "--avatar-tint": tint() }}
           >
-            <img class="agent-avatar-foot agent-avatar-foot-l" src={sprites().footLeft} alt="" draggable={false} />
-            <img class="agent-avatar-foot agent-avatar-foot-r" src={sprites().footRight} alt="" draggable={false} />
             <img class="agent-avatar-layer" src={sprites().body} alt="" draggable={false} />
             <Show when={sprites().blink}>
               {(blink) => <img class="agent-avatar-layer agent-avatar-blink" src={blink()} alt="" draggable={false} />}
