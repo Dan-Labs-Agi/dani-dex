@@ -43,7 +43,7 @@ export function retainConfirmedAttachments(
   retain: (id: string, file: RemoteFileUpload & { localUri?: string }) => void,
 ): boolean {
   const message = messages.find((candidate) => candidate.id === receiptId);
-  if (!message || message.kind !== "message") return false;
+  if (message?.kind !== "message") return false;
   for (const [index, attachment] of (message.attachments ?? []).entries()) {
     const file = files[index];
     if (file && !file.file)

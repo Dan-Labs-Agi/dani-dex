@@ -492,7 +492,7 @@ const SPEECH_SPEED_CYCLE: readonly SpeechSpeed[] = [
 ];
 
 export function nextSpeechSpeed(speed: number): SpeechSpeed {
-  const index = SPEECH_SPEED_CYCLE.findIndex((step) => step === speed);
+  const index = SPEECH_SPEED_CYCLE.indexOf(speed);
   return SPEECH_SPEED_CYCLE[(index + 1) % SPEECH_SPEED_CYCLE.length] ?? 1;
 }
 

@@ -26,11 +26,12 @@ const childModule = argumentValue("dump");
 const childDatabase = argumentValue("db");
 if (childModule && childDatabase) {
   const source = await readFile(childModule, "utf8");
-  const schema: Record<string, unknown> = await import(childModule);
-  const migrate = (schema.migrateOpenBotDatabase ?? schema.migrateDaniDexDatabase) as
-    | ((db: DatabaseSync, options: unknown) => void)
-    | undefined;
-  if (!migrate) throw new Error(`No migrate function in ${childModule}.`);
+  const schema: unknown = await import(childModule);
+  if (typeof schema !== "object" || schema === null) throw new Error(`No schema module in ${childModule}.`);
+  const openbotMigrate = "migrateOpenBotDatabase" in schema ? schema.migrateOpenBotDatabase : undefined;
+  const daniDexMigrate = "migrateDaniDexDatabase" in schema ? schema.migrateDaniDexDatabase : undefined;
+  const migrate = openbotMigrate ?? daniDexMigrate;
+  if (typeof migrate !== "function") throw new Error(`No migrate function in ${childModule}.`);
   const db = new DatabaseSync(childDatabase);
   migrate(db, source.includes("MigrationOptions") ? { appliedAt: APPLIED_AT } : APPLIED_AT);
   const shadowTables = new Set(

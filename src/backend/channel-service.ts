@@ -187,7 +187,7 @@ export class ChannelService {
   #scope = Scope.makeUnsafe();
   readonly #pumps = new Map<string, Fiber.Fiber<void>>();
   readonly #commands = new Map<string, Deferred.Deferred<void>>();
-  readonly #commandFibers = new Set<Fiber.Fiber<Channel | void, ChannelOperationError | MessageDeleteRefused>>();
+  readonly #commandFibers = new Set<Fiber.Fiber<Channel | undefined, ChannelOperationError | MessageDeleteRefused>>();
   readonly #interrupts = new Set<Fiber.Fiber<void>>();
   readonly #events = new Set<Fiber.Fiber<void>>();
   readonly #summaries = new Map<string, Fiber.Fiber<void>>();
@@ -320,7 +320,7 @@ export class ChannelService {
   });
 
   readonly #serialize = Effect.fn("ChannelService.serialize")(
-    <A extends Channel | void, E extends ChannelOperationError | MessageDeleteRefused = ChannelOperationError>(
+    <A extends Channel | undefined, E extends ChannelOperationError | MessageDeleteRefused = ChannelOperationError>(
       channelId: string,
       operation: Effect.Effect<A, E>,
     ) =>

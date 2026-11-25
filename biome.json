@@ -57,13 +57,18 @@
         "noLabelWithoutControl": {
           "level": "error",
           "options": {
-            "inputComponents": ["Input", "Textarea", "NativeSelect"]
+            "inputComponents": [
+              "Input",
+              "Textarea",
+              "NativeSelect"
+            ]
           }
         }
       },
       "complexity": {
         "noBannedTypes": "error",
-        "noUselessTypeConstraint": "error"
+        "noUselessTypeConstraint": "error",
+        "noImportantStyles": "off"
       },
       "nursery": {
         "noFloatingPromises": "error",
@@ -73,7 +78,8 @@
       },
       "style": {
         "noNonNullAssertion": "error",
-        "useAsConstAssertion": "error"
+        "useAsConstAssertion": "error",
+        "noDescendingSpecificity": "off"
       },
       "suspicious": {
         "noExplicitAny": "error",
@@ -92,7 +98,10 @@
   },
   "overrides": [
     {
-      "includes": ["src/renderer/src/styles/app-shell.css", "src/renderer/src/features/conversation/conversation.css"],
+      "includes": [
+        "src/renderer/src/styles/app-shell.css",
+        "src/renderer/src/features/conversation/conversation.css"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -137,7 +146,10 @@
       }
     },
     {
-      "includes": ["src/**/*.ts", "src/**/*.tsx"],
+      "includes": [
+        "src/**/*.ts",
+        "src/**/*.tsx"
+      ],
       "linter": {
         "rules": {
           "correctness": {
@@ -161,7 +173,11 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["**/main/**", "**/backend/**", "**/preload/**"],
+                    "group": [
+                      "**/main/**",
+                      "**/backend/**",
+                      "**/preload/**"
+                    ],
                     "message": "The renderer reaches main only through the IPC contract. Declare a channel in packages/contracts and go through window.openbot."
                   }
                 ]
@@ -172,7 +188,11 @@
       }
     },
     {
-      "includes": ["src/main/**/*.ts", "src/backend/**/*.ts", "src/preload/**/*.ts"],
+      "includes": [
+        "src/main/**/*.ts",
+        "src/backend/**/*.ts",
+        "src/preload/**/*.ts"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -181,7 +201,9 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["**/renderer/**"],
+                    "group": [
+                      "**/renderer/**"
+                    ],
                     "message": "Nothing behind the trust boundary imports renderer code. Share the type through packages/contracts instead."
                   }
                 ]
@@ -192,7 +214,9 @@
       }
     },
     {
-      "includes": ["packages/contracts/src/**/*.ts"],
+      "includes": [
+        "packages/contracts/src/**/*.ts"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -228,7 +252,10 @@
       }
     },
     {
-      "includes": ["apps/auth-api/src/server/**/*.ts", "apps/auth-api/src/worker-entry.ts"],
+      "includes": [
+        "apps/auth-api/src/server/**/*.ts",
+        "apps/auth-api/src/worker-entry.ts"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -257,7 +284,10 @@
       }
     },
     {
-      "includes": ["**/*.test.ts", "**/*.test.tsx"],
+      "includes": [
+        "**/*.test.ts",
+        "**/*.test.tsx"
+      ],
       "plugins": [
         "./tools/biome/anti-slop/rules/no-class-assertions.grit",
         "./tools/biome/anti-slop/rules/no-style-assertions.grit",
@@ -274,19 +304,36 @@
       ]
     },
     {
-      "includes": ["src/renderer/**", "packages/ui/**", "packages/brand/**", "apps/auth-api/**", ".storybook/**"],
+      "includes": [
+        "src/renderer/**",
+        "packages/ui/**",
+        "packages/brand/**",
+        "apps/auth-api/**",
+        ".storybook/**"
+      ],
       "plugins": [
         "./tools/biome/anti-slop/rules/no-collections-in-stores.grit",
         "./tools/biome/anti-slop/rules/no-cleanup-in-effect-callbacks.grit"
       ]
     },
     {
-      "includes": ["src/backend/**", "src/main/**", "!src/backend/database/sqlite-transaction.ts"],
-      "plugins": ["./tools/biome/anti-slop/rules/no-raw-sqlite-transaction.grit"]
+      "includes": [
+        "src/backend/**",
+        "src/main/**",
+        "!src/backend/database/sqlite-transaction.ts"
+      ],
+      "plugins": [
+        "./tools/biome/anti-slop/rules/no-raw-sqlite-transaction.grit"
+      ]
     },
     {
-      "includes": ["**/*.stories.ts", "**/*.stories.tsx"],
-      "plugins": ["./tools/ui-foundation/no-story-play.grit"]
+      "includes": [
+        "**/*.stories.ts",
+        "**/*.stories.tsx"
+      ],
+      "plugins": [
+        "./tools/ui-foundation/no-story-play.grit"
+      ]
     },
     {
       "includes": [
@@ -302,11 +349,18 @@
         "!src/renderer/src/preview/**",
         "!src/renderer/src/setupTests.ts"
       ],
-      "plugins": ["./tools/ui-foundation/no-hardcoded-ui-text.grit"]
+      "plugins": [
+        "./tools/ui-foundation/no-hardcoded-ui-text.grit"
+      ]
     },
     {
-      "includes": ["packages/ui/src/**/*.ts", "packages/ui/src/**/*.tsx"],
-      "plugins": ["./tools/ui-foundation/no-desktop-preload.grit"],
+      "includes": [
+        "packages/ui/src/**/*.ts",
+        "packages/ui/src/**/*.tsx"
+      ],
+      "plugins": [
+        "./tools/ui-foundation/no-desktop-preload.grit"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -315,7 +369,12 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["**/renderer/**", "**/main/**", "**/backend/**", "**/preload/**"],
+                    "group": [
+                      "**/renderer/**",
+                      "**/main/**",
+                      "**/backend/**",
+                      "**/preload/**"
+                    ],
                     "message": "Shared UI receives data and actions through props; do not import application or platform implementations."
                   }
                 ]
@@ -326,7 +385,10 @@
       }
     },
     {
-      "includes": ["apps/mobile/src/**/*.ts", "apps/mobile/src/**/*.tsx"],
+      "includes": [
+        "apps/mobile/src/**/*.ts",
+        "apps/mobile/src/**/*.tsx"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -335,7 +397,10 @@
               "options": {
                 "paths": {
                   "lucide-react-native": {
-                    "allowImportNames": ["LucideIcon", "LucideProps"],
+                    "allowImportNames": [
+                      "LucideIcon",
+                      "LucideProps"
+                    ],
                     "message": "Metro does not remove unused exports, so this index adds every icon to the mobile bundle. Import one icon from \"lucide-react-native/icons/<name>\"."
                   }
                 }
