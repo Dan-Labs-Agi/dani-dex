@@ -9,9 +9,6 @@
   pointer-events: none;
 }
 
-.app-frame.app-frame-page-open .app-frame-panes * {
-  visibility: hidden;
-}
 .window-page {
   z-index: 1;
   min-height: 0;
@@ -135,6 +132,14 @@
 .server-connection-content > * {
   min-height: 0;
   flex: 1;
+}
+
+.app-frame.app-frame-page-open .app-frame-panes * {
+  visibility: hidden;
+}
+
+.app-frame.app-frame-page-open .app-frame-panes * {
+  visibility: hidden;
 }
 
 .app-window > .app-loading {

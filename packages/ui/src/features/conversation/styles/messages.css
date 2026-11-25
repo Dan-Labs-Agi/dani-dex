@@ -33,11 +33,6 @@
   display: contents;
 }
 
-.message-entry-with-author .message-shell {
-  grid-column: 2;
-  grid-row: 2;
-}
-
 .message-entry-with-author .message-action-row {
   grid-column: 2;
   grid-row: 3;
@@ -130,6 +125,11 @@
   max-width: 100%;
   align-items: center;
   gap: 5px;
+}
+
+.message-entry-with-author .message-shell {
+  grid-column: 2;
+  grid-row: 2;
 }
 
 .message-entry-user .message-shell {
@@ -945,10 +945,6 @@
   transition: transform var(--chat-action-history-close) var(--openbot-ease-out);
 }
 
-.chat-action-history-toggle[aria-expanded="true"] svg {
-  transform: rotate(180deg);
-}
-
 .chat-action-history-panel {
   display: grid;
   width: 100%;
@@ -973,14 +969,6 @@
   to {
     grid-template-rows: 0fr;
   }
-}
-
-.chat-action-history-panel[data-state="open"] .chat-action-history {
-  animation: chat-action-history-settle var(--chat-action-history-open) var(--openbot-ease-out);
-}
-
-.chat-action-history-panel[data-state="closed"] .chat-action-history {
-  animation: chat-action-history-lift var(--chat-action-history-lift) var(--openbot-ease-out) forwards;
 }
 
 @keyframes chat-action-history-settle {
@@ -1026,16 +1014,20 @@
   text-align: start;
 }
 
+.chat-action-history-panel[data-state="open"] .chat-action-history {
+  animation: chat-action-history-settle var(--chat-action-history-open) var(--openbot-ease-out);
+}
+
+.chat-action-history-panel[data-state="closed"] .chat-action-history {
+  animation: chat-action-history-lift var(--chat-action-history-lift) var(--openbot-ease-out) forwards;
+}
+
 .chat-action-history-entry {
   display: grid;
   grid-template-columns: var(--openbot-icon-xs) minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--openbot-space-1-5);
   color: var(--openbot-text-secondary);
-}
-
-.chat-action-history-panel[data-state="open"] .chat-action-history-entry {
-  animation: chat-action-history-entry-in var(--chat-action-history-entry) var(--openbot-ease-out) backwards;
 }
 
 .chat-action-history-panel[data-state="open"] .chat-action-history-entry:nth-child(2) {
@@ -1194,13 +1186,6 @@ button.chat-action-target:active,
   text-overflow: ellipsis;
 }
 
-.chat-action-target .ui-marker-icon,
-.chat-action-target .ui-marker-icon svg {
-  width: var(--openbot-icon-xs);
-  height: var(--openbot-icon-xs);
-  flex: 0 0 var(--openbot-icon-xs);
-}
-
 .chat-action-target .ui-marker-icon {
   translate: 0 -0.5px;
 }
@@ -1276,19 +1261,11 @@ button.chat-action-target:active,
   color: var(--openbot-warning);
 }
 
-.chat-action-target-status-in-progress .ui-marker-icon svg {
-  animation: ui-spin 1s linear infinite;
-}
-
 .chat-action-avatar-stack {
   display: inline-flex;
   min-width: 0;
   height: var(--openbot-chat-marker-avatar);
   align-items: center;
-}
-
-.chat-action-avatar-stack .chat-action-agent-avatar + .chat-action-agent-avatar {
-  margin-inline-start: -6px;
 }
 
 .chat-action-group-list {
@@ -1299,6 +1276,10 @@ button.chat-action-target:active,
 
 .chat-action-group-list > .chat-action-history-entry {
   display: block;
+}
+
+.chat-action-history-panel[data-state="open"] .chat-action-history-entry {
+  animation: chat-action-history-entry-in var(--chat-action-history-entry) var(--openbot-ease-out) backwards;
 }
 
 .chat-action-group-list .chat-action-marker {
@@ -1345,6 +1326,10 @@ button.chat-action-target:active,
   width: 18px;
   height: 18px;
   flex-basis: 18px;
+}
+
+.chat-action-avatar-stack .chat-action-agent-avatar + .chat-action-agent-avatar {
+  margin-inline-start: -6px;
 }
 
 .chat-action-agent-menu-status {
@@ -1473,10 +1458,6 @@ button.chat-action-target:active,
   opacity: 0;
 }
 
-.image-generation-ready .image-generation-glow {
-  animation: none;
-}
-
 .image-generation-dots {
   position: absolute;
   inset: 2px;
@@ -1522,6 +1503,10 @@ button.chat-action-target:active,
   animation:
     image-generation-morph 4.2s cubic-bezier(0.35, 1.55, 0.65, 1) infinite,
     image-generation-breathe 1.9s cubic-bezier(0.66, 0, 0.34, 1) infinite;
+}
+
+.image-generation-ready .image-generation-glow {
+  animation: none;
 }
 
 .media-generation-chip {
@@ -1721,13 +1706,6 @@ button.chat-action-target:active,
   color: var(--openbot-media-control-text);
 }
 
-.ui-button.media-generation-play > svg {
-  width: 22px;
-  height: 22px;
-  margin-inline-start: 2px;
-  fill: currentColor;
-}
-
 .media-generation-wait {
   display: grid;
   position: absolute;
@@ -1787,15 +1765,6 @@ button.chat-action-target:active,
 .media-generation-actions .ui-button:hover:not(:disabled) {
   background: var(--openbot-media-control-hover);
   color: var(--openbot-media-control-text);
-}
-
-.media-generation-bar .ui-button > svg {
-  width: 16px;
-  height: 16px;
-}
-
-.media-generation-bar .ui-button:first-child > svg {
-  fill: currentColor;
 }
 
 .media-generation-seek {
@@ -1961,6 +1930,37 @@ button.chat-action-target:active,
   flex: none;
 }
 
+.media-generation-bar .ui-button > svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ui-button.media-generation-play > svg {
+  width: 22px;
+  height: 22px;
+  margin-inline-start: 2px;
+  fill: currentColor;
+}
+
+.chat-action-target-status-in-progress .ui-marker-icon svg {
+  animation: ui-spin 1s linear infinite;
+}
+
+.chat-action-target .ui-marker-icon,
+.chat-action-target .ui-marker-icon svg {
+  width: var(--openbot-icon-xs);
+  height: var(--openbot-icon-xs);
+  flex: 0 0 var(--openbot-icon-xs);
+}
+
+.chat-action-history-toggle[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.media-generation-bar .ui-button:first-child > svg {
+  fill: currentColor;
+}
+
 .pending-send-error {
   color: var(--openbot-text-muted);
   overflow-wrap: anywhere;
@@ -1985,6 +1985,14 @@ button.chat-action-target:active,
   order: -1;
 }
 
+.virtual-chat-row[data-next-grouped="agent"]
+  > .message-entry-agent:last-child
+  .message-shell
+  > .ui-bubble
+  > .ui-bubble-content {
+  border-end-start-radius: var(--openbot-radius-sm);
+}
+
 .virtual-chat-row[data-grouped="sender"]
   > .message-entry-agent:first-child
   .message-shell
@@ -1999,14 +2007,6 @@ button.chat-action-target:active,
   > .ui-bubble:first-child
   > .ui-bubble-content {
   border-start-end-radius: var(--openbot-radius-sm);
-}
-
-.virtual-chat-row[data-next-grouped="agent"]
-  > .message-entry-agent:last-child
-  .message-shell
-  > .ui-bubble
-  > .ui-bubble-content {
-  border-end-start-radius: var(--openbot-radius-sm);
 }
 
 .virtual-chat-row[data-next-grouped="user"]

@@ -226,7 +226,7 @@ export interface WfnBoard {
   stopStep?: ((id: string) => void) | undefined;
   running: () => boolean;
   toolbarBelow: (id: string, bar: { width: number; height: number }) => boolean;
-  decide: (id: string, approved: boolean) => void | Promise<unknown>;
+  decide: (id: string, approved: boolean) => undefined | Promise<unknown>;
   step: (id: string) => string | undefined;
   uploads: () => readonly StoredFileRow[];
   upload: (file: File) => Promise<StoredFileRow>;
@@ -298,7 +298,7 @@ export interface BoardOptions {
   stopStep?: (id: string) => void;
   running?: () => boolean;
   toolbarBelow?: (id: string, bar: { width: number; height: number }) => boolean;
-  decide?: (id: string, approved: boolean) => void | Promise<unknown>;
+  decide?: (id: string, approved: boolean) => undefined | Promise<unknown>;
   step?: (id: string) => string | undefined;
   locked?: readonly string[] | undefined;
   size?: (id: string) => WfnSize | undefined;

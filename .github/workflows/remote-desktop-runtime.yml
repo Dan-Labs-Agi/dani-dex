@@ -221,7 +221,13 @@ jobs:
         # Sunshine does not build with OpenSSL 4. Runner images since 2026-10-28 link openssl@4 into the
         # Homebrew prefix, where CMake finds it before the keg-only openssl@3.
         run: |
-          brew install cmake ninja node pkgconf icu4c@78 miniupnpc openssl@3 opus
+          brew install ninja node pkgconf icu4c@78 miniupnpc openssl@3 opus
+          # Sunshine's vendored Boost does not configure with CMake 4 (source_group rejects
+          # include/boost/locale.hpp against the include/boost/locale TREE). Pin the CMake 3.x
+          # line the published runtime artifacts were built with; Homebrew now ships 4.x.
+          curl -fsSL -o /tmp/cmake.tar.gz https://github.com/Kitware/CMake/releases/download/v3.31.8/cmake-3.31.8-macos-universal.tar.gz
+          tar -xzf /tmp/cmake.tar.gz -C /tmp
+          echo "/tmp/cmake-3.31.8-macos-universal/CMake.app/Contents/bin" >> "$GITHUB_PATH"
           if brew list openssl@4 >/dev/null 2>&1; then brew unlink openssl@4; fi
           brew link --force --overwrite openssl@3
 
