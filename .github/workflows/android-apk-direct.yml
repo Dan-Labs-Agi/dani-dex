@@ -91,6 +91,15 @@ jobs:
         working-directory: apps/mobile/android
         run: echo 'reactNativeArchitectures=arm64-v8a' >> gradle.properties
 
+      # Runner deaths lose the GitHub log and artifacts, so stream the Gradle log to the
+      # bucket while the build runs: the newest minute always survives at the diagnostics key.
+      - name: Stream the build log to R2
+        shell: bash
+        run: |
+          pip install --quiet boto3
+          nohup python3 scripts/stream-log-to-r2.py "$RUNNER_TEMP/gradle.log" "diagnostics/apk-build-${{ github.run_id }}-${{ github.run_attempt }}.log" > "$RUNNER_TEMP/log-stream.out" 2>&1 &
+          echo "streaming the Gradle log to diagnostics/apk-build-${{ github.run_id }}-${{ github.run_attempt }}.log"
+
       - name: Assemble the release APK
         working-directory: apps/mobile/android
         shell: bash
