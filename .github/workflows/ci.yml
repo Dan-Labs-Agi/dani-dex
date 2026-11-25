@@ -96,7 +96,7 @@ jobs:
             echo "docs=false" >> "$GITHUB_OUTPUT"
           fi
           lane_unless desktop '^(apps/(auth-api|mobile|mobile-updates|site-router|status)|docker|remote)/'
-          lane api '^(apps/(auth-api|site-router)|src/renderer|resources)/|^(apps/mobile/)?CHANGELOG\.md$'
+          lane api '^(apps/(auth-api|site-router)|src/renderer|resources)/|^CHANGELOG\.md$'
           lane remote '^(remote|scripts)/'
           lane storybook '^(src|apps/(auth-api|status)|config/storybook|resources|marketplace|build)/'
           lane schema '^(src/backend/|scripts/released-schema-fixtures\.ts$)'
@@ -1247,18 +1247,12 @@ jobs:
           install: ignore-scripts
 
       - parallel:
-          - name: Typecheck mobile
-            run: bun run mobile:typecheck
-
           - name: Typecheck team client
             run: bun run typecheck:team-client
 
       - parallel:
           - name: Typecheck site router
             run: bun run typecheck:sites
-
-          - name: Typecheck mobile update server
-            run: bun run typecheck:updates
 
           - name: Typecheck remote API
             run: bun run typecheck:remote
