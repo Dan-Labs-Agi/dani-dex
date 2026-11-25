@@ -7,6 +7,8 @@ name: Build the Android APK directly
 # the project once, or the non-interactive build below fails asking for a keystore).
 
 on:
+  push:
+    branches: [fix/main-ci-green]
   workflow_dispatch:
     inputs:
       version:
@@ -24,7 +26,7 @@ concurrency:
 jobs:
   apk:
     name: Build and release the signed APK
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[build-apk]')
     runs-on: ubuntu-24.04
     timeout-minutes: 90
     environment: release-android
