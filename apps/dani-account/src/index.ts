@@ -210,7 +210,7 @@ export default {
     const url = new URL(req.url);
     const p = url.pathname;
     if (p === "/healthz") return json({ ok: true });
-    if (p === "/health/live" && req.method === "GET") return json({ service: "openbot-auth-api", status: "ok" });
+    if (p === "/health/live" && req.method === "GET") return json({ service: "dani-auth-api", status: "ok" });
     if (p === "/v1/releases" && req.method === "GET") {
       // Public release feed for the landing page and in-app updater (CORS open, read only).
       const cors = { "access-control-allow-origin": "*", "cache-control": "public, max-age=60" };
