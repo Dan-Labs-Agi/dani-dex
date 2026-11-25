@@ -93,11 +93,22 @@ jobs:
 
       - name: Assemble the release APK
         working-directory: apps/mobile/android
+        shell: bash
         run: |
-          ./gradlew assembleRelease --no-daemon --max-workers=1
+          set -o pipefail
+          ./gradlew assembleRelease --no-daemon --max-workers=1 --console=plain 2>&1 | tee "$RUNNER_TEMP/gradle.log"
           APK_PATH="$RUNNER_TEMP/dani-dex.apk"
           cp app/build/outputs/apk/release/app-release.apk "$APK_PATH"
           ls -la "$APK_PATH"
+
+      - name: Save the Gradle log on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: gradle-log-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/gradle.log
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Save the APK as an artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
