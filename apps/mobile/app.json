@@ -270,7 +270,7 @@
       "policy": "fingerprint"
     },
     "updates": {
-      "url": "https://updates.openbot.run/manifest",
+      "url": "https://dl.dani.danlab.dev/android/latest.json",
       "codeSigningCertificate": "./certs/certificate.pem",
       "codeSigningMetadata": {
         "keyid": "main",
