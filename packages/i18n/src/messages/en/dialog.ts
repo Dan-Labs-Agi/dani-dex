@@ -20,9 +20,9 @@ export const messages = defineMessages("dialog", {
   "dialog.saveExportSkill": "Save the export skill",
   "dialog.saveTransfer": "Save the transfer file",
   "dialog.chooseTransfer": "Choose a transfer file",
-  "dialog.filter.transfer": "dani-dex transfer files",
+  "dialog.filter.transfer": "Dani Dex transfer files",
   "dialog.saveWorkflow": "Save the workflow file",
-  "dialog.filter.workflow": "dani-dex workflow files",
+  "dialog.filter.workflow": "Dani Dex workflow files",
   "dialog.chooseExternalLinkApp": "Choose a browser",
   "dialog.filter.applications": "Applications",
 });

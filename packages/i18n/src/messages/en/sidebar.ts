@@ -137,7 +137,7 @@ export const messages = defineMessages("sidebar", {
   "sidebar.delete.pending": "Deleting…",
   "sidebar.delete.title": "Delete {name}?",
   "sidebar.delete.agentDescription":
-    "This removes the agent and its dani-dex conversation from the app. Its queue, memories, routines, and workspace are deleted. History stored separately by the connected CLI provider is not deleted.",
+    "This removes the agent and its Dani Dex conversation from the app. Its queue, memories, routines, and workspace are deleted. History stored separately by the connected CLI provider is not deleted.",
   "sidebar.delete.channelDescription":
     "This stops the channel. Its history stays in Deleted channels for preview only. You can restore it from there. Member agents are kept.",
   "sidebar.delete.sectionDescription":
@@ -178,6 +178,6 @@ export const messages = defineMessages("sidebar", {
   "sidebar.community.title": "Pull up a chair.",
   "sidebar.community.body": "There’s a place for you in the AI future. Join the community on Discord and X.",
   "sidebar.community.joinDiscord": "Join the Discord",
-  "sidebar.community.followX": "Follow dani-dex on X",
+  "sidebar.community.followX": "Follow Dani Dex on X",
   "sidebar.community.dismiss": "Dismiss the community invitation",
 });

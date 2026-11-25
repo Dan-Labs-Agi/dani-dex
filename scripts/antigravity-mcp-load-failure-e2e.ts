@@ -500,7 +500,7 @@ try {
   const missed = await runTurn(never.listClient, never.threadId, plain);
   report.turns.toolsNotListed = missed;
   assert.equal(missed.status, "failed", "A turn without dani-dex's tools fails.");
-  assert.match(missed.error ?? "", /without dani-dex's tools/u, "The error says that the tools were missing.");
+  assert.match(missed.error ?? "", /without Dani Dex's tools/u, "The error says that the tools were missing.");
   assert.doesNotMatch(missed.error ?? "", /MCP|policy|admin/u, "The error has no protocol words.");
   assert.equal(missed.reply, "OK", "The answer of the turn stays.");
   const missedCause = listCauses.get(never.threadId) ?? null;

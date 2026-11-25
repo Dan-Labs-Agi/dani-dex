@@ -5,19 +5,19 @@ export const messages = {
   "error.messaging.notConnected": "Deze Slack-werkruimte is niet verbonden.",
   "error.messaging.unsupported": "Deze computer kan geen verbinding maken met Slack.",
   "error.messaging.relayUnavailable":
-    "dani-dex kan op deze computer geen Slack-events ontvangen. Log in, geef deze computer een naam en probeer het opnieuw.",
+    "Dani Dex kan op deze computer geen Slack-events ontvangen. Log in, geef deze computer een naam en probeer het opnieuw.",
   "error.messaging.discordNotConnected": "Deze Discord-server is niet verbonden.",
   "error.messaging.discordUnsupported": "Deze computer kan geen verbinding maken met Discord.",
   "error.messaging.discordRelayUnavailable":
-    "dani-dex kan op deze computer geen Discord-events ontvangen. Log in, geef deze computer een naam en probeer het opnieuw.",
-  "error.messaging.discordRolesUnsupported": "dani-dex kan nog geen Discord-rollen tonen. Probeer het later opnieuw.",
+    "Dani Dex kan op deze computer geen Discord-events ontvangen. Log in, geef deze computer een naam en probeer het opnieuw.",
+  "error.messaging.discordRolesUnsupported": "Dani Dex kan nog geen Discord-rollen tonen. Probeer het later opnieuw.",
   "error.messaging.telegramNotConnected": "Deze Telegram-chat is niet verbonden.",
   "error.messaging.telegramUnsupported": "Deze computer kan geen verbinding maken met Telegram.",
   "error.messaging.telegramRelayUnavailable":
-    "dani-dex kan Telegram niet bereiken op deze computer. Log in, geef deze computer een naam en probeer het opnieuw.",
+    "Dani Dex kan Telegram niet bereiken op deze computer. Log in, geef deze computer een naam en probeer het opnieuw.",
   "error.messaging.telegramRelayUnreachable":
-    "dani-dex kan vanaf deze computer geen verbinding maken met zijn dienst. Controleer de internetverbinding, de VPN, de proxy of de firewall en probeer het opnieuw.",
-  "error.messaging.telegramServiceUnavailable": "dani-dex kan Telegram nu niet verbinden. Probeer het later opnieuw.",
+    "Dani Dex kan vanaf deze computer geen verbinding maken met zijn dienst. Controleer de internetverbinding, de VPN, de proxy of de firewall en probeer het opnieuw.",
+  "error.messaging.telegramServiceUnavailable": "Dani Dex kan Telegram nu niet verbinden. Probeer het later opnieuw.",
   "error.messaging.whatsappNotConnected": "Dit WhatsApp-nummer is niet verbonden.",
   "error.messaging.whatsappUnsupported": "Deze computer kan geen verbinding maken met WhatsApp.",
   "error.messaging.whatsappTooManySenders": "Een WhatsApp-nummer kan maximaal 200 contacten en groepen toestaan.",

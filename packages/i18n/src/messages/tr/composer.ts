@@ -72,12 +72,12 @@ export const messages = {
   "composer.voice.transcribing": "Sesli istem metne dönüştürülüyor",
   "composer.voice.start": "Sesle istem oluştur",
   "composer.voice.blocked":
-    "Mikrofon erişimi engellendi. Sistem ayarlarından dani-dex'un mikrofonu kullanmasına izin verin.",
+    "Mikrofon erişimi engellendi. Sistem ayarlarından Dani Dex'un mikrofonu kullanmasına izin verin.",
   "composer.voice.noMicrophone": "Kullanılabilir mikrofon yok.",
-  "composer.voice.startFailed": "dani-dex ses kaydını başlatamadı.",
+  "composer.voice.startFailed": "Dani Dex ses kaydını başlatamadı.",
   "composer.voice.microphoneUnavailable":
-    "dani-dex mikrofonu açamadı. Mikrofonu kullanan diğer uygulamaları kapatın, bağlı olduğundan ve sistem ayarlarında izin verildiğinden emin olun, sonra tekrar deneyin.",
-  "composer.voice.transcribeFailed": "dani-dex bu kaydı metne dönüştüremedi.",
+    "Dani Dex mikrofonu açamadı. Mikrofonu kullanan diğer uygulamaları kapatın, bağlı olduğundan ve sistem ayarlarında izin verildiğinden emin olun, sonra tekrar deneyin.",
+  "composer.voice.transcribeFailed": "Dani Dex bu kaydı metne dönüştüremedi.",
   "composer.reply.toYou": "Mesajınıza yanıt veriliyor",
   "composer.reply.toAgent": "Ajana yanıt veriliyor",
   "composer.reply.attachment": "Ek",

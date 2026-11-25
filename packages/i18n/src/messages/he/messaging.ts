@@ -3,18 +3,18 @@ import type { messages as source } from "../en/messaging";
 
 export const messages = {
   "messaging.help.invalid_token":
-    "Slack כבר לא מקבל את dani-dex בסביבת העבודה הזאת. ייתכן שהוא הוסר. יש לחבר את סביבת העבודה מחדש.",
+    "Slack כבר לא מקבל את Dani Dex בסביבת העבודה הזאת. ייתכן שהוא הוסר. יש לחבר את סביבת העבודה מחדש.",
   "messaging.help.secret_storage_unavailable":
-    "dani-dex לא יכול לקרוא את האסימונים השמורים במחשב הזה. יש לנתק את סביבת העבודה ואז לחבר אותה מחדש.",
+    "Dani Dex לא יכול לקרוא את האסימונים השמורים במחשב הזה. יש לנתק את סביבת העבודה ואז לחבר אותה מחדש.",
   "messaging.help.relay_unavailable":
-    "dani-dex לא יכול לקבל אירועי Slack במחשב הזה. יש להתחבר, לתת למחשב הזה שם בהגדרות השרת ולהשאיר את dani-dex פתוח.",
+    "Dani Dex לא יכול לקבל אירועי Slack במחשב הזה. יש להתחבר, לתת למחשב הזה שם בהגדרות השרת ולהשאיר את Dani Dex פתוח.",
   "messaging.help.not_linked": 'סביבת העבודה הזו לא מקושרת לשרת הזה. בחרו "חיבור מחדש" כדי לקשר אותה.',
   "messaging.discordHelp.invalid_token":
-    "Discord כבר לא מקבל את dani-dex בשרת ה-Discord הזה. ייתכן שהוא הוסר. יש לחבר את שרת ה-Discord מחדש.",
+    "Discord כבר לא מקבל את Dani Dex בשרת ה-Discord הזה. ייתכן שהוא הוסר. יש לחבר את שרת ה-Discord מחדש.",
   "messaging.discordHelp.secret_storage_unavailable":
-    "dani-dex לא יכול לקרוא את האסימונים השמורים במחשב הזה. יש לנתק את שרת ה-Discord ואז לחבר אותו מחדש.",
+    "Dani Dex לא יכול לקרוא את האסימונים השמורים במחשב הזה. יש לנתק את שרת ה-Discord ואז לחבר אותו מחדש.",
   "messaging.discordHelp.relay_unavailable":
-    "dani-dex לא יכול לקבל אירועי Discord במחשב הזה. יש להתחבר, לתת למחשב הזה שם בהגדרות השרת ולהשאיר את dani-dex פתוח.",
+    "Dani Dex לא יכול לקבל אירועי Discord במחשב הזה. יש להתחבר, לתת למחשב הזה שם בהגדרות השרת ולהשאיר את Dani Dex פתוח.",
   "messaging.discordHelp.not_linked":
     'שרת ה-Discord הזה לא מקושר לשרת ה-dani-dex הזה. בחרו "חיבור מחדש" כדי לקשר אותו.',
 } as const satisfies PartialTranslation<typeof source>;

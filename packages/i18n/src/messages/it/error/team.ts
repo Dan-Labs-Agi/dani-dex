@@ -2,14 +2,14 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/team";
 
 export const messages = {
-  "error.team.ownerNotLinked": "Questo host non è collegato a un account proprietario di dani-dex.",
-  "error.team.ownerEmailRequired": "Accedi con l'email dani-dex che ha creato questo host.",
+  "error.team.ownerNotLinked": "Questo host non è collegato a un account proprietario di Dani Dex.",
+  "error.team.ownerEmailRequired": "Accedi con l'email Dani Dex che ha creato questo host.",
   "error.team.hostNotConfigured": "L'host del team non è configurato.",
   "error.team.alreadyConfigured": "Il server del team è già configurato.",
   "error.team.identityCreateFailed": "Non è stato possibile creare l'identità del team.",
   "error.team.accountChangedDuringCreate":
     "L'account con cui hai effettuato l'accesso è cambiato durante la creazione del server.",
-  "error.team.notConfigured": "Questo dani-dex non è stato configurato.",
+  "error.team.notConfigured": "Questo Dani Dex non è stato configurato.",
   "error.team.keyRotationMissing": "Nessun cambio della chiave del server è in attesa.",
   "error.team.serverNotActive": "Questo server non è più quello attivo per l'account con cui hai effettuato l'accesso.",
   "error.team.logoInvalid": "Scegli un'immagine PNG, JPEG o WebP valida, fino a 512 KB.",
@@ -24,9 +24,9 @@ export const messages = {
   "error.team.inviteEmailMismatch": "Questo invito appartiene a un altro indirizzo email.",
   "error.team.memberDisabled": "Questo membro del team è disattivato.",
   "error.team.memberLimit": "Un host può avere fino a {limit} membri.",
-  "error.team.accountNotMember": "Questo account dani-dex non è membro del team.",
+  "error.team.accountNotMember": "Questo account Dani Dex non è membro del team.",
   "error.team.usernameTaken": "Questo nome utente è già in uso.",
-  "error.team.inviteRequiresAccount": "Questo invito richiede un account dani-dex verificato.",
+  "error.team.inviteRequiresAccount": "Questo invito richiede un account Dani Dex verificato.",
   "error.team.loginIncorrect": "Nome utente o password non corretti.",
   "error.team.currentPasswordIncorrect": "La password attuale non è corretta.",
   "error.team.memberNotFound": "Membro del team non trovato.",
@@ -49,22 +49,22 @@ export const messages = {
     "Il nome utente deve contenere da 3 a 32 tra lettere, numeri, punti, trattini o trattini bassi.",
   "error.team.passwordLength": "La password deve contenere da 12 a 256 caratteri.",
   "error.team.bindFailed": "Impossibile mettere in ascolto l'API del team.",
-  "error.team.signInRequired": "È necessario accedere a dani-dex.",
+  "error.team.signInRequired": "È necessario accedere a Dani Dex.",
   "error.team.authenticationRequired": "Autenticazione richiesta.",
   "error.team.agentNotFound": "Agente non trovato.",
   "error.team.routeNotFound": "Percorso non trovato.",
   "error.team.requestFailed": "Richiesta non riuscita.",
   "error.team.tooManySignInAttempts": "Troppi tentativi di accesso. Riprova più tardi.",
-  "error.team.clientUpdateRequired": "Aggiorna questo client dani-dex prima di connetterti a questo host.",
-  "error.team.hostUpdateRequired": "Aggiorna dani-dex sull'host prima di connetterti.",
-  "error.team.serverSafeMode": "Questo server è in modalità provvisoria perché dani-dex non si avvia.",
+  "error.team.clientUpdateRequired": "Aggiorna questo client Dani Dex prima di connetterti a questo host.",
+  "error.team.hostUpdateRequired": "Aggiorna Dani Dex sull'host prima di connetterti.",
+  "error.team.serverSafeMode": "Questo server è in modalità provvisoria perché Dani Dex non si avvia.",
   "error.team.serverSafeModeNewerDatabase":
-    "dani-dex {version} su questo server non può aprire i suoi dati perché una versione più recente di dani-dex li ha salvati. Una versione più recente di dani-dex sul server risolve il problema.",
+    "Dani Dex {version} su questo server non può aprire i suoi dati perché una versione più recente di Dani Dex li ha salvati. Una versione più recente di Dani Dex sul server risolve il problema.",
   "error.team.serverSafeModeStartFailed":
-    "dani-dex {version} su questo server si è fermato dopo molti avvii non riusciti. Una versione più recente di dani-dex sul server risolve il problema.",
+    "Dani Dex {version} su questo server si è fermato dopo molti avvii non riusciti. Una versione più recente di Dani Dex sul server risolve il problema.",
   "error.team.sidebarLayoutUnavailable": "Il layout della barra laterale non è disponibile.",
   "error.team.providersUnsupported": "Le impostazioni dei provider non sono supportate da questa connessione.",
-  "error.team.providerNotManaged": "dani-dex non gestisce la CLI di questo provider.",
+  "error.team.providerNotManaged": "Dani Dex non gestisce la CLI di questo provider.",
   "error.team.channelsUnsupported": "Le chat dei canali non sono supportate da questa connessione.",
   "error.team.channelContextUnsupported":
     "Questa connessione non supporta una nuova conversazione né la compattazione in un canale.",
@@ -105,9 +105,9 @@ export const messages = {
   "error.team.libraryFoldersUnsupported": "Le cartelle della Libreria non sono supportate da questa connessione.",
   "error.team.workflowFoldersUnsupported": "Questa connessione non supporta le cartelle di workflow.",
   "error.team.agentNotificationLevelsUnsupported":
-    "Questo server non può salvare il tuo livello di notifiche per ogni agente. Aggiorna dani-dex sul computer che lo esegue.",
+    "Questo server non può salvare il tuo livello di notifiche per ogni agente. Aggiorna Dani Dex sul computer che lo esegue.",
   "error.team.sidebarPinsUnsupported":
-    "Questo server non può salvare le chat fissate per tutti i tuoi dispositivi. Aggiorna dani-dex sul computer che lo esegue.",
+    "Questo server non può salvare le chat fissate per tutti i tuoi dispositivi. Aggiorna Dani Dex sul computer che lo esegue.",
   "error.team.agentInstructionsUnsupported":
     "La modifica delle istruzioni degli agenti non è supportata da questa connessione.",
   "error.team.agentPublishUnsupported": "La pubblicazione di agenti non è supportata da questa connessione.",
@@ -121,9 +121,9 @@ export const messages = {
   "error.team.threadMessageSearchUnsupported": "Questa connessione non supporta la ricerca nei thread secondari.",
   "error.team.sideQuestionUnsupported": "Questa connessione non supporta le domande a parte.",
   "error.team.liveVoiceUnsupported":
-    "Questo server non supporta la voce dal vivo di Codex. Aggiorna dani-dex sul computer che lo esegue.",
+    "Questo server non supporta la voce dal vivo di Codex. Aggiorna Dani Dex sul computer che lo esegue.",
   "error.team.routineFlowsUnsupported":
-    "Questo server non supporta i flussi di routine. Aggiorna dani-dex sul computer che lo esegue.",
+    "Questo server non supporta i flussi di routine. Aggiorna Dani Dex sul computer che lo esegue.",
   "error.team.routineCanvasTooLarge":
     "La tela di questa routine è troppo grande per essere inviata a questo dispositivo. Accorcia le istruzioni della routine sul computer che esegue il server.",
   "error.team.conversationPageTooLarge":
@@ -171,15 +171,15 @@ export const messages = {
   "error.team.browserSessionNotFound": "Sessione della vista del browser non trovata.",
   "error.team.mcpUnsupported": "I server MCP non sono supportati da questa connessione.",
   "error.team.mcpServerListNeedsUpdate":
-    "Aggiorna dani-dex su questo dispositivo per usare più di {limit} server MCP su questo server.",
+    "Aggiorna Dani Dex su questo dispositivo per usare più di {limit} server MCP su questo server.",
   "error.team.providerAccountListNeedsUpdate":
-    "Aggiorna dani-dex su questo dispositivo per usare più di {limit} account di un provider su questo server.",
+    "Aggiorna Dani Dex su questo dispositivo per usare più di {limit} account di un provider su questo server.",
   "error.team.storageUnsupported": "L'archiviazione non è supportata da questa connessione.",
   "error.team.machineResourcesUnsupported": "L'uso della macchina non è supportato da questa connessione.",
   "error.team.machineAlertMemberInvalid":
     "Solo un proprietario o un amministratore di questo server può ricevere gli avvisi della macchina.",
   "error.team.hostedSitesUnsupported": "I siti non sono supportati da questa connessione.",
-  "error.team.hostedSitesUnregistered": "Questo server non è registrato con dani-dex, quindi non ha siti.",
+  "error.team.hostedSitesUnregistered": "Questo server non è registrato con Dani Dex, quindi non ha siti.",
   "error.team.hostedSiteNotFound": "Sito non trovato.",
   "error.team.markUnreadUnsupported": "Questo client non supporta il segno «non letta» sulle conversazioni.",
   "error.team.inviteServiceUnavailable": "Il servizio inviti non è disponibile.",
@@ -204,12 +204,12 @@ export const messages = {
     "Solo la persona che ha aggiunto questo server MCP, o un amministratore, può modificarlo.",
   "error.team.ownerRequired": "Solo il proprietario di questo server può farlo.",
   "error.team.requestTooLarge": "Il corpo della richiesta è troppo grande.",
-  "error.team.signInRelayUnsupported": "Questo server non può inoltrare gli accessi. Aggiorna dani-dex sull'host.",
+  "error.team.signInRelayUnsupported": "Questo server non può inoltrare gli accessi. Aggiorna Dani Dex sull'host.",
   "error.team.connectorsUnsupported":
-    "Questo server non può gestire le proprie connessioni da qui. Aggiorna dani-dex sull'host.",
+    "Questo server non può gestire le proprie connessioni da qui. Aggiorna Dani Dex sull'host.",
   "error.team.discordAccessUnsupported":
-    "Questo server non può impostare i ruoli di Discord. Aggiorna dani-dex sul server.",
-  "error.team.connectorPageRefused": "Il server ha inviato una pagina che dani-dex non apre.",
+    "Questo server non può impostare i ruoli di Discord. Aggiorna Dani Dex sul server.",
+  "error.team.connectorPageRefused": "Il server ha inviato una pagina che Dani Dex non apre.",
   "error.team.signInRelayUnknown": "Questo accesso è terminato o non esiste.",
   "error.team.signInRelayUsed": "Questo accesso è già stato inviato.",
   "error.team.signInRelayMismatch": "Questo indirizzo non appartiene a questo accesso.",

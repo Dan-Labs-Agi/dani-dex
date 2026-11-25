@@ -55,10 +55,10 @@ export const messages = {
   "browser.pip.reattach": "ブラウザーを右のサイドバーに戻す",
   "browser.pip.reattachTitle": "ブラウザーを戻す",
   "browser.pip.close": "ブラウザーのポップアップを閉じる",
-  "browser.pip.reattachFailed": "dani-dex はブラウザーをサイドバーに戻せませんでした。",
-  "browser.pip.closeFailed": "dani-dex はブラウザーのポップアップを閉じられませんでした。",
+  "browser.pip.reattachFailed": "Dani Dex はブラウザーをサイドバーに戻せませんでした。",
+  "browser.pip.closeFailed": "Dani Dex はブラウザーのポップアップを閉じられませんでした。",
   "browser.window.open": "ブラウザーを新しいウィンドウで開く",
-  "browser.window.openFailed": "dani-dex はブラウザーのウィンドウを開けませんでした。",
+  "browser.window.openFailed": "Dani Dex はブラウザーのウィンドウを開けませんでした。",
   "browser.popupBlocked.title": "ポップアップがブロックされました",
   "browser.popupBlocked.dismiss": "ポップアップのメッセージを閉じる",
   "browser.liveView.label": "サーバー上のページのライブビュー",
@@ -95,17 +95,17 @@ export const messages = {
   "browser.secret.failed": "リクエストを完了できませんでした。接続を確認して、もう一度お試しください。",
   "browser.secret.ended": "このサインインのリクエストは終了しました。エージェントにもう一度試すよう依頼してください。",
   "browser.secret.vaultSkip.agentScript":
-    "エージェントがこのページでスクリプトを実行したため、dani-dex は保存したログイン情報を使いませんでした。使うには、ページを再読み込みしてもう一度試すようにエージェントに頼んでください。",
+    "エージェントがこのページでスクリプトを実行したため、Dani Dex は保存したログイン情報を使いませんでした。使うには、ページを再読み込みしてもう一度試すようにエージェントに頼んでください。",
   "browser.secret.vaultSkip.fieldKind":
-    "エージェントがページ上の違う欄を選んだため、dani-dex は保存したログイン情報を使いませんでした。",
+    "エージェントがページ上の違う欄を選んだため、Dani Dex は保存したログイン情報を使いませんでした。",
   "browser.secret.vaultSkip.loginChoice":
-    "エージェントがこのサイトの保存済みログイン情報を選ばなかったため、dani-dex は保存したログイン情報を使いませんでした。どのアカウントを使うかエージェントに伝えてください。",
+    "エージェントがこのサイトの保存済みログイン情報を選ばなかったため、Dani Dex は保存したログイン情報を使いませんでした。どのアカウントを使うかエージェントに伝えてください。",
   "browser.secret.vaultSkip.noPassword":
-    "このサイトのパスワードがないため、dani-dex は保存したログイン情報を使いませんでした。",
+    "このサイトのパスワードがないため、Dani Dex は保存したログイン情報を使いませんでした。",
   "browser.secret.vaultSkip.noAuthenticatorKey":
-    "認証アプリのキーがないため、dani-dex は保存したログイン情報を使いませんでした。",
+    "認証アプリのキーがないため、Dani Dex は保存したログイン情報を使いませんでした。",
   "browser.secret.vaultSkip.vaultUnreadable":
-    "パスワードマネージャーを読み取れなかったため、dani-dex は保存したログイン情報を使いませんでした。",
+    "パスワードマネージャーを読み取れなかったため、Dani Dex は保存したログイン情報を使いませんでした。",
   "browser.error.openAddress": "このタブでアドレスを開けませんでした。",
   "browser.error.channelNoBrowserMember": "このチャンネルでは、新しいタブを開けるメンバーがいません。",
   "browser.error.closeTab": "ブラウザーのタブを閉じられませんでした。",
@@ -162,22 +162,22 @@ export const messages = {
   "browser.signIn.local": "このコンピュータでサインイン",
   "browser.signIn.title": "{site} にサインイン",
   "browser.signIn.description":
-    "一部のサイトはサーバーからのサインインを拒否します。このコンピュータでサインインすると、dani-dex が {site} のサインインを {server} に送信します。{server} のすべてのエージェントとメンバーがブラウザでそれを使用できます。",
+    "一部のサイトはサーバーからのサインインを拒否します。このコンピュータでサインインすると、Dani Dex が {site} のサインインを {server} に送信します。{server} のすべてのエージェントとメンバーがブラウザでそれを使用できます。",
   "browser.signIn.windowOpen":
-    "開いたウィンドウでサインインしてください。サインインが完了すると、dani-dex が送信します。ウィンドウが開いたままの場合は、完了を選択してください。",
+    "開いたウィンドウでサインインしてください。サインインが完了すると、Dani Dex が送信します。ウィンドウが開いたままの場合は、完了を選択してください。",
   "browser.signIn.windowClosed":
     "サインインウィンドウは閉じています。完了を選択してサインインを送信するか、ウィンドウをもう一度開いてください。",
   "browser.signIn.reopen": "サインインウィンドウを開く",
   "browser.signIn.sending": "{server} に送信中…",
   "browser.signIn.sent": "{server} で {site} にサインインしました",
   "browser.signIn.notFound":
-    "dani-dex は {site} のサインインを見つけられませんでした。ウィンドウでサインインしてから、完了を選択してください。",
+    "Dani Dex は {site} のサインインを見つけられませんでした。ウィンドウでサインインしてから、完了を選択してください。",
   "browser.signIn.stillSignedOut":
     "{server} にはまだ {site} のサインインページが表示されています。ウィンドウでサインインを完了してください。",
-  "browser.signIn.failed": "dani-dex はサインインを送信できませんでした。",
+  "browser.signIn.failed": "Dani Dex はサインインを送信できませんでした。",
   "browser.profiles.title": "ブラウザープロファイル",
   "browser.profiles.subtitle":
-    "各プロファイルは、専用のサインイン、Cookie、サイトデータを dani-dex を実行しているコンピューターに保持します。",
+    "各プロファイルは、専用のサインイン、Cookie、サイトデータを Dani Dex を実行しているコンピューターに保持します。",
   "browser.profiles.label": "ブラウザープロファイル",
   "browser.profiles.newName": "プロファイル名",
   "browser.profiles.create": "追加",
@@ -196,8 +196,8 @@ export const messages = {
   "browser.profiles.deleteDescription":
     "プロファイルのサインイン、Cookie、サイトデータを削除します。開いているタブは閉じます。",
   "browser.profiles.deleteAgents": "次のエージェントは共有プロファイルに切り替わります: {agents}。",
-  "browser.profiles.failed": "dani-dex はブラウザープロファイルを変更できませんでした。",
-  "browser.profiles.loadFailed": "dani-dex はブラウザープロファイルを読み込めませんでした。",
+  "browser.profiles.failed": "Dani Dex はブラウザープロファイルを変更できませんでした。",
+  "browser.profiles.loadFailed": "Dani Dex はブラウザープロファイルを読み込めませんでした。",
   "browser.profiles.tabLabel": "プロファイル: {name}",
   "browser.profiles.tabLabelProxy": "プロファイル: {name} · プロキシ: {proxy}",
   "browser.profiles.agentTabLabel": "エージェント専用のプロファイル",
@@ -212,7 +212,7 @@ export const messages = {
   "browser.proxies.addTitle": "プロキシを追加",
   "browser.proxies.editTitle": "{name} を編集",
   "browser.proxies.dialogDescription":
-    "socks5、http、https を使用できます。ユーザー名とパスワードはどの種類でも任意です。パスワードは dani-dex を実行しているコンピューターに暗号化して保存されます。",
+    "socks5、http、https を使用できます。ユーザー名とパスワードはどの種類でも任意です。パスワードは Dani Dex を実行しているコンピューターに暗号化して保存されます。",
   "browser.proxies.address": "アドレス",
   "browser.proxies.addressPlaceholder": "socks5://user:password@host:1080",
   "browser.proxies.deleteUsed": {
@@ -221,7 +221,7 @@ export const messages = {
   "browser.proxies.deleteUnused": "このプロキシを使用しているプロファイルはありません。",
   "browser.proxies.failing": "{name} が応答しません",
   "browser.proxies.signInRefused": "{name} がサインインを拒否しました",
-  "browser.proxies.unsupported": "このサーバーではプロキシを使用できません。サーバーの dani-dex を更新してください。",
+  "browser.proxies.unsupported": "このサーバーではプロキシを使用できません。サーバーの Dani Dex を更新してください。",
   "browser.proxies.yourComputer": "あなたのコンピュータ",
   "browser.proxies.memberComputer": "{name} のコンピュータ",
   "browser.proxies.unknownComputer": "メンバーのコンピュータ",
@@ -232,7 +232,7 @@ export const messages = {
   "browser.proxies.offlineBadge": "{name} はオフラインです",
   "browser.proxies.shareTitle": "このコンピュータの接続を共有しますか？",
   "browser.proxies.shareDescription":
-    "あなたのコンピュータを使用するプロファイルは、このコンピュータのインターネット接続を通じて公開サイトを開きます。これは、ここで dani-dex が開いている間だけ機能します。サーバーはローカルネットワーク上のアドレスを開けません。",
+    "あなたのコンピュータを使用するプロファイルは、このコンピュータのインターネット接続を通じて公開サイトを開きます。これは、ここで Dani Dex が開いている間だけ機能します。サーバーはローカルネットワーク上のアドレスを開けません。",
   "browser.proxies.share": "共有",
   "browser.proxies.stopSharing": "共有を停止",
   "browser.proxies.closesTabs": {

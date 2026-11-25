@@ -21,7 +21,7 @@ export const messages = {
   "error.agent.toolCallUnknownToolSuggest":
     "A ferramenta não foi executada. tool_call não encontrou nenhuma ferramenta com este nome. O nome qualificado talvez seja {name}. Se for, envie a chamada novamente com esse nome.",
   "error.agent.toolDescribeUnknownNames":
-    "tool_describe não encontrou nenhuma ferramenta do dani-dex chamada {names}. Ele descreve só as ferramentas do dani-dex e do navegador que openbot.tool_search lista, não as ferramentas MCP.",
+    "tool_describe não encontrou nenhuma ferramenta do Dani Dex chamada {names}. Ele descreve só as ferramentas do Dani Dex e do navegador que openbot.tool_search lista, não as ferramentas MCP.",
   "error.agent.toolDescribeDiscoveryNames":
     "Chame {names} diretamente. tool_describe não descreve as ferramentas de busca.",
   "error.agent.routineScheduleArgumentsInvalid":
@@ -43,7 +43,7 @@ export const messages = {
   "error.agent.instructionsTooLarge":
     "O arquivo de instruções é grande demais para abrir aqui. Encurte-o em um editor de texto.",
   "error.agent.instructionsOutside":
-    "O arquivo de instruções aponta para um local fora do espaço de trabalho do agente, então o dani-dex não o abre.",
+    "O arquivo de instruções aponta para um local fora do espaço de trabalho do agente, então o Dani Dex não o abre.",
   "error.agent.instructionsReadFailed": "Não foi possível ler o arquivo de instruções.",
   "error.agent.instructionsSaveFailed": "Não foi possível salvar o arquivo de instruções.",
   "error.agent.profileGenerationBusy": "A geração de perfil já está em andamento. Tente novamente em instantes.",
@@ -99,17 +99,17 @@ export const messages = {
   "error.agent.changedWhileDuplicating": "O agente mudou durante a duplicação. Tente novamente.",
   "error.agent.duplicatedAgentGone": "O agente duplicado não existe mais.",
   "error.agent.stateCorrupt":
-    "O estado dos agentes está corrompido ou é de uma versão mais recente do dani-dex; ele não será sobrescrito.",
+    "O estado dos agentes está corrompido ou é de uma versão mais recente do Dani Dex; ele não será sobrescrito.",
   "error.agent.oldRoleField":
-    "Os perfis de agente salvos usam o campo de função antigo; atualize os dados antes de iniciar o dani-dex.",
+    "Os perfis de agente salvos usam o campo de função antigo; atualize os dados antes de iniciar o Dani Dex.",
   "error.agent.duplicateIds": "O estado dos agentes contém IDs de agente duplicados; ele não será sobrescrito.",
-  "error.agent.copyNameFailed": "O dani-dex não conseguiu criar um nome exclusivo para a cópia do agente.",
+  "error.agent.copyNameFailed": "O Dani Dex não conseguiu criar um nome exclusivo para a cópia do agente.",
   "error.agent.endpointRemoved": "O endpoint usado por este agente foi removido. Escolha outro modelo para ele.",
   "error.agent.turnStalled":
-    "{provider} parou de responder, então o dani-dex encerrou este turno. Envie a mensagem novamente ou escolha outro modelo.",
+    "{provider} parou de responder, então o Dani Dex encerrou este turno. Envie a mensagem novamente ou escolha outro modelo.",
   "error.agent.promptCancelled": "{provider} cancelou esta mensagem antes de ela começar. Envie a mensagem novamente.",
   "error.agent.toolLoopStopped":
-    "{provider} repetiu muitas vezes uma etapa que falhou, então o dani-dex parou este turno. Envie a mensagem de novo ou escolha outro modelo.",
+    "{provider} repetiu muitas vezes uma etapa que falhou, então o Dani Dex parou este turno. Envie a mensagem de novo ou escolha outro modelo.",
   "error.agent.answerCutOff":
     "O agente parou antes de terminar a resposta, então a resposta não está completa. Envie a mensagem de novo.",
   "error.agent.compactionConnectionLost":
@@ -117,7 +117,7 @@ export const messages = {
   "error.agent.compactionConnectionLostAddress":
     "A conexão parou enquanto o agente compactava o contexto, então a tarefa parou. Verifique sua conexão com a internet e se {variable}, em Variáveis nas configurações de {provider}, é o endereço da API do seu serviço de modelos (muitas vezes termina em /v1). Depois, envie uma mensagem.",
   "error.agent.compactionLoopStopped":
-    "{provider} compactou o contexto várias vezes, e em cada vez ele continuou cheio demais para continuar, então o dani-dex parou este turno. Desative os servidores MCP ou o uso do computador de que este agente não precisa e envie uma mensagem. Se você ou o agente mudaram quando o {provider} compacta, desfaça essa mudança.",
+    "{provider} compactou o contexto várias vezes, e em cada vez ele continuou cheio demais para continuar, então o Dani Dex parou este turno. Desative os servidores MCP ou o uso do computador de que este agente não precisa e envie uma mensagem. Se você ou o agente mudaram quando o {provider} compacta, desfaça essa mudança.",
   "error.agent.selectedGone": "O agente selecionado não existe mais.",
   "error.agent.profileEndpointsChanged": "Os endpoints personalizados mudaram durante a geração. Tente novamente.",
   "error.agent.profileInvalid": "O provedor retornou um perfil inválido. Tente reformular seu pedido.",
@@ -134,19 +134,19 @@ export const messages = {
   "error.agent.deleteIncomplete":
     "Não foi possível remover todos os dados do agente. Tente excluir o agente novamente.",
   "error.agent.deleteFolderInUse":
-    "O trabalho de outro agente ainda usa a pasta deste agente. Exclua este agente de novo quando esse trabalho terminar ou depois de reiniciar o dani-dex.",
+    "O trabalho de outro agente ainda usa a pasta deste agente. Exclua este agente de novo quando esse trabalho terminar ou depois de reiniciar o Dani Dex.",
   "error.agent.deleteFolderLocked":
     "Outro programa ainda usa a pasta deste agente, por exemplo um programa que o agente iniciou. Feche esse programa ou reinicie o computador em que este agente roda e exclua o agente novamente.",
   "error.agent.deleteWhenFolderFree":
-    "O trabalho de outro agente ainda usa a pasta deste agente. O dani-dex exclui este agente quando esse trabalho terminar.",
+    "O trabalho de outro agente ainda usa a pasta deste agente. O Dani Dex exclui este agente quando esse trabalho terminar.",
   "error.agent.duplicationBusy": "Este agente já está sendo duplicado.",
   "error.agent.waitBeforeDuplicate": "Aguarde o agente terminar e esvaziar a fila antes de duplicá-lo.",
   "error.agent.saveOtherAgent": "Este registro salvo pertence a outro agente.",
   "error.agent.savedGone": "O agente salvo não existe mais.",
   "error.agent.storedProfileUnreadable":
-    'Um perfil de agente salvo tem um valor "{field}" ilegível; atualize os dados antes de iniciar o dani-dex.',
+    'Um perfil de agente salvo tem um valor "{field}" ilegível; atualize os dados antes de iniciar o Dani Dex.',
   "error.agent.storedProfileUnreadableId":
-    'O perfil de agente salvo {id} tem um valor "{field}" ilegível; atualize os dados antes de iniciar o dani-dex.',
+    'O perfil de agente salvo {id} tem um valor "{field}" ilegível; atualize os dados antes de iniciar o Dani Dex.',
   "error.agent.queueEditRejected": "Edição da fila rejeitada: {reason}",
   "error.agent.computerUseLocalOnly": "Uso do computador só pode ser alterado no computador que executa o agente.",
   "error.agent.automationLocalOnly": "Scripts locais só podem ser permitidos no computador que executa o agente.",
@@ -178,7 +178,7 @@ export const messages = {
   "error.agent.lowMemoryServer":
     "Este servidor está com pouca memória. Sua mensagem aguarda na fila e começa quando houver memória livre.",
   "error.agent.workspaceOnlyToolMissing":
-    "O acesso Somente o espaço de trabalho exige {tool}, que o dani-dex não encontrou. Instale a ferramenta ou escolha Acesso completo nas configurações do agente.",
+    "O acesso Somente o espaço de trabalho exige {tool}, que o Dani Dex não encontrou. Instale a ferramenta ou escolha Acesso completo nas configurações do agente.",
   "error.agent.codexSandboxUnavailable":
     "O acesso Somente o espaço de trabalho precisa do sandbox do Codex, que o Codex não consegue iniciar neste computador, então os comandos do agente falham. Escolha Perguntar antes ou Acesso completo nas configurações do agente.",
   "error.agent.claudeSandboxUnavailable":
@@ -202,9 +202,9 @@ export const messages = {
   "error.agent.screenCaptureRegionOutside":
     "A região não está dentro de um único monitor. Use pontos da área de trabalho dentro dos limites de um monitor de list_capture_sources.",
   "error.agent.screenCapturePermissionMissing":
-    "O dani-dex não tem a permissão de Gravação de Tela. Peça ao usuário para abrir Ajustes do Sistema > Privacidade e Segurança > Gravação de Tela e Áudio do Sistema, ativar o dani-dex e depois sair e abrir o dani-dex de novo.",
+    "O Dani Dex não tem a permissão de Gravação de Tela. Peça ao usuário para abrir Ajustes do Sistema > Privacidade e Segurança > Gravação de Tela e Áudio do Sistema, ativar o Dani Dex e depois sair e abrir o Dani Dex de novo.",
   "error.agent.screenCaptureListPermission":
-    "O dani-dex ainda não tem a permissão de Gravação de Tela, então não pode listar as janelas. Para capturar uma tela, chame capture_screen com target screen. O usuário aprova a captura primeiro, e depois o macOS pode pedir a permissão a ele.",
+    "O Dani Dex ainda não tem a permissão de Gravação de Tela, então não pode listar as janelas. Para capturar uma tela, chame capture_screen com target screen. O usuário aprova a captura primeiro, e depois o macOS pode pedir a permissão a ele.",
   "error.agent.screenCaptureEmptyWindows":
     "O Windows retornou uma imagem vazia. Peça ao usuário para desbloquear o computador e fechar o conteúdo protegido. Uma política da organização também pode impedir a captura de tela.",
   "error.agent.screenCaptureFailed": "A captura de tela falhou. Tente de novo.",

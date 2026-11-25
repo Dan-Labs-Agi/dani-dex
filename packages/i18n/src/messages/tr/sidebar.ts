@@ -141,7 +141,7 @@ export const messages = {
   "sidebar.delete.pending": "Siliniyor…",
   "sidebar.delete.title": "{name} silinsin mi?",
   "sidebar.delete.agentDescription":
-    "Bu işlem ajanı ve dani-dex konuşmasını uygulamadan kaldırır. Kuyruğu, bellekleri, rutinleri ve çalışma alanı silinir. Bağlı CLI sağlayıcısı tarafından ayrı depolanan geçmiş silinmez.",
+    "Bu işlem ajanı ve Dani Dex konuşmasını uygulamadan kaldırır. Kuyruğu, bellekleri, rutinleri ve çalışma alanı silinir. Bağlı CLI sağlayıcısı tarafından ayrı depolanan geçmiş silinmez.",
   "sidebar.delete.channelDescription":
     "Bu işlem kanalı durdurur. Geçmişi yalnızca önizleme amacıyla Silinen kanallar bölümünde kalır. Oradan geri yükleyebilirsiniz. Üye ajanlar korunur.",
   "sidebar.delete.sectionDescription":
@@ -184,6 +184,6 @@ export const messages = {
   "sidebar.community.title": "Bir sandalye çek.",
   "sidebar.community.body": "Yapay zekâ geleceğinde senin için de bir yer var. Discord ve X’teki topluluğa katıl.",
   "sidebar.community.joinDiscord": "Discord’a katıl",
-  "sidebar.community.followX": "X’te dani-dex’u takip et",
+  "sidebar.community.followX": "X’te Dani Dex’u takip et",
   "sidebar.community.dismiss": "Topluluk davetini kapat",
 } as const satisfies PartialTranslation<typeof source>;

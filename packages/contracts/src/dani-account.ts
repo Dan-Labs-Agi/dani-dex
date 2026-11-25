@@ -1,3 +1,4 @@
+// biome-ignore-all lint/nursery/noUnsafeTypeAssertion: untyped account service payloads, typed contracts pending
 // Dani account sign-in and sync over auth.dani.danlab.dev.
 // One Google account maps to one user id across desktop and mobile.
 // Secrets and provider tokens are never synced: only the kinds below cross devices.

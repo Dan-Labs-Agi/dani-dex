@@ -3,7 +3,7 @@ import type { messages as source } from "../../en/error/crm";
 
 export const messages = {
   "error.crm.serverTooOld":
-    "Ce serveur ne prend pas en charge le CRM. Mettez à jour dani-dex sur l’ordinateur qui l’exécute.",
+    "Ce serveur ne prend pas en charge le CRM. Mettez à jour Dani Dex sur l’ordinateur qui l’exécute.",
   "error.crm.tooLargeToSend": "Cette page du CRM est trop volumineuse pour être envoyée à cette application.",
   "error.crm.customerMissing": "Ce client n’existe plus.",
   "error.crm.planMissing": "Cette offre n’existe plus.",
@@ -39,10 +39,10 @@ export const messages = {
   "error.crm.sourcePermission":
     "Cette clé ne peut pas lire les clients, les factures, les abonnements, les événements ni les produits. Donnez-lui l'accès en lecture.",
   "error.crm.sourceRateLimited": "Stripe a reçu trop de requêtes. Réessayez dans une minute.",
-  "error.crm.sourceNetwork": "dani-dex ne peut pas se connecter à Stripe. Vérifiez la connexion internet.",
-  "error.crm.sourceFailed": "Stripe a envoyé une réponse qu'dani-dex ne peut pas lire. Réessayez plus tard.",
-  "error.crm.sourceKeySaveFailed": "dani-dex ne peut pas enregistrer la clé Stripe sur cet ordinateur.",
+  "error.crm.sourceNetwork": "Dani Dex ne peut pas se connecter à Stripe. Vérifiez la connexion internet.",
+  "error.crm.sourceFailed": "Stripe a envoyé une réponse qu'Dani Dex ne peut pas lire. Réessayez plus tard.",
+  "error.crm.sourceKeySaveFailed": "Dani Dex ne peut pas enregistrer la clé Stripe sur cet ordinateur.",
   "error.crm.off":
     "Le CRM est désactivé. Un propriétaire ou un administrateur peut l’activer dans Réglages du serveur > Expérimental.",
-  "error.crm.settingsSaveFailed": "dani-dex ne peut pas enregistrer le réglage du CRM sur ce serveur.",
+  "error.crm.settingsSaveFailed": "Dani Dex ne peut pas enregistrer le réglage du CRM sur ce serveur.",
 } as const satisfies PartialTranslation<typeof source>;

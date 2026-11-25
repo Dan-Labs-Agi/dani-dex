@@ -7,36 +7,36 @@ export const messages = {
   "error.update.restartFailed": "アップデートをインストールするための再起動ができませんでした。",
   "error.update.downloadStalled": "アップデートのダウンロードが応答しなくなりました。もう一度お試しください。",
   "error.update.installFailed":
-    "アップデートをインストールできませんでした。dani-dex を終了してから開き直し、もう一度お試しください。",
+    "アップデートをインストールできませんでした。Dani Dex を終了してから開き直し、もう一度お試しください。",
   "error.update.notInstalled":
     "前回の再起動ではアップデートがインストールされませんでした。もう一度再起動してお試しください。",
   "error.update.downloadFailed": "アップデートをダウンロードできませんでした。もう一度お試しください。",
   "error.update.signatureNotConfirmed":
-    "dani-dex はアップデートを検証できませんでした。もう一度お試しください。エラーが続く場合は、dani.danlab.dev/download から dani-dex をダウンロードしてください。",
+    "Dani Dex はアップデートを検証できませんでした。もう一度お試しください。エラーが続く場合は、dani.danlab.dev/download から Dani Dex をダウンロードしてください。",
   "error.update.checkFailed": "アップデートを確認できませんでした。もう一度お試しください。",
   "error.update.checkStalled": "アップデートの確認が応答しなくなりました。もう一度お試しください。",
   "error.update.checkOffline":
     "アップデートサービスに接続できませんでした。インターネット接続を確認してから、もう一度お試しください。",
   "error.update.checkUnavailable":
-    "アップデートサービスから応答がありませんでした。数分後に dani-dex が自動でもう一度試します。",
+    "アップデートサービスから応答がありませんでした。数分後に Dani Dex が自動でもう一度試します。",
   "error.update.checkNoRelease":
-    "このプラットフォーム向けに公開されたアップデートは見つかりませんでした。数分後に dani-dex が自動でもう一度試します。",
-  "error.update.managedByNix": "この dani-dex のアップデートは Nix がインストールします。Nix で更新してください。",
+    "このプラットフォーム向けに公開されたアップデートは見つかりませんでした。数分後に Dani Dex が自動でもう一度試します。",
+  "error.update.managedByNix": "この Dani Dex のアップデートは Nix がインストールします。Nix で更新してください。",
   "error.update.managedByHost":
     "この Mac のアップデートはホストがインストールします。ホストのメンテナンスが実行されるまで、アップデートは準備済みのままです。",
   "error.update.siblingSession":
-    "このアプリケーションから別の dani-dex セッションがまだ実行中です。先に他のすべての macOS ユーザーアカウントで dani-dex を終了してから、アップデートをもう一度インストールしてください。",
+    "このアプリケーションから別の Dani Dex セッションがまだ実行中です。先に他のすべての macOS ユーザーアカウントで Dani Dex を終了してから、アップデートをもう一度インストールしてください。",
   "error.update.siblingSessionSameAccount":
-    "このユーザーアカウントで別の dani-dex プロセスがまだ実行中です。それを終了してから、もう一度アップデートをインストールしてください。",
+    "このユーザーアカウントで別の Dani Dex プロセスがまだ実行中です。それを終了してから、もう一度アップデートをインストールしてください。",
   "error.update.siblingCheckFailed":
-    "他の dani-dex セッションを確認できませんでした。インストールする前にもう一度お試しください。",
+    "他の Dani Dex セッションを確認できませんでした。インストールする前にもう一度お試しください。",
   "error.update.readOnlyLocation":
-    "この場所からは dani-dex のアップデートをインストールできません。dani-dex を終了してください。Finder で dani-dex を「アプリケーション」フォルダにドラッグします（すでにそこにある場合は、一度外に出してから戻します）。その後 dani-dex を開き、もう一度アップデートをインストールしてください。",
+    "この場所からは Dani Dex のアップデートをインストールできません。Dani Dex を終了してください。Finder で Dani Dex を「アプリケーション」フォルダにドラッグします（すでにそこにある場合は、一度外に出してから戻します）。その後 Dani Dex を開き、もう一度アップデートをインストールしてください。",
   "error.update.appImageMissing":
-    "AppImage ファイルが移動、名前変更、または置き換えられたため、dani-dex はアップデートをインストールできません。dani-dex を終了してから、AppImage ファイルをもう一度開いてください。",
+    "AppImage ファイルが移動、名前変更、または置き換えられたため、Dani Dex はアップデートをインストールできません。Dani Dex を終了してから、AppImage ファイルをもう一度開いてください。",
   "error.update.appImageReadOnly":
-    "dani-dex は AppImage ファイルのフォルダにアップデートをインストールできません。dani-dex を終了し、AppImage ファイルをホームフォルダ内のフォルダに移動してから開き、もう一度アップデートをインストールしてください。",
+    "Dani Dex は AppImage ファイルのフォルダにアップデートをインストールできません。Dani Dex を終了し、AppImage ファイルをホームフォルダ内のフォルダに移動してから開き、もう一度アップデートをインストールしてください。",
   "error.update.remoteDisabled": "このコンピューターでは、サーバー管理者からのアップデートはオフになっています。",
-  "error.update.restartStarted": "dani-dex はアップデートをインストールするため、すでに再起動しています。",
-  "error.update.alreadyRestarting": "dani-dex はすでに再起動しています。",
+  "error.update.restartStarted": "Dani Dex はアップデートをインストールするため、すでに再起動しています。",
+  "error.update.alreadyRestarting": "Dani Dex はすでに再起動しています。",
 } as const satisfies PartialTranslation<typeof source>;

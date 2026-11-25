@@ -2,10 +2,10 @@ import type { PartialTranslation } from "../../message";
 import type { messages as source } from "../en/window";
 
 export const messages = {
-  "window.localHostTitle": "Computador anfitrião local do dani-dex",
-  "window.localClientTitle": "Cliente local do dani-dex",
+  "window.localHostTitle": "Computador anfitrião local do Dani Dex",
+  "window.localClientTitle": "Cliente local do Dani Dex",
   "window.computerUsePermissionTitle": "Ativar Uso do computador",
-  "window.rendererStoppedTitle": "O dani-dex parou de funcionar",
+  "window.rendererStoppedTitle": "O Dani Dex parou de funcionar",
   "window.rendererStoppedBody":
     "A janela parou várias vezes. Suas conversas estão salvas e seus agentes continuam trabalhando.",
   "window.rendererStoppedReload": "Recarregar",

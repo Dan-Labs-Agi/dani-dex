@@ -46,7 +46,7 @@ export const messages = {
   "import.guide.hermesStepFolder": "Lees de Hermes-map",
   "import.guide.hermesStep1": "Voeg de exportvaardigheid toe aan Hermes",
   "import.guide.readFolder": "Hermes-map lezen",
-  "import.guide.readFolderMeta": "dani-dex leest ~/.hermes en verandert er niets in.",
+  "import.guide.readFolderMeta": "Dani Dex leest ~/.hermes en verandert er niets in.",
   "import.guide.readFolderNote":
     "Je ziet elk onderdeel van elk profiel voordat er iets verandert. MCP-servers komen ook mee, uitgeschakeld.",
   "import.guide.copyCommand": "Opdracht kopiëren",
@@ -92,8 +92,8 @@ export const messages = {
   "import.result.notImportedTitle": "Niet geïmporteerd",
   "import.result.warnings": "Sommige onderdelen zijn niet meegegaan",
   "import.source.title": "Waar staan je agents nu?",
-  "import.source.lede": "dani-dex kopieert ze naar deze computer. Je ziet elk onderdeel voordat er iets verandert.",
-  "import.source.ledeServer": "dani-dex kopieert ze naar de server. Je ziet elk onderdeel voordat er iets verandert.",
+  "import.source.lede": "Dani Dex kopieert ze naar deze computer. Je ziet elk onderdeel voordat er iets verandert.",
+  "import.source.ledeServer": "Dani Dex kopieert ze naar de server. Je ziet elk onderdeel voordat er iets verandert.",
   "import.source.hermesNote": "Lees de Hermes-map op deze computer, of exporteer een .zip-bestand uit Hermes.",
   "import.source.hermesNoteServer": "Lees de Hermes-map op de server, of exporteer een .zip-bestand uit Hermes.",
   "import.source.hermesNoteExport": "Exporteer een .zip-bestand uit Hermes.",
@@ -107,7 +107,7 @@ export const messages = {
     "Als Hermes een andere map gebruikt, bijvoorbeeld een die HERMES_HOME instelt, kies dan die map.",
   "import.hermes.notFoundServer": "Geen Hermes-profielen op deze server",
   "import.hermes.notFoundServerNote":
-    "dani-dex leest de Hermes-map van de server. Exporteer een .zip-bestand uit Hermes om Hermes van deze computer te importeren.",
+    "Dani Dex leest de Hermes-map van de server. Exporteer een .zip-bestand uit Hermes om Hermes van deze computer te importeren.",
   "import.hermes.chooseFolder": "Hermes-map kiezen",
   "import.hermes.chooseAnother": "Andere map kiezen",
   "import.hermes.title": "Agents uit Hermes Agent",
@@ -146,23 +146,23 @@ export const messages = {
   "import.hermes.item.secrets": { one: "{count} geheim", other: "{count} geheimen" },
   "import.hermes.item.history": "Eerdere sessies",
   "import.hermes.reason.defaultSoul":
-    "Dit is de begintekst van Hermes, dus de agent houdt de instructies van dani-dex.",
+    "Dit is de begintekst van Hermes, dus de agent houdt de instructies van Dani Dex.",
   "import.hermes.reason.scripts": "Het voert eigen scripts uit. Sta het alleen toe als je de code vertrouwt.",
   "import.hermes.reason.unsafeFile":
-    "Het bevat een geheim bestand, een privésleutel of een archief. dani-dex kopieert die nooit.",
+    "Het bevat een geheim bestand, een privésleutel of een archief. Dani Dex kopieert die nooit.",
   "import.hermes.reason.invalidSkill": "De SKILL.md heeft geen geldige naam en beschrijving.",
   "import.hermes.reason.duplicateSkill": "Een andere vaardigheid in dit profiel heeft dezelfde naam.",
-  "import.hermes.reason.builtIn": "Deze horen bij Hermes. dani-dex heeft eigen vaardigheden.",
+  "import.hermes.reason.builtIn": "Deze horen bij Hermes. Dani Dex heeft eigen vaardigheden.",
   "import.hermes.reason.mcpOff":
     "Wordt uitgeschakeld toegevoegd. Controleer het en zet het daarna aan in Marktplaats, Apps.",
   "import.hermes.reason.mcpNameTaken": "Hier staat al een server met deze naam.",
-  "import.hermes.reason.routineSchedule": "dani-dex kan het schema niet uitvoeren, of het tijdstip is voorbij.",
+  "import.hermes.reason.routineSchedule": "Dani Dex kan het schema niet uitvoeren, of het tijdstip is voorbij.",
   "import.hermes.reason.routineScript": "Het voert een script uit, niet de agent.",
   "import.hermes.reason.terminalBackend":
-    "dani-dex voert opdrachten uit op deze computer, dus de agent gebruikt de terminal daarvan.",
-  "import.hermes.reason.gateway": "Verbind deze opnieuw in dani-dex. De routines behouden hun tekst.",
+    "Dani Dex voert opdrachten uit op deze computer, dus de agent gebruikt de terminal daarvan.",
+  "import.hermes.reason.gateway": "Verbind deze opnieuw in Dani Dex. De routines behouden hun tekst.",
   "import.hermes.reason.secrets":
-    "Niet gekopieerd. Voer elke sleutel opnieuw in dani-dex in als een tool die nodig heeft.",
+    "Niet gekopieerd. Voer elke sleutel opnieuw in Dani Dex in als een tool die nodig heeft.",
   "import.hermes.reason.history":
     "De chatgeschiedenis blijft in Hermes. De herinneringen bewaren wat hij heeft geleerd.",
 } as const satisfies PartialTranslation<typeof source>;

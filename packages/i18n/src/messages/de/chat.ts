@@ -501,7 +501,7 @@ export const messages = {
   "chat.suggestion.detailsNamed": "{name} im Marketplace öffnen",
   "chat.suggestion.dismissed": "Vorschlag für {name} ausgeblendet.",
   "chat.suggestion.undo": "Rückgängig",
-  "chat.suggestion.localOnly": "Verbinde {name} in dani-dex auf deinem eigenen Computer.",
+  "chat.suggestion.localOnly": "Verbinde {name} in Dani Dex auf deinem eigenen Computer.",
   "chat.suggestion.unavailable": "Dieser Server kann {name} nicht verbinden.",
   "chat.suggestion.notAllowed": "Nur der Serverbesitzer oder ein Admin kann {name} verbinden.",
   "chat.mcpSignIn.notNeeded": "{name} funktioniert jetzt ohne Anmeldung.",
@@ -540,15 +540,15 @@ export const messages = {
   "chat.feedbackSent.keep": "Behalten",
   "chat.feedbackSent.removing": "Wird entfernt…",
   "chat.feedbackSent.removeFailed":
-    "dani-dex konnte ihn nicht entfernen. Prüfe deine Verbindung und versuche es erneut.",
-  "chat.feedbackSent.removeSignedOut": "Melde dich bei dani-dex an, um ihn zu entfernen.",
+    "Dani Dex konnte ihn nicht entfernen. Prüfe deine Verbindung und versuche es erneut.",
+  "chat.feedbackSent.removeSignedOut": "Melde dich bei Dani Dex an, um ihn zu entfernen.",
   "chat.feedbackSent.removeNotYours":
-    "dani-dex kann diesen Bericht nicht entfernen. Er wurde gesendet, bevor Berichte entfernt werden konnten, oder mit einem anderen Konto.",
-  "chat.feedbackSent.removeUnavailable": "dani-dex kann gerade keine Berichte entfernen. Versuche es später erneut.",
+    "Dani Dex kann diesen Bericht nicht entfernen. Er wurde gesendet, bevor Berichte entfernt werden konnten, oder mit einem anderen Konto.",
+  "chat.feedbackSent.removeUnavailable": "Dani Dex kann gerade keine Berichte entfernen. Versuche es später erneut.",
   "chat.feedbackSent.removeLimited": "Zu viele Versuche. Warte eine Minute und versuche es dann erneut.",
-  "chat.feedbackSent.removeNotFound": "dani-dex findet diesen Bericht nicht im Chat.",
+  "chat.feedbackSent.removeNotFound": "Dani Dex findet diesen Bericht nicht im Chat.",
   "chat.feedbackSent.removeMoved":
-    "dani-dex kann diesen Bericht nicht entfernen. Er wurde an eine andere Stelle auf GitHub verschoben. Bitte das dani-dex-Team, ihn zu entfernen.",
+    "Dani Dex kann diesen Bericht nicht entfernen. Er wurde an eine andere Stelle auf GitHub verschoben. Bitte das dani-dex-Team, ihn zu entfernen.",
   "chat.feedbackWithdrawn.title": "Bericht entfernt",
   "chat.feedbackWithdrawn.badge": "Entfernt",
   "chat.feedbackWithdrawn.body":

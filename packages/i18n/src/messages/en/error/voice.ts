@@ -9,8 +9,8 @@ export const messages = defineMessages("error.voice", {
   "error.voice.modelUnavailable": "The voice model is unavailable.",
   "error.voice.transcriptionTimedOut": "Voice transcription timed out.",
   "error.voice.prepareRequired":
-    "Local voice transcription is unavailable. Run `bun run voice:prepare` and restart dani-dex.",
-  "error.voice.transcriptionFailed": "dani-dex could not transcribe this recording.",
+    "Local voice transcription is unavailable. Run `bun run voice:prepare` and restart Dani Dex.",
+  "error.voice.transcriptionFailed": "Dani Dex could not transcribe this recording.",
   "error.voice.videoModelMissing": "No speech recognition model for recordings is set up in Settings → Voice.",
   "error.voice.videoModelMissingServer":
     "No speech recognition model is set up on this server. An owner or an admin can set up a model in the server settings, in Speech recognition.",
@@ -25,11 +25,11 @@ export const messages = defineMessages("error.voice", {
   "error.voice.speech.runtimeUnavailable": "Local speech is not available on this platform.",
   "error.voice.speech.modelRequired": "Download the speech model in Settings → Voice.",
   "error.voice.speech.timedOut": "Reading the reply aloud timed out.",
-  "error.voice.speech.failed": "dani-dex could not read the reply aloud.",
+  "error.voice.speech.failed": "Dani Dex could not read the reply aloud.",
   "error.voice.speech.providerFailed": "{provider} did not send the audio. Try again.",
   "error.voice.speech.providerRefused": "{provider} refused to make the audio: {reason}",
   "error.voice.speech.providerUnreachable": "Could not connect to {provider}. Check the connection.",
-  "error.voice.recordingNotKept": "dani-dex could not keep the voice recording.",
+  "error.voice.recordingNotKept": "Dani Dex could not keep the voice recording.",
   "error.voice.live.timedOut": "Codex live voice did not start in time. Try again.",
   "error.voice.live.failed": "Live voice stopped: {reason}",
   "error.voice.live.disconnected": "Live voice disconnected.",
@@ -46,6 +46,6 @@ export const messages = defineMessages("error.voice", {
   "error.voice.server.routeOff": "The voice server is not set up for this. Check Settings → Voice.",
   "error.voice.server.keyRefused": "{host} refused the API key.",
   "error.voice.server.invalidAnswer": "{host} did not send an OpenAI-compatible answer.",
-  "error.voice.server.invalidAudio": "{host} sent audio that dani-dex cannot play. Use a server that sends WAV.",
+  "error.voice.server.invalidAudio": "{host} sent audio that Dani Dex cannot play. Use a server that sends WAV.",
   "error.voice.server.tooLarge": "The answer from {host} is too large.",
 });

@@ -4,5 +4,5 @@ import type { messages as source } from "../../en/error/storage";
 export const messages = {
   "error.storage.unsupported": "このサーバーはストレージに対応していません。",
   "error.storage.agentMissing": "エージェントが存在しません。",
-  "error.storage.unreadableFile": "dani-dex は {path} を読み取れません。ファイルが破損しています。",
+  "error.storage.unreadableFile": "Dani Dex は {path} を読み取れません。ファイルが破損しています。",
 } as const satisfies PartialTranslation<typeof source>;

@@ -5,20 +5,20 @@ export const messages = {
   "error.messaging.notConnected": "סביבת העבודה הזו של Slack אינה מחוברת.",
   "error.messaging.unsupported": "המחשב הזה אינו יכול להתחבר ל-Slack.",
   "error.messaging.relayUnavailable":
-    "dani-dex אינו יכול לקבל אירועי Slack במחשב הזה. יש להתחבר, לתת שם למחשב הזה ולנסות שוב.",
+    "Dani Dex אינו יכול לקבל אירועי Slack במחשב הזה. יש להתחבר, לתת שם למחשב הזה ולנסות שוב.",
   "error.messaging.discordNotConnected": "שרת ה-Discord הזה אינו מחובר.",
   "error.messaging.discordUnsupported": "המחשב הזה אינו יכול להתחבר ל-Discord.",
   "error.messaging.discordRelayUnavailable":
-    "dani-dex אינו יכול לקבל אירועי Discord במחשב הזה. יש להתחבר, לתת שם למחשב הזה ולנסות שוב.",
+    "Dani Dex אינו יכול לקבל אירועי Discord במחשב הזה. יש להתחבר, לתת שם למחשב הזה ולנסות שוב.",
   "error.messaging.discordRolesUnsupported":
-    "dani-dex עדיין אינו יכול להציג את התפקידים ב-Discord. אפשר לנסות שוב מאוחר יותר.",
+    "Dani Dex עדיין אינו יכול להציג את התפקידים ב-Discord. אפשר לנסות שוב מאוחר יותר.",
   "error.messaging.telegramNotConnected": "הצ'אט הזה ב-Telegram אינו מחובר.",
   "error.messaging.telegramUnsupported": "המחשב הזה אינו יכול להתחבר ל-Telegram.",
   "error.messaging.telegramRelayUnavailable":
-    "dani-dex אינו יכול להגיע ל-Telegram מהמחשב הזה. יש להתחבר, לתת שם למחשב הזה ולנסות שוב.",
+    "Dani Dex אינו יכול להגיע ל-Telegram מהמחשב הזה. יש להתחבר, לתת שם למחשב הזה ולנסות שוב.",
   "error.messaging.telegramRelayUnreachable":
-    "dani-dex לא יכול להתחבר לשירות שלו מהמחשב הזה. יש לבדוק את החיבור לאינטרנט, את ה-VPN, את ה-proxy או את חומת האש, ולנסות שוב.",
-  "error.messaging.telegramServiceUnavailable": "dani-dex אינו יכול לחבר את Telegram כרגע. אפשר לנסות שוב מאוחר יותר.",
+    "Dani Dex לא יכול להתחבר לשירות שלו מהמחשב הזה. יש לבדוק את החיבור לאינטרנט, את ה-VPN, את ה-proxy או את חומת האש, ולנסות שוב.",
+  "error.messaging.telegramServiceUnavailable": "Dani Dex אינו יכול לחבר את Telegram כרגע. אפשר לנסות שוב מאוחר יותר.",
   "error.messaging.whatsappNotConnected": "מספר ה-WhatsApp הזה אינו מחובר.",
   "error.messaging.whatsappUnsupported": "המחשב הזה אינו יכול להתחבר ל-WhatsApp.",
   "error.messaging.whatsappTooManySenders": "מספר WhatsApp יכול לאשר עד 200 אנשי קשר וקבוצות.",

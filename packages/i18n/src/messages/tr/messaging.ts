@@ -3,18 +3,18 @@ import type { messages as source } from "../en/messaging";
 
 export const messages = {
   "messaging.help.invalid_token":
-    "Slack artık bu çalışma alanında dani-dex'u kabul etmiyor. Kaldırılmış olabilir. Çalışma alanını tekrar bağlayın.",
+    "Slack artık bu çalışma alanında Dani Dex'u kabul etmiyor. Kaldırılmış olabilir. Çalışma alanını tekrar bağlayın.",
   "messaging.help.secret_storage_unavailable":
-    "dani-dex bu bilgisayardaki kayıtlı belirteçleri okuyamıyor. Çalışma alanı bağlantısını kesin, ardından tekrar bağlayın.",
+    "Dani Dex bu bilgisayardaki kayıtlı belirteçleri okuyamıyor. Çalışma alanı bağlantısını kesin, ardından tekrar bağlayın.",
   "messaging.help.relay_unavailable":
-    "dani-dex bu bilgisayarda Slack etkinliklerini alamıyor. Oturum açın, Sunucu ayarlarından bu bilgisayara bir ad verin ve dani-dex'u açık tutun.",
+    "Dani Dex bu bilgisayarda Slack etkinliklerini alamıyor. Oturum açın, Sunucu ayarlarından bu bilgisayara bir ad verin ve Dani Dex'u açık tutun.",
   "messaging.help.not_linked": "Bu çalışma alanı bu sunucuya bağlı değil. Bağlamak için Yeniden bağlan'ı seçin.",
   "messaging.discordHelp.invalid_token":
-    "Discord artık bu Discord sunucusunda dani-dex'u kabul etmiyor. Kaldırılmış olabilir. Discord sunucusunu tekrar bağlayın.",
+    "Discord artık bu Discord sunucusunda Dani Dex'u kabul etmiyor. Kaldırılmış olabilir. Discord sunucusunu tekrar bağlayın.",
   "messaging.discordHelp.secret_storage_unavailable":
-    "dani-dex bu bilgisayardaki kayıtlı belirteçleri okuyamıyor. Discord sunucusu bağlantısını kesin, ardından tekrar bağlayın.",
+    "Dani Dex bu bilgisayardaki kayıtlı belirteçleri okuyamıyor. Discord sunucusu bağlantısını kesin, ardından tekrar bağlayın.",
   "messaging.discordHelp.relay_unavailable":
-    "dani-dex bu bilgisayarda Discord etkinliklerini alamıyor. Oturum açın, Sunucu ayarlarından bu bilgisayara bir ad verin ve dani-dex'u açık tutun.",
+    "Dani Dex bu bilgisayarda Discord etkinliklerini alamıyor. Oturum açın, Sunucu ayarlarından bu bilgisayara bir ad verin ve Dani Dex'u açık tutun.",
   "messaging.discordHelp.not_linked":
-    "Bu Discord sunucusu bu dani-dex sunucusuna bağlı değil. Bağlamak için Yeniden bağlan'ı seçin.",
+    "Bu Discord sunucusu bu Dani Dex sunucusuna bağlı değil. Bağlamak için Yeniden bağlan'ı seçin.",
 } as const satisfies PartialTranslation<typeof source>;

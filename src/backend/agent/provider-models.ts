@@ -1,6 +1,11 @@
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import type { AgentModelOption } from "@openbot/contracts/ipc";
-import { isFreeKilocodeModel, isFreeOpencodeModel, KILOCODE_RECOMMENDED_FREE_MODELS, OPENCODE_RECOMMENDED_FREE_MODELS } from "@openbot/contracts/ipc";
+import {
+  isFreeKilocodeModel,
+  isFreeOpencodeModel,
+  KILOCODE_RECOMMENDED_FREE_MODELS,
+  OPENCODE_RECOMMENDED_FREE_MODELS,
+} from "@openbot/contracts/ipc";
 import type { AgentProvider } from "./../agent-client";
 import type { ModelListResponse } from "./../protocol";
 

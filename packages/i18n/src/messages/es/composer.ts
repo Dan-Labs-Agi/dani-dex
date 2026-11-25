@@ -69,12 +69,12 @@ export const messages = {
   "composer.voice.transcribing": "Transcribiendo instrucción de voz",
   "composer.voice.start": "Crear instrucción con la voz",
   "composer.voice.blocked":
-    "El acceso al micrófono está bloqueado. Permite que dani-dex use el micrófono en los ajustes del sistema.",
+    "El acceso al micrófono está bloqueado. Permite que Dani Dex use el micrófono en los ajustes del sistema.",
   "composer.voice.noMicrophone": "No hay ningún micrófono disponible.",
-  "composer.voice.startFailed": "dani-dex no pudo iniciar la grabación de voz.",
+  "composer.voice.startFailed": "Dani Dex no pudo iniciar la grabación de voz.",
   "composer.voice.microphoneUnavailable":
-    "dani-dex no pudo abrir el micrófono. Cierra otras apps que lo usen, comprueba que esté conectado y permitido en los ajustes del sistema, y vuelve a intentarlo.",
-  "composer.voice.transcribeFailed": "dani-dex no pudo transcribir esta grabación.",
+    "Dani Dex no pudo abrir el micrófono. Cierra otras apps que lo usen, comprueba que esté conectado y permitido en los ajustes del sistema, y vuelve a intentarlo.",
+  "composer.voice.transcribeFailed": "Dani Dex no pudo transcribir esta grabación.",
   "composer.reply.toYou": "Respondiendo a tu mensaje",
   "composer.reply.toAgent": "Respondiendo al agente",
   "composer.reply.attachment": "Archivo adjunto",

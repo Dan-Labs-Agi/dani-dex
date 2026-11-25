@@ -17,11 +17,11 @@ export const messages = {
   "connector.github.connectedAs": "Connecté en tant que @{login}",
   "connector.github.repositoriesTitle": "Dépôts",
   "connector.github.repositoriesDescription":
-    "Les agents peuvent utiliser uniquement les dépôts où l’app GitHub dani-dex est installée.",
+    "Les agents peuvent utiliser uniquement les dépôts où l’app GitHub Dani Dex est installée.",
   "connector.github.chooseRepositories": "Choisir les dépôts",
   "connector.github.repositoriesLoading": "Lecture des dépôts depuis GitHub",
-  "connector.github.repositoriesFailed": "dani-dex n’a pas pu lire les dépôts depuis GitHub.",
-  "connector.github.noRepositories": "L’app GitHub dani-dex n’est encore installée sur aucun dépôt.",
+  "connector.github.repositoriesFailed": "Dani Dex n’a pas pu lire les dépôts depuis GitHub.",
+  "connector.github.noRepositories": "L’app GitHub Dani Dex n’est encore installée sur aucun dépôt.",
   "connector.github.moreRepositories": { one: "Et {count} autre dépôt", other: "Et {count} autres dépôts" },
   "connector.github.private": "Privé",
   "connector.github.disconnect": "Déconnecter",
@@ -31,7 +31,7 @@ export const messages = {
   "connector.github.expiredTitle": "La connexion GitHub a expiré",
   "connector.github.expiredDescription": "Reconnectez-vous en tant que @{login} pour redonner GitHub aux agents.",
   "connector.github.reconnect": "Reconnecter",
-  "connector.github.actionFailed": "dani-dex n’a pas pu modifier la connexion GitHub.",
+  "connector.github.actionFailed": "Dani Dex n’a pas pu modifier la connexion GitHub.",
   "connector.github.statusConnected": "Connecté",
   "connector.github.statusConnecting": "Connexion en cours",
   "connector.github.statusExpired": "Expiré",
@@ -41,7 +41,7 @@ export const messages = {
   "connector.github.noMatch": "Aucun dépôt ne correspond à « {query} ».",
   "connector.github.stepSignIn": "Connexion",
   "connector.github.stepConnected": "Connecté",
-  "connector.github.requestingCode": "dani-dex demande un code à GitHub.",
+  "connector.github.requestingCode": "Dani Dex demande un code à GitHub.",
   "connector.github.codeLabel": "Code {code}",
   "connector.github.failedTitle": "GitHub ne s’est pas connecté",
   "connector.github.cancelConnecting": "Annuler la connexion à GitHub",
@@ -55,7 +55,7 @@ export const messages = {
   "connector.github.disconnectConfirmDescription":
     "La déconnexion supprime la connexion de @{login} de cet ordinateur.",
   "connector.github.disconnectEffectTools": "Tous les agents perdent les outils GitHub, gh et git.",
-  "connector.github.disconnectEffectRevoke": "GitHub s’ouvre ensuite, et vous pouvez y révoquer dani-dex.",
+  "connector.github.disconnectEffectRevoke": "GitHub s’ouvre ensuite, et vous pouvez y révoquer Dani Dex.",
   "connector.github.disconnectEffectKept":
     "Les discussions, les fichiers et la mémoire des agents restent sur cet ordinateur.",
   "connector.github.descriptionHost":
@@ -71,7 +71,7 @@ export const messages = {
   "connector.github.close": "Fermer",
   "connector.dangerZone": "Zone de danger",
   "connector.statusUnknown": "Inconnu",
-  "connector.readFailed": "dani-dex n'a pas pu lire l'état de cette connexion.",
+  "connector.readFailed": "Dani Dex n'a pas pu lire l'état de cette connexion.",
 
   "connector.slack.title": "Slack",
   "connector.slack.description":
@@ -95,10 +95,10 @@ export const messages = {
   "connector.slack.disconnectAllSummary":
     "Tous les espaces de travail sont déconnectés. Personne ne peut plus joindre vos agents via @dani-dex.",
   "connector.slack.disconnectAllSummaryOrchestrator":
-    "Tous les espaces de travail sont déconnectés. Le Slack Orchestrator et ses conversations sont supprimés d’dani-dex.",
+    "Tous les espaces de travail sont déconnectés. Le Slack Orchestrator et ses conversations sont supprimés d’Dani Dex.",
   "connector.slack.missingScopes":
-    "dani-dex n’a pas ces autorisations dans Slack : {scopes}. Déconnectez l’espace de travail, puis connectez-le à nouveau.",
-  "connector.slack.retryAt": "Slack a demandé à dani-dex de patienter. Nouvel essai à {time}.",
+    "Dani Dex n’a pas ces autorisations dans Slack : {scopes}. Déconnectez l’espace de travail, puis connectez-le à nouveau.",
+  "connector.slack.retryAt": "Slack a demandé à Dani Dex de patienter. Nouvel essai à {time}.",
   "connector.slack.reconnect": "Reconnecter",
   "connector.slack.pause": "Mettre en pause",
   "connector.slack.resume": "Reprendre",
@@ -109,12 +109,12 @@ export const messages = {
   "connector.slack.orchestratorNone": "Aucun agent ne répond encore",
   "connector.slack.orchestratorNoneDescription": "Ajoutez le Slack Orchestrator, sinon Slack ne reçoit aucune réponse.",
   "connector.slack.inviteNote":
-    "dani-dex rejoint seul chaque canal public, et chaque nouveau canal. Pour un canal privé, invitez-le : /invite @dani-dex.",
+    "Dani Dex rejoint seul chaque canal public, et chaque nouveau canal. Pour un canal privé, invitez-le : /invite @dani-dex.",
   "connector.slack.stepWorkspace": "Espace de travail",
   "connector.slack.stepAgent": "Agent",
   "connector.slack.connectTitle": "Connecter un espace de travail Slack",
   "connector.slack.connectDescription":
-    "dani-dex installe une app nommée dani-dex dans l’espace de travail, et elle rejoint chaque canal public.",
+    "Dani Dex installe une app nommée Dani Dex dans l’espace de travail, et elle rejoint chaque canal public.",
   "connector.slack.connectStepBrowser": "Slack s’ouvre dans votre navigateur",
   "connector.slack.connectStepAllow": "Sélectionnez l’espace de travail en haut à droite, puis Autoriser",
   "connector.slack.connectStepReturn": "Cette boîte de dialogue continue quand Slack a terminé",
@@ -129,18 +129,18 @@ export const messages = {
   "connector.slack.orchestratorDoesDelegate": "Confie chaque tâche à l’agent le plus adapté",
   "connector.slack.orchestratorDoesAnswer": "Publie la réponse dans le fil Slack",
   "connector.slack.orchestratorModel": "Modèle",
-  "connector.slack.doneTitle": "dani-dex est dans {workspace}",
+  "connector.slack.doneTitle": "Dani Dex est dans {workspace}",
   "connector.slack.doneDescription":
     "Mentionnez @dani-dex dans n’importe quel canal public, ou envoyez-lui un message direct.",
   "connector.slack.done": "Terminé",
   "connector.slack.disconnectTitle": "Déconnecter {workspace} ?",
   "connector.slack.disconnectDescription":
-    "dani-dex cesse de répondre dans {workspace} et supprime son jeton Slack de cet ordinateur.",
+    "Dani Dex cesse de répondre dans {workspace} et supprime son jeton Slack de cet ordinateur.",
   "connector.slack.disconnectDescriptionHost":
-    "dani-dex cesse de répondre dans {workspace} et supprime son jeton Slack de {host}.",
+    "Dani Dex cesse de répondre dans {workspace} et supprime son jeton Slack de {host}.",
   "connector.slack.disconnectEffect": "Les membres de {workspace} ne peuvent plus joindre vos agents via @dani-dex.",
-  "connector.slack.removeEffectKept": "Les conversations et le Slack Orchestrator restent dans dani-dex.",
-  "connector.slack.removeEffectDeleted": "Le Slack Orchestrator et ses conversations sont supprimés d’dani-dex.",
+  "connector.slack.removeEffectKept": "Les conversations et le Slack Orchestrator restent dans Dani Dex.",
+  "connector.slack.removeEffectDeleted": "Le Slack Orchestrator et ses conversations sont supprimés d’Dani Dex.",
   "connector.slack.keep": "Rester connecté",
   "connector.slack.close": "Fermer",
   "connector.slack.addWorkspace": "Ajouter un espace de travail",
@@ -169,16 +169,16 @@ export const messages = {
   "connector.discord.addAgent": "Ajouter un agent",
   "connector.discord.actionFailed": "Discord n’a pas accepté la modification",
   "connector.discord.workspaceTitle": "Serveurs Discord",
-  "connector.discord.workspaceDescription": "Mentionnez @dani-dex dans un canal. Répondez à dani-dex pour continuer.",
+  "connector.discord.workspaceDescription": "Mentionnez @dani-dex dans un canal. Répondez à Dani Dex pour continuer.",
   "connector.discord.disconnectWorkspace": "Déconnecter",
   "connector.discord.disconnectAllTitle": "Déconnecter Discord",
   "connector.discord.disconnectAllSummary":
     "Tous les serveurs sont déconnectés. Personne ne peut plus joindre vos agents via @dani-dex.",
   "connector.discord.disconnectAllSummaryOrchestrator":
-    "Tous les serveurs sont déconnectés. Le Discord Orchestrator et ses conversations sont supprimés d’dani-dex.",
+    "Tous les serveurs sont déconnectés. Le Discord Orchestrator et ses conversations sont supprimés d’Dani Dex.",
   "connector.discord.missingScopes":
-    "dani-dex n’a pas ces autorisations dans Discord : {scopes}. Déconnectez le serveur Discord, puis connectez-le à nouveau.",
-  "connector.discord.retryAt": "Discord a demandé à dani-dex de patienter. Nouvel essai à {time}.",
+    "Dani Dex n’a pas ces autorisations dans Discord : {scopes}. Déconnectez le serveur Discord, puis connectez-le à nouveau.",
+  "connector.discord.retryAt": "Discord a demandé à Dani Dex de patienter. Nouvel essai à {time}.",
   "connector.discord.reconnect": "Reconnecter",
   "connector.discord.pause": "Mettre en pause",
   "connector.discord.resume": "Reprendre",
@@ -189,11 +189,11 @@ export const messages = {
   "connector.discord.orchestratorNone": "Aucun agent ne répond encore",
   "connector.discord.orchestratorNoneDescription":
     "Ajoutez le Discord Orchestrator, sinon Discord ne reçoit aucune réponse.",
-  "connector.discord.channelsNote": "dani-dex voit les canaux que son rôle peut afficher.",
+  "connector.discord.channelsNote": "Dani Dex voit les canaux que son rôle peut afficher.",
   "connector.discord.stepWorkspace": "Serveur Discord",
   "connector.discord.stepAgent": "Agent",
   "connector.discord.connectTitle": "Connecter un serveur Discord",
-  "connector.discord.connectDescription": "dani-dex ajoute un bot nommé dani-dex au serveur Discord.",
+  "connector.discord.connectDescription": "Dani Dex ajoute un bot nommé Dani Dex au serveur Discord.",
   "connector.discord.connectStepBrowser": "Discord s’ouvre dans votre navigateur",
   "connector.discord.connectStepAllow": "Sélectionnez le serveur, puis Autoriser",
   "connector.discord.connectStepReturn": "Cette boîte de dialogue continue quand Discord a terminé",
@@ -208,17 +208,17 @@ export const messages = {
   "connector.discord.orchestratorDoesDelegate": "Confie chaque tâche à l’agent le plus adapté",
   "connector.discord.orchestratorDoesAnswer": "Répond dans le canal Discord",
   "connector.discord.orchestratorModel": "Modèle",
-  "connector.discord.doneTitle": "dani-dex est dans {workspace}",
-  "connector.discord.doneDescription": "Mentionnez @dani-dex dans un canal. Répondez à dani-dex pour continuer.",
+  "connector.discord.doneTitle": "Dani Dex est dans {workspace}",
+  "connector.discord.doneDescription": "Mentionnez @dani-dex dans un canal. Répondez à Dani Dex pour continuer.",
   "connector.discord.done": "Terminé",
   "connector.discord.disconnectTitle": "Déconnecter {workspace} ?",
   "connector.discord.disconnectDescription":
-    "dani-dex cesse de répondre dans {workspace} et supprime la connexion Discord de cet ordinateur.",
+    "Dani Dex cesse de répondre dans {workspace} et supprime la connexion Discord de cet ordinateur.",
   "connector.discord.disconnectDescriptionHost":
-    "dani-dex cesse de répondre dans {workspace} et supprime la connexion Discord de {host}.",
+    "Dani Dex cesse de répondre dans {workspace} et supprime la connexion Discord de {host}.",
   "connector.discord.disconnectEffect": "Les membres de {workspace} ne peuvent plus joindre vos agents via @dani-dex.",
-  "connector.discord.removeEffectKept": "Les conversations et le Discord Orchestrator restent dans dani-dex.",
-  "connector.discord.removeEffectDeleted": "Le Discord Orchestrator et ses conversations sont supprimés d’dani-dex.",
+  "connector.discord.removeEffectKept": "Les conversations et le Discord Orchestrator restent dans Dani Dex.",
+  "connector.discord.removeEffectDeleted": "Le Discord Orchestrator et ses conversations sont supprimés d’Dani Dex.",
   "connector.discord.keep": "Rester connecté",
   "connector.discord.close": "Fermer",
   "connector.discord.addWorkspace": "Ajouter un serveur Discord",
@@ -230,26 +230,26 @@ export const messages = {
     one: "{count} serveur Discord · Le Discord Orchestrator répond",
     other: "{count} serveurs Discord · Le Discord Orchestrator répond",
   },
-  "connector.discord.accessTitle": "Qui peut utiliser dani-dex",
+  "connector.discord.accessTitle": "Qui peut utiliser Dani Dex",
   "connector.discord.accessDescription":
-    "dani-dex répond uniquement à ces personnes. Il ignore les mentions des autres.",
+    "Dani Dex répond uniquement à ces personnes. Il ignore les mentions des autres.",
   "connector.discord.accessEveryone": "Tout le monde sur le serveur",
   "connector.discord.accessEveryoneDescription":
-    "Toute personne qui peut publier dans un canal visible par dani-dex peut le mentionner.",
+    "Toute personne qui peut publier dans un canal visible par Dani Dex peut le mentionner.",
   "connector.discord.accessRoles": "Membres avec {roles}",
   "connector.discord.accessChoose": "Choisir des rôles",
-  "connector.discord.accessDialogTitle": "Qui peut utiliser dani-dex dans {workspace} ?",
-  "connector.discord.accessDialogDescription": "Sans rôle sélectionné, tout le monde peut mentionner dani-dex.",
+  "connector.discord.accessDialogTitle": "Qui peut utiliser Dani Dex dans {workspace} ?",
+  "connector.discord.accessDialogDescription": "Sans rôle sélectionné, tout le monde peut mentionner Dani Dex.",
   "connector.discord.accessLoading": "Chargement des rôles…",
   "connector.discord.accessLoadFailed": "Les rôles Discord ne se sont pas chargés",
   "connector.discord.accessNoRoles": "Ce serveur n’a aucun rôle à choisir.",
   "connector.discord.accessRoleDeleted": "{role} (supprimé)",
   "connector.discord.accessSave": "Enregistrer",
-  "connector.discord.accessHostUpdate": "Mettez à jour dani-dex sur {host} pour choisir des rôles.",
+  "connector.discord.accessHostUpdate": "Mettez à jour Dani Dex sur {host} pour choisir des rôles.",
 
   "connector.telegram.title": "Telegram",
   "connector.telegram.description":
-    "Ajoutez le bot dani-dex à un groupe Telegram ou ouvrez une discussion directe avec lui. Le Telegram Orchestrator sollicite le bon agent et répond.",
+    "Ajoutez le bot Dani Dex à un groupe Telegram ou ouvrez une discussion directe avec lui. Le Telegram Orchestrator sollicite le bon agent et répond.",
   "connector.telegram.statusConnected": "Connecté",
   "connector.telegram.statusAttention": "Action requise",
   "connector.telegram.summaryConnected": {
@@ -272,31 +272,31 @@ export const messages = {
   "connector.telegram.groupDescription": "Les utilisateurs mentionnent le bot ou répondent à ses messages.",
   "connector.telegram.directDescription": "Chaque message de cette discussion va au Telegram Orchestrator.",
   "connector.telegram.helpRemoved":
-    "Le bot dani-dex n’est plus dans cette discussion. Déconnectez la discussion, puis ajoutez à nouveau le bot.",
+    "Le bot Dani Dex n’est plus dans cette discussion. Déconnectez la discussion, puis ajoutez à nouveau le bot.",
   "connector.telegram.helpRelayUnavailable":
-    "dani-dex ne peut pas recevoir de messages Telegram sur cet ordinateur. Connectez-vous, donnez un nom à cet ordinateur dans les Réglages du serveur et gardez dani-dex ouvert.",
+    "Dani Dex ne peut pas recevoir de messages Telegram sur cet ordinateur. Connectez-vous, donnez un nom à cet ordinateur dans les Réglages du serveur et gardez Dani Dex ouvert.",
   "connector.telegram.helpRelayUnavailableHost":
-    "dani-dex sur {host} ne peut pas recevoir de messages Telegram. Sur {host}, connectez-vous, donnez un nom au serveur dans les Réglages du serveur et gardez dani-dex ouvert.",
-  "connector.telegram.helpError": "dani-dex ne peut pas joindre cette discussion. Reconnectez-la ou déconnectez-la.",
+    "Dani Dex sur {host} ne peut pas recevoir de messages Telegram. Sur {host}, connectez-vous, donnez un nom au serveur dans les Réglages du serveur et gardez Dani Dex ouvert.",
+  "connector.telegram.helpError": "Dani Dex ne peut pas joindre cette discussion. Reconnectez-la ou déconnectez-la.",
   "connector.telegram.helpNotLinked":
     "Cette discussion n’est pas liée à ce serveur. Sélectionnez Reconnecter pour la lier.",
-  "connector.telegram.retryAt": "Telegram a demandé à dani-dex de patienter. Nouvel essai à {time}.",
+  "connector.telegram.retryAt": "Telegram a demandé à Dani Dex de patienter. Nouvel essai à {time}.",
   "connector.telegram.pause": "Mettre en pause",
   "connector.telegram.resume": "Reprendre",
   "connector.telegram.reconnect": "Reconnecter",
   "connector.telegram.disconnectChat": "Déconnecter",
   "connector.telegram.disconnectAllTitle": "Déconnecter Telegram",
   "connector.telegram.disconnectAllSummary":
-    "Toutes les discussions sont déconnectées. Personne ne peut plus joindre vos agents via le bot dani-dex.",
+    "Toutes les discussions sont déconnectées. Personne ne peut plus joindre vos agents via le bot Dani Dex.",
   "connector.telegram.disconnectAllSummaryOrchestrator":
-    "Toutes les discussions sont déconnectées. Le Telegram Orchestrator et ses conversations sont supprimés d’dani-dex.",
+    "Toutes les discussions sont déconnectées. Le Telegram Orchestrator et ses conversations sont supprimés d’Dani Dex.",
   "connector.telegram.rowAction": "{action} : {name}",
   "connector.telegram.linkChat": "Associer une discussion",
   "connector.telegram.addToGroup": "Ajouter à un groupe",
   "connector.telegram.openDirectChat": "Discuter en privé",
   "connector.telegram.orchestratorTitle": "Telegram Orchestrator",
   "connector.telegram.orchestratorDescription":
-    "Cet agent reçoit les messages destinés à dani-dex depuis toutes vos discussions Telegram. Il répond lui-même aux messages courts, confie les autres tâches au bon agent et publie la réponse dans la discussion.",
+    "Cet agent reçoit les messages destinés à Dani Dex depuis toutes vos discussions Telegram. Il répond lui-même aux messages courts, confie les autres tâches au bon agent et publie la réponse dans la discussion.",
   "connector.telegram.orchestratorNone": "Aucun agent ne répond encore",
   "connector.telegram.orchestratorNoneDescription":
     "Ajoutez le Telegram Orchestrator, sinon Telegram ne reçoit aucune réponse.",
@@ -306,29 +306,29 @@ export const messages = {
   "connector.telegram.stepAgent": "Agent",
   "connector.telegram.connectTitle": "Associer une discussion Telegram",
   "connector.telegram.connectDescription":
-    "Ajoutez le bot dani-dex à un groupe, ou ouvrez une discussion directe avec lui. Un seul bot sert toutes vos discussions.",
+    "Ajoutez le bot Dani Dex à un groupe, ou ouvrez une discussion directe avec lui. Un seul bot sert toutes vos discussions.",
   "connector.telegram.connectStepBrowser": "Telegram s’ouvre dans votre navigateur",
   "connector.telegram.connectStepPick": "Sélectionnez le groupe, ou appuyez sur Démarrer dans la discussion directe",
   "connector.telegram.connectStepReturn": "Cette boîte de dialogue continue quand la discussion est associée",
   "connector.telegram.connectWaiting": "En attente de Telegram. Sélectionnez la discussion dans Telegram.",
   "connector.telegram.agentStepTitle": "Ajouter le Telegram Orchestrator",
   "connector.telegram.agentStepDescription":
-    "Ce nouvel agent répond aux messages destinés à dani-dex dans {chat} et dans chaque discussion que vous associerez plus tard.",
+    "Ce nouvel agent répond aux messages destinés à Dani Dex dans {chat} et dans chaque discussion que vous associerez plus tard.",
   "connector.telegram.orchestratorName": "Telegram Orchestrator",
   "connector.telegram.orchestratorRole": "Répond dans Telegram et sollicite l’équipe",
-  "connector.telegram.orchestratorDoesReceive": "Reçoit en premier chaque message Telegram destiné à dani-dex",
+  "connector.telegram.orchestratorDoesReceive": "Reçoit en premier chaque message Telegram destiné à Dani Dex",
   "connector.telegram.orchestratorDoesDelegate": "Confie chaque tâche à l’agent le plus adapté",
   "connector.telegram.orchestratorDoesAnswer": "Publie la réponse dans la discussion Telegram",
   "connector.telegram.orchestratorModel": "Modèle",
-  "connector.telegram.doneTitle": "dani-dex est dans {chat}",
+  "connector.telegram.doneTitle": "Dani Dex est dans {chat}",
   "connector.telegram.done": "Terminé",
   "connector.telegram.disconnectTitle": "Déconnecter {chat} ?",
-  "connector.telegram.leaveDescription": "Le bot dani-dex quitte {chat}, et dani-dex cesse d’y répondre.",
+  "connector.telegram.leaveDescription": "Le bot Dani Dex quitte {chat}, et Dani Dex cesse d’y répondre.",
   "connector.telegram.disconnectEffect":
-    "Les membres de {chat} ne peuvent plus joindre vos agents via le bot dani-dex.",
-  "connector.telegram.removeEffectKept": "Les conversations et le Telegram Orchestrator restent dans dani-dex.",
+    "Les membres de {chat} ne peuvent plus joindre vos agents via le bot Dani Dex.",
+  "connector.telegram.removeEffectKept": "Les conversations et le Telegram Orchestrator restent dans Dani Dex.",
   "connector.telegram.removeEffectDeleted":
-    "C’est la dernière discussion : le Telegram Orchestrator et ses conversations sont supprimés d’dani-dex.",
+    "C’est la dernière discussion : le Telegram Orchestrator et ses conversations sont supprimés d’Dani Dex.",
   "connector.telegram.keep": "Rester connecté",
   "connector.telegram.close": "Fermer",
   "connector.whatsapp.title": "WhatsApp",
@@ -357,18 +357,18 @@ export const messages = {
   "connector.whatsapp.numbersTitle": "Numéros",
   "connector.whatsapp.linkNumber": "Associer un numéro",
   "connector.whatsapp.ownNumberNote":
-    "Votre discussion « Message à vous-même » et les personnes que vous autorisez joignent dani-dex.",
+    "Votre discussion « Message à vous-même » et les personnes que vous autorisez joignent Dani Dex.",
   "connector.whatsapp.dedicatedNote":
-    "Votre discussion « Message à vous-même » et les personnes que vous autorisez joignent dani-dex. Les autres reçoivent un code à vous transmettre.",
+    "Votre discussion « Message à vous-même » et les personnes que vous autorisez joignent Dani Dex. Les autres reçoivent un code à vous transmettre.",
   "connector.whatsapp.helpLoggedOut":
     "WhatsApp a retiré cet ordinateur des appareils connectés. Associez à nouveau le numéro.",
   "connector.whatsapp.helpLoggedOutHost":
     "WhatsApp a retiré ce serveur des appareils connectés. Associez à nouveau le numéro.",
   "connector.whatsapp.helpError":
-    "dani-dex ne peut pas joindre WhatsApp sur ce numéro. Reconnectez-le ou déconnectez-le.",
+    "Dani Dex ne peut pas joindre WhatsApp sur ce numéro. Reconnectez-le ou déconnectez-le.",
   "connector.whatsapp.helpKeysUnreadable":
-    "dani-dex ne peut pas lire les clés enregistrées de ce numéro. Associez à nouveau le numéro.",
-  "connector.whatsapp.retryAt": "WhatsApp a demandé à dani-dex de patienter. Nouvel essai à {time}.",
+    "Dani Dex ne peut pas lire les clés enregistrées de ce numéro. Associez à nouveau le numéro.",
+  "connector.whatsapp.retryAt": "WhatsApp a demandé à Dani Dex de patienter. Nouvel essai à {time}.",
   "connector.whatsapp.pause": "Mettre en pause",
   "connector.whatsapp.resume": "Reprendre",
   "connector.whatsapp.reconnect": "Reconnecter",
@@ -378,20 +378,20 @@ export const messages = {
   "connector.whatsapp.disconnectAllSummary":
     "Tous les numéros sont déconnectés. Personne ne peut plus joindre vos agents via WhatsApp.",
   "connector.whatsapp.disconnectAllSummaryOrchestrator":
-    "Tous les numéros sont déconnectés. Le WhatsApp Orchestrator et ses conversations sont supprimés d’dani-dex.",
+    "Tous les numéros sont déconnectés. Le WhatsApp Orchestrator et ses conversations sont supprimés d’Dani Dex.",
   "connector.whatsapp.rowAction": "{action} : {name}",
   "connector.whatsapp.ownNumber": "Numéro personnel",
   "connector.whatsapp.ownNumberDescription":
-    "Seules votre discussion « Message à vous-même » et les personnes que vous autorisez peuvent écrire. Les autres ne reçoivent pas de réponse. Désactivé, dani-dex répond aux inconnus avec un code.",
+    "Seules votre discussion « Message à vous-même » et les personnes que vous autorisez peuvent écrire. Les autres ne reçoivent pas de réponse. Désactivé, Dani Dex répond aux inconnus avec un code.",
   "connector.whatsapp.workingMessage": "Message « En cours… »",
   "connector.whatsapp.workingMessageDescription":
-    "dani-dex l’envoie pendant que l’agent travaille, puis le remplace par la réponse. Une demande qui attend une demande précédente reçoit aussi un message d’attente. Désactivez pour n’envoyer que la réponse.",
+    "Dani Dex l’envoie pendant que l’agent travaille, puis le remplace par la réponse. Une demande qui attend une demande précédente reçoit aussi un message d’attente. Désactivez pour n’envoyer que la réponse.",
   "connector.whatsapp.statusReactions": "Réactions d’état",
   "connector.whatsapp.statusReactionsDescription":
-    "dani-dex réagit avec 👀 quand un message arrive et avec ✅ quand la réponse est prête. Désactivez pour n’envoyer aucune réaction.",
+    "Dani Dex réagit avec 👀 quand un message arrive et avec ✅ quand la réponse est prête. Désactivez pour n’envoyer aucune réaction.",
   "connector.whatsapp.orchestratorTitle": "WhatsApp Orchestrator",
   "connector.whatsapp.orchestratorDescription":
-    "Cet agent reçoit les messages destinés à dani-dex depuis tous vos numéros associés. Il répond lui-même aux messages courts, confie les autres tâches au bon agent et répond dans WhatsApp.",
+    "Cet agent reçoit les messages destinés à Dani Dex depuis tous vos numéros associés. Il répond lui-même aux messages courts, confie les autres tâches au bon agent et répond dans WhatsApp.",
   "connector.whatsapp.orchestratorNone": "Aucun agent ne répond encore",
   "connector.whatsapp.orchestratorNoneDescription":
     "Ajoutez le WhatsApp Orchestrator, sinon WhatsApp ne reçoit aucune réponse.",
@@ -407,10 +407,10 @@ export const messages = {
   "connector.whatsapp.kindLabel": "Numéro",
   "connector.whatsapp.kindPersonal": "Mon numéro personnel",
   "connector.whatsapp.kindPersonalDescription":
-    "dani-dex répond uniquement à votre discussion « Message à vous-même » et aux personnes que vous autorisez. Les autres personnes ne reçoivent pas de réponse.",
-  "connector.whatsapp.kindDedicated": "Un numéro réservé à dani-dex",
+    "Dani Dex répond uniquement à votre discussion « Message à vous-même » et aux personnes que vous autorisez. Les autres personnes ne reçoivent pas de réponse.",
+  "connector.whatsapp.kindDedicated": "Un numéro réservé à Dani Dex",
   "connector.whatsapp.kindDedicatedDescription":
-    "dani-dex répond depuis ce numéro à chaque inconnu avec un code à vous transmettre. Vous les approuvez ici.",
+    "Dani Dex répond depuis ce numéro à chaque inconnu avec un code à vous transmettre. Vous les approuvez ici.",
   "connector.whatsapp.methodLabel": "Méthode d’association",
   "connector.whatsapp.methodQr": "Code QR",
   "connector.whatsapp.methodCode": "Code d’association",
@@ -435,26 +435,26 @@ export const messages = {
   "connector.whatsapp.failedTimeout": "Le code a expiré avant que le téléphone l’utilise.",
   "connector.whatsapp.failedRefused": "WhatsApp a refusé l’association. Patientez quelques minutes, puis réessayez.",
   "connector.whatsapp.failedBusy": "Une autre association est en cours. Attendez qu’elle se termine, puis réessayez.",
-  "connector.whatsapp.failedUnavailable": "dani-dex ne peut pas joindre WhatsApp. Vérifiez la connexion Internet.",
+  "connector.whatsapp.failedUnavailable": "Dani Dex ne peut pas joindre WhatsApp. Vérifiez la connexion Internet.",
   "connector.whatsapp.tryAgain": "Réessayer",
   "connector.whatsapp.agentStepTitle": "Ajouter le WhatsApp Orchestrator",
   "connector.whatsapp.agentStepDescription":
-    "Ce nouvel agent répond aux messages destinés à dani-dex sur {number} et sur chaque numéro que vous associerez plus tard.",
+    "Ce nouvel agent répond aux messages destinés à Dani Dex sur {number} et sur chaque numéro que vous associerez plus tard.",
   "connector.whatsapp.orchestratorName": "WhatsApp Orchestrator",
   "connector.whatsapp.orchestratorRole": "Répond dans WhatsApp et sollicite l’équipe",
-  "connector.whatsapp.orchestratorDoesReceive": "Reçoit en premier chaque message WhatsApp destiné à dani-dex",
+  "connector.whatsapp.orchestratorDoesReceive": "Reçoit en premier chaque message WhatsApp destiné à Dani Dex",
   "connector.whatsapp.orchestratorDoesDelegate": "Confie chaque tâche à l’agent le plus adapté",
   "connector.whatsapp.orchestratorDoesAnswer": "Répond dans la discussion WhatsApp",
   "connector.whatsapp.orchestratorModel": "Modèle",
-  "connector.whatsapp.doneTitle": "dani-dex est associé à {number}",
+  "connector.whatsapp.doneTitle": "Dani Dex est associé à {number}",
   "connector.whatsapp.done": "Terminé",
   "connector.whatsapp.disconnectTitle": "Déconnecter {number} ?",
   "connector.whatsapp.disconnectDescription":
-    "dani-dex se déconnecte de WhatsApp sur {number}. Si dani-dex était éteint, retirez aussi l’appareil dans WhatsApp > Appareils connectés.",
+    "Dani Dex se déconnecte de WhatsApp sur {number}. Si Dani Dex était éteint, retirez aussi l’appareil dans WhatsApp > Appareils connectés.",
   "connector.whatsapp.disconnectEffect": "Personne ne peut plus joindre vos agents via {number}.",
-  "connector.whatsapp.removeEffectKept": "Les conversations et le WhatsApp Orchestrator restent dans dani-dex.",
+  "connector.whatsapp.removeEffectKept": "Les conversations et le WhatsApp Orchestrator restent dans Dani Dex.",
   "connector.whatsapp.removeEffectDeleted":
-    "C’est le dernier numéro : le WhatsApp Orchestrator et ses conversations sont supprimés d’dani-dex.",
+    "C’est le dernier numéro : le WhatsApp Orchestrator et ses conversations sont supprimés d’Dani Dex.",
   "connector.whatsapp.keep": "Rester associé",
   "connector.whatsapp.close": "Fermer",
   "connector.whatsapp.sendersTitle": "Qui peut écrire à {number}",
@@ -475,7 +475,7 @@ export const messages = {
     "Les membres de ce groupe peuvent confier des tâches à vos agents en mentionnant le numéro ou en répondant à ses messages.",
   "connector.whatsapp.groupSearch": "Rechercher des groupes",
   "connector.whatsapp.groupsLoading": "Lecture des groupes…",
-  "connector.whatsapp.groupsLoadFailed": "dani-dex n’a pas pu lire les groupes",
+  "connector.whatsapp.groupsLoadFailed": "Dani Dex n’a pas pu lire les groupes",
   "connector.whatsapp.groupsEmpty": "Ce numéro n’est dans aucun groupe.",
   "connector.whatsapp.groupsNoMatch": "Aucun groupe ne porte ce nom.",
   "connector.whatsapp.groupAdded": "Ajouté",
@@ -488,9 +488,9 @@ export const messages = {
   "connector.whatsapp.deny": "Refuser",
   "connector.onePassword.title": "1Password",
   "connector.onePassword.description":
-    "Partagez un coffre 1Password dédié avec dani-dex via un compte de service, pour que les agents puissent se connecter aux sites dans le navigateur d’dani-dex.",
+    "Partagez un coffre 1Password dédié avec Dani Dex via un compte de service, pour que les agents puissent se connecter aux sites dans le navigateur d’Dani Dex.",
   "connector.onePassword.howItWorks":
-    "La connexion crée un coffre « Shared with dani-dex » dans votre compte 1Password et un compte de service qui peut lire uniquement ce coffre. dani-dex remplit les identifiants enregistrés dans son navigateur sur cet ordinateur : seuls les éléments que vous déplacez dans ce coffre sont partagés. Les agents ne voient jamais de mot de passe.",
+    "La connexion crée un coffre « Shared with Dani Dex » dans votre compte 1Password et un compte de service qui peut lire uniquement ce coffre. Dani Dex remplit les identifiants enregistrés dans son navigateur sur cet ordinateur : seuls les éléments que vous déplacez dans ce coffre sont partagés. Les agents ne voient jamais de mot de passe.",
   "connector.onePassword.connect": "Connecter 1Password",
   "connector.onePassword.setupTitle": "Configuration",
   "connector.onePassword.stepCliTitle": "Installer la CLI 1Password",
@@ -498,20 +498,20 @@ export const messages = {
   "connector.onePassword.stepCliInstalling": "Téléchargement de la CLI 1Password depuis 1Password",
   "connector.onePassword.stepCliReady": "La version {version} est installée.",
   "connector.onePassword.stepCliMissing":
-    "dani-dex la télécharge depuis 1Password dans son propre dossier. Aucun mot de passe administrateur n’est nécessaire.",
+    "Dani Dex la télécharge depuis 1Password dans son propre dossier. Aucun mot de passe administrateur n’est nécessaire.",
   "connector.onePassword.stepCliManual":
-    "dani-dex ne peut pas l’installer sur cet ordinateur. Installez-la depuis 1Password, puis revenez sur cette page.",
+    "Dani Dex ne peut pas l’installer sur cet ordinateur. Installez-la depuis 1Password, puis revenez sur cette page.",
   "connector.onePassword.installCli": "Installer",
   "connector.onePassword.stepAppTitle": "Activer l’intégration CLI",
   "connector.onePassword.stepAppDescription":
     "Dans l’app 1Password, ouvrez Réglages > Développeur et activez « Intégrer avec 1Password CLI ».",
   "connector.onePassword.stepAppReady": "L’app 1Password permet à la CLI de créer le coffre partagé.",
   "connector.onePassword.openApp": "Ouvrir 1Password",
-  "connector.onePassword.openAppFailed": "dani-dex n'a pas pu ouvrir 1Password.",
+  "connector.onePassword.openAppFailed": "Dani Dex n'a pas pu ouvrir 1Password.",
   "connector.onePassword.checkAgain": "Revérifier",
   "connector.onePassword.stepVaultTitle": "Créer le coffre partagé",
   "connector.onePassword.stepVaultDescription":
-    "dani-dex crée le coffre « Shared with dani-dex » et un compte de service qui peut seulement le lire. 1Password vous demande votre approbation.",
+    "Dani Dex crée le coffre « Shared with Dani Dex » et un compte de service qui peut seulement le lire. 1Password vous demande votre approbation.",
   "connector.onePassword.useTokenDescription":
     "Au lieu de ces étapes, collez un jeton de compte de service de 1Password.com.",
   "connector.onePassword.useTokenAction": "Utiliser un jeton",
@@ -522,7 +522,7 @@ export const messages = {
   "connector.onePassword.cancel": "Annuler",
   "connector.onePassword.chooseAccountTitle": "Choisir un compte",
   "connector.onePassword.chooseAccountDescription":
-    "dani-dex crée le coffre partagé dans le compte que vous choisissez.",
+    "Dani Dex crée le coffre partagé dans le compte que vous choisissez.",
   "connector.onePassword.useAccount": "Utiliser ce compte",
   "connector.onePassword.vaultTitle": "Coffre partagé",
   "connector.onePassword.vaultDescription":
@@ -532,47 +532,47 @@ export const messages = {
   "connector.onePassword.disconnect": "Déconnecter",
   "connector.onePassword.disconnectTitle": "Déconnecter 1Password",
   "connector.onePassword.disconnectSummary":
-    "dani-dex oublie le jeton. Le coffre et le compte de service restent dans 1Password ; supprimez-les là-bas si vous n’en avez plus besoin.",
-  "connector.onePassword.actionFailed": "dani-dex n’a pas pu modifier la connexion 1Password.",
+    "Dani Dex oublie le jeton. Le coffre et le compte de service restent dans 1Password ; supprimez-les là-bas si vous n’en avez plus besoin.",
+  "connector.onePassword.actionFailed": "Dani Dex n’a pas pu modifier la connexion 1Password.",
   "connector.onePassword.statusConnected": "Connecté",
   "connector.onePassword.statusConnecting": "Connexion en cours",
   "connector.onePassword.descriptionHost":
-    "Partagez un coffre 1Password dédié avec dani-dex sur {host} via un compte de service, pour que les agents de {host} puissent se connecter aux sites dans son navigateur.",
+    "Partagez un coffre 1Password dédié avec Dani Dex sur {host} via un compte de service, pour que les agents de {host} puissent se connecter aux sites dans son navigateur.",
   "connector.onePassword.howItWorksHost":
-    "{host} se connecte avec un jeton de compte de service. Sur 1Password.com, créez un compte de service qui ne peut lire que le coffre que vous partagez avec dani-dex, puis collez son jeton ici. {host} vérifie le jeton et le conserve ; cet ordinateur ne le conserve pas. Les agents ne voient jamais de mot de passe.",
+    "{host} se connecte avec un jeton de compte de service. Sur 1Password.com, créez un compte de service qui ne peut lire que le coffre que vous partagez avec Dani Dex, puis collez son jeton ici. {host} vérifie le jeton et le conserve ; cet ordinateur ne le conserve pas. Les agents ne voient jamais de mot de passe.",
   "connector.onePassword.disconnectSummaryHost":
     "{host} oublie le jeton. Le coffre et le compte de service restent dans 1Password ; supprimez-les là-bas si vous n’en avez plus besoin.",
   "connector.bitwarden.title": "Bitwarden",
   "connector.bitwarden.description": "Remplir les identifiants du navigateur depuis Bitwarden.",
   "connector.bitwarden.setup":
-    "Installez la CLI Bitwarden et connectez-vous avec bw login. Créez un dossier nommé Shared with dani-dex et placez-y uniquement les identifiants que les agents peuvent utiliser. Exécutez bw unlock --raw et collez la clé de session ci-dessous. Ne collez pas votre mot de passe principal.",
+    "Installez la CLI Bitwarden et connectez-vous avec bw login. Créez un dossier nommé Shared with Dani Dex et placez-y uniquement les identifiants que les agents peuvent utiliser. Exécutez bw unlock --raw et collez la clé de session ci-dessous. Ne collez pas votre mot de passe principal.",
   "connector.bitwarden.scope":
-    "Tous les agents de cet ordinateur peuvent utiliser les identifiants correspondants dans Shared with dani-dex. dani-dex utilise des origines HTTPS exactes. Il n’utilise pas les éléments qui demandent une invite de mot de passe principal ou une règle de correspondance d’URI personnalisée.",
+    "Tous les agents de cet ordinateur peuvent utiliser les identifiants correspondants dans Shared with Dani Dex. Dani Dex utilise des origines HTTPS exactes. Il n’utilise pas les éléments qui demandent une invite de mot de passe principal ou une règle de correspondance d’URI personnalisée.",
   "connector.bitwarden.session":
-    "La clé de session reste en mémoire. Reconnectez-vous après 8 heures sans utilisation du coffre ou après la fermeture d’dani-dex. La déconnexion arrête l’accès d’dani-dex ; elle ne verrouille pas les autres clients Bitwarden.",
+    "La clé de session reste en mémoire. Reconnectez-vous après 8 heures sans utilisation du coffre ou après la fermeture d’Dani Dex. La déconnexion arrête l’accès d’Dani Dex ; elle ne verrouille pas les autres clients Bitwarden.",
   "connector.bitwarden.sessionKey": "Clé de session Bitwarden",
   "connector.bitwarden.connect": "Connecter Bitwarden",
   "connector.bitwarden.disconnect": "Déconnecter Bitwarden",
   "connector.bitwarden.disconnectAction": "Déconnecter",
   "connector.bitwarden.disconnectSummary":
-    "dani-dex oublie la clé de session. Les agents ne peuvent plus remplir les identifiants depuis Bitwarden. Les autres clients Bitwarden restent déverrouillés.",
+    "Dani Dex oublie la clé de session. Les agents ne peuvent plus remplir les identifiants depuis Bitwarden. Les autres clients Bitwarden restent déverrouillés.",
   "connector.bitwarden.disconnectSummaryHost":
     "{host} supprime la clé d’API et le mot de passe principal. Les agents de {host} ne peuvent plus remplir les identifiants depuis Bitwarden.",
   "connector.bitwarden.connected": "Connecté",
-  "connector.bitwarden.actionFailed": "dani-dex n’a pas pu modifier la connexion Bitwarden.",
+  "connector.bitwarden.actionFailed": "Dani Dex n’a pas pu modifier la connexion Bitwarden.",
   "connector.bitwarden.descriptionHost":
     "Remplir les identifiants du navigateur sur {host} depuis Bitwarden ou Vaultwarden.",
   "connector.bitwarden.setupHost":
-    "{host} se connecte avec sa propre CLI Bitwarden. Dans votre coffre, créez un dossier nommé « Shared with dani-dex » et placez-y uniquement les identifiants que les agents peuvent utiliser. Dans le coffre web, ouvrez Paramètres › Sécurité › Clés et affichez votre clé d’API. Saisissez ci-dessous l’adresse du serveur, client_id, client_secret et votre mot de passe principal.",
+    "{host} se connecte avec sa propre CLI Bitwarden. Dans votre coffre, créez un dossier nommé « Shared with Dani Dex » et placez-y uniquement les identifiants que les agents peuvent utiliser. Dans le coffre web, ouvrez Paramètres › Sécurité › Clés et affichez votre clé d’API. Saisissez ci-dessous l’adresse du serveur, client_id, client_secret et votre mot de passe principal.",
   "connector.bitwarden.scopeHost":
-    "Tous les agents de {host} peuvent utiliser les identifiants correspondants de « Shared with dani-dex ». dani-dex utilise des origines HTTPS exactes. Il n’utilise pas les éléments qui demandent le mot de passe principal ni ceux qui ont une règle de correspondance d’URI personnalisée.",
+    "Tous les agents de {host} peuvent utiliser les identifiants correspondants de « Shared with Dani Dex ». Dani Dex utilise des origines HTTPS exactes. Il n’utilise pas les éléments qui demandent le mot de passe principal ni ceux qui ont une règle de correspondance d’URI personnalisée.",
   "connector.bitwarden.sessionHost":
     "{host} conserve la clé d’API et le mot de passe principal chiffrés, pour pouvoir déverrouiller à nouveau après un redémarrage. Cet ordinateur ne les conserve pas. Déconnecter les supprime de {host}. {host} doit joindre l’adresse du serveur en HTTPS.",
   "connector.bitwarden.serverUrl": "Adresse du serveur",
   "connector.bitwarden.folderTitle": "Dossier partagé",
   "connector.bitwarden.folderDescription":
     "Déplacez un identifiant dans ce dossier dans Bitwarden pour permettre aux agents de se connecter avec. Retirez-le pour arrêter.",
-  "connector.bitwarden.folderName": "Shared with dani-dex",
+  "connector.bitwarden.folderName": "Shared with Dani Dex",
   "connector.bitwarden.folderKind": "Dossier dans Bitwarden",
   "connector.bitwarden.clientId": "client_id de la clé d’API",
   "connector.bitwarden.clientSecret": "client_secret de la clé d’API",
@@ -590,19 +590,19 @@ export const messages = {
   "connector.protonPass.keyPlaceholder": "pst_…",
   "connector.protonPass.setupTitle": "Configurer",
   "connector.protonPass.setupDescription":
-    "Connecter ouvre la connexion Proton dans votre navigateur. Ensuite, dani-dex crée le coffre partagé et ne garde qu’une clé en lecture seule.",
+    "Connecter ouvre la connexion Proton dans votre navigateur. Ensuite, Dani Dex crée le coffre partagé et ne garde qu’une clé en lecture seule.",
   "connector.protonPass.setupDescriptionHost":
     "Connecter ouvre la connexion Proton dans votre navigateur. Ensuite, {host} crée le coffre partagé et ne garde qu’une clé en lecture seule.",
-  "connector.protonPass.vaultName": "Shared with dani-dex",
+  "connector.protonPass.vaultName": "Shared with Dani Dex",
   "connector.protonPass.vaultSetup":
-    "dani-dex crée ce coffre à la connexion. Déplacez-y des identifiants pour les partager.",
+    "Dani Dex crée ce coffre à la connexion. Déplacez-y des identifiants pour les partager.",
   "connector.protonPass.showSteps": "Voir les étapes",
   "connector.protonPass.stepsLabel": "Étapes de connexion",
   "connector.protonPass.stepSignIn": "Connexion",
   "connector.protonPass.stepVault": "Créer le coffre partagé",
   "connector.protonPass.stepDone": "Terminé",
   "connector.protonPass.signInTitle": "Connectez-vous à Proton",
-  "connector.protonPass.signInStarting": "dani-dex lance la connexion. La page Proton s’ouvre dans votre navigateur.",
+  "connector.protonPass.signInStarting": "Dani Dex lance la connexion. La page Proton s’ouvre dans votre navigateur.",
   "connector.protonPass.signInDescription":
     "La connexion est ouverte dans votre navigateur. Proton demande votre mot de passe et votre second facteur.",
   "connector.protonPass.signInDescriptionHost":
@@ -613,7 +613,7 @@ export const messages = {
   "connector.protonPass.continue": "Continuer",
   "connector.protonPass.setupStepTitle": "Création du coffre partagé",
   "connector.protonPass.setupStepDescription":
-    "dani-dex crée le coffre « {vault} » et une clé en lecture seule. Ensuite, il ferme votre session Proton.",
+    "Dani Dex crée le coffre « {vault} » et une clé en lecture seule. Ensuite, il ferme votre session Proton.",
   "connector.protonPass.doneTitle": "Proton Pass est connecté",
   "connector.protonPass.doneDescription":
     "Déplacez des identifiants dans « {vault} » pour que les agents s’en servent.",
@@ -643,9 +643,9 @@ export const messages = {
   "connector.protonPass.keyNoExpiry": "Lecture seule. N’expire pas.",
   "connector.protonPass.disconnectTitle": "Déconnecter Proton Pass",
   "connector.protonPass.disconnectSummary":
-    "dani-dex supprime sa clé d’accès sur cet ordinateur. Le coffre et ses identifiants restent dans votre compte Proton.",
+    "Dani Dex supprime sa clé d’accès sur cet ordinateur. Le coffre et ses identifiants restent dans votre compte Proton.",
   "connector.protonPass.disconnectSummaryHost":
-    "dani-dex supprime sa clé d’accès sur {host}. Le coffre et ses identifiants restent dans votre compte Proton.",
+    "Dani Dex supprime sa clé d’accès sur {host}. Le coffre et ses identifiants restent dans votre compte Proton.",
   "connector.protonPass.disconnect": "Déconnecter",
-  "connector.protonPass.actionFailed": "dani-dex n’a pas pu modifier la connexion Proton Pass.",
+  "connector.protonPass.actionFailed": "Dani Dex n’a pas pu modifier la connexion Proton Pass.",
 } as const satisfies PartialTranslation<typeof source>;

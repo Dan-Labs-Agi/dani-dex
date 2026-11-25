@@ -137,7 +137,7 @@ export const messages = {
   "files.storage.allFiles": "Alle Dateien",
   "files.storage.allFilesOn": "Alle Dateien auf {host}",
   "files.storage.allFilesDescription": "Dateien aller Agenten und Chats",
-  "files.storage.openBotOn": "dani-dex auf {host}",
+  "files.storage.openBotOn": "Dani Dex auf {host}",
   "files.storage.measuring": "Wird gemessen…",
   "files.storage.measureAgain": "Erneut messen",
   "files.storage.measuringStorage": "Speicher wird gemessen",
@@ -146,7 +146,7 @@ export const messages = {
   "files.storage.byType": "Speicher nach Typ",
   "files.storage.emptyTitle": "Noch nichts gespeichert",
   "files.storage.emptyDescription":
-    "Arbeitsbereiche der Agenten, Chatdateien und der Chatverlauf erscheinen hier, sobald du dani-dex verwendest.",
+    "Arbeitsbereiche der Agenten, Chatdateien und der Chatverlauf erscheinen hier, sobald du Dani Dex verwendest.",
   "files.storage.agents": "Agenten",
   "files.storage.largestChats": "Größte Chats",
   "files.storage.files": "Dateien",
@@ -157,7 +157,7 @@ export const messages = {
   "files.storage.justNow": "gerade eben",
   "files.storage.minutesAgo": "vor {minutes} Min.",
   "files.storage.hoursAgo": "vor {hours} Std.",
-  "files.storage.updateServer": "Aktualisiere dani-dex auf diesem Server, um seinen Speicher anzuzeigen.",
+  "files.storage.updateServer": "Aktualisiere Dani Dex auf diesem Server, um seinen Speicher anzuzeigen.",
   "files.storage.openFailed": "„{name}“ konnte nicht geöffnet werden",
   "files.storage.tryAgain": "Versuche es erneut.",
   "files.machine.title": "Maschine",
@@ -188,12 +188,12 @@ export const messages = {
   "files.cleanup.title": "Speicher freigeben",
   "files.cleanup.canBeCleared": "{size} können freigegeben werden",
   "files.cleanup.description.caches":
-    "Kopien von Serverdateien. dani-dex lädt sie erneut herunter, wenn du sie öffnest.",
+    "Kopien von Serverdateien. Dani Dex lädt sie erneut herunter, wenn du sie öffnest.",
   "files.cleanup.description.logs": "Diagnoseprotokolle. Neue Protokolle werden sofort begonnen.",
   "files.cleanup.description.runtimes":
-    "Ältere Anbieter-CLI-Versionen, die kein Agent verwendet. dani-dex behält die verwendete Version.",
+    "Ältere Anbieter-CLI-Versionen, die kein Agent verwendet. Dani Dex behält die verwendete Version.",
   "files.cleanup.description.runtimeDownloads":
-    "Die CLI-Downloads von {providers} und eventuelle ältere CLI-Versionen. Kein Agent verwendet sie: Diese Anbieter sind deaktiviert oder verwenden die CLI, die du installiert hast. dani-dex lädt eine CLI erneut herunter, wenn ein Anbieter sie braucht.",
+    "Die CLI-Downloads von {providers} und eventuelle ältere CLI-Versionen. Kein Agent verwendet sie: Diese Anbieter sind deaktiviert oder verwenden die CLI, die du installiert hast. Dani Dex lädt eine CLI erneut herunter, wenn ein Anbieter sie braucht.",
   "files.cleanup.clear": "Leeren",
   "files.cleanup.clearCategory": "{category} leeren",
   "files.cleanup.confirm.caches": "Zwischengespeicherte Serverdateien löschen?",

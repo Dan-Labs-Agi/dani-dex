@@ -609,7 +609,7 @@ try {
         () => null,
         (error: unknown) => (error instanceof Error ? error.message : String(error)),
       );
-      assert.equal(failure, "dani-dex cannot list Discord roles yet. Try again later.");
+      assert.equal(failure, "Dani Dex cannot list Discord roles yet. Try again later.");
       return { failure };
     });
 

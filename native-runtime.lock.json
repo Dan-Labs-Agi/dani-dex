@@ -424,26 +424,10 @@
       "submodules": {}
     },
     "targets": {
-      "darwin-arm64": [
-        "Sunshine.app/Contents/MacOS/Sunshine",
-        "web-server",
-        "streamer"
-      ],
-      "darwin-x64": [
-        "Sunshine.app/Contents/MacOS/Sunshine",
-        "web-server",
-        "streamer"
-      ],
-      "win32-x64": [
-        "sunshine.exe",
-        "web-server.exe",
-        "streamer.exe"
-      ],
-      "linux-x64": [
-        "sunshine",
-        "web-server",
-        "streamer"
-      ]
+      "darwin-arm64": ["Sunshine.app/Contents/MacOS/Sunshine", "web-server", "streamer"],
+      "darwin-x64": ["Sunshine.app/Contents/MacOS/Sunshine", "web-server", "streamer"],
+      "win32-x64": ["sunshine.exe", "web-server.exe", "streamer.exe"],
+      "linux-x64": ["sunshine", "web-server", "streamer"]
     },
     "releaseArtifacts": {
       "darwin-arm64": {

@@ -1,3 +1,4 @@
+// biome-ignore-all lint/nursery/noUnsafeTypeAssertion: untyped account service payloads, typed contracts pending
 /**
  * Verifies a Google OpenID Connect ID token for mobile sign-in.
  *
@@ -42,15 +43,15 @@ function base64UrlToBytes(value: string): Uint8Array<ArrayBuffer> {
   return bytes;
 }
 
-function decodeJsonPart(value: string): Record<string, unknown> {
+function decodeJsonPart(value: string): { [key: string]: unknown } {
   try {
     const binary = atob(value.replace(/-/gu, "+").replace(/_/gu, "/"));
     const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
-    const parsed: unknown = JSON.parse(new TextDecoder().decode(bytes));
+    const parsed = JSON.parse(new TextDecoder().decode(bytes));
     if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
       throw new GoogleIdTokenError("invalid_google_token");
     }
-    return parsed as Record<string, unknown>;
+    return parsed as { [key: string]: unknown };
   } catch (error) {
     if (error instanceof GoogleIdTokenError) throw error;
     throw new GoogleIdTokenError("invalid_google_token");

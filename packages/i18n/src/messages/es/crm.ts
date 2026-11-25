@@ -338,7 +338,7 @@ export const messages = {
   "crm.source.keyPlaceholder": "rk_live_…",
   "crm.source.createKey": "Crear clave en {source}",
   "crm.source.stripeKeyHelp":
-    "Stripe abre una clave de solo lectura, lista para crear. Créala, copia la clave y pégala aquí. dani-dex solo lee de Stripe.",
+    "Stripe abre una clave de solo lectura, lista para crear. Créala, copia la clave y pégala aquí. Dani Dex solo lee de Stripe.",
   "crm.source.connect": "Conectar",
   "crm.source.account": "Cuenta",
   "crm.source.testMode": "Modo de prueba",
@@ -354,9 +354,9 @@ export const messages = {
   "crm.source.errorRateLimited":
     "{source} recibió demasiadas solicitudes. La próxima sincronización lo intentará de nuevo.",
   "crm.source.errorNetwork":
-    "dani-dex no puede conectarse a {source}. La próxima sincronización lo intentará de nuevo.",
+    "Dani Dex no puede conectarse a {source}. La próxima sincronización lo intentará de nuevo.",
   "crm.source.errorFailed":
-    "{source} envió una respuesta que dani-dex no puede leer. La próxima sincronización lo intentará de nuevo.",
+    "{source} envió una respuesta que Dani Dex no puede leer. La próxima sincronización lo intentará de nuevo.",
   "crm.source.skipped": "No importado",
   "crm.source.skippedCurrency": "Otra moneda: {rows}",
   "crm.source.skippedInterval": "Otro intervalo de facturación: {rows}",
@@ -368,5 +368,5 @@ export const messages = {
   "crm.source.disconnect": "Desconectar",
   "crm.source.disconnectTitle": "¿Desconectar {source}?",
   "crm.source.disconnectBody":
-    "dani-dex detiene la sincronización y elimina la clave. Las filas importadas se quedan y puedes cambiarlas.",
+    "Dani Dex detiene la sincronización y elimina la clave. Las filas importadas se quedan y puedes cambiarlas.",
 } as const satisfies PartialTranslation<typeof source>;

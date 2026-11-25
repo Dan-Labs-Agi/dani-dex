@@ -4,5 +4,5 @@ import type { messages as source } from "../../en/error/storage";
 export const messages = {
   "error.storage.unsupported": "هذا الخادم لا يدعم التخزين.",
   "error.storage.agentMissing": "الوكيل غير موجود.",
-  "error.storage.unreadableFile": "لا يمكن لـ dani-dex قراءة {path}. الملف تالف.",
+  "error.storage.unreadableFile": "لا يمكن لـ Dani Dex قراءة {path}. الملف تالف.",
 } as const satisfies PartialTranslation<typeof source>;

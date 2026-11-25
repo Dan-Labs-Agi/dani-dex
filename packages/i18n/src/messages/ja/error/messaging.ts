@@ -5,21 +5,21 @@ export const messages = {
   "error.messaging.notConnected": "この Slack ワークスペースは接続されていません。",
   "error.messaging.unsupported": "このコンピューターは Slack に接続できません。",
   "error.messaging.relayUnavailable":
-    "dani-dex はこのコンピューターで Slack のイベントを受信できません。サインインし、このコンピューターに名前を付けてから、もう一度お試しください。",
+    "Dani Dex はこのコンピューターで Slack のイベントを受信できません。サインインし、このコンピューターに名前を付けてから、もう一度お試しください。",
   "error.messaging.discordNotConnected": "この Discord サーバーは接続されていません。",
   "error.messaging.discordUnsupported": "このコンピューターは Discord に接続できません。",
   "error.messaging.discordRelayUnavailable":
-    "dani-dex はこのコンピューターで Discord のイベントを受信できません。サインインし、このコンピューターに名前を付けてから、もう一度お試しください。",
+    "Dani Dex はこのコンピューターで Discord のイベントを受信できません。サインインし、このコンピューターに名前を付けてから、もう一度お試しください。",
   "error.messaging.discordRolesUnsupported":
-    "dani-dex はまだ Discord のロールを一覧にできません。後でもう一度お試しください。",
+    "Dani Dex はまだ Discord のロールを一覧にできません。後でもう一度お試しください。",
   "error.messaging.telegramNotConnected": "この Telegram チャットは接続されていません。",
   "error.messaging.telegramUnsupported": "このコンピューターは Telegram に接続できません。",
   "error.messaging.telegramRelayUnavailable":
-    "dani-dex はこのコンピューターから Telegram に接続できません。サインインし、このコンピューターに名前を付けてから、もう一度お試しください。",
+    "Dani Dex はこのコンピューターから Telegram に接続できません。サインインし、このコンピューターに名前を付けてから、もう一度お試しください。",
   "error.messaging.telegramRelayUnreachable":
-    "dani-dex はこのコンピューターからサービスに接続できません。インターネット接続、VPN、プロキシ、またはファイアウォールを確認してから、もう一度お試しください。",
+    "Dani Dex はこのコンピューターからサービスに接続できません。インターネット接続、VPN、プロキシ、またはファイアウォールを確認してから、もう一度お試しください。",
   "error.messaging.telegramServiceUnavailable":
-    "dani-dex は現在 Telegram に接続できません。しばらくしてからもう一度お試しください。",
+    "Dani Dex は現在 Telegram に接続できません。しばらくしてからもう一度お試しください。",
   "error.messaging.whatsappNotConnected": "この WhatsApp 番号は接続されていません。",
   "error.messaging.whatsappUnsupported": "このコンピューターは WhatsApp に接続できません。",
   "error.messaging.whatsappTooManySenders": "1 つの WhatsApp 番号で許可できる連絡先とグループは最大 200 件です。",

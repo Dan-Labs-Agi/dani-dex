@@ -2,7 +2,7 @@ import type { PartialTranslation } from "../../../message";
 import type { messages as source } from "../../en/error/crm";
 
 export const messages = {
-  "error.crm.serverTooOld": "Этот сервер не поддерживает CRM. Обновите dani-dex на компьютере, на котором он работает.",
+  "error.crm.serverTooOld": "Этот сервер не поддерживает CRM. Обновите Dani Dex на компьютере, на котором он работает.",
   "error.crm.tooLargeToSend": "Эта страница CRM слишком велика для отправки в это приложение.",
   "error.crm.customerMissing": "Этого клиента больше нет.",
   "error.crm.planMissing": "Этого тарифа больше нет.",
@@ -38,10 +38,10 @@ export const messages = {
   "error.crm.sourcePermission":
     "Этот ключ не может читать клиентов, счета, подписки, события и продукты. Дайте ему доступ на чтение к ним.",
   "error.crm.sourceRateLimited": "Stripe получил слишком много запросов. Повторите попытку через минуту.",
-  "error.crm.sourceNetwork": "dani-dex не может подключиться к Stripe. Проверьте подключение к интернету.",
-  "error.crm.sourceFailed": "Stripe прислал ответ, который dani-dex не может прочитать. Повторите попытку позже.",
-  "error.crm.sourceKeySaveFailed": "dani-dex не может сохранить ключ Stripe на этом компьютере.",
+  "error.crm.sourceNetwork": "Dani Dex не может подключиться к Stripe. Проверьте подключение к интернету.",
+  "error.crm.sourceFailed": "Stripe прислал ответ, который Dani Dex не может прочитать. Повторите попытку позже.",
+  "error.crm.sourceKeySaveFailed": "Dani Dex не может сохранить ключ Stripe на этом компьютере.",
   "error.crm.off":
     "CRM выключена. Владелец или администратор может включить её в разделе «Настройки сервера > Экспериментальные».",
-  "error.crm.settingsSaveFailed": "dani-dex не может сохранить настройку CRM на этом сервере.",
+  "error.crm.settingsSaveFailed": "Dani Dex не может сохранить настройку CRM на этом сервере.",
 } as const satisfies PartialTranslation<typeof source>;

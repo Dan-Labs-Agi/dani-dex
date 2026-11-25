@@ -56,10 +56,10 @@ export const messages = {
   "browser.pip.reattach": "Tarayıcıyı sağ kenar çubuğuna yeniden ekle",
   "browser.pip.reattachTitle": "Tarayıcıyı yeniden ekle",
   "browser.pip.close": "Tarayıcı açılır penceresini kapat",
-  "browser.pip.reattachFailed": "dani-dex tarayıcıyı kenar çubuğuna geri ekleyemedi.",
-  "browser.pip.closeFailed": "dani-dex tarayıcı açılır penceresini kapatamadı.",
+  "browser.pip.reattachFailed": "Dani Dex tarayıcıyı kenar çubuğuna geri ekleyemedi.",
+  "browser.pip.closeFailed": "Dani Dex tarayıcı açılır penceresini kapatamadı.",
   "browser.window.open": "Tarayıcıyı yeni pencerede aç",
-  "browser.window.openFailed": "dani-dex tarayıcı penceresini açamadı.",
+  "browser.window.openFailed": "Dani Dex tarayıcı penceresini açamadı.",
   "browser.popupBlocked.title": "Açılır pencere engellendi",
   "browser.popupBlocked.dismiss": "Açılır pencere mesajını kapat",
   "browser.liveView.label": "Sunucudaki sayfanın canlı görünümü",
@@ -96,17 +96,17 @@ export const messages = {
   "browser.secret.failed": "İstek tamamlanamadı. Bağlantıyı kontrol edin ve tekrar deneyin.",
   "browser.secret.ended": "Bu oturum açma isteği sona erdi. Ajandan tekrar denemesini isteyin.",
   "browser.secret.vaultSkip.agentScript":
-    "Ajan bu sayfada bir betik çalıştırdığı için dani-dex kayıtlı oturum bilgilerinizi kullanmadı. Kullanmak için ajandan sayfayı yeniden yüklemesini ve tekrar denemesini isteyin.",
+    "Ajan bu sayfada bir betik çalıştırdığı için Dani Dex kayıtlı oturum bilgilerinizi kullanmadı. Kullanmak için ajandan sayfayı yeniden yüklemesini ve tekrar denemesini isteyin.",
   "browser.secret.vaultSkip.fieldKind":
-    "Ajan sayfada yanlış alanı seçtiği için dani-dex kayıtlı oturum bilgilerinizi kullanmadı.",
+    "Ajan sayfada yanlış alanı seçtiği için Dani Dex kayıtlı oturum bilgilerinizi kullanmadı.",
   "browser.secret.vaultSkip.loginChoice":
-    "Ajan bu site için kayıtlı oturum bilgilerinden birini seçmediği için dani-dex kayıtlı bir oturum bilgisi kullanmadı. Ajana hangi hesabı kullanacağını söyleyin.",
+    "Ajan bu site için kayıtlı oturum bilgilerinden birini seçmediği için Dani Dex kayıtlı bir oturum bilgisi kullanmadı. Ajana hangi hesabı kullanacağını söyleyin.",
   "browser.secret.vaultSkip.noPassword":
-    "Kayıtlı oturum bilgilerinizde bu site için şifre olmadığı için dani-dex bunları kullanmadı.",
+    "Kayıtlı oturum bilgilerinizde bu site için şifre olmadığı için Dani Dex bunları kullanmadı.",
   "browser.secret.vaultSkip.noAuthenticatorKey":
-    "Kayıtlı oturum bilgilerinizde kimlik doğrulayıcı anahtarı olmadığı için dani-dex bunları kullanmadı.",
+    "Kayıtlı oturum bilgilerinizde kimlik doğrulayıcı anahtarı olmadığı için Dani Dex bunları kullanmadı.",
   "browser.secret.vaultSkip.vaultUnreadable":
-    "Şifre yöneticiniz okunamadığı için dani-dex kayıtlı bir oturum bilgisi kullanmadı.",
+    "Şifre yöneticiniz okunamadığı için Dani Dex kayıtlı bir oturum bilgisi kullanmadı.",
   "browser.error.openAddress": "Adres bu sekmede açılamadı.",
   "browser.error.channelNoBrowserMember": "Bu kanalda hiçbir üye yeni sekme açamaz.",
   "browser.error.closeTab": "Tarayıcı sekmesi kapatılamadı.",
@@ -166,21 +166,21 @@ export const messages = {
   "browser.signIn.local": "Bu bilgisayarda oturum aç",
   "browser.signIn.title": "{site} sitesinde oturum aç",
   "browser.signIn.description":
-    "Bazı siteler bir sunucudan oturum açmayı reddeder. Bu bilgisayarda oturum açın; dani-dex {site} oturumunu {server} sunucusuna gönderir. {server} üzerindeki tüm ajanlar ve üyeler bunu tarayıcıda kullanabilir.",
+    "Bazı siteler bir sunucudan oturum açmayı reddeder. Bu bilgisayarda oturum açın; Dani Dex {site} oturumunu {server} sunucusuna gönderir. {server} üzerindeki tüm ajanlar ve üyeler bunu tarayıcıda kullanabilir.",
   "browser.signIn.windowOpen":
-    "Açılan pencerede oturum açın. Oturum açma tamamlanınca dani-dex onu gönderir. Pencere açık kalırsa Bitti'yi seçin.",
+    "Açılan pencerede oturum açın. Oturum açma tamamlanınca Dani Dex onu gönderir. Pencere açık kalırsa Bitti'yi seçin.",
   "browser.signIn.windowClosed":
     "Oturum açma penceresi kapalı. Oturumu göndermek için Bitti'yi seçin veya pencereyi yeniden açın.",
   "browser.signIn.reopen": "Oturum açma penceresini aç",
   "browser.signIn.sending": "{server} sunucusuna gönderiliyor…",
   "browser.signIn.sent": "{server} üzerinde {site} oturumu açıldı",
-  "browser.signIn.notFound": "dani-dex {site} için oturum bulamadı. Pencerede oturum açın, sonra Bitti'yi seçin.",
+  "browser.signIn.notFound": "Dani Dex {site} için oturum bulamadı. Pencerede oturum açın, sonra Bitti'yi seçin.",
   "browser.signIn.stillSignedOut":
     "{server} hâlâ {site} için bir oturum açma sayfası gösteriyor. Oturum açmayı pencerede tamamlayın.",
-  "browser.signIn.failed": "dani-dex oturumu gönderemedi.",
+  "browser.signIn.failed": "Dani Dex oturumu gönderemedi.",
   "browser.profiles.title": "Tarayıcı profilleri",
   "browser.profiles.subtitle":
-    "Her profil kendi oturum açma bilgilerini, çerezlerini ve site verilerini dani-dex'u çalıştıran bilgisayarda tutar.",
+    "Her profil kendi oturum açma bilgilerini, çerezlerini ve site verilerini Dani Dex'u çalıştıran bilgisayarda tutar.",
   "browser.profiles.label": "Tarayıcı profilleri",
   "browser.profiles.newName": "Profil adı",
   "browser.profiles.create": "Ekle",
@@ -199,8 +199,8 @@ export const messages = {
   "browser.profiles.deleteDescription":
     "Bu işlem profilin oturum açma bilgilerini, çerezlerini ve site verilerini siler. Açık sekmeleri kapanır.",
   "browser.profiles.deleteAgents": "Bu ajanlar paylaşılan profile geçer: {agents}.",
-  "browser.profiles.failed": "dani-dex tarayıcı profillerini değiştiremedi.",
-  "browser.profiles.loadFailed": "dani-dex tarayıcı profillerini yükleyemedi.",
+  "browser.profiles.failed": "Dani Dex tarayıcı profillerini değiştiremedi.",
+  "browser.profiles.loadFailed": "Dani Dex tarayıcı profillerini yükleyemedi.",
   "browser.profiles.tabLabel": "Profil: {name}",
   "browser.profiles.tabLabelProxy": "Profil: {name} · Proxy: {proxy}",
   "browser.profiles.agentTabLabel": "Ajanın kendi profili",
@@ -215,7 +215,7 @@ export const messages = {
   "browser.proxies.addTitle": "Proxy ekle",
   "browser.proxies.editTitle": "{name} proxy'sini düzenle",
   "browser.proxies.dialogDescription":
-    "socks5, http veya https kullanın. Kullanıcı adı ve parola her türde isteğe bağlıdır. Parola, dani-dex'u çalıştıran bilgisayarda şifreli olarak kalır.",
+    "socks5, http veya https kullanın. Kullanıcı adı ve parola her türde isteğe bağlıdır. Parola, Dani Dex'u çalıştıran bilgisayarda şifreli olarak kalır.",
   "browser.proxies.address": "Adres",
   "browser.proxies.addressPlaceholder": "socks5://user:password@host:1080",
   "browser.proxies.deleteUsed": {
@@ -225,7 +225,7 @@ export const messages = {
   "browser.proxies.deleteUnused": "Bu proxy'yi kullanan profil yok.",
   "browser.proxies.failing": "{name} yanıt vermiyor",
   "browser.proxies.signInRefused": "{name} oturum açmayı reddetti",
-  "browser.proxies.unsupported": "Bu sunucu proxy kullanamaz. Sunucudaki dani-dex'u güncelleyin.",
+  "browser.proxies.unsupported": "Bu sunucu proxy kullanamaz. Sunucudaki Dani Dex'u güncelleyin.",
   "browser.proxies.yourComputer": "Bilgisayarınız",
   "browser.proxies.memberComputer": "{name} üyesinin bilgisayarı",
   "browser.proxies.unknownComputer": "Bir üyenin bilgisayarı",
@@ -236,7 +236,7 @@ export const messages = {
   "browser.proxies.offlineBadge": "{name} çevrim dışı",
   "browser.proxies.shareTitle": "Bu bilgisayarın bağlantısı paylaşılsın mı?",
   "browser.proxies.shareDescription":
-    "Bilgisayarınızı kullanan profiller, herkese açık siteleri bu bilgisayarın internet bağlantısı üzerinden açar. Bu yalnızca dani-dex burada açıkken çalışır. Sunucu, yerel ağınızdaki adresleri açamaz.",
+    "Bilgisayarınızı kullanan profiller, herkese açık siteleri bu bilgisayarın internet bağlantısı üzerinden açar. Bu yalnızca Dani Dex burada açıkken çalışır. Sunucu, yerel ağınızdaki adresleri açamaz.",
   "browser.proxies.share": "Paylaş",
   "browser.proxies.stopSharing": "Paylaşmayı durdur",
   "browser.proxies.closesTabs": {

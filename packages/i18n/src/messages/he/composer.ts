@@ -69,10 +69,10 @@ export const messages = {
   "composer.voice.start": "יצירת הנחיה בקול",
   "composer.voice.blocked": "הגישה למיקרופון חסומה. יש לאפשר ל-dani-dex להשתמש במיקרופון בהגדרות המערכת.",
   "composer.voice.noMicrophone": "אין מיקרופון זמין.",
-  "composer.voice.startFailed": "dani-dex לא הצליח להתחיל הקלטת קול.",
+  "composer.voice.startFailed": "Dani Dex לא הצליח להתחיל הקלטת קול.",
   "composer.voice.microphoneUnavailable":
-    "dani-dex לא הצליח לפתוח את המיקרופון. יש לסגור אפליקציות אחרות שמשתמשות בו, לוודא שהוא מחובר ומותר בהגדרות המערכת, ולנסות שוב.",
-  "composer.voice.transcribeFailed": "dani-dex לא הצליח לתמלל את ההקלטה הזו.",
+    "Dani Dex לא הצליח לפתוח את המיקרופון. יש לסגור אפליקציות אחרות שמשתמשות בו, לוודא שהוא מחובר ומותר בהגדרות המערכת, ולנסות שוב.",
+  "composer.voice.transcribeFailed": "Dani Dex לא הצליח לתמלל את ההקלטה הזו.",
   "composer.reply.toYou": "משיב להודעה שלך",
   "composer.reply.toAgent": "משיב לסוכן",
   "composer.reply.attachment": "קובץ מצורף",

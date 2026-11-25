@@ -51,12 +51,15 @@ export async function installRemoteDesktopRuntime(
   // go through the asset's API URL with an octet-stream Accept instead. The header does not leak
   // past the redirect: fetch drops Authorization when the asset URL redirects to the signed
   // object-storage host.
-  const releaseFetch: typeof fetch = (url, init) => {
-    const headers = new Headers(init?.headers);
-    if (!headers.has("Accept")) headers.set("Accept", "application/octet-stream");
-    if (githubToken && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${githubToken}`);
-    return fetchImpl(url, { ...init, headers });
-  };
+  const releaseFetch: typeof fetch = Object.assign(
+    (url: URL | RequestInfo, init?: RequestInit) => {
+      const headers = new Headers(init?.headers);
+      if (!headers.has("Accept")) headers.set("Accept", "application/octet-stream");
+      if (githubToken && !headers.has("Authorization")) headers.set("Authorization", `Bearer ${githubToken}`);
+      return fetchImpl(url, { ...init, headers });
+    },
+    { preconnect: fetchImpl.preconnect },
+  );
 
   if (await isCurrentInstallation(() => verifyRuntimeTree(outputRoot, target, lock))) {
     logger.info(`The ${target} remote desktop runtime is current.`);
