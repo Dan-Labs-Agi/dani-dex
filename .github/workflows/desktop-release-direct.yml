@@ -20,6 +20,8 @@ env:
   R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
   R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
   CSC_IDENTITY_AUTO_DISCOVERY: "false"
+  # Lets the runtime installer read the pinned runtime release in this private repo.
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   mac:
