@@ -1,0 +1,30 @@
+workflows:
+  mac-desktop-unsigned:
+    name: Mac desktop (unsigned)
+    instance_type: mac_mini_m2
+    max_build_duration: 90
+    environment:
+      node: 24
+      vars:
+        BUN_VERSION: 1.4.2
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+    scripts:
+      - name: Install Bun
+        script: |
+          curl -fsSL https://bun.sh/install | bash -s "bun-v${BUN_VERSION}"
+      - name: Install dependencies
+        script: |
+          export PATH="$HOME/.bun/bin:$PATH"
+          bun install --frozen-lockfile
+      - name: Build the unsigned macOS app
+        script: |
+          export PATH="$HOME/.bun/bin:$PATH"
+          bun run dist:mac
+    artifacts:
+      - dist/*.dmg
+      - dist/*.zip
