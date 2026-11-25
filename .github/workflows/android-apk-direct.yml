@@ -18,7 +18,7 @@ jobs:
   apk:
     name: Build and publish the Android APK
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 90
     concurrency:
       group: android-apk-direct
       cancel-in-progress: true
@@ -85,6 +85,11 @@ jobs:
         working-directory: apps/mobile
         run: bunx expo prebuild --platform android --non-interactive --no-install
 
+      # A test APK for phones people hold today: skip the x86 emulator ABIs.
+      - name: Build the arm64 ABI only
+        working-directory: apps/mobile/android
+        run: echo 'reactNativeArchitectures=arm64-v8a' >> gradle.properties
+
       - name: Assemble the release APK
         working-directory: apps/mobile/android
         run: |
@@ -101,13 +106,19 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-      - name: Upload the APK to the download host
+      - name: Read the app version
+        id: version
+        working-directory: apps/mobile
+        run: echo "version=$(bun -e 'console.log(JSON.parse(require("fs").readFileSync("app.json","utf8")).expo.version)')" >> "$GITHUB_OUTPUT"
+
+      - name: Publish the APK to the download host and update feed
+        env:
+          R2_ACCOUNT_ID: a2f714474bf94011597fd5cd1a92b56b
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
           set -euo pipefail
-          APK_PATH="$RUNNER_TEMP/dani-dex.apk"
-          s3() { aws s3 "$@" --endpoint-url "$R2_ENDPOINT"; }
-          s3 cp "$APK_PATH" "s3://$R2_BUCKET/android/dani-dex-$(git rev-parse --short HEAD).apk"
-          s3 cp "$APK_PATH" "s3://$R2_BUCKET/android/dani-dex.apk"
+          pip3 install --quiet boto3
+          python3 scripts/publish-feed.py --platform android             --file "$RUNNER_TEMP/dani-dex.apk" --key android/dani-dex.apk --version "$VERSION"
 
       - name: Verify the public URL
         run: |
@@ -115,3 +126,4 @@ jobs:
           code=$(curl -s -o /dev/null -w '%{http_code}' "https://dl.dani.danlab.dev/android/dani-dex.apk")
           echo "https://dl.dani.danlab.dev/android/dani-dex.apk -> $code"
           test "$code" = 200
+          curl -fsS https://dl.dani.danlab.dev/latest.json | head -c 400
