@@ -31,7 +31,6 @@
   padding: var(--openbot-space-8) var(--openbot-space-4);
 }
 
-.browser-preview-list > .browser-empty-state > svg,
 .browser-preview-image > svg {
   width: var(--openbot-icon-lg);
   height: var(--openbot-icon-lg);
@@ -39,9 +38,7 @@
   stroke-width: var(--openbot-icon-stroke-lg);
 }
 
-.browser-preview-list > .browser-empty-state > svg {
-  margin-bottom: var(--openbot-space-1);
-}
+
 
 .browser-preview-list > .browser-empty-state > strong {
   color: var(--openbot-text-secondary);
@@ -134,6 +131,17 @@
   width: var(--openbot-icon-xs);
   height: var(--openbot-icon-xs);
   stroke-width: var(--openbot-icon-stroke);
+}
+
+.browser-preview-list > .browser-empty-state > svg {
+  width: var(--openbot-icon-lg);
+  height: var(--openbot-icon-lg);
+  color: var(--openbot-text-muted);
+  stroke-width: var(--openbot-icon-stroke-lg);
+}
+
+.browser-preview-list > .browser-empty-state > svg {
+  margin-bottom: var(--openbot-space-1);
 }
 
 .browser-preview-card:hover .browser-preview-close,

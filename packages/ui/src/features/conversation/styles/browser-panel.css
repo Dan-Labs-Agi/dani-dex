@@ -42,6 +42,11 @@
   color: var(--openbot-text-primary);
 }
 
+.browser-toolbar-icon {
+  width: 15px;
+  height: 15px;
+}
+
 .browser-pip-hover-button .browser-toolbar-icon {
   width: 12px;
   height: 12px;
@@ -84,10 +89,6 @@
   cursor: default;
 }
 
-.browser-toolbar-icon {
-  width: 15px;
-  height: 15px;
-}
 
 .browser-profile-status,
 .browser-recording-status,
