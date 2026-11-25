@@ -26,7 +26,6 @@ jobs:
       CI: "1"
       EXPO_PUBLIC_APP_ENV: production
       NODE_OPTIONS: --max-old-space-size=3072
-      APK_PATH: ${{ runner.temp }}/dani-dex.apk
       AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
       AWS_DEFAULT_REGION: auto
@@ -90,6 +89,7 @@ jobs:
         working-directory: apps/mobile/android
         run: |
           ./gradlew assembleRelease --no-daemon
+          APK_PATH="$RUNNER_TEMP/dani-dex.apk"
           cp app/build/outputs/apk/release/app-release.apk "$APK_PATH"
           ls -la "$APK_PATH"
 
@@ -97,13 +97,14 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: dani-dex-apk-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ env.APK_PATH }}
+          path: ${{ runner.temp }}/dani-dex.apk
           if-no-files-found: error
           retention-days: 7
 
       - name: Upload the APK to the download host
         run: |
           set -euo pipefail
+          APK_PATH="$RUNNER_TEMP/dani-dex.apk"
           s3() { aws s3 "$@" --endpoint-url "$R2_ENDPOINT"; }
           s3 cp "$APK_PATH" "s3://$R2_BUCKET/android/dani-dex-$(git rev-parse --short HEAD).apk"
           s3 cp "$APK_PATH" "s3://$R2_BUCKET/android/dani-dex.apk"
