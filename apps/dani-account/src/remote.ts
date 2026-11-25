@@ -175,7 +175,8 @@ export async function handleRemote(
     const secret = env.TELEGRAM_CLAIM_SECRET || "";
     if (!secret || bearer !== secret) return json({ error: "unauthorized" }, 401);
     const b = await body();
-    if (typeof b.code !== "string" || !/^[A-Za-z0-9_-]{32,64}$/.test(b.code)) return json({ error: "invalid_code" }, 400);
+    if (typeof b.code !== "string" || !/^[A-Za-z0-9_-]{32,64}$/.test(b.code))
+      return json({ error: "invalid_code" }, 400);
     if (typeof b.chatId !== "string" || !/^-?[0-9]{1,20}$/.test(b.chatId)) return json({ error: "invalid_chat" }, 400);
     const botId = typeof b.botId === "string" && /^[0-9]{1,20}$/.test(b.botId) ? b.botId : "0";
     const ch = await sha256(b.code);
@@ -206,15 +207,23 @@ export async function handleRemote(
     }
     if (tg[2] === "telegram-disconnect") {
       if (typeof b.chatId === "string")
-        await env.DB.prepare("DELETE FROM telegram_chats WHERE host_id=? AND chat_id=?").bind(h.host_id, b.chatId).run();
+        await env.DB.prepare("DELETE FROM telegram_chats WHERE host_id=? AND chat_id=?")
+          .bind(h.host_id, b.chatId)
+          .run();
       return json({ ok: true });
     }
     const rows = (
-      await env.DB.prepare("SELECT chat_id,bot_id,linked_at FROM telegram_chats WHERE host_id=?").bind(h.host_id).all<any>()
+      await env.DB.prepare("SELECT chat_id,bot_id,linked_at FROM telegram_chats WHERE host_id=?")
+        .bind(h.host_id)
+        .all<any>()
     ).results;
     const chats = rows.map((c: any) => ({ id: c.chat_id, botId: c.bot_id, linkedAt: c.linked_at }));
     const { jwt, exp } = await signJwt(env, { hid: h.host_id, chats }, 300);
-    return json({ ticket: jwt, expiresAt: exp * 1000, chats: chats.map((c: any) => `${c.botId}:${c.id}:${c.linkedAt}`) });
+    return json({
+      ticket: jwt,
+      expiresAt: exp * 1000,
+      chats: chats.map((c: any) => `${c.botId}:${c.id}:${c.linkedAt}`),
+    });
   }
   let r = p.match(/^\/v2\/remote\/hosts\/([^/]+)\/(ticket|signal-homes)\/?$/);
   if (r && m === "POST") {
