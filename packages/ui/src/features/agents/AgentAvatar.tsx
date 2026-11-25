@@ -7,6 +7,20 @@ import type { AvatarMotion, SupportedAvatarSilhouetteId } from "../../bloub-avat
 import type { AgentProfile } from "../../data";
 import { characterSpritesFor } from "./character-faces";
 
+function hexHue(color: string): number | null {
+  const match = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color);
+  if (!match) return null;
+  const [r = 0, g = 0, b = 0] = [match[1], match[2], match[3]].map((part) => Number.parseInt(part ?? "0", 16) / 255);
+  const max = Math.max(r, g, b);
+  const delta = max - Math.min(r, g, b);
+  if (delta < 0.04) return null;
+  let hue = 0;
+  if (max === r) hue = ((g - b) / delta) % 6;
+  else if (max === g) hue = (b - r) / delta + 2;
+  else hue = (r - g) / delta + 4;
+  return (hue * 60 + 360) % 360;
+}
+
 function hashPhase(seed: string): number {
   let hash = 0;
   for (const char of seed) hash = (hash * 17 + char.charCodeAt(0)) >>> 0;
@@ -45,6 +59,15 @@ export function AgentAvatar(props: AgentAvatarProps) {
     },
   );
   const sprites = createMemo(() => characterSpritesFor(seed()));
+  const targetHue = (): number | null => {
+    const fromColor = props.color ? hexHue(props.color) : null;
+    if (fromColor !== null) return fromColor;
+    return typeof props.hue === "number" ? props.hue : null;
+  };
+  const tint = () => {
+    const target = targetHue();
+    return target === null ? undefined : `hue-rotate(${Math.round(target - sprites().hue)}deg)`;
+  };
   const className = () => `agent-avatar agent-avatar-motion-${props.motion ?? "hover"} ${props.class ?? ""}`;
 
   return (
@@ -60,7 +83,7 @@ export function AgentAvatar(props: AgentAvatarProps) {
         >
           <span
             class={`agent-avatar-body agent-avatar-char-${sprites().id}`}
-            style={{ "--avatar-phase": `${(hashPhase(seed()) % 3000) / -1000}s` }}
+            style={{ "--avatar-phase": `${(hashPhase(seed()) % 3000) / -1000}s`, filter: tint() }}
           >
             <img class="agent-avatar-foot agent-avatar-foot-l" src={sprites().footLeft} alt="" draggable={false} />
             <img class="agent-avatar-foot agent-avatar-foot-r" src={sprites().footRight} alt="" draggable={false} />

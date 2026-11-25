@@ -2,6 +2,7 @@
 // parts can move on their own. The body also has a blink frame and a happy face (the sunglasses one has neither).
 interface CharacterSprites {
   id: string;
+  hue: number;
   body: string;
   blink: string | null;
   happy: string | null;
@@ -13,6 +14,7 @@ interface CharacterSprites {
 const faces: readonly CharacterSprites[] = [
   {
     id: "dani",
+    hue: 268,
     body: new URL("./characters/dani.png", import.meta.url).href,
     blink: new URL("./characters/dani-blink.png", import.meta.url).href,
     happy: new URL("./characters/dani-happy.png", import.meta.url).href,
@@ -22,6 +24,7 @@ const faces: readonly CharacterSprites[] = [
   },
   {
     id: "sprout",
+    hue: 181,
     body: new URL("./characters/sprout.png", import.meta.url).href,
     blink: new URL("./characters/sprout-blink.png", import.meta.url).href,
     happy: new URL("./characters/sprout-happy.png", import.meta.url).href,
@@ -31,6 +34,7 @@ const faces: readonly CharacterSprites[] = [
   },
   {
     id: "tuft",
+    hue: 205,
     body: new URL("./characters/tuft.png", import.meta.url).href,
     blink: new URL("./characters/tuft-blink.png", import.meta.url).href,
     happy: new URL("./characters/tuft-happy.png", import.meta.url).href,
@@ -40,6 +44,7 @@ const faces: readonly CharacterSprites[] = [
   },
   {
     id: "sweep",
+    hue: 150,
     body: new URL("./characters/sweep.png", import.meta.url).href,
     blink: new URL("./characters/sweep-blink.png", import.meta.url).href,
     happy: new URL("./characters/sweep-happy.png", import.meta.url).href,
@@ -49,6 +54,7 @@ const faces: readonly CharacterSprites[] = [
   },
   {
     id: "cap",
+    hue: 29,
     body: new URL("./characters/cap.png", import.meta.url).href,
     blink: new URL("./characters/cap-blink.png", import.meta.url).href,
     happy: new URL("./characters/cap-happy.png", import.meta.url).href,
@@ -58,6 +64,7 @@ const faces: readonly CharacterSprites[] = [
   },
   {
     id: "shades",
+    hue: 343,
     body: new URL("./characters/shades.png", import.meta.url).href,
     blink: null,
     happy: null,
@@ -67,6 +74,7 @@ const faces: readonly CharacterSprites[] = [
   },
   {
     id: "bow",
+    hue: 322,
     body: new URL("./characters/bow.png", import.meta.url).href,
     blink: new URL("./characters/bow-blink.png", import.meta.url).href,
     happy: new URL("./characters/bow-happy.png", import.meta.url).href,
@@ -76,10 +84,23 @@ const faces: readonly CharacterSprites[] = [
   },
 ];
 
-function sprites(seed: string): CharacterSprites {
+function seedIndex(seed: string): number {
   let hash = 0;
   for (const char of seed) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
-  const found = faces[hash % faces.length] ?? faces[0];
+  return hash % faces.length;
+}
+
+/** One seed per character, in order, so a picker can list exactly the seven with no repeats. */
+export const CHARACTER_SEEDS: readonly string[] = faces.map((_, index) => {
+  for (let attempt = 0; attempt < 1000; attempt += 1) {
+    const seed = `character:${attempt}`;
+    if (seedIndex(seed) === index) return seed;
+  }
+  return "character";
+});
+
+function sprites(seed: string): CharacterSprites {
+  const found = faces[seedIndex(seed)] ?? faces[0];
   if (!found) throw new Error("No characters are registered.");
   return found;
 }

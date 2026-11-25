@@ -1,4 +1,3 @@
-import type { ExpressionId } from "@norbert_bodziony/bloub";
 import { agentProviderDescriptor } from "@openbot/contracts/agent-providers";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
 import type {
@@ -22,14 +21,13 @@ import { createSignal, For, onSettled, Show } from "solid-js";
 import {
   AVATAR_COLOR_CHOICES,
   avatarHeadColor,
-  avatarSeedForFace,
   isAvatarColorChoice,
-  type SupportedAvatarSilhouetteId,
 } from "../../bloub-avatar";
 import { ProviderModelPicker } from "../../components/ProviderModelPicker";
 import { currentText, useText } from "../../text";
 import { prefersReducedMotion } from "../../utils";
 import { AgentAvatar } from "./AgentAvatar";
+import { CHARACTER_SEEDS } from "./character-faces";
 import { avatarColorChoiceLabel } from "./avatar-hue-label";
 import { InstructionsLimit, instructionsTooLong } from "./InstructionsLimit";
 
@@ -80,22 +78,7 @@ export interface FirstAgentSetupProps {
   onCancel?: (() => void) | undefined;
 }
 
-const FIRST_AGENT_FACES: ReadonlyArray<{ shape: SupportedAvatarSilhouetteId; expression: ExpressionId }> = [
-  { shape: "cercle", expression: "attentif" },
-  { shape: "squircle", expression: "curieux" },
-  { shape: "triangle", expression: "neutre" },
-  { shape: "hexagone", expression: "surpris" },
-  { shape: "carre", expression: "attentif" },
-  { shape: "galet", expression: "curieux" },
-  { shape: "pentagone", expression: "neutre" },
-  { shape: "capsule", expression: "attentif" },
-  { shape: "losange", expression: "curieux" },
-  { shape: "nuage", expression: "surpris" },
-  { shape: "squircle", expression: "neutre" },
-  { shape: "cercle", expression: "curieux" },
-];
-
-export const FIRST_AGENT_AVATAR_SEEDS = FIRST_AGENT_FACES.map((face) => avatarSeedForFace("first-bot", face));
+export const FIRST_AGENT_AVATAR_SEEDS = CHARACTER_SEEDS;
 
 const SUGGESTION_MOMENTUM_FRICTION = 0.88;
 const SUGGESTION_MOMENTUM_MINIMUM = 0.01;
