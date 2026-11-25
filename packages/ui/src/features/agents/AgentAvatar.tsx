@@ -2,10 +2,10 @@ import type { ExpressionId } from "@norbert_bodziony/bloub";
 import type { PlushTransition } from "@norbert_bodziony/bloub/plush";
 import type { AvatarMood } from "@openbot/brand/bloub-avatar-motion";
 import type { AgentStepActivity, AvatarColor, AvatarHue } from "@openbot/contracts/ipc";
-import { createEffect, createMemo, createSignal, For, Show } from "solid-js";
+import { createEffect, createMemo, createSignal, Show } from "solid-js";
 import type { AvatarMotion, SupportedAvatarSilhouetteId } from "../../bloub-avatar";
 import type { AgentProfile } from "../../data";
-import { AVATAR_EMOTIONS, type AvatarEmotion, characterSpritesFor } from "./character-faces";
+import { characterSpritesFor } from "./character-faces";
 
 function hashPhase(seed: string): number {
   let hash = 0;
@@ -45,13 +45,6 @@ export function AgentAvatar(props: AgentAvatarProps) {
     },
   );
   const sprites = createMemo(() => characterSpritesFor(seed()));
-  const [emotion, setEmotion] = createSignal<AvatarEmotion | null>(null);
-  let emotionIndex = hashPhase(seed()) % AVATAR_EMOTIONS.length;
-  const nextEmotion = () => {
-    if (!sprites().emotions) return;
-    emotionIndex = (emotionIndex + 1) % AVATAR_EMOTIONS.length;
-    setEmotion(AVATAR_EMOTIONS[emotionIndex] ?? null);
-  };
   const className = () => `agent-avatar agent-avatar-motion-${props.motion ?? "hover"} ${props.class ?? ""}`;
 
   return (
@@ -63,33 +56,22 @@ export function AgentAvatar(props: AgentAvatarProps) {
           style={props.style}
           data-avatar="character"
           data-mood={mood()}
-          data-emotion={emotion()}
           aria-hidden="true"
-          onMouseEnter={nextEmotion}
-          onMouseLeave={() => setEmotion(null)}
         >
-          <span class="agent-avatar-body" style={{ "--avatar-phase": `${(hashPhase(seed()) % 3000) / -1000}s` }}>
+          <span
+            class={`agent-avatar-body agent-avatar-char-${sprites().id}`}
+            style={{ "--avatar-phase": `${(hashPhase(seed()) % 3000) / -1000}s` }}
+          >
             <img class="agent-avatar-foot agent-avatar-foot-l" src={sprites().footLeft} alt="" draggable={false} />
             <img class="agent-avatar-foot agent-avatar-foot-r" src={sprites().footRight} alt="" draggable={false} />
             <img class="agent-avatar-layer" src={sprites().body} alt="" draggable={false} />
             <Show when={sprites().blink}>
               {(blink) => <img class="agent-avatar-layer agent-avatar-blink" src={blink()} alt="" draggable={false} />}
             </Show>
-            <Show when={sprites().emotions}>
-              {(emotions) => (
-                <For each={AVATAR_EMOTIONS}>
-                  {(name) => (
-                    <img
-                      class="agent-avatar-emotion"
-                      data-emotion={name}
-                      src={emotions()[name]}
-                      alt=""
-                      draggable={false}
-                    />
-                  )}
-                </For>
-              )}
+            <Show when={sprites().happy}>
+              {(happy) => <img class="agent-avatar-happy" src={happy()} alt="" draggable={false} />}
             </Show>
+            <img class="agent-avatar-layer agent-avatar-arm" src={sprites().arm} alt="" draggable={false} />
           </span>
         </span>
       }

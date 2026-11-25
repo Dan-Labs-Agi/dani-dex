@@ -16,12 +16,13 @@
   object-fit: contain;
 }
 
-
 .agent-avatar-blink {
   opacity: 0;
+  animation: agent-avatar-blink 4.8s ease-in-out infinite;
+  animation-delay: var(--avatar-phase, 0s);
 }
 
-.agent-avatar-emotion {
+.agent-avatar-happy {
   position: absolute;
   left: 26.7%;
   top: 38.4%;
@@ -31,85 +32,192 @@
   pointer-events: none;
 }
 
+.agent-avatar-arm {
+  transform-origin: 73.2% 61.8%;
+}
+
 .agent-avatar-foot {
   transform-origin: 50% 70%;
 }
 
-.agent-avatar-motion-idle .agent-avatar-foot-l {
-  animation: agent-avatar-step 3.4s ease-in-out infinite;
-  animation-delay: var(--avatar-phase, 0s);
+/* Idle: every character moves side to side in its own way. */
+.agent-avatar-motion-idle .agent-avatar-char-dani,
+.agent-avatar-motion-hover .agent-avatar-char-dani {
+  animation: agent-avatar-dani 5s ease-in-out infinite;
+}
+.agent-avatar-motion-idle .agent-avatar-char-sprout,
+.agent-avatar-motion-hover .agent-avatar-char-sprout {
+  animation: agent-avatar-sprout 2.4s ease-in-out infinite;
+}
+.agent-avatar-motion-idle .agent-avatar-char-tuft,
+.agent-avatar-motion-hover .agent-avatar-char-tuft {
+  animation: agent-avatar-tuft 1.6s ease-in-out infinite;
+}
+.agent-avatar-motion-idle .agent-avatar-char-sweep,
+.agent-avatar-motion-hover .agent-avatar-char-sweep {
+  animation: agent-avatar-sweep 6s ease-in-out infinite;
+}
+.agent-avatar-motion-idle .agent-avatar-char-cap,
+.agent-avatar-motion-hover .agent-avatar-char-cap {
+  animation: agent-avatar-cap 3.2s linear infinite;
+}
+.agent-avatar-motion-idle .agent-avatar-char-shades,
+.agent-avatar-motion-hover .agent-avatar-char-shades {
+  animation: agent-avatar-shades 4.2s ease-in-out infinite;
+}
+.agent-avatar-motion-idle .agent-avatar-char-bow,
+.agent-avatar-motion-hover .agent-avatar-char-bow {
+  animation: agent-avatar-bow 3.6s ease-in-out infinite;
 }
 
-.agent-avatar-motion-idle .agent-avatar-foot-r {
-  animation: agent-avatar-step 3.4s ease-in-out infinite reverse;
-  animation-delay: var(--avatar-phase, 0s);
+.agent-avatar-motion-idle .agent-avatar-foot-l,
+.agent-avatar-motion-hover .agent-avatar-foot-l {
+  animation: agent-avatar-step 0.9s ease-in-out infinite;
+}
+.agent-avatar-motion-idle .agent-avatar-foot-r,
+.agent-avatar-motion-hover .agent-avatar-foot-r {
+  animation: agent-avatar-step 0.9s ease-in-out infinite reverse;
 }
 
-.agent-avatar-motion-hover:hover .agent-avatar-foot-l {
-  animation: agent-avatar-walk 0.45s ease-in-out infinite;
+/* Hover: stand still, smile and wave the right hand high. */
+.agent-avatar-motion-hover:hover .agent-avatar-body {
+  animation: agent-avatar-hello 1.2s ease-in-out infinite;
 }
-
+.agent-avatar-motion-hover:hover .agent-avatar-foot-l,
 .agent-avatar-motion-hover:hover .agent-avatar-foot-r {
-  animation: agent-avatar-walk 0.45s ease-in-out infinite reverse;
+  animation: none;
 }
-
-.agent-avatar[data-emotion] .agent-avatar-blink {
+.agent-avatar-motion-hover:hover .agent-avatar-blink {
   animation: none;
   opacity: 0;
 }
-
-.agent-avatar[data-emotion="happy"] .agent-avatar-emotion[data-emotion="happy"],
-.agent-avatar[data-emotion="sad"] .agent-avatar-emotion[data-emotion="sad"],
-.agent-avatar[data-emotion="love"] .agent-avatar-emotion[data-emotion="love"],
-.agent-avatar[data-emotion="sleepy"] .agent-avatar-emotion[data-emotion="sleepy"],
-.agent-avatar[data-emotion="surprised"] .agent-avatar-emotion[data-emotion="surprised"],
-.agent-avatar[data-emotion="wink"] .agent-avatar-emotion[data-emotion="wink"] {
+.agent-avatar-motion-hover:hover .agent-avatar-happy {
   opacity: 1;
 }
-
-.agent-avatar-motion-hover[data-emotion="happy"]:hover .agent-avatar-body {
-  animation: agent-avatar-hop 0.5s ease-out infinite;
+.agent-avatar-motion-hover:hover .agent-avatar-arm {
+  animation: agent-avatar-wave 0.5s ease-in-out infinite;
 }
 
-.agent-avatar-motion-hover[data-emotion="sad"]:hover .agent-avatar-body {
-  animation: agent-avatar-droop 2.2s ease-in-out infinite;
-}
-
-.agent-avatar-motion-hover[data-emotion="love"]:hover .agent-avatar-body {
-  animation: agent-avatar-pulse 0.8s ease-in-out infinite;
-}
-
-.agent-avatar-motion-hover[data-emotion="sleepy"]:hover .agent-avatar-body {
-  animation: agent-avatar-sway 3s ease-in-out infinite;
-}
-
-.agent-avatar-motion-hover[data-emotion="surprised"]:hover .agent-avatar-body {
-  animation: agent-avatar-jump 1.1s ease-out infinite;
-}
-
-.agent-avatar-motion-hover[data-emotion="wink"]:hover .agent-avatar-body {
-  animation: agent-avatar-tilt 1.2s ease-in-out infinite;
-}
-
-.agent-avatar-motion-idle .agent-avatar-body {
-  animation: agent-avatar-bob 3.4s ease-in-out infinite;
-  animation-delay: var(--avatar-phase, 0s);
-}
-
-.agent-avatar-motion-idle .agent-avatar-blink,
-.agent-avatar-motion-hover .agent-avatar-blink {
-  animation: agent-avatar-blink 4.8s ease-in-out infinite;
-  animation-delay: var(--avatar-phase, 0s);
-}
-
-
-@keyframes agent-avatar-bob {
-  0%,
-  100% {
-    transform: translateY(0) rotate(-1.2deg) scale(1, 1);
+@keyframes agent-avatar-dani {
+  0%, 100% {
+    transform: translateX(-9%) rotate(-3deg);
   }
   50% {
-    transform: translateY(-3%) rotate(1.2deg) scale(1.015, 1.025);
+    transform: translateX(9%) rotate(3deg);
+  }
+}
+
+@keyframes agent-avatar-sprout {
+  0%, 100% {
+    transform: translateX(-8%) translateY(0);
+  }
+  25% {
+    transform: translateX(-4%) translateY(-7%);
+  }
+  50% {
+    transform: translateX(8%) translateY(0);
+  }
+  75% {
+    transform: translateX(4%) translateY(-7%);
+  }
+}
+
+@keyframes agent-avatar-tuft {
+  0%, 100% {
+    transform: translateX(-6%) rotate(-6deg) scale(1, 1.03);
+  }
+  50% {
+    transform: translateX(6%) rotate(6deg) scale(1.03, 0.98);
+  }
+}
+
+@keyframes agent-avatar-sweep {
+  0%, 100% {
+    transform: translateX(-11%) scale(1, 1);
+  }
+  50% {
+    transform: translateX(11%) scale(1.02, 0.98);
+  }
+}
+
+@keyframes agent-avatar-cap {
+  0% {
+    transform: translateX(-9%) translateY(0) rotate(-2deg);
+  }
+  12.5% {
+    transform: translateX(-4.5%) translateY(-3%) rotate(0deg);
+  }
+  25% {
+    transform: translateX(0) translateY(0) rotate(2deg);
+  }
+  37.5% {
+    transform: translateX(4.5%) translateY(-3%) rotate(0deg);
+  }
+  50% {
+    transform: translateX(9%) translateY(0) rotate(2deg);
+  }
+  62.5% {
+    transform: translateX(4.5%) translateY(-3%) rotate(0deg);
+  }
+  75% {
+    transform: translateX(0) translateY(0) rotate(-2deg);
+  }
+  87.5% {
+    transform: translateX(-4.5%) translateY(-3%) rotate(0deg);
+  }
+  100% {
+    transform: translateX(-9%) translateY(0) rotate(-2deg);
+  }
+}
+
+@keyframes agent-avatar-shades {
+  0%, 100% {
+    transform: translateX(-7%) rotate(-8deg);
+  }
+  50% {
+    transform: translateX(7%) rotate(8deg);
+  }
+}
+
+@keyframes agent-avatar-bow {
+  0%, 100% {
+    transform: translateX(-8%) translateY(-2%) rotate(5deg);
+  }
+  25% {
+    transform: translateX(0) translateY(-6%) rotate(0deg);
+  }
+  50% {
+    transform: translateX(8%) translateY(-2%) rotate(-5deg);
+  }
+  75% {
+    transform: translateX(0) translateY(2%) rotate(0deg);
+  }
+}
+
+@keyframes agent-avatar-step {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4%);
+  }
+}
+
+@keyframes agent-avatar-hello {
+  0%, 100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  50% {
+    transform: translateY(-3%) scale(0.99, 1.02);
+  }
+}
+
+@keyframes agent-avatar-wave {
+  0%, 100% {
+    transform: rotate(-105deg) scale(1.4);
+  }
+  50% {
+    transform: rotate(-140deg) scale(1.4);
   }
 }
 
@@ -125,100 +233,10 @@
   }
 }
 
-@keyframes agent-avatar-hop {
-  0% {
-    transform: translateY(0) scale(1, 1);
-  }
-  25% {
-    transform: translateY(0) scale(1.06, 0.92);
-  }
-  55% {
-    transform: translateY(-9%) rotate(-4deg) scale(0.98, 1.05);
-  }
-  80% {
-    transform: translateY(0) rotate(2deg) scale(1.03, 0.97);
-  }
-  100% {
-    transform: translateY(0) scale(1, 1);
-  }
-}
-
-@keyframes agent-avatar-step {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(1.2%);
-  }
-}
-
-@keyframes agent-avatar-walk {
-  0%,
-  100% {
-    transform: translateY(0) rotate(-5deg);
-  }
-  50% {
-    transform: translateY(-3%) rotate(5deg);
-  }
-}
-
-@keyframes agent-avatar-droop {
-  0%,
-  100% {
-    transform: translateY(2%) scale(1.02, 0.96);
-  }
-  50% {
-    transform: translateY(3%) scale(1.03, 0.94) rotate(-1deg);
-  }
-}
-
-@keyframes agent-avatar-pulse {
-  0%,
-  100% {
-    transform: scale(1, 1);
-  }
-  50% {
-    transform: scale(1.07, 1.07);
-  }
-}
-
-@keyframes agent-avatar-sway {
-  0%,
-  100% {
-    transform: rotate(-4deg) translateY(1%);
-  }
-  50% {
-    transform: rotate(4deg) translateY(2%);
-  }
-}
-
-@keyframes agent-avatar-jump {
-  0% {
-    transform: translateY(0) scale(1, 1);
-  }
-  15% {
-    transform: translateY(-14%) scale(0.96, 1.08);
-  }
-  40%,
-  100% {
-    transform: translateY(0) scale(1, 1);
-  }
-}
-
-@keyframes agent-avatar-tilt {
-  0%,
-  100% {
-    transform: rotate(-6deg);
-  }
-  50% {
-    transform: rotate(6deg) translateY(-2%);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .agent-avatar-body,
   .agent-avatar-foot,
+  .agent-avatar-arm,
   .agent-avatar-blink {
     animation: none !important;
   }
