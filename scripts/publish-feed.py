@@ -9,7 +9,7 @@ Usage (CI, after the build):
   python3 publish-feed.py --platform windows --file Dani-Dex-win-x64.exe   --key desktop/Dani-Dex-win-x64.exe   --version 0.1.0
 
 Env: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY (bucket dani-dex-releases).
-Writes: <key>, <key>.sha256, latest.json (all platforms), android/latest.json (android only).
+Writes: <key>, <key>.sha256, latest.json (all platforms). The expo-updates manifest is separate: ota/manifest.json, served at https://auth.dani.danlab.dev/v1/ota/manifest.
 latest.json is what the landing page and the in-app Update button read:
   {"updated": ISO, "platforms": {"android": {"version","url","sha256","size","file"}, ...}}
 """
@@ -50,7 +50,7 @@ feed.setdefault("platforms", {})[a.platform] = entry
 feed["updated"] = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
 body = json.dumps(feed, indent=2).encode()
 s3.put_object(Bucket=BUCKET, Key="latest.json", Body=body, ContentType="application/json", CacheControl="no-cache")
-if a.platform == "android":
+if False:  # android/latest.json removed: the expo-updates manifest lives at ota/manifest.json
     s3.put_object(Bucket=BUCKET, Key="android/latest.json", Body=json.dumps(entry, indent=2).encode(),
                   ContentType="application/json", CacheControl="no-cache")
 print(json.dumps(entry))

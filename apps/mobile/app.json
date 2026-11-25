@@ -2,25 +2,37 @@
   "expo": {
     "name": "dani-dex",
     "slug": "openbot",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "version": "1.4.12",
     "orientation": "portrait",
     "icon": "./assets/icons/app-icon.png",
-    "scheme": ["openbot", "dani-dex"],
+    "scheme": [
+      "openbot",
+      "dani-dex"
+    ],
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "run.openbot.mobile",
       "appleTeamId": "8A47NKRZSJ",
       "supportsTablet": true,
-      "associatedDomains": ["applinks:dani.danlab.dev"],
+      "associatedDomains": [
+        "applinks:dani.danlab.dev"
+      ],
       "infoPlist": {
         "NSLocalNetworkUsageDescription": "Allow dani-dex to connect to your desktop during local development.",
         "NSAppTransportSecurity": {
           "NSAllowsLocalNetworking": true
         },
         "ITSAppUsesNonExemptEncryption": false,
-        "UIBackgroundModes": ["fetch"],
-        "BGTaskSchedulerPermittedIdentifiers": ["run.openbot.mobile.refresh"]
+        "UIBackgroundModes": [
+          "fetch"
+        ],
+        "BGTaskSchedulerPermittedIdentifiers": [
+          "run.openbot.mobile.refresh"
+        ]
       },
       "icon": "./assets/icons/app-icon.icon"
     },
@@ -33,7 +45,9 @@
         "monochromeImage": "./assets/icons/android-adaptive-eyes.png"
       },
       "predictiveBackGestureEnabled": false,
-      "permissions": ["android.permission.CAMERA"],
+      "permissions": [
+        "android.permission.CAMERA"
+      ],
       "blockedPermissions": [
         "android.permission.READ_MEDIA_IMAGES",
         "android.permission.READ_MEDIA_VIDEO",
@@ -89,7 +103,9 @@
         {
           "photosPermission": "Allow dani-dex to access the photos you choose to share.",
           "savePhotosPermission": "Allow dani-dex to save images and videos you download from a chat to your photo library.",
-          "granularPermissions": ["photo"]
+          "granularPermissions": [
+            "photo"
+          ]
         }
       ],
       [
@@ -159,8 +175,12 @@
           },
           "android": {
             "enabled": true,
-            "singleShareMimeTypes": ["*/*"],
-            "multipleShareMimeTypes": ["*/*"]
+            "singleShareMimeTypes": [
+              "*/*"
+            ],
+            "multipleShareMimeTypes": [
+              "*/*"
+            ]
           }
         }
       ],
@@ -195,13 +215,36 @@
               {
                 "fontFamily": "Inter",
                 "fontDefinitions": [
-                  { "path": "./assets/fonts/inter/Inter-Regular.ttf", "weight": 400 },
-                  { "path": "./assets/fonts/inter/Inter-Italic.ttf", "weight": 400, "style": "italic" },
-                  { "path": "./assets/fonts/inter/Inter-Medium.ttf", "weight": 500 },
-                  { "path": "./assets/fonts/inter/Inter-SemiBold.ttf", "weight": 600 },
-                  { "path": "./assets/fonts/inter/Inter-Bold.ttf", "weight": 700 },
-                  { "path": "./assets/fonts/inter/Inter-BoldItalic.ttf", "weight": 700, "style": "italic" },
-                  { "path": "./assets/fonts/inter/Inter-ExtraBold.ttf", "weight": 800 }
+                  {
+                    "path": "./assets/fonts/inter/Inter-Regular.ttf",
+                    "weight": 400
+                  },
+                  {
+                    "path": "./assets/fonts/inter/Inter-Italic.ttf",
+                    "weight": 400,
+                    "style": "italic"
+                  },
+                  {
+                    "path": "./assets/fonts/inter/Inter-Medium.ttf",
+                    "weight": 500
+                  },
+                  {
+                    "path": "./assets/fonts/inter/Inter-SemiBold.ttf",
+                    "weight": 600
+                  },
+                  {
+                    "path": "./assets/fonts/inter/Inter-Bold.ttf",
+                    "weight": 700
+                  },
+                  {
+                    "path": "./assets/fonts/inter/Inter-BoldItalic.ttf",
+                    "weight": 700,
+                    "style": "italic"
+                  },
+                  {
+                    "path": "./assets/fonts/inter/Inter-ExtraBold.ttf",
+                    "weight": 800
+                  }
                 ]
               },
               "katex/dist/fonts/KaTeX_AMS-Regular.ttf",
@@ -270,7 +313,7 @@
       "policy": "fingerprint"
     },
     "updates": {
-      "url": "https://dl.dani.danlab.dev/android/latest.json",
+      "url": "https://auth.dani.danlab.dev/v1/ota/manifest",
       "codeSigningCertificate": "./certs/certificate.pem",
       "codeSigningMetadata": {
         "keyid": "main",

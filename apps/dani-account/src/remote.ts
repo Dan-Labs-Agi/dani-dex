@@ -21,7 +21,7 @@ function b64u(buf: ArrayBuffer | Uint8Array): string {
   for (const c of b) s += String.fromCharCode(c);
   return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
-function unb64u(s: string): Uint8Array {
+function unb64u(s: string): Uint8Array<ArrayBuffer> {
   const t = s.replace(/-/g, "+").replace(/_/g, "/");
   return Uint8Array.from(atob(t + "=".repeat((4 - (t.length % 4)) % 4)), (c) => c.charCodeAt(0));
 }
