@@ -33,6 +33,8 @@ export const messages = {
   "mobile.auth.signIn.helpStep2": "2. انتقل إلى الإعدادات ← Mobile Connect.",
   "mobile.auth.signIn.helpStep3": "3. اختر «إنشاء رمز QR»، ثم امسحه هنا.",
   "mobile.auth.signIn.emailButton": "المتابعة بالبريد الإلكتروني",
+  "mobile.auth.signIn.googleButton": "المتابعة باستخدام Google",
+  "mobile.auth.signIn.googleFailed": "لم يكتمل تسجيل الدخول عبر Google. حاول مرة أخرى.",
   "mobile.auth.done.title": "تم الاتصال",
   "mobile.auth.done.body": "سجّلت الدخول.",
   "mobile.auth.email.title": "تسجيل الدخول بالبريد الإلكتروني",

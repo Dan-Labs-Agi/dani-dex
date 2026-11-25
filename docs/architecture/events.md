@@ -126,7 +126,7 @@ The report has no route ID, delivery ID, secret, event type or body. A request t
 before the host does not reach it: Signal counts its answers by status and its waits for the host in
 `/metrics` (`openbot_remote_webhook_*`), and the capacity reporter sends the change of each 5 minutes
 in `signal_capacity`. `bun run test:webhook-analytics` checks the host side. See
-[ANALYTICS.md](../../ANALYTICS.md).
+[ANALYTICS.md](../ANALYTICS.md).
 
 ### Workflow webhook triggers
 

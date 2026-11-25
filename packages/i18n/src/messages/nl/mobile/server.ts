@@ -1371,7 +1371,7 @@ export const messages = {
   "mobile.server.update.path.container":
     "Haal op de Docker-host de nieuwe dani-dex-image op en maak de container opnieuw met dezelfde datavolumes. Wacht eerst tot actief werk klaar is. Houd de bestaande volumes om je gegevens te bewaren.",
   "mobile.server.update.path.manual":
-    "Deze installatie kan zichzelf niet vervangen. Vraag de hostbeheerder de compatibele release van github.com/somdipto/dani-dex/releases te installeren. Houd de bestaande dani-dex-gegevens.",
+    "Deze installatie kan zichzelf niet vervangen. Vraag de hostbeheerder de compatibele release van github.com/Dan-Labs-Agi/dani-dex/releases te installeren. Houd de bestaande dani-dex-gegevens.",
   "mobile.server.update.path.unavailable":
     "Dit is een ontwikkelbuild. Gebruik een geïnstalleerde dani-dex-release om naar updates te zoeken.",
   "mobile.server.update.check": "Zoek naar updates",

@@ -6,7 +6,7 @@ import { dirname } from "node:path";
 
 const TRUSTED_ASSOCIATIONS = new Set(["OWNER", "MEMBER"]);
 const TRUSTED_PERMISSIONS = new Set(["admin", "maintain", "write"]);
-const AGREEMENT_PATH = "CLA.md";
+const AGREEMENT_PATH = "docs/CLA.md";
 const AGREEMENT_NAME = "dani-dex Contributor License Agreement";
 const EARLIER_ACCEPTED_VERSIONS = ["1.0"];
 const CLA_PAGE_URL = "https://dani.danlab.dev/cla";

@@ -1083,7 +1083,7 @@ try {
         await received(id);
         assert.match(
           await promptOf(services, GUILD_ONE, id, CHANNEL_ONE),
-          /--- the message this one replies to \(context\) ---\n\[2026-10-19T11:40:00\.000Z\] Ticket Tool: @Bob Welcome\n\(Embed\)\nSupport will be with you shortly\. Opened by @Kamil\.\nFooter: TicketTool\.xyz - Ticketing without clutter\n\(Embed\)\nWhat do you need\?: ```Bug```\nOpenBot version: ```0\.59\.0```\n--- message ---\nplease look at this ticket/u,
+          /--- the message this one replies to \(context\) ---\n\[2026-10-19T11:40:00\.000Z\] Ticket Tool: @Bob Welcome\n\(Embed\)\nSupport will be with you shortly\. Opened by @Kamil\.\nFooter: TicketTool\.xyz - Ticketing without clutter\n\(Embed\)\nWhat do you need\?: ```Bug```\ndani-dex version: ```0\.59\.0```\n--- message ---\nplease look at this ticket/u,
         );
 
         channelOne.push({
@@ -1095,7 +1095,7 @@ try {
           embeds: [
             {
               title: "Login fails after the update",
-              url: "https://github.com/somdipto/dani-dex/issues/1",
+              url: "https://github.com/Dan-Labs-Agi/dani-dex/issues/1",
               description: "The app closes at start.",
             },
           ],
@@ -1114,7 +1114,7 @@ try {
           await received(asked);
           assert.match(
             await promptOf(services, GUILD_ONE, asked, CHANNEL_ONE),
-            /--- earlier messages \(context, oldest first, with their message id\) ---\n\[2026-10-19T11:46:00\.000Z\] \(id \d+\) tomek: \(Embed\)\nLogin fails after the update\nLink: https:\/\/github\.com\/nightly-labs\/openbot\/issues\/1\nThe app closes at start\.\n/u,
+            /--- earlier messages \(context, oldest first, with their message id\) ---\n\[2026-10-19T11:46:00\.000Z\] \(id \d+\) tomek: \(Embed\)\nLogin fails after the update\nLink: https:\/\/github\.com\/somdipto\/dani-dex\/issues\/1\nThe app closes at start\.\n/u,
           );
         } finally {
           channelOne.length = 0;

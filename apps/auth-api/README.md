@@ -237,7 +237,7 @@ before remote changes. Test deployments do not send account analytics.
 PKCS #1 key; convert it with `openssl pkcs8 -topk8 -nocrypt -in <key>.pem`. With the key, the
 Worker gives the desktop installation tokens, so GitHub shows `openbotgit[bot]` as the author of an
 agent's work. The key also lets `POST /v1/feedback` open an approved bug report or feature idea from the app as
-an issue in `somdipto/dani-dex`, for any signed-in account, three times a minute (`FEEDBACK_RATE_LIMITER`) and 10 times a UTC day (`feedback_daily_counts` in D1). The Worker does not store or log the text. With `sameAs`, the report is a comment on that open app issue. Before the card, `POST /v1/feedback/similar` finds open app issues with a similar title, three times a minute for each account (the same limiter, with its own key); the title is in the body, so request logs do not keep it. Each report ends with a hidden owner mark
+an issue in `Dan-Labs-Agi/dani-dex`, for any signed-in account, three times a minute (`FEEDBACK_RATE_LIMITER`) and 10 times a UTC day (`feedback_daily_counts` in D1). The Worker does not store or log the text. With `sameAs`, the report is a comment on that open app issue. Before the card, `POST /v1/feedback/similar` finds open app issues with a similar title, three times a minute for each account (the same limiter, with its own key); the title is in the body, so request logs do not keep it. Each report ends with a hidden owner mark
 (`feedback-owner.ts`): a random value and an HMAC of it and the account ID, with a key that HKDF derives
 from the app key. `POST /v1/feedback/withdraw` takes `{ number }` and, for the account whose mark ends
 the text, deletes its comments on that issue or moves its issue to `FEEDBACK_WITHDRAWN_REPOSITORY`, a
@@ -262,7 +262,7 @@ Environment; a local deployment reads it from the encrypted `.env.production`.
 
 `HOSTED_ARCHIVE_KEY_SECRET` (32 random bytes in base64), `B2_WORKER_KEY_ID_EU` and
 `B2_WORKER_APPLICATION_KEY_EU` are set together or not at all. They are for the archives of ended
-pool servers ([plan 012](../../plans/012-pool-server-archive.md)). The first encrypts the `age` key
+pool servers ([plan 012](../../docs/plans/012-pool-server-archive.md)). The first encrypts the `age` key
 of each archive in `hosted_server_archives`; with another value, no archive can be restored. The B2
 key reads the `openbot-pool-archive-eu` bucket and nothing else. The encrypted `.env.production` has
 all three, and GitHub Actions reads them from the `cloudflare-production` Environment. When you

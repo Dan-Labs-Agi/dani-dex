@@ -1,0 +1,162 @@
+name: Android APK direct
+
+# Builds the Android app as an APK on this runner and puts it on the download host at
+# https://dl.dani.danlab.dev/android/, so a phone with no Google Play can install a build of this
+# branch. The APK is signed with the debug key: it is for testing, not for Google Play.
+# Only the built APK goes to the bucket, never source. Secrets: R2_ACCESS_KEY_ID,
+# R2_SECRET_ACCESS_KEY.
+on:
+  push:
+    branches:
+      - feat/dani-account
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    name: Build and publish the Android APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    concurrency:
+      group: android-apk-direct
+      cancel-in-progress: true
+    env:
+      CI: "1"
+      EXPO_PUBLIC_APP_ENV: production
+      NODE_OPTIONS: --max-old-space-size=3072
+      AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: auto
+      AWS_EC2_METADATA_DISABLED: "true"
+      R2_ENDPOINT: https://a2f714474bf94011597fd5cd1a92b56b.r2.cloudflarestorage.com
+      R2_BUCKET: dani-dex-releases
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Bun and Node
+        uses: ./.github/actions/setup-bun
+
+      - name: Set up Java
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      # The generated android/gradle.properties gives the Gradle daemon 512 MB of
+      # Metaspace, and release lint runs out of it. Gradle reads the Gradle user
+      # home file before the project file, so this value applies on the runner only.
+      # Each Gradle worker runs a CMake build with one compiler per core. Skia,
+      # Reanimated and Worklets compiled together with R8 can use all 16 GB of the
+      # runner, and then the runner stops the job. Two workers keep all cores busy.
+
+      # The release build needs ~12 GB beyond checkout: node_modules, expo
+      # prebuild, the NDK toolchain output and the Gradle cache. Drop every
+      # preinstalled toolchain the build never touches (kept AFTER the setup
+      # steps so hostedtoolcache consumers already fetched what they need).
+      - name: Free runner disk
+        shell: bash
+        run: |
+          docker system prune -af --volumes || true
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost \
+            /usr/share/swift /usr/share/miniconda /opt/az /opt/microsoft /opt/google \
+            /usr/local/share/chromium /usr/local/share/powershell /opt/vcpkg /usr/share/sbt \
+            /usr/local/lib/android/sdk/system-images /usr/local/lib/android/sdk/emulator || true
+          # Keep the JDK setup-java installed: JAVA_HOME points into the toolcache.
+          sudo find "$AGENT_TOOLSDIRECTORY" -mindepth 1 -maxdepth 1 ! -name 'Java_Temurin-Hotspot_jdk' -exec rm -rf {} + || true
+          df -h "$GITHUB_WORKSPACE"
+
+      - name: Give Gradle more memory
+        shell: bash
+        run: |
+          mkdir -p ~/.gradle
+          echo 'org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=768m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8' >> ~/.gradle/gradle.properties
+          echo 'org.gradle.workers.max=1' >> ~/.gradle/gradle.properties
+          echo 'enableProguardInReleaseBuilds=false' >> ~/.gradle/gradle.properties
+          sudo fallocate -l 4G /swapfile-build
+          sudo chmod 600 /swapfile-build
+          sudo mkswap /swapfile-build
+          sudo swapon /swapfile-build
+          free -h
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # The app config still names the retired Expo project; point this build at the live one.
+      - name: Point the app config at the live Expo project
+        working-directory: apps/mobile
+        run: |
+          bun -e 'const fs=require("fs");const a=JSON.parse(fs.readFileSync("app.json","utf8"));a.expo.extra.eas.projectId="aae4c765-8e67-4d77-aa14-58fe4935e774";a.expo.slug="dani-dex";delete a.expo.owner;fs.writeFileSync("app.json",JSON.stringify(a,null,2)+"\n")'
+
+      - name: Prebuild the native Android project
+        working-directory: apps/mobile
+        run: bunx expo prebuild --platform android --non-interactive --no-install
+
+      # A test APK for phones people hold today: skip the x86 emulator ABIs.
+      - name: Build the arm64 ABI only
+        working-directory: apps/mobile/android
+        run: echo 'reactNativeArchitectures=arm64-v8a' >> gradle.properties
+
+      # Runner deaths lose the GitHub log and artifacts, so stream the Gradle log to the
+      # bucket while the build runs: the newest minute always survives at the diagnostics key.
+      - name: Stream the build log to R2
+        shell: bash
+        run: |
+          pip install --quiet boto3
+          nohup python3 scripts/stream-log-to-r2.py "$RUNNER_TEMP/gradle.log" "diagnostics/apk-build-${{ github.run_id }}-${{ github.run_attempt }}.log" > "$RUNNER_TEMP/log-stream.out" 2>&1 &
+          echo "streaming the Gradle log to diagnostics/apk-build-${{ github.run_id }}-${{ github.run_attempt }}.log"
+
+      - name: Assemble the release APK
+        working-directory: apps/mobile/android
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew assembleRelease --no-daemon --max-workers=1 --console=plain 2>&1 | tee "$RUNNER_TEMP/gradle.log"
+          APK_PATH="$RUNNER_TEMP/dani-dex.apk"
+          cp app/build/outputs/apk/release/app-release.apk "$APK_PATH"
+          ls -la "$APK_PATH"
+
+      - name: Save the Gradle log on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: gradle-log-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/gradle.log
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Save the APK as an artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: dani-dex-apk-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/dani-dex.apk
+          if-no-files-found: error
+          retention-days: 7
+
+      - name: Read the app version
+        id: version
+        working-directory: apps/mobile
+        run: echo "version=$(bun -e 'console.log(JSON.parse(require("fs").readFileSync("app.json","utf8")).expo.version)')" >> "$GITHUB_OUTPUT"
+
+      - name: Publish the APK to the download host and update feed
+        env:
+          R2_ACCOUNT_ID: a2f714474bf94011597fd5cd1a92b56b
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          pip3 install --quiet boto3
+          python3 scripts/publish-feed.py --platform android             --file "$RUNNER_TEMP/dani-dex.apk" --key android/dani-dex.apk --version "$VERSION"
+
+      - name: Verify the public URL
+        run: |
+          set -euo pipefail
+          code=$(curl -s -o /dev/null -w '%{http_code}' "https://dl.dani.danlab.dev/android/dani-dex.apk")
+          echo "https://dl.dani.danlab.dev/android/dani-dex.apk -> $code"
+          test "$code" = 200
+          curl -fsS https://dl.dani.danlab.dev/latest.json | head -c 400

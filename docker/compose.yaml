@@ -1,6 +1,6 @@
 services:
   openbot:
-    image: ghcr.io/somdipto/dani-dex:latest
+    image: ghcr.io/Dan-Labs-Agi/dani-dex:latest
     restart: unless-stopped
     security_opt:
       - seccomp=./seccomp.json

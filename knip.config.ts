@@ -14,6 +14,10 @@ const config: KnipConfig = {
     "packages/contracts/src/team-protocol/provider-aware-codec.ts": ["exports", "types"],
     "src/backend/migrations/[0-9]*.ts": ["exports"],
     "apps/auth-api/src/lib/plugin-catalog.generated.ts": ["exports", "types"],
+    // Client functions for the account service land before their callers.
+    "src/main/dani-account.ts": ["exports"],
+    "apps/dani-account/src/remote.ts": ["exports"],
+    "package.json": ["catalog"],
   },
   ignoreBinaries: [
     "xterm",
@@ -21,7 +25,6 @@ const config: KnipConfig = {
     "ssh-keyscan",
     "ssh-add",
     "cmake",
-    "ccache",
     "otool",
     "install_name_tool",
     "ldd",
@@ -60,10 +63,8 @@ const config: KnipConfig = {
         "marked",
         "solid-recharts",
         "solid-sonner",
-        "expo",
         "@noble/hashes",
         "@cacheable/node-cache",
-        "@hapi/boom",
         "@noble/curves",
         "async-mutex",
         "long",
@@ -74,6 +75,7 @@ const config: KnipConfig = {
         "protobufjs",
       ],
       ignoreUnresolved: ["scripts/.+\\.ts"],
+      storybook: { config: ["config/storybook/main.ts"] },
     },
     "apps/auth-api": {
       entry: ["*.ts", "src/email-relay-entry.ts", "scripts/*.ts"],
@@ -82,27 +84,6 @@ const config: KnipConfig = {
     },
     "apps/site-router": {
       project: ["src/**/*.ts"],
-    },
-    "apps/mobile-updates": {
-      entry: ["scripts/*.ts"],
-      project: ["src/**/*.ts", "scripts/**/*.ts"],
-    },
-    "apps/mobile": {
-      entry: [
-        "src/app/**/*.{ts,tsx}",
-        "plugins/**/*.{js,ts}",
-        "src/shims/*.{ts,js}",
-        "global.css",
-        "src/features/share/extension/share-sender.ts",
-      ],
-      project: ["src/**/*.{ts,tsx}", "plugins/**/*.{js,ts}"],
-      ignoreDependencies: [
-        "openbot-original-react-native",
-        "@expo/config-plugins",
-        "expo-device-hub",
-        "@expo/plist",
-        "expo-symbols",
-      ],
     },
     "remote/api": {
       entry: ["src/capacity-report.ts"],

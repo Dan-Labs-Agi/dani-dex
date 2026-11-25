@@ -263,7 +263,7 @@ async function rootPassword(machine: Vps) {
 
 async function newestRelease() {
   const body = JSON.parse(
-    execFileSync("gh", ["api", "repos/somdipto/dani-dex/releases/latest"], {
+    execFileSync("gh", ["api", "repos/Dan-Labs-Agi/dani-dex/releases/latest"], {
       encoding: "utf8",
       maxBuffer: 16 * 1024 * 1024,
     }),

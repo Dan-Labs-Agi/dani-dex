@@ -17,6 +17,7 @@ export const noProvidersConnectedAgentStatus: AgentStatus = {
   auth: { kind: "unknown" },
   providers: [
     { id: "opencode", state: "not-installed", version: null, message: "Install OpenCode on this computer." },
+    { id: "kilocode", state: "not-installed", version: null, message: "Install KiloCode on this computer." },
     {
       id: "codex",
       state: "sign-in-required",
@@ -69,6 +70,7 @@ const initialRuntimeStatuses = (): Record<ManagedProviderId, ProviderRuntimeStat
   copilot: { phase: "not-downloaded", progress: null, message: null, version: null },
   mistral: { phase: "not-downloaded", progress: null, message: null, version: null },
   opencode: { phase: "not-downloaded", progress: null, message: null, version: null },
+  kilocode: { phase: "not-downloaded", progress: null, message: null, version: null },
 });
 
 const downloadedAgentStatus: AgentStatus = {

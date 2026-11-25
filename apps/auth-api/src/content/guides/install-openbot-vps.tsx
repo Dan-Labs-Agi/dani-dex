@@ -84,7 +84,7 @@ export function InstallOpenBotVPS() {
       <pre>
         <code>
           {
-            "curl -fsSL \\\n  https://raw.githubusercontent.com/somdipto/dani-dex/main/scripts/install-server.sh |\n  sudo bash"
+            "curl -fsSL \\\n  https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/main/scripts/install-server.sh |\n  sudo bash"
           }
         </code>
       </pre>
@@ -134,7 +134,7 @@ export function InstallOpenBotVPS() {
       <pre>
         <code>
           {
-            "mkdir openbot-vps\ncd openbot-vps\ncurl -fsSLO \\\n  https://raw.githubusercontent.com/somdipto/dani-dex/main/docker/compose.yaml\ncurl -fsSLO \\\n  https://raw.githubusercontent.com/somdipto/dani-dex/main/docker/seccomp.json\nsudo docker compose up -d"
+            "mkdir openbot-vps\ncd openbot-vps\ncurl -fsSLO \\\n  https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/main/docker/compose.yaml\ncurl -fsSLO \\\n  https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/main/docker/seccomp.json\nsudo docker compose up -d"
           }
         </code>
       </pre>

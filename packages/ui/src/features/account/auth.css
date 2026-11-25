@@ -87,6 +87,12 @@
   text-align: start;
 }
 
+.account-login-error {
+  border-color: var(--openbot-danger-soft);
+  background: var(--openbot-danger-soft);
+  color: var(--openbot-danger);
+}
+
 .account-login > .account-login-error {
   margin-top: 18px;
 }
@@ -135,6 +141,11 @@
     background-color var(--openbot-duration-hover) ease,
     border-color var(--openbot-duration-hover) ease,
     transform var(--openbot-duration-fast) cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.account-login-primary {
+  background: var(--openbot-surface-light);
+  color: var(--openbot-text-on-light);
 }
 
 .account-login > .account-login-primary {
@@ -800,6 +811,12 @@
   padding-block: 8px;
   padding-inline: 12px 0;
   cursor: pointer;
+}
+
+.provider-picker-option {
+  border-color: var(--openbot-border);
+  background: var(--openbot-bg-control);
+  color: var(--openbot-text-secondary);
 }
 
 .provider-picker-option + .provider-picker-option,
@@ -1547,7 +1564,6 @@ body,
   color: var(--openbot-text-primary);
 }
 
-.provider-picker-option,
 .provider-model-option {
   border-color: var(--openbot-border);
   background: var(--openbot-bg-control);
@@ -1564,8 +1580,7 @@ body,
 
 .voice-button,
 .voice-button-active,
-.initial-setup-save,
-.account-login-primary {
+.initial-setup-save {
   background: var(--openbot-surface-light);
   color: var(--openbot-text-on-light);
 }
@@ -1589,7 +1604,6 @@ body,
   background: var(--openbot-bg-control-active);
 }
 
-.account-login-error,
 .initial-setup-error {
   border-color: var(--openbot-danger-soft);
   background: var(--openbot-danger-soft);
@@ -1623,4 +1637,15 @@ body,
 
 .account-login-code-action-change > svg[class~="lucide-arrow-left"]:dir(rtl) {
   transform: scaleX(-1);
+}
+
+.account-login-google {
+  gap: 10px;
+}
+
+.account-login-or {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.6;
 }

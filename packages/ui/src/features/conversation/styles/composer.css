@@ -596,39 +596,6 @@
   grid-row: 1;
 }
 
-.composer[data-compact] .composer-editor-root,
-.composer[data-compact] .composer-editor-surface {
-  min-height: 28px;
-}
-
-.composer[data-compact] .composer-editor-surface {
-  padding: 4px 0;
-}
-
-.composer[data-compact] .composer-editor-surface:has(.composer-mention-token) {
-  padding-block: 2px;
-  line-height: 24px;
-}
-
-.composer[data-compact] .composer-editor-placeholder {
-  top: 4px;
-  inset-inline-start: 0;
-}
-
-.composer[data-has-attachments] .composer-input-label,
-.composer[data-has-attachments] .composer-editor-root,
-.composer[data-has-attachments] .composer-editor-surface {
-  min-height: 28px;
-}
-
-.composer[data-has-attachments] .composer-editor-surface {
-  padding: 4px;
-}
-
-.composer[data-has-attachments] .composer-editor-placeholder {
-  top: 4px;
-}
-
 .composer-editor-root {
   position: relative;
   display: flex;
@@ -738,6 +705,39 @@
   user-select: none;
 }
 
+.composer[data-compact] .composer-editor-root,
+.composer[data-compact] .composer-editor-surface {
+  min-height: 28px;
+}
+
+.composer[data-compact] .composer-editor-surface {
+  padding: 4px 0;
+}
+
+.composer[data-compact] .composer-editor-surface:has(.composer-mention-token) {
+  padding-block: 2px;
+  line-height: 24px;
+}
+
+.composer[data-compact] .composer-editor-placeholder {
+  top: 4px;
+  inset-inline-start: 0;
+}
+
+.composer[data-has-attachments] .composer-input-label,
+.composer[data-has-attachments] .composer-editor-root,
+.composer[data-has-attachments] .composer-editor-surface {
+  min-height: 28px;
+}
+
+.composer[data-has-attachments] .composer-editor-surface {
+  padding: 4px;
+}
+
+.composer[data-has-attachments] .composer-editor-placeholder {
+  top: 4px;
+}
+
 .composer-editor-root[data-size="compact"],
 .composer-editor-root[data-size="compact"] .composer-editor-surface {
   min-height: 28px;
@@ -759,12 +759,6 @@
 
 .composer[data-resizing][data-compact] {
   align-content: end;
-}
-
-.composer[data-resizing]:not([data-compact]) .composer-input-label {
-  min-height: 0;
-  align-items: flex-start;
-  overflow: clip;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1235,4 +1229,10 @@
 
 .composer[data-rows-resizing] > .composer-input-label {
   align-self: start;
+}
+
+.composer[data-resizing]:not([data-compact]) .composer-input-label {
+  min-height: 0;
+  align-items: flex-start;
+  overflow: clip;
 }

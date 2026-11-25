@@ -100,6 +100,14 @@ export function requestAuthService(): AuthService {
   });
 }
 
+export function requestGoogleMobileClientIds(): string[] {
+  const bindings = requireWorkerBindings(env);
+  return (bindings.GOOGLE_MOBILE_CLIENT_IDS ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter((value) => value.length > 0);
+}
+
 export function requestCompanySignIn(): CompanySignInService {
   const bindings = requireWorkerBindings(env);
   const remote = new RemoteControlPlane(bindings, { schedule });

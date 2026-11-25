@@ -2,7 +2,7 @@
 
 The product terms dani-dex uses, and the identifiers each one owns. Read this when naming a new type,
 table, IPC channel or product string, or when a term in the code disagrees with the term in the UI.
-[AGENTS.md](../AGENTS.md#terms) carries the two naming rules that are decisions rather than lookup.
+[AGENTS.md](AGENTS.md#terms) carries the two naming rules that are decisions rather than lookup.
 
 - **agent**: the product object (`AgentStore`, `AgentSummary`, `agent-${uuid}`,
   `~/dani-dex/Agents/<id>`, `projection_agents`), a coding agent, or a marketplace agent

@@ -11,7 +11,7 @@ interface DownloadManifestConfig {
   manifest: "latest-linux-arm64.yml" | "latest-linux.yml" | "latest-mac.yml" | "latest.yml";
 }
 
-const RELEASES_BASE_URL = "https://github.com/somdipto/dani-dex/releases";
+const RELEASES_BASE_URL = "https://github.com/Dan-Labs-Agi/dani-dex/releases";
 
 const DOWNLOAD_PLATFORMS = ["linux", "macos", "windows"] as const satisfies readonly AvailableDownloadPlatform[];
 

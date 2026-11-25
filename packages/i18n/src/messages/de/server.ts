@@ -652,7 +652,7 @@ export const messages = {
   "server.update.path.container":
     "Lade auf dem Docker-Host das neue dani-dex-Image herunter und erstelle den Container mit denselben Datenvolumes neu. Warte zuerst, bis aktive Aufgaben beendet sind. Behalte die vorhandenen Volumes, um deine Daten zu erhalten.",
   "server.update.path.manual":
-    "Diese Installation kann sich nicht selbst ersetzen. Bitte den Host-Administrator, die kompatible Version von github.com/somdipto/dani-dex/releases zu installieren. Behalte die vorhandenen dani-dex-Daten.",
+    "Diese Installation kann sich nicht selbst ersetzen. Bitte den Host-Administrator, die kompatible Version von github.com/Dan-Labs-Agi/dani-dex/releases zu installieren. Behalte die vorhandenen dani-dex-Daten.",
   "server.update.path.unavailable":
     "Dies ist eine Entwicklungsversion. Verwende eine installierte dani-dex-Version, um nach Updates zu suchen.",
   "server.update.check": "Nach Updates suchen",

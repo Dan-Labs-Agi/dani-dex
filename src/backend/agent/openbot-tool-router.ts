@@ -1399,7 +1399,7 @@ export class OpenBotToolRouter {
     if (!feedback) return openBotToolFailure("title and text must not be empty.");
     if (!this.#requestedByPerson(senderAgentId, params.turnId, params.threadId))
       return openBotToolFailure(
-        "Only a person's message, in your dani-dex chat or a thread they opened, can send feedback. Describe the problem in your reply instead. Do not open an dani-dex issue with GitHub tools, gh, or a browser: the repository closes issues that do not use its forms. A person can report it at https://github.com/somdipto/dani-dex/issues/new/choose.",
+        "Only a person's message, in your dani-dex chat or a thread they opened, can send feedback. Describe the problem in your reply instead. Do not open an dani-dex issue with GitHub tools, gh, or a browser: the repository closes issues that do not use its forms. A person can report it at https://github.com/Dan-Labs-Agi/dani-dex/issues/new/choose.",
       );
     if (!sender.signedIn()) return form(FEEDBACK_SIGNED_OUT_NEXT);
     const searchKey = `${senderAgentId}\n${params.turnId}`;
@@ -1562,15 +1562,15 @@ export class OpenBotToolRouter {
         );
       case "notYours":
         return openBotToolFailure(
-          "This account did not send a report on that issue, or the report was sent before dani-dex could remove reports. Tell the user that only the dani-dex team can remove it now, at https://github.com/somdipto/dani-dex/discussions.",
+          "This account did not send a report on that issue, or the report was sent before dani-dex could remove reports. Tell the user that only the dani-dex team can remove it now, at https://github.com/Dan-Labs-Agi/dani-dex/discussions.",
         );
       case "unavailable":
         return openBotToolFailure(
-          "dani-dex cannot remove a whole issue now. Tell the user to try again later, or to ask the dani-dex team at https://github.com/somdipto/dani-dex/discussions.",
+          "dani-dex cannot remove a whole issue now. Tell the user to try again later, or to ask the dani-dex team at https://github.com/Dan-Labs-Agi/dani-dex/discussions.",
         );
       case "moved":
         return openBotToolFailure(
-          "The issue moved to another public repository, so dani-dex cannot remove the report. Tell the user to ask the dani-dex team at https://github.com/somdipto/dani-dex/discussions.",
+          "The issue moved to another public repository, so dani-dex cannot remove the report. Tell the user to ask the dani-dex team at https://github.com/Dan-Labs-Agi/dani-dex/discussions.",
         );
       case "limited":
         return openBotToolFailure("Too many tries. Wait one minute, then try again once.");

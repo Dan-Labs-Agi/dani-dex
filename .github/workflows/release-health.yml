@@ -20,7 +20,7 @@ concurrency:
 jobs:
   check:
     name: Check the newest release
-    if: github.repository == 'somdipto/dani-dex'
+    if: github.repository == 'Dan-Labs-Agi/dani-dex'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment: analytics

@@ -40,7 +40,7 @@ chown 1000:1000 /srv/openbot-data
 # The seccomp profile of that image version, and no-new-privileges, for each container.
 [ ! -e /etc/docker/daemon.json ] || { echo "Add the two keys to /etc/docker/daemon.json." >&2; exit 1; }
 curl -fsSL -o /etc/docker/openbot-seccomp.json \
-  "https://raw.githubusercontent.com/somdipto/dani-dex/v$version/docker/seccomp.json"
+  "https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/v$version/docker/seccomp.json"
 cat >/etc/docker/daemon.json <<'EOF'
 { "seccomp-profile": "/etc/docker/openbot-seccomp.json", "no-new-privileges": true }
 EOF
@@ -64,7 +64,7 @@ the profile of that version again.
   "containerDefinitions": [
     {
       "name": "openbot",
-      "image": "ghcr.io/somdipto/dani-dex:<version>",
+      "image": "ghcr.io/Dan-Labs-Agi/dani-dex:<version>",
       "essential": true,
       "memory": 4096,
       "linuxParameters": { "sharedMemorySize": 1024 },
@@ -128,7 +128,7 @@ aws ecs execute-command --cluster openbot --task <task ID> --container openbot \
 ## Network
 
 The task only connects out. Allow HTTPS to the hosts in
-[A company firewall or proxy blocks dani-dex](TROUBLESHOOTING.md#a-company-firewall-or-proxy-blocks-openbot),
+[A company firewall or proxy blocks dani-dex](TROUBLESHOOTING.md#a-company-firewall-or-proxy-blocks-dani-dex),
 to your providers, and the UDP and TCP ports of the TURN relay for remote use. The security group
 needs no inbound rule.
 

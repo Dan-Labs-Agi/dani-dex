@@ -7,6 +7,7 @@ import {
   codexTag,
   cursorPackageUrl,
   kimiAssetName,
+  KILOCODE_CLI_PACKAGE,
   OPENCODE_CLI_PACKAGE,
   providerRuntimeDescriptor,
   type RuntimeSpec,
@@ -22,7 +23,7 @@ export interface LatestReleaseContext {
   fetch: Fetch;
 }
 
-const BLOCKED_VERSIONS_URL = "https://raw.githubusercontent.com/somdipto/dani-dex/main/provider-runtime-blocklist.json";
+const BLOCKED_VERSIONS_URL = "https://raw.githubusercontent.com/Dan-Labs-Agi/dani-dex/main/provider-runtime-blocklist.json";
 
 const REQUEST_TIMEOUT_MS = 30_000;
 const MAX_METADATA_BYTES = 4 * 1024 * 1024;
@@ -260,6 +261,26 @@ const LATEST_RELEASES: Record<
       fetch,
       lock.opencode.registry,
       lock.opencode.artifacts[target].package,
+      version,
+    );
+    return { ...pinned, ...artifact, version: artifact.packageVersion, source: "latest" };
+  }),
+  kilocode: Effect.fn("ProviderRelease.kilocode")(function* ({
+    target,
+    lock,
+    fetch,
+  }: LatestReleaseContext): Effect.fn.Return<RuntimeSpec, ProviderRuntimeFailure> {
+    const pinned = providerRuntimeDescriptor("kilocode").spec(target, lock);
+    const umbrella = yield* fetchJsonEffect(fetch, `${lock.kilocode.registry}/${KILOCODE_CLI_PACKAGE}/latest`);
+    const version = isString(umbrella.version) && VERSION.test(umbrella.version) ? umbrella.version : null;
+    if (!version)
+      return yield* new ProviderRuntimeFailure({
+        cause: new Error(sourceText("error.provider.releaseNoDownload", { name: KILOCODE_CLI_PACKAGE })),
+      });
+    const artifact = yield* npmArtifactEffect(
+      fetch,
+      lock.kilocode.registry,
+      lock.kilocode.artifacts[target].package,
       version,
     );
     return { ...pinned, ...artifact, version: artifact.packageVersion, source: "latest" };

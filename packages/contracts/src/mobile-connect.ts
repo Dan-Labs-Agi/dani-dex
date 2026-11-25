@@ -1,4 +1,6 @@
-const MOBILE_CONNECT_PROTOCOL = "openbot:";
+const MOBILE_CONNECT_PROTOCOL = "dani-dex:";
+// Legacy installs still emit and register openbot:// links; accept them on parse.
+const MOBILE_CONNECT_LEGACY_PROTOCOLS: readonly string[] = ["openbot:"];
 const MOBILE_CONNECT_HOST = "mobile-connect";
 
 export interface MobileConnectHostBinding {
@@ -86,7 +88,7 @@ export function parseMobileConnectUrl(value: string): MobileConnectPayload | nul
   try {
     const url = new URL(value);
     if (
-      url.protocol !== MOBILE_CONNECT_PROTOCOL ||
+      (url.protocol !== MOBILE_CONNECT_PROTOCOL && !MOBILE_CONNECT_LEGACY_PROTOCOLS.includes(url.protocol)) ||
       url.hostname !== MOBILE_CONNECT_HOST ||
       (url.pathname !== "" && url.pathname !== "/") ||
       url.hash !== "" ||

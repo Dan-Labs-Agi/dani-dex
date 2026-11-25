@@ -737,7 +737,7 @@ export const messages = {
   "server.update.path.container":
     "במארח Docker, יש למשוך את תמונת dani-dex החדשה וליצור את הקונטיינר מחדש עם אותם כרכי נתונים. יש להמתין קודם לסיום עבודה פעילה. יש לשמור את הכרכים הקיימים כדי לשמור על הנתונים.",
   "server.update.path.manual":
-    "ההתקנה הזו אינה יכולה להחליף את עצמה. יש לבקש ממנהל המארח להתקין את הגרסה התואמת מ-github.com/somdipto/dani-dex/releases. יש לשמור על נתוני dani-dex הקיימים.",
+    "ההתקנה הזו אינה יכולה להחליף את עצמה. יש לבקש ממנהל המארח להתקין את הגרסה התואמת מ-github.com/Dan-Labs-Agi/dani-dex/releases. יש לשמור על נתוני dani-dex הקיימים.",
   "server.update.path.unavailable": "זוהי מהדורת פיתוח. יש להשתמש במהדורה מותקנת של dani-dex כדי לבדוק עדכונים.",
   "server.update.check": "בדיקת עדכונים",
   "server.update.start": "עדכון כשאין פעילות",

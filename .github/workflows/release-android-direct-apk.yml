@@ -1,0 +1,148 @@
+name: Build the Android APK directly
+
+# A signed universal APK on a GitHub release, built on the runner without Google Play. This is the
+# direct route: the same EAS credentials sign it as the Play build, so a phone can install it over
+# the store app. `release-android.yml` stays the Play route; this workflow does not touch Google
+# Play. One-time prerequisite: EAS credentials for the Android package (run `eas credentials` for
+# the project once, or the non-interactive build below fails asking for a keystore).
+
+on:
+  push:
+    branches: [fix/main-ci-green]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version name for the release, such as 1.4.12. Defaults to the version in apps/mobile/app.json.
+        type: string
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-android-direct-apk
+  cancel-in-progress: false
+
+jobs:
+  apk:
+    name: Build and release the signed APK
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.message, '[build-apk]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    environment: release-android
+    env:
+      CI: "1"
+    steps:
+      - name: Check out release commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Require release credentials
+        shell: bash
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          if [[ -z "$EXPO_TOKEN" ]]; then
+            echo "Missing release-android secret: EXPO_TOKEN" >&2
+            exit 1
+          fi
+
+      - name: Free runner disk
+        shell: bash
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost /opt/hostedtoolcache/CodeQL
+          df -h "$GITHUB_WORKSPACE"
+
+      - name: Set up Bun and Node
+        uses: ./.github/actions/setup-bun
+        with:
+          install: none
+
+      - name: Set up Java
+        uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install and verify Android tools
+        shell: bash
+        run: |
+          echo "APK_PATH=$RUNNER_TEMP/dani-dex.apk" >> "$GITHUB_ENV"
+          java -version
+          echo "ANDROID_HOME=$ANDROID_HOME"
+
+      - name: Give Gradle more memory
+        shell: bash
+        run: |
+          mkdir -p ~/.gradle
+          echo 'org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=2g -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8' >> ~/.gradle/gradle.properties
+          echo 'org.gradle.workers.max=2' >> ~/.gradle/gradle.properties
+          sudo fallocate -l 8G /swapfile-build
+          sudo chmod 600 /swapfile-build
+          sudo mkswap /swapfile-build
+          sudo swapon /swapfile-build
+          free -h
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Check source
+        run: |
+          bun run lint
+          bun run typecheck
+          bun run test:desktop -- apps/mobile/src
+
+      - name: Resolve the version
+        id: version
+        run: |
+          VERSION="${{ inputs.version }}"
+          if [[ -z "$VERSION" ]]; then
+            VERSION="$(node -p "require('./apps/mobile/app.json').expo.version")"
+          fi
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Compute the runtime version of this commit
+        id: runtime
+        run: bun scripts/mobile-ota.ts runtime-version --platform android
+
+      - name: Build the APK on this runner
+        working-directory: apps/mobile
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          vmstat -S M 30 &
+          trap 'kill $!' EXIT
+          bunx eas-cli@24.1.2 build \
+            --platform android --profile apk-direct --local --non-interactive \
+            --output "$APK_PATH"
+
+      - name: Check the update settings of the binary
+        env:
+          RUNTIME: ${{ steps.runtime.outputs.runtime }}
+        run: bun scripts/mobile-ota.ts verify-build --platform android --artifact "$APK_PATH" --runtime "$RUNTIME"
+
+      - name: Release the APK on GitHub
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          set -euo pipefail
+          FILE="dani-dex-$VERSION.apk"
+          cp "$APK_PATH" "$FILE"
+          SHA="$(sha256sum "$FILE" | cut -d' ' -f1)"
+          TAG="android-direct-v$VERSION"
+          {
+            echo "Signed APK of dani-dex $VERSION for Android, built on GitHub without Google Play."
+            echo
+            echo "- File: \`$FILE\`"
+            echo "- SHA-256: \`$SHA\`"
+            echo "- Commit: $GITHUB_SHA"
+          } > notes.md
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$FILE" --clobber
+            gh release edit "$TAG" --notes-file notes.md
+          else
+            gh release create "$TAG" "$FILE" --title "dani-dex $VERSION for Android (direct APK)" \
+              --notes-file notes.md --prerelease --target "$GITHUB_SHA"
+          fi

@@ -166,6 +166,69 @@
       }
     }
   },
+  "kilocode": {
+    "registry": "https://registry.npmjs.org",
+    "repository": "https://github.com/Kilo-Org/kilocode",
+    "version": "7.8.32",
+    "license": "MIT",
+    "licensePackage": {
+      "name": "@kilocode/cli",
+      "version": "7.8.32"
+    },
+    "licenseSha256": "8a088af74e19c37e62906321b1072f593113058ed9eae507d899d41e6e5e5bb4",
+    "artifacts": {
+      "darwin-arm64": {
+        "package": "@kilocode/cli-darwin-arm64",
+        "asset": "cli-darwin-arm64-7.8.32.tgz",
+        "assetSha256": "4e00f48a5ca6aaeb1e8033d1fe8265d16c2e8d180d6db5ee278656fa5bb67d0c",
+        "binarySha256": "af2bfa052de787138a4fc1c3e19411bc5e4b8161d0e8cf63cc30690815aaa177",
+        "downloadBytes": 73579604,
+        "installedBytes": 330000000,
+        "executable": "kilo",
+        "platformDirectory": "mac"
+      },
+      "darwin-x64": {
+        "package": "@kilocode/cli-darwin-x64",
+        "asset": "cli-darwin-x64-7.8.32.tgz",
+        "assetSha256": "bf1e156b44262e5961cbbea2b9d41559e581e7b7e328ebd99f1d70e5aa7786cf",
+        "binarySha256": "e2b10143caae58c3635b5daed0fe096b014233e79ad9deb4c915ac1da39dc93d",
+        "downloadBytes": 75265398,
+        "installedBytes": 340000000,
+        "executable": "kilo",
+        "platformDirectory": "mac"
+      },
+      "linux-x64": {
+        "package": "@kilocode/cli-linux-x64",
+        "asset": "cli-linux-x64-7.8.32.tgz",
+        "assetSha256": "d37d2822060210cf9069ec7548f8866c737b391f46f0d24653c3049064b4c9dd",
+        "binarySha256": "474675d07e520067440df780a239f05bded6da2ae9b78bb2b5d2c2291ab03046",
+        "downloadBytes": 84585073,
+        "installedBytes": 350000000,
+        "executable": "kilo",
+        "platformDirectory": "linux"
+      },
+      "linux-arm64": {
+        "package": "@kilocode/cli-linux-arm64",
+        "asset": "cli-linux-arm64-7.8.32.tgz",
+        "assetSha256": "ef6c6384d319fd19bf2d7c731c99f32d83e15ed5732955358ca6420292cde447",
+        "binarySha256": "219f24c3343998698a377a62d6105f7306f308cf35e39a76afdd527c79c94bb2",
+        "downloadBytes": 83986745,
+        "installedBytes": 350000000,
+        "executable": "kilo",
+        "platformDirectory": "linux"
+      },
+      "win32-x64": {
+        "package": "@kilocode/cli-windows-x64",
+        "asset": "cli-windows-x64-7.8.32.tgz",
+        "assetSha256": "b8cbdb0f05dd997a73d5ec9192aaca8de33a1bf8f577312799582d48a5cb5599",
+        "binarySha256": "d403391214fbba69bc46c4a920b58535ce3cd7a7d736b344a69cda058a02b3d7",
+        "downloadBytes": 87226374,
+        "installedBytes": 360000000,
+        "executable": "kilo.exe",
+        "platformDirectory": "win"
+      }
+    }
+  },
   "grok": {
     "repository": "https://github.com/xai-org/grok-build",
     "distribution": "https://x.ai/cli",
@@ -361,10 +424,26 @@
       "submodules": {}
     },
     "targets": {
-      "darwin-arm64": ["Sunshine.app/Contents/MacOS/Sunshine", "web-server", "streamer"],
-      "darwin-x64": ["Sunshine.app/Contents/MacOS/Sunshine", "web-server", "streamer"],
-      "win32-x64": ["sunshine.exe", "web-server.exe", "streamer.exe"],
-      "linux-x64": ["sunshine", "web-server", "streamer"]
+      "darwin-arm64": [
+        "Sunshine.app/Contents/MacOS/Sunshine",
+        "web-server",
+        "streamer"
+      ],
+      "darwin-x64": [
+        "Sunshine.app/Contents/MacOS/Sunshine",
+        "web-server",
+        "streamer"
+      ],
+      "win32-x64": [
+        "sunshine.exe",
+        "web-server.exe",
+        "streamer.exe"
+      ],
+      "linux-x64": [
+        "sunshine",
+        "web-server",
+        "streamer"
+      ]
     },
     "releaseArtifacts": {
       "darwin-arm64": {
@@ -385,7 +464,7 @@
       }
     },
     "artifactRelease": {
-      "repository": "somdipto/dani-dex",
+      "repository": "Dan-Labs-Agi/dani-dex",
       "tag": "remote-desktop-runtime-1a675ecdf05e7b581279162ec3ffc3fb235681acceb48450aaeb9421d43b1d2c",
       "inputDigest": "1a675ecdf05e7b581279162ec3ffc3fb235681acceb48450aaeb9421d43b1d2c",
       "manifestAsset": "remote-desktop-runtime-manifest.json",

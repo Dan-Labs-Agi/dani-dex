@@ -34,8 +34,8 @@ releaseNotes: ""
 developer: Synthetify Labs
 website: https://dani.danlab.dev
 dependencies: []
-repo: https://github.com/somdipto/dani-dex
-support: https://github.com/somdipto/dani-dex/issues
+repo: https://github.com/Dan-Labs-Agi/dani-dex
+support: https://github.com/Dan-Labs-Agi/dani-dex/issues
 
 port: 4180
 gallery: []

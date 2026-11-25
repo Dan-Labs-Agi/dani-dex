@@ -62,15 +62,6 @@
   stroke-width: 2;
 }
 
-.routine-schedule-picker[data-density="panel"] .routine-trigger-icon {
-  width: var(--openbot-control-sm);
-  height: var(--openbot-control-sm);
-}
-
-.routine-schedule-picker[data-density="card"] .routine-trigger-icon {
-  display: none;
-}
-
 .routine-trigger-chips {
   display: flex;
   min-width: 0;
@@ -234,12 +225,12 @@
   font-weight: var(--openbot-weight-medium);
 }
 
-.routine-day-item:has(:focus-visible) .routine-day {
-  box-shadow: var(--openbot-focus-ring);
-}
-
 .routine-weekday-strip .routine-day {
   background: var(--openbot-bg-control-active);
+}
+
+.routine-day-item:has(:focus-visible) .routine-day {
+  box-shadow: var(--openbot-focus-ring);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -466,11 +457,6 @@
   gap: var(--openbot-space-1-5);
 }
 
-.routine-schedule-picker[data-density="panel"]:not([data-fit="roomy"]) .routine-trigger-icon svg {
-  width: var(--openbot-icon-sm);
-  height: var(--openbot-icon-sm);
-}
-
 .routine-schedule-picker[data-density="panel"]:not([data-fit="roomy"]) .routine-chip {
   gap: var(--openbot-space-1);
   padding: 0 var(--openbot-space-2);
@@ -485,12 +471,6 @@
 .routine-schedule-picker[data-density="panel"]:is([data-fit="tight"], [data-fit="minimal"])
   :is(.routine-trigger-row, .routine-trigger-chips) {
   gap: var(--openbot-space-1);
-}
-
-.routine-schedule-picker[data-density="panel"]:is([data-fit="tight"], [data-fit="minimal"]) .routine-trigger-icon {
-  width: var(--openbot-control-xs);
-  height: var(--openbot-control-xs);
-  align-self: center;
 }
 
 .routine-schedule-picker[data-density="panel"]:is([data-fit="tight"], [data-fit="minimal"]) .routine-chip {
@@ -542,6 +522,21 @@
 :is(.routine-trigger-card-header, .routine-trigger-menu) .routine-trigger-icon {
   width: var(--openbot-control-sm);
   height: var(--openbot-control-sm);
+}
+
+.routine-schedule-picker[data-density="card"] .routine-trigger-icon {
+  display: none;
+}
+
+.routine-schedule-picker[data-density="panel"] .routine-trigger-icon {
+  width: var(--openbot-control-sm);
+  height: var(--openbot-control-sm);
+}
+
+.routine-schedule-picker[data-density="panel"]:is([data-fit="tight"], [data-fit="minimal"]) .routine-trigger-icon {
+  width: var(--openbot-control-xs);
+  height: var(--openbot-control-xs);
+  align-self: center;
 }
 
 .routine-trigger-card-title {
@@ -813,6 +808,11 @@ code.routine-webhook-secret {
   width: var(--openbot-icon-sm);
   height: var(--openbot-icon-sm);
   stroke-width: var(--openbot-icon-stroke);
+}
+
+.routine-schedule-picker[data-density="panel"]:not([data-fit="roomy"]) .routine-trigger-icon svg {
+  width: var(--openbot-icon-sm);
+  height: var(--openbot-icon-sm);
 }
 
 .routine-trigger-menu {

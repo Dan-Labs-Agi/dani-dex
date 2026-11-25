@@ -241,7 +241,7 @@ update fails, install the latest version from [dani.danlab.dev/download](https:/
 When the latest version is the one that did not open several times in a row, dani-dex does not install
 it again. It says that the latest dani-dex did not open, and it keeps your data as it is. Install a
 version newer than the one it names when one is available on the
-[releases page](https://github.com/somdipto/dani-dex/releases), and report the problem with the
+[releases page](https://github.com/Dan-Labs-Agi/dani-dex/releases), and report the problem with the
 details below.
 
 Then remove the older copy. On Windows, look for a second dani-dex in Settings → Apps, and pin the
@@ -297,7 +297,7 @@ Ask the network administrator to allow these hosts over HTTPS (TCP 443) and WebS
 
 Teams and remote servers also send WebRTC traffic to the other device or to the TURN relay that
 Signal names, on the UDP and TCP ports that it names. A filter that blocks WebRTC makes these
-connections slow or stops them. Conversations stay on the computer; the [privacy policy](../PRIVACY.md) lists what each
+connections slow or stops them. Conversations stay on the computer; the [privacy policy](PRIVACY.md) lists what each
 host receives.
 
 If the filter puts `dani.danlab.dev` in a blocked category, the administrator can ask the vendor to
@@ -351,14 +351,14 @@ are independent and are not removed with dani-dex.
 
 ## Report a problem
 
-Use the [bug report form](https://github.com/somdipto/dani-dex/issues/new?template=bug_report.yml)
+Use the [bug report form](https://github.com/Dan-Labs-Agi/dani-dex/issues/new?template=bug_report.yml)
 for reproducible bugs. It asks for the platform, the dani-dex version (Settings → Updates on the
 desktop), the operating system and hardware, the provider and its CLI version, the steps, and the
 expected and actual results. When a provider row shows an error, select **Copy diagnostics** in its
 menu and paste the result into the form.
 
 For a problem in the iPhone or Android app, use the
-[mobile app bug report form](https://github.com/somdipto/dani-dex/issues/new?template=mobile_bug_report.yml).
+[mobile app bug report form](https://github.com/Dan-Labs-Agi/dani-dex/issues/new?template=mobile_bug_report.yml).
 It asks for the full app version line from Settings → About. Settings → Support → **Save log file**
 makes a log that you can attach. Attach it for a connection or network problem: we will most
 probably close such a report without it.

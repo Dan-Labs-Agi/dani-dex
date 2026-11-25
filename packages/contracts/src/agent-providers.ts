@@ -9,6 +9,7 @@ export const AGENT_PROVIDERS = [
   "claude",
   "grok",
   "opencode",
+  "kilocode",
   "antigravity",
   "cursor",
   "cline",
@@ -180,6 +181,29 @@ const AGENT_PROVIDER_DESCRIPTOR_TABLE = {
     steer: "reported",
     concurrentTurns: true,
     reportsUsage: true,
+    approvalsInFullAccess: true,
+    foldersInFullAccess: false,
+  },
+  kilocode: {
+    id: "kilocode",
+    displayName: "KiloCode",
+    cliName: "Kilo Code CLI",
+    onboardingDescription: "Free models, no account needed",
+    signInMessage: "KiloCode listed no model. Add a Kilo API key to continue.",
+    installGuideLink: null,
+    defaultModel: "",
+    legacyModelPrefix: null,
+    authKind: "kilocode",
+    pickerOrder: 3.5,
+    localCodeSignIn: null,
+    signInPageEnd: "callback",
+    skillFolders: [".kilo/skills", ".agents/skills", ".claude/skills"],
+    homeSkills: "native",
+    workspaceInstructionFiles: ["AGENTS.md"],
+    workspaceEnforcement: "confined-process",
+    steer: "reported",
+    concurrentTurns: true,
+    reportsUsage: false,
     approvalsInFullAccess: true,
     foldersInFullAccess: false,
   },
@@ -558,6 +582,7 @@ export const MANAGED_RUNTIME_PROVIDERS = [
   "claude",
   "grok",
   "opencode",
+  "kilocode",
   "antigravity",
   "cursor",
   "cline",
@@ -575,6 +600,7 @@ export function isManagedRuntimeProvider(provider: AgentProviderId): provider is
 }
 
 export const LOCAL_ONLY_PROVIDERS = [
+  "kilocode",
   "antigravity",
   "cursor",
   "cline",
@@ -665,6 +691,19 @@ export const OPENCODE_RECOMMENDED_FREE_MODELS: readonly AgentModelId[] = [
 
 export function isFreeOpencodeModel(id: string, name: string): boolean {
   return FREE_TIER_MODEL_IDS.has(id.trim().toLowerCase()) || isFreeOpencodeModelName(name);
+}
+
+export const KILOCODE_DEFAULT_FREE_MODEL: AgentModelId = "kilo/kilo-auto/free";
+
+export const KILOCODE_RECOMMENDED_FREE_MODELS: readonly AgentModelId[] = [
+  KILOCODE_DEFAULT_FREE_MODEL,
+  "kilo/nvidia/nemotron-3.5-super-vl:free",
+  "kilo/nvidia/nemotron-3.5-lightning:free",
+];
+
+export function isFreeKilocodeModel(id: string, name: string): boolean {
+  const model = id.trim().toLowerCase();
+  return model.endsWith(":free") || model === KILOCODE_DEFAULT_FREE_MODEL || isFreeOpencodeModelName(name);
 }
 
 export function accountUsageCoversModel(provider: AgentProviderId, model: string | null | undefined): boolean {
