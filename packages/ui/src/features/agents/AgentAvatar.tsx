@@ -7,6 +7,8 @@ import type { AvatarMotion, SupportedAvatarSilhouetteId } from "../../bloub-avat
 import type { AgentProfile } from "../../data";
 import { characterSpritesFor } from "./character-faces";
 
+const MOTION_CLASS = { idle: "agent-avatar-motion-idle", hover: "agent-avatar-motion-hover" } as const;
+
 function hexHue(color: string): number | null {
   const match = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(color);
   if (!match) return null;
@@ -68,7 +70,8 @@ export function AgentAvatar(props: AgentAvatarProps) {
     const target = targetHue();
     return target === null ? undefined : `hue-rotate(${Math.round(target - sprites().hue)}deg)`;
   };
-  const className = () => `agent-avatar agent-avatar-motion-${props.motion ?? "hover"} ${props.class ?? ""}`;
+  const motionClass = () => MOTION_CLASS[props.motion === "idle" ? "idle" : "hover"];
+  const className = () => `agent-avatar ${motionClass()} ${props.class ?? ""}`;
 
   return (
     <Show
@@ -82,7 +85,7 @@ export function AgentAvatar(props: AgentAvatarProps) {
           aria-hidden="true"
         >
           <span
-            class={`agent-avatar-body agent-avatar-char-${sprites().id}`}
+            class={`agent-avatar-body ${sprites().bodyClass}`}
             style={{ "--avatar-phase": `${(hashPhase(seed()) % 3000) / -1000}s`, filter: tint() }}
           >
             <img class="agent-avatar-foot agent-avatar-foot-l" src={sprites().footLeft} alt="" draggable={false} />

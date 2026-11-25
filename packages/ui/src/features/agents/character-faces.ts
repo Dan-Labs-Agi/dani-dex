@@ -1,7 +1,7 @@
 // The seven original characters at 768px. Each is split into a body, two feet and a waving arm so the
 // parts can move on their own. The body also has a blink frame and a happy face (the sunglasses one has neither).
 interface CharacterSprites {
-  id: string;
+  bodyClass: string;
   hue: number;
   body: string;
   blink: string | null;
@@ -13,7 +13,7 @@ interface CharacterSprites {
 
 const faces: readonly CharacterSprites[] = [
   {
-    id: "dani",
+    bodyClass: "agent-avatar-char-dani",
     hue: 268,
     body: new URL("./characters/dani.png", import.meta.url).href,
     blink: new URL("./characters/dani-blink.png", import.meta.url).href,
@@ -23,7 +23,7 @@ const faces: readonly CharacterSprites[] = [
     arm: new URL("./characters/dani-arm.png", import.meta.url).href,
   },
   {
-    id: "sprout",
+    bodyClass: "agent-avatar-char-sprout",
     hue: 181,
     body: new URL("./characters/sprout.png", import.meta.url).href,
     blink: new URL("./characters/sprout-blink.png", import.meta.url).href,
@@ -33,7 +33,7 @@ const faces: readonly CharacterSprites[] = [
     arm: new URL("./characters/sprout-arm.png", import.meta.url).href,
   },
   {
-    id: "tuft",
+    bodyClass: "agent-avatar-char-tuft",
     hue: 205,
     body: new URL("./characters/tuft.png", import.meta.url).href,
     blink: new URL("./characters/tuft-blink.png", import.meta.url).href,
@@ -43,7 +43,7 @@ const faces: readonly CharacterSprites[] = [
     arm: new URL("./characters/tuft-arm.png", import.meta.url).href,
   },
   {
-    id: "sweep",
+    bodyClass: "agent-avatar-char-sweep",
     hue: 150,
     body: new URL("./characters/sweep.png", import.meta.url).href,
     blink: new URL("./characters/sweep-blink.png", import.meta.url).href,
@@ -53,7 +53,7 @@ const faces: readonly CharacterSprites[] = [
     arm: new URL("./characters/sweep-arm.png", import.meta.url).href,
   },
   {
-    id: "cap",
+    bodyClass: "agent-avatar-char-cap",
     hue: 29,
     body: new URL("./characters/cap.png", import.meta.url).href,
     blink: new URL("./characters/cap-blink.png", import.meta.url).href,
@@ -63,7 +63,7 @@ const faces: readonly CharacterSprites[] = [
     arm: new URL("./characters/cap-arm.png", import.meta.url).href,
   },
   {
-    id: "shades",
+    bodyClass: "agent-avatar-char-shades",
     hue: 343,
     body: new URL("./characters/shades.png", import.meta.url).href,
     blink: null,
@@ -73,7 +73,7 @@ const faces: readonly CharacterSprites[] = [
     arm: new URL("./characters/shades-arm.png", import.meta.url).href,
   },
   {
-    id: "bow",
+    bodyClass: "agent-avatar-char-bow",
     hue: 322,
     body: new URL("./characters/bow.png", import.meta.url).href,
     blink: new URL("./characters/bow-blink.png", import.meta.url).href,
