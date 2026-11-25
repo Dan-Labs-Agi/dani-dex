@@ -1845,7 +1845,11 @@ export class CentralAuthManager extends EventEmitter<CentralAuthEvents> {
 
   openCompanySignIn(): Effect.Effect<CentralAuthState> {
     return Effect.sync(() =>
-      this.#state.status === "company_sign_in" ? this.#startCompanySignIn(this.#state.email) : this.getState(),
+      this.#state.status === "company_sign_in"
+        ? this.#startCompanySignIn(this.#state.email)
+        : this.#state.status === "signed_out" || this.#state.status === "error"
+          ? this.#startCompanySignIn("")
+          : this.getState(),
     );
   }
 

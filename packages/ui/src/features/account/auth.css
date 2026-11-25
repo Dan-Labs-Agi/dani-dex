@@ -1638,3 +1638,14 @@ body,
 .account-login-code-action-change > svg[class~="lucide-arrow-left"]:dir(rtl) {
   transform: scaleX(-1);
 }
+
+.account-login-google {
+  gap: 10px;
+}
+
+.account-login-or {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.6;
+}
