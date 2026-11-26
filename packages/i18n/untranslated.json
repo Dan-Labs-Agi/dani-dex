@@ -1,4 +1,9 @@
 {
+  "app.team.title": ["ar", "de", "es", "fr", "he", "it", "ja", "ko", "nl", "pl", "pt", "ru", "tr", "zh"],
+  "app.team.description": ["ar", "de", "es", "fr", "he", "it", "ja", "ko", "nl", "pl", "pt", "ru", "tr", "zh"],
+  "app.team.add": ["ar", "de", "es", "fr", "he", "it", "ja", "ko", "nl", "pl", "pt", "ru", "tr", "zh"],
+  "app.team.adding": ["ar", "de", "es", "fr", "he", "it", "ja", "ko", "nl", "pl", "pt", "ru", "tr", "zh"],
+  "app.team.failed": ["ar", "de", "es", "fr", "he", "it", "ja", "ko", "nl", "pl", "pt", "ru", "tr", "zh"],
   "account.login.companyDescription": ["de", "es", "fr", "it", "ja", "ko", "nl", "pl", "pt", "ru", "tr", "zh"],
   "account.login.companyOpenAgain": ["de", "es", "fr", "it", "ja", "ko", "nl", "pl", "pt", "ru", "tr", "zh"],
   "account.login.companyOpenFailed": ["de", "es", "fr", "it", "ja", "ko", "nl", "pl", "pt", "ru", "tr", "zh"],

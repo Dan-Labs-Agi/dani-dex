@@ -369,6 +369,7 @@
     "./team-protocol/v10": "./src/team-protocol/v10.ts",
     "./team-protocol/v10-webrtc-adapter": "./src/team-protocol/v10-webrtc-adapter.ts",
     "./dani-account": "./src/dani-account.ts",
+    "./team-templates": "./src/team-templates.ts",
     "./voice-duplex": "./src/voice-duplex.ts"
   },
   "scripts": {
