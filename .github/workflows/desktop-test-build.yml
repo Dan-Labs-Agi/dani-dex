@@ -1,0 +1,97 @@
+name: Desktop test build
+
+# Builds unsigned desktop installers and keeps them as workflow artifacts only. Publishes nothing.
+on:
+  push:
+    branches:
+      - build/desktop-test
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CI: "1"
+  CSC_IDENTITY_AUTO_DISCOVERY: "false"
+  # Lets the runtime installer read the pinned runtime release in this private repo.
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  mac:
+    name: Mac arm64 and x64 dmg
+    runs-on: macos-15
+    timeout-minutes: 90
+    # Both architectures build in one job so electron-builder writes one latest-mac.yml
+    # that lists both, which the in-app updater reads.
+    concurrency:
+      group: desktop-release-mac
+      cancel-in-progress: true
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Bun and Node
+        uses: ./.github/actions/setup-bun
+
+      - name: Build the app and package the dmg
+        run: |
+          set -euo pipefail
+          bun run voice:prepare-runtime
+          bun run prepare:remote-desktop-runtime
+          bun run verify:remote-desktop-runtime
+          bun run prepare:cua-driver
+          bun run build
+          # The updater needs a zip per architecture alongside the dmg for the landing page.
+          bunx electron-builder --mac dmg zip --arm64 --x64 --config.mac.identity=null --config.mac.notarize=false --publish never
+          ls -la dist/*.dmg dist/*.zip dist/latest-mac.yml
+
+      - name: Keep installers as artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-mac-${{ github.run_id }}
+          path: |
+            dist/*.dmg
+            dist/*.zip
+            dist/latest-mac.yml
+          retention-days: 14
+
+  windows:
+    name: Windows x64 installer
+    runs-on: windows-latest
+    timeout-minutes: 60
+    concurrency:
+      group: desktop-release-windows
+      cancel-in-progress: true
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Bun and Node
+        uses: ./.github/actions/setup-bun
+
+      - name: Build the app and package the installer
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Put bsdtar (System32) ahead of Git's GNU tar: GNU tar reads "D:\..." as a remote host and fails.
+          export PATH="/c/Windows/System32:$PATH"
+          bun run voice:prepare-runtime
+          bun scripts/prepare-remote-desktop-runtime.ts win32 x64
+          bun run verify:remote-desktop-runtime --windows
+          bun scripts/install-cua-driver.ts win32 x64
+          bun run build
+          bunx electron-builder --win nsis --x64 --publish never
+          ls -la dist/*.exe
+
+      - name: Keep installer as artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: desktop-win-${{ github.run_id }}
+          path: |
+            dist/*.exe
+            dist/latest.yml
+          retention-days: 14
