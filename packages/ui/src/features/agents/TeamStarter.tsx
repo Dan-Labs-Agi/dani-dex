@@ -30,7 +30,7 @@ export function TeamStarter(props: TeamStarterProps) {
               gap: "8px",
               padding: "12px",
               border: "1px solid var(--border, #8884)",
-              "border-radius": "12px",
+              "border-radius": "var(--openbot-radius-card)",
             }}
           >
             <Heading as="h3" size="sm">
