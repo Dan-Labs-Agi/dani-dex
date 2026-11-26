@@ -8,5 +8,13 @@ export function freeAccountState(path: string, method: string): unknown | null {
   if (clean === "/v1/me/billing/details") return { country: null, vatId: null };
   if (clean === "/v1/me/credits") return { available: false, currency: "usd", currencies: [], balance: 0, servers: [] };
   if (clean === "/v1/me/credits/activity") return { entries: [] };
+  if (clean === "/v2/hosting/servers") {
+    return { available: false, lifecycleAvailable: false, servers: [], maxServers: null };
+  }
+  if (clean === "/v2/hosting/plans") return { plans: [] };
+  if (clean === "/v1/sites") return { sites: [], limit: 0, used: 0 };
+  if (clean === "/v1/me/license") {
+    return { available: false, currency: null, license: null, used: 0, users: [], coveredBy: [] };
+  }
   return null;
 }
