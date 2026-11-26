@@ -10,7 +10,7 @@ export interface InviteEnv {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-export const PERMANENT_EXPIRES_AT = 8_640_000_000_000_000;
+const PERMANENT_EXPIRES_AT = 8_640_000_000_000_000;
 const json = (b: unknown, status = 200) =>
   new Response(JSON.stringify(b), { status, headers: { "content-type": "application/json" } });
 const b64u = (b: Uint8Array) =>
