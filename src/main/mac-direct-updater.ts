@@ -17,18 +17,18 @@ import type { UpdateAdapter, UpdateCancellationToken, UpdateCheckOutcome } from 
  * download the zip for this Mac, check its sha512, then replace the app bundle and open it again.
  */
 
-export interface MacFeedEntry {
+interface MacFeedEntry {
   readonly url: string;
   readonly sha512: string;
   readonly size: number;
 }
 
-export interface MacFeed {
+interface MacFeed {
   readonly version: string;
   readonly files: readonly MacFeedEntry[];
 }
 
-export function parseMacFeed(text: string): MacFeed | null {
+function parseMacFeed(text: string): MacFeed | null {
   const version = /^version:\s*['"]?([^'"\s]+)['"]?\s*$/mu.exec(text)?.[1];
   if (!version) return null;
   const files: MacFeedEntry[] = [];
@@ -41,7 +41,7 @@ export function parseMacFeed(text: string): MacFeed | null {
   return { version, files };
 }
 
-export function pickMacZip(feed: MacFeed, arch: string): MacFeedEntry | null {
+function pickMacZip(feed: MacFeed, arch: string): MacFeedEntry | null {
   const suffix = arch === "arm64" ? "-arm64.zip" : "-x64.zip";
   return feed.files.find((file) => file.url.endsWith(suffix)) ?? null;
 }
