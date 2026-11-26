@@ -21,7 +21,14 @@ describe("chat streaming for the voice loop", () => {
           seen.push({ url, init });
           return new Response(sse("Hel", "lo."));
         },
-        { url: OPENCODE_ZEN_URL, key: "public", model: "mimo-v2.6-flash-free", system: "s", user: "u", signal: new AbortController().signal },
+        {
+          url: OPENCODE_ZEN_URL,
+          key: "public",
+          model: "mimo-v2.6-flash-free",
+          system: "s",
+          user: "u",
+          signal: new AbortController().signal,
+        },
       ),
     );
     expect(pieces).toEqual(["Hel", "lo."]);
@@ -38,7 +45,14 @@ describe("chat streaming for the voice loop", () => {
           seen.push(url);
           return new Response(sse("ok"));
         },
-        { url: KILO_GATEWAY_URL, key: "user-key", model: "kilo/kilo-auto/free", system: "s", user: "u", signal: new AbortController().signal },
+        {
+          url: KILO_GATEWAY_URL,
+          key: "user-key",
+          model: "kilo/kilo-auto/free",
+          system: "s",
+          user: "u",
+          signal: new AbortController().signal,
+        },
       ),
     );
     expect(seen).toEqual([KILO_GATEWAY_URL]);
