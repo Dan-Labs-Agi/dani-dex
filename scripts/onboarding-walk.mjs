@@ -1,62 +1,58 @@
-// Launches the installed Mac app, walks the onboarding screens through the app window and saves a real screenshot of each.
-import { chromium } from "playwright-core";
-import { spawn, execSync } from "node:child_process";
-import { mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
+// Opens the installed Mac app and walks the onboarding screens over the debugging port, saving a real screenshot of each.
+import { execSync } from "node:child_process";
+import { mkdirSync, writeFileSync } from "node:fs";
 
 const app = process.argv[2];
-const dataDir = "/tmp/ob-data";
 mkdirSync("shots", { recursive: true });
-execSync(`open -n "${app}" --args --user-data-dir=${dataDir} --remote-debugging-port=9333 --no-sandbox`);
-const child = { pid: 0 };
+execSync(`open -n "${app}" --args --user-data-dir=/tmp/ob-data --remote-debugging-port=9333 --no-sandbox`);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-let browser;
-for (let i = 0; i < 40 && !browser; i++) {
+
+let target;
+for (let i = 0; i < 60 && !target; i++) {
   await sleep(2000);
-  try { browser = await chromium.connectOverCDP("http://127.0.0.1:9333"); } catch {}
+  try {
+    const t = await (await fetch("http://127.0.0.1:9333/json")).json();
+    target = t.find((x) => x.type === "page" && /^openbot-app:\/\/app\/index\.html/.test(x.url));
+  } catch {}
 }
-if (!browser) throw new Error("could not attach");
-const findMain = async () => {
-  for (let i = 0; i < 30; i++) {
-    for (const ctx of browser.contexts()) for (const p of ctx.pages()) {
-      console.log("page:", p.url().slice(0, 140));
-      if (/index\.html|^openbot-app:\/\/app\/(?!helper)/.test(p.url())) return p;
-    }
-    await sleep(2000);
-  }
-  try { execSync("screencapture -x shots/00-nomain-screen.png"); } catch {}
-  const t = await (await fetch("http://127.0.0.1:9333/json")).json();
-  console.log("targets:", JSON.stringify(t.map((x) => [x.type, x.url.slice(0, 100), x.title])));
-  throw new Error("no main window");
-};
-const win = await findMain();
-await win.setViewportSize({ width: 1280, height: 800 }).catch(() => {});
+if (!target) { try { execSync("screencapture -x shots/00-nomain.png"); } catch {} throw new Error("no main window"); }
+const ws = new WebSocket(target.webSocketDebuggerUrl);
+await new Promise((r, j) => { ws.onopen = r; ws.onerror = j; });
+let id = 0; const pending = new Map();
+ws.onmessage = (m) => { const d = JSON.parse(m.data); if (d.id && pending.has(d.id)) { pending.get(d.id)(d); pending.delete(d.id); } };
+const cdp = (method, params = {}) => new Promise((r) => { const i = ++id; pending.set(i, r); ws.send(JSON.stringify({ id: i, method, params })); });
+const evalJs = async (expression) => (await cdp("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true })).result?.result?.value;
+await cdp("Page.enable");
+await cdp("Page.bringToFront");
 await sleep(8000);
+
+const clickJs = `(() => {
+  const next = /^(continue|next|get started|start|allow|skip|skip for now|done|finish|let'?s go|i agree|accept|ok|got it|enable|maybe later)\\b/i;
+  for (const b of document.querySelectorAll('button,[role=button]')) {
+    const t = (b.innerText || '').trim();
+    const r = b.getBoundingClientRect();
+    if (next.test(t) && r.width > 0 && r.height > 0 && !b.disabled) { b.click(); return t; }
+  }
+  return null;
+})()`;
 const log = [];
-const next = /^(continue|next|get started|start|allow|skip|skip for now|done|finish|let'?s go|i agree|accept|ok|got it|enable|maybe later)\b/i;
 let last = "";
 for (let n = 1; n <= 30; n++) {
   await sleep(2500);
   const nn = String(n).padStart(2, "0");
-  const text = (await win.evaluate(() => document.body?.innerText ?? "").catch(() => "")).trim();
-  const buttons = await win.getByRole("button").allInnerTexts().catch(() => []);
-  await win.screenshot({ path: `shots/${nn}-window.png` });
+  const text = ((await evalJs("document.body ? document.body.innerText : ''")) ?? "").trim();
+  const buttons = (await evalJs("[...document.querySelectorAll('button,[role=button]')].map(b=>(b.innerText||'').trim()).filter(Boolean).slice(0,20)")) ?? [];
+  const shot = await cdp("Page.captureScreenshot", { format: "png" });
+  writeFileSync(`shots/${nn}-window.png`, Buffer.from(shot.result.data, "base64"));
   try { execSync(`screencapture -x shots/${nn}-screen.png`); } catch {}
-  log.push({ step: nn, text: text.slice(0, 400), buttons: buttons.map((b) => b.trim()).filter(Boolean).slice(0, 20) });
+  log.push({ step: nn, text: text.slice(0, 500), buttons });
   console.log(nn, JSON.stringify(log[log.length - 1]));
   writeFileSync("shots/walk.json", JSON.stringify(log, null, 1));
   const sig = text + buttons.join("|");
   if (sig === last) { console.log("no change, stopping"); break; }
   last = sig;
-  let clicked = false;
-  for (const b of await win.getByRole("button").all()) {
-    const t = ((await b.innerText().catch(() => "")) || "").trim();
-    if (next.test(t) && (await b.isVisible().catch(() => false)) && (await b.isEnabled().catch(() => false))) {
-      console.log("click:", t);
-      await b.click({ timeout: 5000 }).catch((e) => console.log("click failed", String(e).slice(0, 100)));
-      clicked = true;
-      break;
-    }
-  }
+  const clicked = await evalJs(clickJs);
+  console.log("click:", clicked);
   if (!clicked) { console.log("no forward button, stopping"); break; }
 }
 try { execSync("pkill -f dani-dex"); } catch {}
