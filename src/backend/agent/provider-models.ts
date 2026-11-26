@@ -298,40 +298,27 @@ export function modelsAfterOpenCodeDiscoveryFailure(previous: AgentModelOption[]
 
 const KILOCODE_FREE_REASONING = ["low", "medium", "high", "xhigh", "max"] as const;
 
-const KILOCODE_FREE_MODEL_FALLBACKS: AgentModelOption[] = [
-  {
-    provider: "kilocode",
-    id: "kilo/kilo-auto/free",
-    name: "Kilo Auto Free",
-    description: "Free KiloCode model. Download the KiloCode runtime to use it.",
-    defaultReasoningEffort: "medium",
-    supportedReasoningEfforts: [...KILOCODE_FREE_REASONING],
-  },
-  {
-    provider: "kilocode",
-    id: "kilo/nvidia/nemotron-3.5-super-vl:free",
-    name: "Nemotron 3.5 Super VL Free",
-    description: "Free KiloCode model. Download the KiloCode runtime to use it.",
-    defaultReasoningEffort: "medium",
-    supportedReasoningEfforts: [...KILOCODE_FREE_REASONING],
-  },
-  {
-    provider: "kilocode",
-    id: "kilo/nvidia/nemotron-3.5-lightning:free",
-    name: "Nemotron 3.5 Lightning Free",
-    description: "Free KiloCode model. Download the KiloCode runtime to use it.",
-    defaultReasoningEffort: "medium",
-    supportedReasoningEfforts: [...KILOCODE_FREE_REASONING],
-  },
-  {
-    provider: "kilocode",
-    id: "kilo/recursive/flint-v1.0:free",
-    name: "Flint 1.0 Free",
-    description: "Free KiloCode model. Download the KiloCode runtime to use it.",
-    defaultReasoningEffort: "medium",
-    supportedReasoningEfforts: [...KILOCODE_FREE_REASONING],
-  },
+const KILOCODE_FREE_MODEL_NAMES: ReadonlyArray<readonly [string, string]> = [
+  ["kilo/kilo-auto/free", "Kilo Auto Free"],
+  ["kilo/nvidia/nemotron-3.5-super-vl:free", "Nemotron 3.5 Super VL Free"],
+  ["kilo/nvidia/nemotron-3.5-lightning:free", "Nemotron 3.5 Lightning Free"],
+  ["kilo/nvidia/nemotron-3-ultra-550b-a55b:free", "Nemotron 3 Ultra Free"],
+  ["kilo/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free", "Nemotron 3 Nano Omni Free"],
+  ["kilo/recursive/flint-v1.0:free", "Flint 1.0 Free"],
+  ["kilo/inclusionai/ling-3.2-flash:free", "Ling 3.2 Flash Free"],
+  ["kilo/baidu/ernie-5.5-flash-preview:free", "ERNIE 5.5 Flash Preview Free"],
+  ["kilo/liquid/lfm-3-1.7b:free", "LFM3 1.7B Free"],
+  ["kilo/particle-ai/particle-1:free", "Particle 1 Free"],
 ];
+
+const KILOCODE_FREE_MODEL_FALLBACKS: AgentModelOption[] = KILOCODE_FREE_MODEL_NAMES.map(([id, name]) => ({
+  provider: "kilocode",
+  id,
+  name,
+  description: "Free KiloCode model. Download the KiloCode runtime to use it.",
+  defaultReasoningEffort: "medium",
+  supportedReasoningEfforts: [...KILOCODE_FREE_REASONING],
+}));
 
 export function modelsAfterKilocodeDiscoveryFailure(previous: AgentModelOption[]): AgentModelOption[] {
   return previous.length ? previous : KILOCODE_FREE_MODEL_FALLBACKS;
