@@ -8,3 +8,7 @@
 
 - Start with a team: add a group of bots (Dev, Research or Life admin crew) in one tap. Chief leads, every member reads the same shared rules.
 - Billing, credits and Invite friends no longer show an account service error; they now say the feature is not offered (the app is free). Needs the account worker redeploy.
+
+### Added
+
+- Invite friends now creates a personal link and code, and records friends who sign up with it. Free, no credit involved.

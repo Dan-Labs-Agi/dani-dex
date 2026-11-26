@@ -11,6 +11,8 @@ export interface EmailEnv {
 }
 type Json = (b: unknown, s?: number) => Response;
 type Err = (s: number, c: string, m: string) => Response;
+import { recordReferral } from "./referrals";
+
 const enc = new TextEncoder();
 const now = () => Math.floor(Date.now() / 1000);
 const CODE_TTL = 600;
@@ -109,6 +111,7 @@ export async function emailVerify(req: Request, env: EmailEnv, json: Json, apiEr
       .bind(id, `email:${c.email}`, c.email, null, now())
       .run();
     u = { id, email: c.email, name: null };
+    await recordReferral(env.DB, id, b.referralCode, Date.now()).catch(() => false);
   }
   const session = b64url(crypto.getRandomValues(new Uint8Array(32)));
   await env.DB.prepare("INSERT INTO sessions(token_hash,user_id,created_at,expires_at) VALUES(?,?,?,?)")
