@@ -505,6 +505,7 @@ interface ProviderModelCatalog {
   readonly paged?: true;
   readonly slowList?: true;
   readonly hiddenWhenSignedOut?: true;
+  readonly listFallbackWhenUnavailable?: true;
   readonly ownOrder?: true;
   readonly partialListAtStart?: true;
   readonly relistAfterStart?: true;
@@ -921,6 +922,7 @@ export const BUILT_IN_PROVIDER_DRIVERS: readonly BuiltInProviderDriver[] = [
     signIn: { kind: "external" },
     catalog: {
       hiddenWhenSignedOut: true,
+      listFallbackWhenUnavailable: true,
       partialListAtStart: true,
       relistAfterStart: true,
       fallback: modelsAfterKilocodeDiscoveryFailure,
