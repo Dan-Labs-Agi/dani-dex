@@ -37,8 +37,10 @@ permissions: {}
 jobs:
   update:
     name: Check and publish
+    # Off until the repository variable STATUS_PAGE_ENABLED is "true" and the `status-data` branch has
+    # been started with the bootstrap run.
     if: >-
-      github.repository == 'Dan-Labs-Agi/dani-dex' && (
+      vars.STATUS_PAGE_ENABLED == 'true' && github.repository == 'Dan-Labs-Agi/dani-dex' && (
         github.event_name == 'schedule' ||
         github.event_name == 'workflow_dispatch' ||
         (

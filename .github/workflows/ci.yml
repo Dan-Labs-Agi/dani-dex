@@ -1367,7 +1367,9 @@ jobs:
 
   deploy-production:
     name: Deploy Cloudflare production
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Off until the repository variable CLOUDFLARE_PRODUCTION_DEPLOY is "true". It needs the private
+    # beam repository key and the production deploy token, which this repository does not have.
+    if: vars.CLOUDFLARE_PRODUCTION_DEPLOY == 'true' && github.event_name == 'push' && github.ref == 'refs/heads/main'
     # `surfaces` gates the deploy even though the Worker it ships lives in
     # `apps/auth-api`, which `api` already covers: mobile, the site router, the
     # team client and the remote stack all consume the account API, so a red
