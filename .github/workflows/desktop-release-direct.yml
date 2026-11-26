@@ -24,15 +24,22 @@ env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
-  mac:
-    name: Mac arm64 and x64 dmg
-    runs-on: macos-15
+  mac-build:
+    name: Mac ${{ matrix.arch }} build
+    # Each architecture builds on a runner of its own kind. One arm64 job that packs both mixes
+    # arm64 native parts into the x64 app, which then has no working Computer Use driver.
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-15
+            machine: arm64
+          - arch: x64
+            runner: macos-15-intel
+            machine: x86_64
+    runs-on: ${{ matrix.runner }}
     timeout-minutes: 90
-    # Both architectures build in one job so electron-builder writes one latest-mac.yml
-    # that lists both, which the in-app updater reads.
-    concurrency:
-      group: desktop-release-mac
-      cancel-in-progress: true
     steps:
       - name: Check out
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -45,25 +52,71 @@ jobs:
       - name: Build the app and package the dmg
         run: |
           set -euo pipefail
+          test "$(uname -m)" = "${{ matrix.machine }}"
           bun run voice:prepare-runtime
           bun run prepare:remote-desktop-runtime
           bun run verify:remote-desktop-runtime
           bun run prepare:cua-driver
           bun run build
-          # The updater needs a zip per architecture alongside the dmg for the landing page.
-          bunx electron-builder --mac dmg zip --arm64 --x64 --config.mac.identity=null --config.mac.notarize=false --publish never
+          bunx electron-builder --mac dmg zip --${{ matrix.arch }} --config.mac.identity=null --config.mac.notarize=false --publish never
           ls -la dist/*.dmg dist/*.zip dist/latest-mac.yml
+
+      - name: Check the app has this architecture's parts
+        run: |
+          set -euo pipefail
+          APP=$(ls -d dist/mac*/*.app | head -1)
+          R="$APP/Contents/Resources"
+          test -x "$R/cua-driver/darwin/${{ matrix.arch }}/cua-driver"
+          test -d "$R/remote-desktop-runtime/darwin/${{ matrix.arch }}"
+          OTHER=$([ "${{ matrix.arch }}" = x64 ] && echo arm64 || echo x64)
+          test ! -e "$R/cua-driver/darwin/$OTHER"
+
+      - name: Keep the files for the publish job
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-${{ matrix.arch }}
+          path: |
+            dist/*.dmg
+            dist/*.zip
+            dist/*.blockmap
+            dist/latest-mac.yml
+          if-no-files-found: error
+
+  mac:
+    name: Mac publish
+    needs: mac-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: desktop-release-mac
+      cancel-in-progress: true
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Get both builds
+        uses: actions/download-artifact@v4
+        with:
+          path: mac-files
 
       - name: Publish to the download host and update feed
         run: |
           set -euo pipefail
-          VERSION=$(bun -e 'console.log(JSON.parse(require("fs").readFileSync("package.json","utf8")).version)')
           python3 -m pip install --quiet --break-system-packages boto3
+          VERSION=$(python3 -c 'import json;print(json.load(open("package.json"))["version"])')
           for ARCH in arm64 x64; do
             python3 scripts/publish-feed.py --platform "mac-$ARCH" \
-              --file "dist/dani-dex-$VERSION-$ARCH.dmg" --key "desktop/Dani-Dex-mac-$ARCH.dmg" --version "$VERSION"
+              --file "mac-files/mac-$ARCH/dani-dex-$VERSION-$ARCH.dmg" --key "desktop/Dani-Dex-mac-$ARCH.dmg" --version "$VERSION"
           done
-          python3 scripts/publish-updater-files.py dist/latest-mac.yml dist/*.zip dist/*.blockmap
+          python3 scripts/merge-mac-feeds.py mac-files/mac-arm64/latest-mac.yml mac-files/mac-x64/latest-mac.yml > latest-mac.yml
+          cat latest-mac.yml
+          grep -q -- '-arm64.zip' latest-mac.yml
+          grep -q -- '-x64.zip' latest-mac.yml
+          # The zips and blockmaps go first, the feed last, so the feed never names a missing file.
+          python3 scripts/publish-updater-files.py mac-files/mac-arm64/*.zip mac-files/mac-x64/*.zip mac-files/mac-arm64/*.blockmap mac-files/mac-x64/*.blockmap
+          python3 scripts/publish-updater-files.py latest-mac.yml
 
       - name: Verify the public URL
         run: |
