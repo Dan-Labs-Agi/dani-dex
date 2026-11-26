@@ -32,9 +32,9 @@ function run(modelId: string, reply: () => Response) {
       key: "test-key",
       text: "hello",
       language: null,
-      elevenLabsVoice: "rachel",
+      elevenLabsVoice: "alice",
       xaiVoice: "eve",
-    } as never),
+    }),
   );
   return { audio, seen };
 }
