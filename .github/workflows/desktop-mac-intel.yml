@@ -1,0 +1,86 @@
+name: Desktop Mac Intel build
+
+# Builds the Intel Mac app on an Intel runner, so the native parts are x64, checks that they are in
+# the app, starts the app, and keeps the dmg and zip as build artifacts. It does not publish.
+on:
+  push:
+    branches:
+      - fix/mac-intel-build
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CI: "1"
+  CSC_IDENTITY_AUTO_DISCOVERY: "false"
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  mac-x64:
+    name: Mac x64 on an Intel runner
+    runs-on: macos-15-intel
+    timeout-minutes: 90
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Bun and Node
+        uses: ./.github/actions/setup-bun
+
+      - name: Show the machine
+        run: uname -m
+
+      - name: Build the app and package the dmg
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = x86_64
+          bun run voice:prepare-runtime
+          bun run prepare:remote-desktop-runtime
+          bun run verify:remote-desktop-runtime
+          bun run prepare:cua-driver
+          bun run build
+          bunx electron-builder --mac dmg zip --x64 --config.mac.identity=null --config.mac.notarize=false --publish never
+          ls -la dist/*.dmg dist/*.zip dist/latest-mac.yml
+
+      - name: Check the x64 parts are in the app
+        run: |
+          set -euo pipefail
+          APP=$(ls -d dist/mac*/*.app | head -1)
+          echo "app: $APP"
+          R="$APP/Contents/Resources"
+          test -x "$R/cua-driver/darwin/x64/cua-driver"
+          test -d "$R/remote-desktop-runtime/darwin/x64"
+          ls "$R/app.asar.unpacked/node_modules/@koromix/" || true
+          test -f "$R/app.asar.unpacked/node_modules/@koromix/koffi-darwin-x64/darwin_x64/koffi.node"
+          test ! -e "$R/cua-driver/darwin/arm64"
+          file "$R/cua-driver/darwin/x64/cua-driver"
+          file "$R/app.asar.unpacked/node_modules/@koromix/koffi-darwin-x64/darwin_x64/koffi.node"
+          lipo -archs "$APP/Contents/MacOS/"* || true
+
+      - name: Start the app
+        run: |
+          set -uo pipefail
+          APP=$(ls -d "$PWD"/dist/mac*/*.app | head -1)
+          xattr -cr "$APP" || true
+          open -n "$APP" --args --no-sandbox
+          sleep 30
+          pgrep -fl "$(basename "$APP" .app)" | head -5 | tee dist/launch-processes.txt
+          screencapture -x dist/launch.png || true
+          test -s dist/launch-processes.txt
+
+      - name: Save the build
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: mac-x64-${{ github.run_id }}
+          path: |
+            dist/*.dmg
+            dist/*.zip
+            dist/latest-mac.yml
+            dist/launch.png
+            dist/launch-processes.txt
+          if-no-files-found: warn
+          retention-days: 7
