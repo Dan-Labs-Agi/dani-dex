@@ -1,0 +1,312 @@
+[
+ {
+  "kind": "app",
+  "name": "Slack",
+  "error": false,
+  "text": "Apps\nSlack\nMarketplace\nApps\nAgents\nSkills\nSlack\nNot connected\nMentions and direct messages in Slack\nConnect Slack\nInformation\n\nPeople mention @Dani Dex in Slack or send it a direct message. The Slack Orchestrator asks the right agent and answers.\n\nDeveloper\nSlack\nCategory\nProductivity\nWebsite\nslack."
+ },
+ {
+  "kind": "app",
+  "name": "Discord",
+  "error": false,
+  "text": "Apps\nDiscord\nMarketplace\nApps\nAgents\nSkills\nDiscord\nNot connected\nMentions and direct messages in Discord\nConnect Discord\nInformation\n\nPeople mention @Dani Dex in a channel of a Discord server. The Discord Orchestrator asks the right agent and answers.\n\nDeveloper\nDiscord\nCategory\nProductivity\nWebsit"
+ },
+ {
+  "kind": "app",
+  "name": "Telegram",
+  "error": false,
+  "text": "Apps\nTelegram\nMarketplace\nApps\nAgents\nSkills\nTelegram\nNot connected\nGroups and direct chats in Telegram\nConnect Telegram\nInformation\n\nAdd the Dani Dex bot to a Telegram group or open a direct chat with it. The Telegram Orchestrator asks the right agent and answers.\n\nDeveloper\nTelegram\nCategory\nProdu"
+ },
+ {
+  "kind": "connect",
+  "name": "Telegram",
+  "text": "Apps\nTelegram\nMarketplace\nApps\nAgents\nSkills\nTelegram\nNot connected\nGroups and direct chats in Telegram\nConnect Telegram\nInformation\n\nAdd the Dani Dex bot to a Telegram group or open a direct chat with it. The Telegram Orchestrator asks the right agent and answers.\n\nDeveloper\nTelegram\nCategory\nProductivity\nWebsite\ntelegram.org\n\nOCT 30\n1\nChat\n2\nAgent\nLink a Telegram chat\nAdd the Dani Dex bot to a g"
+ },
+ {
+  "kind": "app",
+  "name": "WhatsApp",
+  "error": false,
+  "text": "Apps\nWhatsApp\nMarketplace\nApps\nAgents\nSkills\nWhatsApp\nNot connected\nYour own chat and the people you allow in WhatsApp\nLink WhatsApp\nInformation\n\nLink a WhatsApp number to this computer. The WhatsApp Orchestrator asks the right agent and answers.\n\nDeveloper\nWhatsApp\nCategory\nProductivity\nWebsite\nwha"
+ },
+ {
+  "kind": "app",
+  "name": "1Password",
+  "error": false,
+  "text": "Apps\n1Password\nMarketplace\nApps\nAgents\nSkills\n1Password\nNot connected\nSign in to sites with logins you share\nSet up\nConnecting sets up a “Shared with Dani Dex” vault in your 1Password account and a service account that can read only that vault. Dani Dex fills saved logins in its browser on this comp"
+ },
+ {
+  "kind": "app",
+  "name": "Bitwarden",
+  "error": false,
+  "text": "Apps\nBitwarden\nMarketplace\nApps\nAgents\nSkills\nBitwarden\nNot connected\nSign in to sites with logins from a shared folder\nConnect Bitwarden\nInstall the Bitwarden CLI and sign in with bw login. Create a folder named Shared with Dani Dex and put only the logins that agents may use in it. Run bw unlock -"
+ },
+ {
+  "kind": "app",
+  "name": "Coda",
+  "error": false,
+  "text": "Apps\nCoda\nMarketplace\nApps\nAgents\nSkills\nCoda\nNot connected\nDocs, pages and tables\nCopy link\nConnect\n\nPlugin\nCoda\n Summarize the project plan doc in Coda.\n\nPlugin\nCoda\n Which rows in the launch tracker table are still open?\n\nPlugin\nCoda\n Draft a new page in this doc with the notes from today's meeti"
+ },
+ {
+  "kind": "app",
+  "name": "Craft",
+  "error": false,
+  "text": "Apps\nCraft\nMarketplace\nApps\nAgents\nSkills\nCraft\nNot connected\nNotes, docs and tasks\nCopy link\nConnect\n\nPlugin\nCraft\n Find my Craft notes about the Q3 roadmap.\n\nPlugin\nCraft\n Summarize this week's daily notes.\n\nPlugin\nCraft\n Add these action items as tasks in Craft.\n\nConnection\nCraft\nSign in with you"
+ },
+ {
+  "kind": "app",
+  "name": "Dropbox",
+  "error": false,
+  "text": "Apps\nDropbox\nMarketplace\nApps\nAgents\nSkills\nDropbox\nNot connected\nFiles and folders\nCopy link\nConnect\n\nPlugin\nDropbox\n Find the latest version of the Q3 report in my Dropbox.\n\nPlugin\nDropbox\n Summarize the PDFs in my Contracts folder.\n\nPlugin\nDropbox\n Save this draft to my Dropbox Drafts folder.\n\nCo"
+ },
+ {
+  "kind": "app",
+  "name": "Evernote",
+  "error": false,
+  "text": "Apps\nEvernote\nMarketplace\nApps\nAgents\nSkills\nEvernote\nNot connected\nNotes and notebooks\nCopy link\nConnect\n\nPlugin\nEvernote\n Find my Evernote notes about the kitchen renovation.\n\nPlugin\nEvernote\n Summarize the notes I saved last week.\n\nPlugin\nEvernote\n Create an Evernote note with these meeting notes"
+ },
+ {
+  "kind": "app",
+  "name": "GitBook",
+  "error": false,
+  "text": "Apps\nGitBook\nMarketplace\nApps\nAgents\nSkills\nGitBook\nNot connected\nDocumentation spaces\nCopy link\nConnect\n\nPlugin\nGitBook\n Search our GitBook docs for how API keys are rotated.\n\nPlugin\nGitBook\n Which pages in the API reference space mention the old v1 endpoints?\n\nPlugin\nGitBook\n Draft a getting start"
+ },
+ {
+  "kind": "app",
+  "name": "Guru",
+  "error": false,
+  "text": "Apps\nGuru\nMarketplace\nApps\nAgents\nSkills\nGuru\nNot connected\nCompany knowledge search\nCopy link\nConnect\n\nPlugin\nGuru\n What is our travel expense policy according to Guru?\n\nPlugin\nGuru\n Find the Guru cards a new support agent should read first.\n\nPlugin\nGuru\n Draft a Guru card that explains how to rese"
+ },
+ {
+  "kind": "app",
+  "name": "Canva",
+  "error": false,
+  "text": "Apps\nCanva\nMarketplace\nApps\nAgents\nSkills\nCanva\nNot connected\nDesigns, assets and exports\nCopy link\nConnect\n\nPlugin\nCanva\n Show me my most recently edited Canva design.\n\nPlugin\nCanva\n Resize my launch poster for Instagram and export both as PNG.\n\nPlugin\nCanva\n Turn these release notes into a six-sli"
+ },
+ {
+  "kind": "app",
+  "name": "Figma",
+  "error": false,
+  "text": "Apps\nFigma\nMarketplace\nApps\nAgents\nSkills\nFigma\nNot connected\nDesigns and prototypes\nCopy link\nConnect\n\nPlugin\nFigma\n Hand off the checkout file: list screens, components, and styles.\n\nPlugin\nFigma\n Audit this file for inconsistent spacing and color use.\n\nPlugin\nFigma\n Extract the marketing icons at"
+ },
+ {
+  "kind": "app",
+  "name": "Paper",
+  "error": false,
+  "text": "Apps\nPaper\nMarketplace\nApps\nAgents\nSkills\nPaper\nNot connected\nDesign canvas built on HTML and CSS\nCopy link\nConnect\n\nPlugin\nPaper\n Implement the selected Paper frame in this codebase, with our code conventions.\n\nPlugin\nPaper\n Use the styles in this repository and design a settings page in Paper.\n\nPl"
+ },
+ {
+  "kind": "app",
+  "name": "Higgsfield",
+  "error": false,
+  "text": "Apps\nHiggsfield\nMarketplace\nApps\nAgents\nSkills\nHiggsfield\nNot connected\nAI images, videos and audio\nCopy link\nConnect\n\nPlugin\nHiggsfield\n How many Higgsfield credits do I have?\n\nPlugin\nHiggsfield\n Make a Higgsfield product photo of a ceramic mug on a wooden table.\n\nPlugin\nHiggsfield\n Make a 5-second"
+ },
+ {
+  "kind": "app",
+  "name": "Sunra",
+  "error": false,
+  "text": "Apps\nSunra\nMarketplace\nApps\nAgents\nSkills\nSunra\nNot connected\nAI images, videos, audio and 3D\nCopy link\nConnect\n\nPlugin\nSunra\n How many Sunra credits do I have?\n\nPlugin\nSunra\n Make a Sunra poster of a night market in the rain, in portrait format.\n\nPlugin\nSunra\n Make a 5-second Sunra video of a paper"
+ },
+ {
+  "kind": "app",
+  "name": "ElevenLabs",
+  "error": false,
+  "text": "Apps\nElevenLabs\nMarketplace\nApps\nAgents\nSkills\nElevenLabs\nNot connected\nSpeech, voices and voice agents\nCopy link\nConnect\n\nPlugin\nElevenLabs\n Read this paragraph aloud with a calm ElevenLabs voice and give me the audio.\n\nPlugin\nElevenLabs\n List my ElevenLabs voice agents and the voice each one uses."
+ },
+ {
+  "kind": "app",
+  "name": "Context7",
+  "error": false,
+  "text": "Apps\nContext7\nMarketplace\nApps\nAgents\nSkills\nContext7\nNot connected\nCurrent library documentation\nCopy link\nConnect\n\nPlugin\nContext7\n What is the current API for virtualized lists in this framework?\n\nPlugin\nContext7\n What changed between v2 and v3 of this router?\n\nPlugin\nContext7\n Show a current exa"
+ },
+ {
+  "kind": "app",
+  "name": "Hugging Face",
+  "error": false,
+  "text": "Apps\nHugging Face\nMarketplace\nApps\nAgents\nSkills\nHugging Face\nNot connected\nModels, datasets and papers on the Hub\nCopy link\nConnect\n\nPlugin\nHugging Face\n Find small open models for speech recognition on Hugging Face.\n\nPlugin\nHugging Face\n Which papers are trending on Hugging Face today?\n\nPlugin\nHug"
+ },
+ {
+  "kind": "app",
+  "name": "Firecrawl",
+  "error": false,
+  "text": "Apps\nFirecrawl\nMarketplace\nApps\nAgents\nSkills\nFirecrawl\nNot connected\nWeb extraction and search\nCopy link\nConnect\n\nPlugin\nFirecrawl\n Extract the pricing table from this page as structured data.\n\nPlugin\nFirecrawl\n Research competitor pricing and cite each source page.\n\nPlugin\nFirecrawl\n What changed "
+ },
+ {
+  "kind": "app",
+  "name": "Brave Search",
+  "error": false,
+  "text": "Apps\nBrave Search\nMarketplace\nApps\nAgents\nSkills\nBrave Search\nNot connected\nPrivate web search\nCopy link\nConnect\n\nPlugin\nBrave Search\n What are reviewers saying about this framework version?\n\nPlugin\nBrave Search\n Find today's announcements for this product area.\n\nPlugin\nBrave Search\n Compare these t"
+ },
+ {
+  "kind": "app",
+  "name": "Ahrefs",
+  "error": false,
+  "text": "Apps\nAhrefs\nMarketplace\nApps\nAgents\nSkills\nAhrefs\nNot connected\nSEO and keyword data\nCopy link\nConnect\n\nPlugin\nAhrefs\n Find low-difficulty keywords about home espresso machines.\n\nPlugin\nAhrefs\n Which pages bring the most organic traffic to this competitor?\n\nPlugin\nAhrefs\n List the new backlinks to o"
+ },
+ {
+  "kind": "app",
+  "name": "Amplemarket",
+  "error": false,
+  "text": "Apps\nAmplemarket\nMarketplace\nApps\nAgents\nSkills\nAmplemarket\nNot connected\nSales prospecting and enrichment\nCopy link\nConnect\n\nPlugin\nAmplemarket\n Find heads of finance at logistics companies in Germany with 200 to 1,000 employees.\n\nPlugin\nAmplemarket\n Research this company: tech stack, recent hires,"
+ },
+ {
+  "kind": "app",
+  "name": "Aave",
+  "error": false,
+  "text": "Apps\nAave\nMarketplace\nApps\nAgents\nSkills\nAave\nNot connected\nAave data and transactions\nCopy link\nConnect\n\nPlugin\nAave\n Where can I earn the most on stablecoins across Aave right now?\n\nPlugin\nAave\n Which pays more for USDC right now, Aave V3 or V4 on Ethereum?\n\nPlugin\nAave\n What's the health factor o"
+ },
+ {
+  "kind": "app",
+  "name": "PostHog",
+  "error": false,
+  "text": "Apps\nPostHog\nMarketplace\nApps\nAgents\nSkills\nPostHog\nNot connected\nProduct analytics and flags\nCopy link\nConnect\n\nPlugin\nPostHog\n How does the signup funnel look for the last 14 days?\n\nPlugin\nPostHog\n Which feature flags are enabled for this user?\n\nPlugin\nPostHog\n Did activation change after last wee"
+ },
+ {
+  "kind": "app",
+  "name": "Airtable",
+  "error": false,
+  "text": "Apps\nAirtable\nMarketplace\nApps\nAgents\nSkills\nAirtable\nNot connected\nBases and records\nCopy link\nConnect\n\nPlugin\nAirtable\n What bases do I have access to?\n\nPlugin\nAirtable\n Summarize the launch tracker table.\n\nPlugin\nAirtable\n Mark the shipped features as done in the roadmap base.\n\nConnection\nAirtabl"
+ },
+ {
+  "kind": "app",
+  "name": "Coinbase",
+  "error": false,
+  "text": "Apps\nCoinbase\nMarketplace\nApps\nAgents\nSkills\nCoinbase\nNot connected\nCrypto prices, portfolios and trading\nCopy link\nConnect\n\nPlugin\nCoinbase\n What are my Coinbase balances in each portfolio?\n\nPlugin\nCoinbase\n Show the BTC-USD price on Coinbase and how it moved this week.\n\nPlugin\nCoinbase\n Preview a "
+ },
+ {
+  "kind": "app",
+  "name": "Robinhood",
+  "error": false,
+  "text": "Apps\nRobinhood\nMarketplace\nApps\nAgents\nSkills\nRobinhood\nNot connected\nBrokerage accounts and agentic trading\nCopy link\nConnect\n\nPlugin\nRobinhood\n Summarize my Robinhood positions and how they moved today.\n\nPlugin\nRobinhood\n How did each stock on my Robinhood watchlist move this week?\n\nPlugin\nRobinho"
+ },
+ {
+  "kind": "app",
+  "name": "Adobe Analytics",
+  "error": false,
+  "text": "Apps\nAdobe Analytics\nMarketplace\nApps\nAgents\nSkills\nAdobe Analytics\nNot connected\nWeb analytics reports and segments\nCopy link\nConnect\n\nPlugin\nAdobe Analytics\n Which pages had the most visits last week?\n\nPlugin\nAdobe Analytics\n Show the daily orders for this month and compare them with last month.\n\n"
+ },
+ {
+  "kind": "app",
+  "name": "Resend",
+  "error": false,
+  "text": "Apps\nResend\nMarketplace\nApps\nAgents\nSkills\nResend\nNot connected\nTransactional email\nCopy link\nConnect\n\nPlugin\nResend\n Send the launch announcement draft to the beta list.\n\nPlugin\nResend\n Did the invoice email reach the customer?\n\nPlugin\nResend\n Draft a password-reset email for the new flow.\n\nConnect"
+ },
+ {
+  "kind": "app",
+  "name": "Omnisend",
+  "error": false,
+  "text": "Apps\nOmnisend\nMarketplace\nApps\nAgents\nSkills\nOmnisend\nNot connected\nEmail and SMS marketing\nCopy link\nConnect\n\nPlugin\nOmnisend\n How did last week's campaigns perform compared to the week before?\n\nPlugin\nOmnisend\n How many contacts are in the VIP segment, and how did it change this month?\n\nPlugin\nOmn"
+ },
+ {
+  "kind": "app",
+  "name": "Postiz",
+  "error": false,
+  "text": "Apps\nPostiz\nMarketplace\nApps\nAgents\nSkills\nPostiz\nNot connected\nSocial media scheduling\nCopy link\nConnect\n\nPlugin\nPostiz\n Which social media channels are connected to Postiz?\n\nPlugin\nPostiz\n Which posts are scheduled for next week?\n\nPlugin\nPostiz\n Draft a LinkedIn post about our new release, but do "
+ },
+ {
+  "kind": "app",
+  "name": "TryPost",
+  "error": false,
+  "text": "Apps\nTryPost\nMarketplace\nApps\nAgents\nSkills\nTryPost\nNot connected\nSocial media scheduling\nCopy link\nConnect\n\nPlugin\nTryPost\n Which posts are scheduled for this week?\n\nPlugin\nTryPost\n Draft a LinkedIn post about our new release, but do not schedule it.\n\nPlugin\nTryPost\n Which of my posts from last mon"
+ },
+ {
+  "kind": "app",
+  "name": "Composio",
+  "error": false,
+  "text": "Apps\nComposio\nMarketplace\nApps\nAgents\nSkills\nComposio\nNot connected\nGmail, Slack, GitHub and 1,000+ more apps\nCopy link\nConnect\n\nPlugin\nComposio\n Summarize my unread email and draft replies to the urgent ones.\n\nPlugin\nComposio\n Post a summary of this pull request to our team channel.\n\nPlugin\nComposi"
+ },
+ {
+  "kind": "connect",
+  "name": "Composio",
+  "text": "Apps\nComposio\nMarketplace\nApps\nAgents\nSkills\nComposio\nNot connected\nGmail, Slack, GitHub and 1,000+ more apps\nCopy link\nConnect\n\nPlugin\nComposio\n Summarize my unread email and draft replies to the urgent ones.\n\nPlugin\nComposio\n Post a summary of this pull request to our team channel.\n\nPlugin\nComposio\n Which apps and actions can you use through Composio?\n\nConnection\nComposio\nSign in with your Compo"
+ },
+ {
+  "kind": "app",
+  "name": "AgentMail",
+  "error": false,
+  "text": "Apps\nAgentMail\nMarketplace\nApps\nAgents\nSkills\nAgentMail\nNot connected\nEmail inboxes for agents\nCopy link\nConnect\n\nPlugin\nAgentMail\n Create an inbox for the support agent.\n\nPlugin\nAgentMail\n Summarize the unread threads in the support inbox.\n\nPlugin\nAgentMail\n Draft a reply to the latest message in t"
+ },
+ {
+  "kind": "app",
+  "name": "GitHub",
+  "error": false,
+  "text": "Apps\nGitHub\nMarketplace\nApps\nAgents\nSkills\nGitHub\nNot connected\nRepositories, issues and pull requests\nConnect GitHub\nInformation\n\nEvery agent on this computer can use your GitHub repositories, issues and pull requests, and gh and git.\n\nDeveloper\nGitHub\nCategory\nCoding\nWebsite\ngithub.com\n\nOCT 30"
+ },
+ {
+  "kind": "app",
+  "name": "Linear",
+  "error": false,
+  "text": "Apps\nLinear\nMarketplace\nApps\nAgents\nSkills\nLinear\nNot connected\nIssues and project triage\nCopy link\nConnect\n\nPlugin\nLinear\n What is assigned to me this week?\n\nPlugin\nLinear\n Triage the backlog: what is stale, blocked, or missing an owner?\n\nPlugin\nLinear\n File an issue for the crash in the sync queue"
+ },
+ {
+  "kind": "app",
+  "name": "Sentry",
+  "error": true,
+  "text": "Apps\nSentry\nMarketplace\nApps\nAgents\nSkills\nSentry\nNot connected\nErrors and crash triage\nCopy link\nConnect\n\nPlugin\nSentry\n What new errors appeared since yesterday's deploy?\n\nPlugin\nSentry\n Explain the top crash in the mobile project and its likely cause.\n\nPlugin\nSentry\n How healthy is the current re"
+ },
+ {
+  "kind": "app",
+  "name": "AppSignal",
+  "error": true,
+  "text": "Apps\nAppSignal\nMarketplace\nApps\nAgents\nSkills\nAppSignal\nNot connected\nErrors, performance and logs\nCopy link\nConnect\n\nPlugin\nAppSignal\n Which new errors did my production app get since the last deploy?\n\nPlugin\nAppSignal\n Which actions were the slowest this week, and why?\n\nPlugin\nAppSignal\n Did any u"
+ },
+ {
+  "kind": "app",
+  "name": "GitLab",
+  "error": false,
+  "text": "Apps\nGitLab\nMarketplace\nApps\nAgents\nSkills\nGitLab\nNot connected\nIssues, merge requests and pipelines\nCopy link\nConnect\n\nPlugin\nGitLab\n Which merge requests wait for my review?\n\nPlugin\nGitLab\n Why did the last pipeline on the default branch fail?\n\nPlugin\nGitLab\n File an issue for the crash in the syn"
+ },
+ {
+  "kind": "app",
+  "name": "Vercel",
+  "error": true,
+  "text": "Apps\nVercel\nMarketplace\nApps\nAgents\nSkills\nVercel\nNot connected\nDeployments, build logs and projects\nCopy link\nConnect\n\nPlugin\nVercel\n Why did the last production deployment fail?\n\nPlugin\nVercel\n List the deployments from today and their status.\n\nPlugin\nVercel\n Which routes had runtime errors in the"
+ },
+ {
+  "kind": "app",
+  "name": "Stripe",
+  "error": true,
+  "text": "Apps\nStripe\nMarketplace\nApps\nAgents\nSkills\nStripe\nNot connected\nPayments and billing review\nCopy link\nConnect\n\nPlugin\nStripe\n Look up this payment and explain why it failed.\n\nPlugin\nStripe\n Summarize this customer's invoices and outstanding balance.\n\nPlugin\nStripe\n Draft a payment link for the Pro p"
+ },
+ {
+  "kind": "app",
+  "name": "RevenueCat",
+  "error": false,
+  "text": "Apps\nRevenueCat\nMarketplace\nApps\nAgents\nSkills\nRevenueCat\nNot connected\nSubscriptions, products and paywalls\nCopy link\nConnect\n\nPlugin\nRevenueCat\n Which offerings and packages does my RevenueCat project have?\n\nPlugin\nRevenueCat\n How did my RevenueCat revenue and active subscriptions change this mont"
+ },
+ {
+  "kind": "app",
+  "name": "Airwallex",
+  "error": false,
+  "text": "Apps\nAirwallex\nMarketplace\nApps\nAgents\nSkills\nAirwallex\nNot connected\nBusiness accounts and cards\nCopy link\nConnect\n\nPlugin\nAirwallex\n What are my balances in each currency today?\n\nPlugin\nAirwallex\n Build a cashflow report for last month.\n\nPlugin\nAirwallex\n Which cards had the most spend this quarte"
+ },
+ {
+  "kind": "app",
+  "name": "Brex",
+  "error": false,
+  "text": "Apps\nBrex\nMarketplace\nApps\nAgents\nSkills\nBrex\nNot connected\nExpenses, cards, and bills\nCopy link\nConnect\n\nPlugin\nBrex\n Which of my expenses this month are missing receipts?\n\nPlugin\nBrex\n Summarize card spend by team for last quarter.\n\nPlugin\nBrex\n Which bills are due in the next two weeks?\n\nConnecti"
+ },
+ {
+  "kind": "app",
+  "name": "DeepLedger",
+  "error": false,
+  "text": "Apps\nDeepLedger\nMarketplace\nApps\nAgents\nSkills\nDeepLedger\nNot connected\nBookkeeping for QuickBooks and Xero\nCopy link\nConnect\n\nPlugin\nDeepLedger\n Show the profit and loss report for last month.\n\nPlugin\nDeepLedger\n Which bank transactions are still uncategorized?\n\nPlugin\nDeepLedger\n Which invoices ar"
+ },
+ {
+  "kind": "app",
+  "name": "Extend",
+  "error": false,
+  "text": "Apps\nExtend\nMarketplace\nApps\nAgents\nSkills\nExtend\nNot connected\nVirtual cards and spend\nCopy link\nConnect\n\nPlugin\nExtend\n Which virtual cards had the most spend this month?\n\nPlugin\nExtend\n List the transactions from last week that have no receipt.\n\nPlugin\nExtend\n Summarize the limits and remaining b"
+ },
+ {
+  "kind": "tab",
+  "name": "Agents",
+  "error": false,
+  "text": "Marketplace\nApps\nAgents\nSkills\nAgents\n\nReady-made agents with their own instructions and skills.\n\nAll\nVerified\nPublic\nFeatured\nAdd\nChange Reviewer\nVerified\nby Dani Dex\n\nYou are Change Reviewer. Your one job: find the bugs in a code change before it merges, each with a trigger, a consequence and the smallest fix. Inputs: a pull request (gh pr diff), a branch (git diff against its base), or uncommitted work in the workspace repository. If there is no repository or gh is not signed in, ask the user"
+ },
+ {
+  "kind": "tab",
+  "name": "Skills",
+  "error": false,
+  "text": "Marketplace\nApps\nAgents\nSkills\nSkills\n\nInstructions that teach an agent a task or a tool.\n\nAll\nVerified\nPublic\nCreate skill\nYour skills\n\nNo agent has a skill yet.\n\nA skill teaches an agent one task. Add one below, or create your own.\n\nProductivity\nDaily Brief\nVerified\nWrite a one-screen morning brief from the signed-in calendar and inbox and installed task tools: today's meetings with prep notes, commitments due, replies waiting, and conflicts. Drafts replies and never sends. Use each morning or"
+ }
+]
