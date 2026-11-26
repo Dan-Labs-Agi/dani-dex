@@ -19,7 +19,7 @@ const findMain = async () => {
   for (let i = 0; i < 30; i++) {
     for (const ctx of browser.contexts()) for (const p of ctx.pages()) {
       console.log("page:", p.url().slice(0, 140));
-      if (/index\.html|^openbot-app:/.test(p.url())) return p;
+      if (/index\.html|^openbot-app:\/\/app\/(?!helper)/.test(p.url())) return p;
     }
     await sleep(2000);
   }
