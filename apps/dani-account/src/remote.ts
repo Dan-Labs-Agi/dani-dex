@@ -325,6 +325,24 @@ export async function handleRemote(
       return json({ ok: true });
     }
   }
+  if (p === "/v1/mobile-auth/devices" && m === "GET" && url.searchParams.get("includeDesktop") !== "true") {
+    const hostParam = (url.searchParams.get("host") || "").toLowerCase();
+    const mobile = await env.DB.prepare(
+      "SELECT id,name,platform,created_at,last_active FROM account_sessions WHERE user_id=? AND kind='mobile' AND (?='' OR host_id=?) ORDER BY created_at",
+    )
+      .bind(uid, hostParam, hostParam)
+      .all<any>();
+    return json({
+      devices: mobile.results.map((s) => ({
+        sessionId: s.id,
+        name: s.name,
+        platform: s.platform === "ios" || s.platform === "android" ? s.platform : "unknown",
+        connectedAt: s.created_at,
+        lastActiveAt: s.last_active,
+        via: "code",
+      })),
+    });
+  }
   if (p === "/v1/mobile-auth/devices" && m === "GET") {
     const cur = await sha256(bearer);
     const rs = await env.DB.prepare(
