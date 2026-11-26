@@ -40,6 +40,10 @@ export const MODEL_DESCRIPTION = {
   [ELEVENLABS_VOICE_MODEL_ID]: "settings.voice.model.elevenlabs.description",
   "groq-whisper-large-v3-turbo": "settings.voice.model.groqTurbo.description",
   "groq-whisper-large-v3": "settings.voice.model.groqLarge.description",
+  "cartesia-ink-whisper": "settings.voice.model.cartesiaInk.description",
+  "fish-transcribe-pro": "settings.voice.model.fishPro.description",
+  "fish-transcribe": "settings.voice.model.fish.description",
+  "gradium-stt": "settings.voice.model.gradium.description",
 } as const satisfies Record<VoiceModelInfo["id"], AppTextKey>;
 
 export type ModelPlace = "local" | VoiceKeyProvider;

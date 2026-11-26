@@ -693,6 +693,14 @@ export const messages = defineMessages("settings", {
     "Sends each recording to Groq when you stop. Fast, and knows many languages. Uses your own API key, and Groq bills each use.",
   "settings.voice.model.groqLarge.description":
     "Sends each recording to Groq when you stop. More accurate than turbo, but slower. Uses your own API key, and Groq bills each use.",
+  "settings.voice.model.cartesiaInk.description":
+    "Sends each recording to Cartesia when you stop. Uses your own API key, and Cartesia bills each use.",
+  "settings.voice.model.fishPro.description":
+    "Sends each recording to Fish Audio when you stop. The more accurate model. Uses your own API key, and Fish Audio bills each use.",
+  "settings.voice.model.fish.description":
+    "Sends each recording to Fish Audio when you stop. Best for short recordings. Uses your own API key, and Fish Audio bills each use.",
+  "settings.voice.model.gradium.description":
+    "Sends each recording to Gradium when you stop. Knows English, French, German, Spanish and Portuguese. Uses your own API key, and Gradium bills each use.",
   "settings.voice.apiKey.placeholder": "Paste the key",
   "settings.voice.apiKey.save": "Save key",
   "settings.voice.apiKey.remove": "Remove key",

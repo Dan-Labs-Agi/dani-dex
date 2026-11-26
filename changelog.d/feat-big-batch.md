@@ -16,3 +16,5 @@
 - KiloCode and OpenCode now download in the background on first launch, so no manual install is needed.
 
 - Cartesia, Fish Audio and Gradium spoken replies now have model, voice, custom voice ID and speed options, with Free and Paid tags. Gradium speech uses its current endpoint.
+
+- Dictation can now use Cartesia Ink Whisper, Fish Audio Transcribe and Gradium Speech to Text with your own key. One key covers dictation and spoken replies for each provider.

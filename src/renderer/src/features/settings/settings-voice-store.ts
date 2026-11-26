@@ -49,6 +49,10 @@ const EMPTY_STATUSES: SettingsVoiceState["statuses"] = {
   [ELEVENLABS_VOICE_MODEL_ID]: null,
   "groq-whisper-large-v3-turbo": null,
   "groq-whisper-large-v3": null,
+  "cartesia-ink-whisper": null,
+  "fish-transcribe-pro": null,
+  "fish-transcribe": null,
+  "gradium-stt": null,
 };
 
 type FailureKey =

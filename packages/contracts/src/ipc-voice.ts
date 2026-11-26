@@ -33,9 +33,22 @@ export const ELEVENLABS_VOICE_MODEL_ID = "elevenlabs-scribe-v2-realtime";
 export const GROQ_VOICE_MODEL_IDS = ["groq-whisper-large-v3-turbo", "groq-whisper-large-v3"] as const;
 export type GroqVoiceModelId = (typeof GROQ_VOICE_MODEL_IDS)[number];
 
-export type CloudVoiceModelId = typeof ELEVENLABS_VOICE_MODEL_ID | GroqVoiceModelId;
+export const REST_VOICE_MODEL_IDS = [
+  "cartesia-ink-whisper",
+  "fish-transcribe-pro",
+  "fish-transcribe",
+  "gradium-stt",
+] as const;
+export type RestVoiceModelId = (typeof REST_VOICE_MODEL_IDS)[number];
 
-export const VOICE_MODEL_IDS = [...LOCAL_VOICE_MODEL_IDS, ELEVENLABS_VOICE_MODEL_ID, ...GROQ_VOICE_MODEL_IDS] as const;
+export type CloudVoiceModelId = typeof ELEVENLABS_VOICE_MODEL_ID | GroqVoiceModelId | RestVoiceModelId;
+
+export const VOICE_MODEL_IDS = [
+  ...LOCAL_VOICE_MODEL_IDS,
+  ELEVENLABS_VOICE_MODEL_ID,
+  ...GROQ_VOICE_MODEL_IDS,
+  ...REST_VOICE_MODEL_IDS,
+] as const;
 export type VoiceModelId = (typeof VOICE_MODEL_IDS)[number];
 export const DEFAULT_VOICE_MODEL_ID: VoiceModelId = "parakeet-tdt-0.6b-v3";
 
@@ -142,6 +155,38 @@ export const VOICE_MODELS: readonly VoiceModelInfo[] = [
     id: "groq-whisper-large-v3",
     provider: "groq",
     name: "Groq Whisper large-v3",
+    supportsLanguage: true,
+    livePreview: false,
+  },
+  {
+    kind: "cloud",
+    id: "cartesia-ink-whisper",
+    provider: "cartesia",
+    name: "Cartesia Ink Whisper",
+    supportsLanguage: true,
+    livePreview: false,
+  },
+  {
+    kind: "cloud",
+    id: "fish-transcribe-pro",
+    provider: "fish",
+    name: "Fish Audio Transcribe 1 Pro",
+    supportsLanguage: true,
+    livePreview: false,
+  },
+  {
+    kind: "cloud",
+    id: "fish-transcribe",
+    provider: "fish",
+    name: "Fish Audio Transcribe 1",
+    supportsLanguage: true,
+    livePreview: false,
+  },
+  {
+    kind: "cloud",
+    id: "gradium-stt",
+    provider: "gradium",
+    name: "Gradium Speech to Text",
     supportsLanguage: true,
     livePreview: false,
   },
@@ -319,6 +364,10 @@ export function isLocalVoiceModelId(value: unknown): value is LocalVoiceModelId 
   return isOneOf(LOCAL_VOICE_MODEL_IDS, value);
 }
 
+export function isRestVoiceModelId(value: unknown): value is RestVoiceModelId {
+  return isOneOf(REST_VOICE_MODEL_IDS, value);
+}
+
 export function isGroqVoiceModelId(value: unknown): value is GroqVoiceModelId {
   return isOneOf(GROQ_VOICE_MODEL_IDS, value);
 }
@@ -388,7 +437,7 @@ export type LocalSpeechModelId = typeof SPEECH_MODEL_ID;
 export const SPEECH_KEY_PROVIDERS = ["elevenlabs", "xai", "cartesia", "fish", "gradium", "sarvam"] as const;
 export type SpeechKeyProvider = (typeof SPEECH_KEY_PROVIDERS)[number];
 
-export const DICTATION_KEY_PROVIDERS = ["elevenlabs", "groq"] as const;
+export const DICTATION_KEY_PROVIDERS = ["elevenlabs", "groq", "cartesia", "fish", "gradium"] as const;
 export type DictationKeyProvider = (typeof DICTATION_KEY_PROVIDERS)[number];
 
 export type VoiceKeyProvider = SpeechKeyProvider | DictationKeyProvider;
