@@ -168,7 +168,7 @@ export function voiceIpcHandlers({
       ),
       getSpeechModelStatus: handler((): Promise<SpeechModelStatus> => runCauseEffect(speech.getModelStatus())),
       setSpeechApiKey: payloadHandler(parseSpeechApiKey, async ({ provider, key }): Promise<SpeechModelStatus> => {
-        if (provider === "xai") return runCauseEffect(speech.setXaiApiKey(key));
+        if (provider !== "elevenlabs") return runCauseEffect(speech.setProviderApiKey(provider, key));
         await runCauseEffect(voice.setApiKey("elevenlabs", key));
         return runCauseEffect(speech.announceStatus());
       }),

@@ -3975,11 +3975,19 @@ export async function createApplicationServices({
   voice.on("streamTranscript", forwardVoiceStreamTranscript);
   const speechPreferences = new SpeechPreferenceStore(join(app.getPath("userData"), "speech-preference.json"));
   await runCauseEffect(speechPreferences.load());
-  const xaiSpeechKeys = new VoiceApiKeyStore({
-    path: join(app.getPath("userData"), "xai-api-key.json"),
-    cipher: secretCipher,
-  });
-  await runCauseEffect(xaiSpeechKeys.load());
+  const speechKeyStore = async (name: string) => {
+    const store = new VoiceApiKeyStore({
+      path: join(app.getPath("userData"), `${name}-api-key.json`),
+      cipher: secretCipher,
+    });
+    await runCauseEffect(store.load());
+    return store;
+  };
+  const xaiSpeechKeys = await speechKeyStore("xai");
+  const cartesiaSpeechKeys = await speechKeyStore("cartesia");
+  const fishSpeechKeys = await speechKeyStore("fish");
+  const gradiumSpeechKeys = await speechKeyStore("gradium");
+  const sarvamSpeechKeys = await speechKeyStore("sarvam");
   const speech = new VoiceSpeechService({
     resourcesRoot: app.isPackaged ? join(process.resourcesPath, "voice") : resolve(".openbot-build/voice"),
     modelDirectory: app.isPackaged
@@ -3987,7 +3995,14 @@ export async function createApplicationServices({
       : resolve(".openbot-build/voice", SUPERTONIC_MODEL_DIRECTORY),
     preferences: speechPreferences,
     spawnHost: spawnVoiceSpeechHost,
-    apiKeys: { elevenlabs: voiceApiKeys, xai: xaiSpeechKeys },
+    apiKeys: {
+      elevenlabs: voiceApiKeys,
+      xai: xaiSpeechKeys,
+      cartesia: cartesiaSpeechKeys,
+      fish: fishSpeechKeys,
+      gradium: gradiumSpeechKeys,
+      sarvam: sarvamSpeechKeys,
+    },
     modelFetch: voiceModelFetch,
   });
   teardown.push(TEARDOWN_ORDER.speech, "speech", () => Effect.runPromise(speech.shutdown()));

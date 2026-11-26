@@ -122,6 +122,10 @@ async function main(): Promise<void> {
     apiKeys: {
       elevenlabs: new VoiceApiKeyStore({ path: join(preferencesDirectory, "elevenlabs-key.json"), cipher: NO_CIPHER }),
       xai: new VoiceApiKeyStore({ path: join(preferencesDirectory, "xai-key.json"), cipher: NO_CIPHER }),
+      cartesia: new VoiceApiKeyStore({ path: join(preferencesDirectory, "cartesia-key.json"), cipher: NO_CIPHER }),
+      fish: new VoiceApiKeyStore({ path: join(preferencesDirectory, "fish-key.json"), cipher: NO_CIPHER }),
+      gradium: new VoiceApiKeyStore({ path: join(preferencesDirectory, "gradium-key.json"), cipher: NO_CIPHER }),
+      sarvam: new VoiceApiKeyStore({ path: join(preferencesDirectory, "sarvam-key.json"), cipher: NO_CIPHER }),
     },
   });
   const results: unknown[] = [];

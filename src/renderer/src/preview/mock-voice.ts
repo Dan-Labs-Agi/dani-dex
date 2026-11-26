@@ -78,9 +78,9 @@ export function createMockVoice(options: MockVoiceOptions, { emit, schedule }: M
   const serverListeners = new Set<Listener<VoiceServerSettings | null>>();
   const liveListeners = new Set<Listener<VoiceLiveEvent>>();
   const liveAnswerers = new Map<string, RTCPeerConnection>();
-  let xaiKeySaved = options.xaiKeySaved ?? false;
+  const savedProviderKeys = new Set<SpeechKeyProvider>(options.xaiKeySaved ? ["xai"] : []);
   const keySaved = (provider: SpeechKeyProvider) =>
-    provider === "xai" ? xaiKeySaved : ready.has(ELEVENLABS_VOICE_MODEL_ID);
+    provider === "elevenlabs" ? ready.has(ELEVENLABS_VOICE_MODEL_ID) : savedProviderKeys.has(provider);
   const speechStatus = (): SpeechModelStatus => {
     const { modelId } = speechSettings;
     const cloud = cloudSpeechModel(modelId);
@@ -217,8 +217,9 @@ export function createMockVoice(options: MockVoiceOptions, { emit, schedule }: M
     },
     getSpeechModelStatus: async () => speechStatus(),
     setSpeechApiKey: async ({ provider, key }) => {
-      if (provider === "xai") xaiKeySaved = key !== null;
-      else setDictationKey("elevenlabs", key);
+      if (provider === "elevenlabs") setDictationKey("elevenlabs", key);
+      else if (key === null) savedProviderKeys.delete(provider);
+      else savedProviderKeys.add(provider);
       return announceSpeech();
     },
     downloadSpeechModel: downloadSpeech,

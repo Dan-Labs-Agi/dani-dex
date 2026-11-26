@@ -720,6 +720,14 @@ export const messages = defineMessages("settings", {
     "The best quality, in more than 90 languages, and slow. Sends the reply text to ElevenLabs. Uses your own API key, and ElevenLabs bills each use.",
   "settings.voice.speech.model.xai.description":
     "Sends the reply text to xAI. Uses your own API key, and xAI bills each use.",
+  "settings.voice.speech.model.cartesia.description":
+    "Sends the reply text to Cartesia. Uses your own API key, and Cartesia bills each use.",
+  "settings.voice.speech.model.fish.description":
+    "Sends the reply text to Fish Audio. Uses your own API key, and Fish Audio bills each use.",
+  "settings.voice.speech.model.gradium.description":
+    "Sends the reply text to Gradium. Uses your own API key, and Gradium bills each use.",
+  "settings.voice.speech.model.sarvam.description":
+    "Sends the reply text to Sarvam. Uses your own API key, and Sarvam bills each use.",
   "settings.voice.speech.serverSpeaks": "Your voice server reads replies aloud now.",
   "settings.voice.speech.section": "Spoken replies",
   "settings.voice.speech.model.description": "Reads replies aloud on this computer, in 31 languages.",
