@@ -1,7 +1,6 @@
 // biome-ignore-all lint/suspicious/noExplicitAny: D1 rows are untyped in this service
 // biome-ignore-all lint/nursery/noUnsafeTypeAssertion: D1 rows are untyped in this service
 // Server invitations and members for published servers. Free: D1 plus the existing email sender.
-import { sha256 } from "./remote";
 
 interface Statement {
   first<T>(): Promise<T | null>;
@@ -19,6 +18,12 @@ export interface InviteEnv {
   DB: InviteDb;
   RESEND_API_KEY?: string;
   MAIL_FROM?: string;
+}
+
+const encoder = new TextEncoder();
+async function sha256(value: string): Promise<string> {
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(value)));
+  return Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
