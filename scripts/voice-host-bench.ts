@@ -307,6 +307,10 @@ function noSpeechKeys(temporary: string) {
   return {
     elevenlabs: new VoiceApiKeyStore({ path: join(temporary, "speech-elevenlabs-key.json"), cipher: NO_CIPHER }),
     xai: new VoiceApiKeyStore({ path: join(temporary, "speech-xai-key.json"), cipher: NO_CIPHER }),
+    cartesia: new VoiceApiKeyStore({ path: join(temporary, "speech-cartesia-key.json"), cipher: NO_CIPHER }),
+    fish: new VoiceApiKeyStore({ path: join(temporary, "speech-fish-key.json"), cipher: NO_CIPHER }),
+    gradium: new VoiceApiKeyStore({ path: join(temporary, "speech-gradium-key.json"), cipher: NO_CIPHER }),
+    sarvam: new VoiceApiKeyStore({ path: join(temporary, "speech-sarvam-key.json"), cipher: NO_CIPHER }),
   };
 }
 

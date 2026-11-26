@@ -384,7 +384,7 @@ export function modelLanguage(model: VoiceModelInfo, language: VoiceLanguage): V
 export const SPEECH_MODEL_ID = "supertonic-3";
 export type LocalSpeechModelId = typeof SPEECH_MODEL_ID;
 
-export const SPEECH_KEY_PROVIDERS = ["elevenlabs", "xai"] as const;
+export const SPEECH_KEY_PROVIDERS = ["elevenlabs", "xai", "cartesia", "fish", "gradium", "sarvam"] as const;
 export type SpeechKeyProvider = (typeof SPEECH_KEY_PROVIDERS)[number];
 
 export const DICTATION_KEY_PROVIDERS = ["elevenlabs", "groq"] as const;
@@ -396,6 +396,10 @@ export const VOICE_KEY_PROVIDER_NAMES: Record<VoiceKeyProvider, string> = {
   elevenlabs: "ElevenLabs",
   xai: "xAI",
   groq: "Groq",
+  cartesia: "Cartesia",
+  fish: "Fish Audio",
+  gradium: "Gradium",
+  sarvam: "Sarvam",
 };
 
 export const CLOUD_SPEECH_MODEL_IDS = [
@@ -405,6 +409,10 @@ export const CLOUD_SPEECH_MODEL_IDS = [
   "elevenlabs-v4",
   "elevenlabs-v3",
   "xai-tts",
+  "cartesia-sonic",
+  "fish-audio",
+  "gradium-tts",
+  "sarvam-bulbul",
 ] as const;
 export type CloudSpeechModelId = (typeof CLOUD_SPEECH_MODEL_IDS)[number];
 
@@ -424,6 +432,10 @@ export const CLOUD_SPEECH_MODELS: readonly CloudSpeechModelInfo[] = [
   { id: "elevenlabs-v4", provider: "elevenlabs", name: "Eleven v4" },
   { id: "elevenlabs-v3", provider: "elevenlabs", name: "Eleven v3" },
   { id: "xai-tts", provider: "xai", name: "Text to Speech" },
+  { id: "cartesia-sonic", provider: "cartesia", name: "Sonic" },
+  { id: "fish-audio", provider: "fish", name: "Fish Audio" },
+  { id: "gradium-tts", provider: "gradium", name: "Gradium" },
+  { id: "sarvam-bulbul", provider: "sarvam", name: "Bulbul" },
 ];
 
 export function cloudSpeechModel(id: SpeechModelId): CloudSpeechModelInfo | undefined {

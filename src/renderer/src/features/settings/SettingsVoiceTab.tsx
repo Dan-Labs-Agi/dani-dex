@@ -76,6 +76,10 @@ const SPEECH_MODEL_DESCRIPTION = {
   "elevenlabs-v4-turbo": "settings.voice.speech.model.v4Turbo.description",
   "elevenlabs-v4": "settings.voice.speech.model.v4.description",
   "xai-tts": "settings.voice.speech.model.xai.description",
+  "cartesia-sonic": "settings.voice.speech.model.cartesia.description",
+  "fish-audio": "settings.voice.speech.model.fish.description",
+  "gradium-tts": "settings.voice.speech.model.gradium.description",
+  "sarvam-bulbul": "settings.voice.speech.model.sarvam.description",
 } as const satisfies Record<SpeechModelId, AppTextKey>;
 
 const SPEECH_CHOICES: readonly ModelChoice<SpeechModelId>[] = [
@@ -83,10 +87,16 @@ const SPEECH_CHOICES: readonly ModelChoice<SpeechModelId>[] = [
   ...CLOUD_SPEECH_MODELS.map((model) => ({ id: model.id, name: model.name, place: model.provider })),
 ];
 
+const DEFAULT_PROVIDER_VOICE = "default";
+
 const VOICE_OPTIONS: Record<"local" | SpeechKeyProvider, string[]> = {
   local: [...SPEECH_VOICES],
   elevenlabs: [...ELEVENLABS_SPEECH_VOICES],
   xai: [...XAI_SPEECH_VOICES],
+  cartesia: [DEFAULT_PROVIDER_VOICE],
+  fish: [DEFAULT_PROVIDER_VOICE],
+  gradium: [DEFAULT_PROVIDER_VOICE],
+  sarvam: [DEFAULT_PROVIDER_VOICE],
 };
 
 const FIXED_LANGUAGE: Partial<Record<VoiceModelInfo["id"], { language: VoiceLanguage; description: AppTextKey }>> = {
@@ -326,6 +336,7 @@ export function SettingsVoiceTab(props: SettingsVoiceTabProps) {
     const provider = speechCloud()?.provider;
     if (provider === "elevenlabs") return saved.elevenLabsVoice;
     if (provider === "xai") return saved.xaiVoice;
+    if (provider) return DEFAULT_PROVIDER_VOICE;
     return saved.voice;
   };
   const anyVoiceName = (voice: string) =>

@@ -80,6 +80,19 @@ const decodeErrorDetail = Schema.decodeUnknownOption(
     }),
   ),
 );
+const CARTESIA_VOICE_ID = "f786b574-daa5-4673-aa0c-cbe3e8534c02";
+const GRADIUM_VOICE_ID = "Bla6SbVMczYnOhfK";
+const FISH_MODEL = "s2-pro";
+const SARVAM_MODEL = "bulbul:v3";
+const SARVAM_SPEAKER = "shubh";
+const SARVAM_LANGUAGES: Partial<Record<SpeechLanguage, string>> = {
+  en: "en-IN",
+  hi: "hi-IN",
+};
+
+const decodeSarvamAudio = Schema.decodeUnknownOption(
+  Schema.fromJsonString(Schema.Struct({ audios: Schema.Array(Schema.String) })),
+);
 const decodeJsonAudio = Schema.decodeUnknownOption(Schema.fromJsonString(Schema.Struct({ audio: Schema.String })));
 
 export type SpeechFetch = (input: string | URL | Request, init?: RequestInit) => Promise<Response>;
@@ -109,6 +122,49 @@ export function speakInCloud(
       },
     });
   }
+  if (request.model.provider === "cartesia") {
+    return exchange(fetcher, request, "https://api.cartesia.ai/tts/bytes", {
+      headers: { "X-API-Key": request.key, "Cartesia-Version": "2025-04-16" },
+      body: {
+        model_id: "sonic-3",
+        transcript: request.text,
+        voice: { mode: "id", id: CARTESIA_VOICE_ID },
+        output_format: { container: "raw", encoding: "pcm_s16le", sample_rate: SAMPLE_RATE },
+        ...(request.language ? { language: request.language } : {}),
+      },
+    });
+  }
+  if (request.model.provider === "fish") {
+    return exchange(fetcher, request, "https://api.fish.audio/v1/tts", {
+      headers: { Authorization: `Bearer ${request.key}`, model: FISH_MODEL },
+      body: { text: request.text, format: "pcm", sample_rate: SAMPLE_RATE },
+    });
+  }
+  if (request.model.provider === "gradium") {
+    return exchange(fetcher, request, "https://api.gradium.ai/api/post/speech/tts", {
+      headers: { "x-api-key": request.key },
+      body: {
+        text: request.text,
+        voice_id: GRADIUM_VOICE_ID,
+        only_audio: true,
+        output_format: `pcm_${SAMPLE_RATE}`,
+      },
+    });
+  }
+  if (request.model.provider === "sarvam") {
+    return exchange(fetcher, request, "https://api.sarvam.ai/text-to-speech", {
+      headers: { "api-subscription-key": request.key },
+      body: {
+        text: request.text,
+        target_language_code: (request.language && SARVAM_LANGUAGES[request.language]) ?? "en-IN",
+        speaker: SARVAM_SPEAKER,
+        model: SARVAM_MODEL,
+        speech_sample_rate: SAMPLE_RATE,
+        output_audio_codec: "wav",
+      },
+      decode: sarvamAudio,
+    });
+  }
   const model = ELEVENLABS_MODELS[request.model.id];
   if (!model) return Effect.fail(failure(request, "error.voice.speech.providerFailed"));
   const voiceId = ELEVENLABS_VOICE_IDS[request.elevenLabsVoice];
@@ -133,7 +189,11 @@ function exchange(
   fetcher: SpeechFetch,
   request: CloudSpeechRequest,
   url: string,
-  init: { headers: Record<string, string>; body: XaiSpeechBody | ElevenLabsSpeechBody },
+  init: {
+    headers: Record<string, string>;
+    body: XaiSpeechBody | ElevenLabsSpeechBody | object;
+    decode?: (body: Buffer) => Buffer | null;
+  },
 ): Effect.Effect<SpeechAudio, VoiceOperationError> {
   const fail = (key: CloudSpeechErrorKey) => failure(request, key);
   return Effect.acquireUseRelease(
@@ -155,7 +215,11 @@ function exchange(
         const body = yield* readLimitedBody(response, SPEECH_BODY_LIMIT, () =>
           fail("error.voice.speech.providerFailed"),
         );
-        const pcm = (response.headers.get("content-type") ?? "").includes("json") ? jsonAudio(body) : body;
+        const pcm = init.decode
+          ? init.decode(body)
+          : (response.headers.get("content-type") ?? "").includes("json")
+            ? jsonAudio(body)
+            : body;
         if (!pcm || pcm.byteLength < 2) return yield* fail("error.voice.speech.providerFailed");
         return { pcm: new Uint8Array(pcm.buffer, pcm.byteOffset, pcm.byteLength & ~1), sampleRate: SAMPLE_RATE };
       }).pipe(
@@ -225,4 +289,27 @@ function jsonAudio(body: Buffer): Buffer | null {
     onNone: () => null,
     onSome: (answer) => Buffer.from(answer.audio, "base64"),
   });
+}
+
+export function sarvamAudio(body: Buffer): Buffer | null {
+  return Option.match(decodeSarvamAudio(body.toString("utf8")), {
+    onNone: () => null,
+    onSome: ({ audios }) => {
+      const first = audios[0];
+      return first ? wavPcm(Buffer.from(first, "base64")) : null;
+    },
+  });
+}
+
+/** Returns the sample bytes of a WAV file, or the input when it has no WAV header. */
+export function wavPcm(wav: Buffer): Buffer {
+  if (wav.length < 12 || wav.toString("ascii", 0, 4) !== "RIFF" || wav.toString("ascii", 8, 12) !== "WAVE") return wav;
+  let offset = 12;
+  while (offset + 8 <= wav.length) {
+    const id = wav.toString("ascii", offset, offset + 4);
+    const size = wav.readUInt32LE(offset + 4);
+    if (id === "data") return wav.subarray(offset + 8, Math.min(wav.length, offset + 8 + size));
+    offset += 8 + size + (size & 1);
+  }
+  return wav;
 }

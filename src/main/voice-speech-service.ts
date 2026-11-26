@@ -7,6 +7,7 @@ import {
   SPEECH_VOICES,
   type SpeechAudio,
   type SpeechInput,
+  type SpeechKeyProvider,
   type SpeechLanguage,
   type SpeechModelStatus,
   type SpeechSettings,
@@ -41,7 +42,7 @@ interface VoiceSpeechServiceOptions {
   modelDirectory: string;
   preferences: SpeechPreferenceStore;
   spawnHost: () => VoiceSpeechHostProcess;
-  apiKeys: { elevenlabs: VoiceApiKeyStore; xai: VoiceApiKeyStore };
+  apiKeys: Record<SpeechKeyProvider, VoiceApiKeyStore>;
   fetch?: SpeechFetch;
   modelFetch?: SpeechFetch;
 }
@@ -120,13 +121,14 @@ export class VoiceSpeechService extends EventEmitter<VoiceSpeechEvents> {
     return status;
   }).bind(this);
 
-  readonly setXaiApiKey = Effect.fn("VoiceSpeech.setXaiApiKey")(function* (
+  readonly setProviderApiKey = Effect.fn("VoiceSpeech.setProviderApiKey")(function* (
     this: VoiceSpeechService,
+    provider: SpeechKeyProvider,
     key: string | null,
   ) {
-    yield* this.#apiKeys.xai
+    yield* this.#apiKeys[provider]
       .set(key)
-      .pipe(Effect.mapError(({ cause }) => new VoiceOperationError({ cause: savedKeyError(cause, "xai") })));
+      .pipe(Effect.mapError(({ cause }) => new VoiceOperationError({ cause: savedKeyError(cause, provider) })));
     return yield* this.announceStatus();
   }).bind(this);
 
