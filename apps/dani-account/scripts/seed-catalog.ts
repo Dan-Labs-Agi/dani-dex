@@ -30,9 +30,8 @@ for (const s of cat.skills) {
   const text = new TextDecoder().decode(entries[name]);
   const m = text.match(/^---\s*\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/u);
   if (!m) throw new Error(`no frontmatter in ${s.slug}`);
-  const parsed: unknown = parseYaml(m[1] ?? "");
-  const rawExample = parsed !== null && typeof parsed === "object" ? Reflect.get(parsed, "example-prompt") : undefined;
-  const ex = typeof rawExample === "string" ? rawExample.trim() : "";
+  const fm: { "example-prompt"?: string } = parseYaml(m[1] ?? "") ?? {};
+  const ex = (fm["example-prompt"] ?? "").trim();
   const summary = {
     id: s.id,
     slug: s.slug,
