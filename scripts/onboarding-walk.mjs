@@ -6,8 +6,8 @@ import { mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 const app = process.argv[2];
 const dataDir = "/tmp/ob-data";
 mkdirSync("shots", { recursive: true });
-const child = spawn(`${app}/Contents/MacOS/dani-dex`, [`--user-data-dir=${dataDir}`, "--remote-debugging-port=9333", "--use-mock-keychain", "--no-sandbox"], { stdio: "ignore", detached: true });
-child.unref();
+execSync(`open -n "${app}" --args --user-data-dir=${dataDir} --remote-debugging-port=9333 --no-sandbox`);
+const child = { pid: 0 };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 let browser;
 for (let i = 0; i < 40 && !browser; i++) {
@@ -23,6 +23,9 @@ const findMain = async () => {
     }
     await sleep(2000);
   }
+  try { execSync("screencapture -x shots/00-nomain-screen.png"); } catch {}
+  const t = await (await fetch("http://127.0.0.1:9333/json")).json();
+  console.log("targets:", JSON.stringify(t.map((x) => [x.type, x.url.slice(0, 100), x.title])));
   throw new Error("no main window");
 };
 const win = await findMain();
@@ -56,5 +59,5 @@ for (let n = 1; n <= 30; n++) {
   }
   if (!clicked) { console.log("no forward button, stopping"); break; }
 }
-try { process.kill(-child.pid); } catch {}
+try { execSync("pkill -f dani-dex"); } catch {}
 process.exit(0);

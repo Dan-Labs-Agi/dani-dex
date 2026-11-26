@@ -44,4 +44,5 @@ jobs:
         with:
           name: onboarding-shots
           path: shots/
+          if-no-files-found: warn
           retention-days: 7
