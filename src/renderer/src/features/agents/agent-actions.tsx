@@ -1,5 +1,6 @@
 import type { ClientAgentSummary } from "@openbot/contracts/ipc";
 import { AGENT_WELCOME_CAPABILITY, TEAM_AGENT_CREATE_MODEL_CAPABILITY } from "@openbot/contracts/team-protocol/current";
+import { type TeamTemplate, teamInstallPlan } from "@openbot/contracts/team-templates";
 import { classifyFailure } from "@openbot/telemetry";
 import { toast } from "@openbot/ui";
 import type { AgentProfile } from "@openbot/ui/data";
@@ -27,7 +28,6 @@ import { useConversation } from "../conversation/conversation-context";
 import { agentConversationKey } from "../conversation/conversation-keys";
 import { useServers } from "../servers/servers-context";
 import { useSidebar } from "../sidebar/sidebar-context";
-import { type TeamTemplate, teamInstallPlan } from "@openbot/contracts/team-templates";
 import { type NewAgentDraft, newAgentInput } from "./agent-create-input";
 import { attentionAgentId, withoutAttention } from "./agent-runtime-snapshot";
 import { useAgents } from "./agents-context";

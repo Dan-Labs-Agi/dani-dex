@@ -89,47 +89,47 @@ export function WorkspaceAgentSetup() {
 
   return (
     <>
-    <FirstAgentSetup
-      value={agentSetupDraft()}
-      suggestions={FIRST_AGENT_SUGGESTIONS}
-      mode={agentList().length === 0 ? "first" : "additional"}
-      submitting={creatingAgent()}
-      error={agentSetupError()}
-      modelOptions={createModelSupported() ? modelOptions() : undefined}
-      agentStatus={agentStatus()}
-      accountChoice={accountChoice()}
-      accountUsage={accountChoice() ? withHostAccountUsage(auth.accountUsage(), hostAccountLimits()) : undefined}
-      runtimeStatuses={localProviderDownloads() ? providerRuntimeStatuses() : undefined}
-      customProviders={activeCustomProviders()}
-      customAgents={activeServer()?.kind === "local" ? customAgents() : undefined}
-      onDownloadProvider={localProviderDownloads() ? downloadProviderRuntime : undefined}
-      onCancelProviderDownload={localProviderDownloads() ? cancelProviderRuntimeDownload : undefined}
-      onConnectProvider={localProviderDownloads() ? connectProvider : undefined}
-      onAddCustomProvider={manageProviders() ? openProviderSettings : undefined}
-      onManageProviders={manageProviders() ? openProviderSettings : undefined}
-      onChange={(next) => {
-        const current = agentSetupDraft();
-        if (
-          next.provider !== current.provider ||
-          next.model !== current.model ||
-          next.reasoningEffort !== current.reasoningEffort ||
-          next.providerAccountId !== current.providerAccountId
-        )
-          setModelTouched(true);
-        setAgentSetupDraft(next);
-      }}
-      onSubmit={createAgent}
-      onCancel={agentList().length > 0 ? cancelAgentSetup : undefined}
-    />
-    <TeamStarter
-      teams={STARTER_TEAMS}
-      busyTeamId={busyTeamId()}
-      error={agentSetupError()}
-      onAdd={(team) => {
-        setBusyTeamId(team.id);
-        void addTeam(team).finally(() => setBusyTeamId(null));
-      }}
-    />
+      <FirstAgentSetup
+        value={agentSetupDraft()}
+        suggestions={FIRST_AGENT_SUGGESTIONS}
+        mode={agentList().length === 0 ? "first" : "additional"}
+        submitting={creatingAgent()}
+        error={agentSetupError()}
+        modelOptions={createModelSupported() ? modelOptions() : undefined}
+        agentStatus={agentStatus()}
+        accountChoice={accountChoice()}
+        accountUsage={accountChoice() ? withHostAccountUsage(auth.accountUsage(), hostAccountLimits()) : undefined}
+        runtimeStatuses={localProviderDownloads() ? providerRuntimeStatuses() : undefined}
+        customProviders={activeCustomProviders()}
+        customAgents={activeServer()?.kind === "local" ? customAgents() : undefined}
+        onDownloadProvider={localProviderDownloads() ? downloadProviderRuntime : undefined}
+        onCancelProviderDownload={localProviderDownloads() ? cancelProviderRuntimeDownload : undefined}
+        onConnectProvider={localProviderDownloads() ? connectProvider : undefined}
+        onAddCustomProvider={manageProviders() ? openProviderSettings : undefined}
+        onManageProviders={manageProviders() ? openProviderSettings : undefined}
+        onChange={(next) => {
+          const current = agentSetupDraft();
+          if (
+            next.provider !== current.provider ||
+            next.model !== current.model ||
+            next.reasoningEffort !== current.reasoningEffort ||
+            next.providerAccountId !== current.providerAccountId
+          )
+            setModelTouched(true);
+          setAgentSetupDraft(next);
+        }}
+        onSubmit={createAgent}
+        onCancel={agentList().length > 0 ? cancelAgentSetup : undefined}
+      />
+      <TeamStarter
+        teams={STARTER_TEAMS}
+        busyTeamId={busyTeamId()}
+        error={agentSetupError()}
+        onAdd={(team) => {
+          setBusyTeamId(team.id);
+          void addTeam(team).finally(() => setBusyTeamId(null));
+        }}
+      />
     </>
   );
 }

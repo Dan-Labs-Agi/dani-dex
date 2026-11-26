@@ -7,8 +7,7 @@ export function freeAccountState(path: string, method: string): unknown | null {
   const clean = path.replace(/\/+$/u, "");
   if (clean === "/v1/me/billing") return { available: false, hasCustomer: false, servers: [] };
   if (clean === "/v1/me/billing/details") return { country: null, vatId: null };
-  if (clean === "/v1/me/credits")
-    return { available: false, currency: "usd", currencies: [], balance: 0, servers: [] };
+  if (clean === "/v1/me/credits") return { available: false, currency: "usd", currencies: [], balance: 0, servers: [] };
   if (clean === "/v1/me/credits/activity") return { entries: [] };
   if (clean === "/v1/me/referrals")
     return {

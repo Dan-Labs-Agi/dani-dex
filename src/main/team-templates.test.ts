@@ -1,8 +1,13 @@
 // @vitest-environment node
 
-import { describe, expect, it } from "vitest";
 import { INPUT_LIMITS } from "@openbot/contracts/input-limits";
-import { STARTER_TEAMS, TEAM_SHARED_RULES, teamInstallPlan, teamTemplateProblem } from "@openbot/contracts/team-templates";
+import {
+  STARTER_TEAMS,
+  TEAM_SHARED_RULES,
+  teamInstallPlan,
+  teamTemplateProblem,
+} from "@openbot/contracts/team-templates";
+import { describe, expect, it } from "vitest";
 
 describe("starter teams", () => {
   it("are all valid with Chief as the head", () => {
