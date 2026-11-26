@@ -191,7 +191,7 @@ function exchange(
   url: string,
   init: {
     headers: Record<string, string>;
-    body: XaiSpeechBody | ElevenLabsSpeechBody | Record<string, unknown>;
+    body: XaiSpeechBody | ElevenLabsSpeechBody | object;
     decode?: (body: Buffer) => Buffer | null;
   },
 ): Effect.Effect<SpeechAudio, VoiceOperationError> {
