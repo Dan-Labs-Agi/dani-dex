@@ -1,7 +1,7 @@
 // @vitest-environment node
 
 import { describe, expect, it } from "vitest";
-import { deltaFromLine, OPENCODE_ZEN_URL, streamChat } from "./voice-chat-stream";
+import { deltaFromLine, KILO_GATEWAY_URL, OPENCODE_ZEN_URL, streamChat } from "./voice-chat-stream";
 
 const sse = (...texts: string[]) =>
   `${texts.map((text) => `data: ${JSON.stringify({ choices: [{ delta: { content: text } }] })}\n\n`).join("")}data: [DONE]\n\n`;
@@ -28,6 +28,20 @@ describe("chat streaming for the voice loop", () => {
     expect(seen[0]?.url).toBe(OPENCODE_ZEN_URL);
     expect(JSON.stringify(seen[0]?.init.headers)).toContain("Bearer public");
     expect(String(seen[0]?.init.body)).toContain('"stream":true');
+  });
+
+  it("can target the Kilo gateway with a user key", async () => {
+    const seen: string[] = [];
+    await collect(
+      streamChat(
+        async (url) => {
+          seen.push(url);
+          return new Response(sse("ok"));
+        },
+        { url: KILO_GATEWAY_URL, key: "user-key", model: "kilo/kilo-auto/free", system: "s", user: "u", signal: new AbortController().signal },
+      ),
+    );
+    expect(seen).toEqual([KILO_GATEWAY_URL]);
   });
 
   it("fails on a bad status", async () => {
