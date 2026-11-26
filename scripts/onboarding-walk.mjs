@@ -17,7 +17,10 @@ for (let i = 0; i < 40 && !browser; i++) {
 if (!browser) throw new Error("could not attach");
 const findMain = async () => {
   for (let i = 0; i < 30; i++) {
-    for (const ctx of browser.contexts()) for (const p of ctx.pages()) if (p.url().includes("index.html")) return p;
+    for (const ctx of browser.contexts()) for (const p of ctx.pages()) {
+      console.log("page:", p.url().slice(0, 140));
+      if (/index\.html|^openbot-app:/.test(p.url())) return p;
+    }
     await sleep(2000);
   }
   throw new Error("no main window");
