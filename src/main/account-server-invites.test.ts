@@ -31,10 +31,11 @@ function environment(): InviteEnv {
       run: async () => ({ meta: { changes: Number(sqlite.prepare(sql).run(...args).changes) } }),
     };
   };
-  // biome-ignore lint/nursery/noUnsafeTypeAssertion: test double over node:sqlite
-  const DB = {
+  const database = {
     prepare: (sql: string) => ({ ...statement(sql, []), bind: (...values: unknown[]) => statement(sql, values) }),
-  } as never;
+  };
+  // biome-ignore lint/nursery/noUnsafeTypeAssertion: test double over node:sqlite
+  const DB = database as never;
   return { DB, RESEND_API_KEY: "test-key" };
 }
 
