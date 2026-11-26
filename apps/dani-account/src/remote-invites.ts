@@ -3,8 +3,20 @@
 // Server invitations and members for published servers. Free: D1 plus the existing email sender.
 import { sha256 } from "./remote";
 
+interface Statement {
+  first<T>(): Promise<T | null>;
+  all<T>(): Promise<{ results: T[] }>;
+  run(): Promise<unknown>;
+}
+interface BoundStatement extends Statement {
+  bind(...values: unknown[]): Statement;
+}
+interface InviteDb {
+  prepare(sql: string): BoundStatement;
+}
+
 export interface InviteEnv {
-  DB: D1Database;
+  DB: InviteDb;
   RESEND_API_KEY?: string;
   MAIL_FROM?: string;
 }
@@ -23,7 +35,7 @@ const validEmail = (e: string) => e.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]{2
 const roleOf = (v: unknown): "admin" | "member" | null => (v === "admin" || v === "member" ? v : null);
 
 const ready = new WeakSet<object>();
-async function ensureTables(db: D1Database) {
+async function ensureTables(db: InviteDb) {
   if (ready.has(db)) return;
   await db
     .prepare(
@@ -40,7 +52,7 @@ async function ensureTables(db: D1Database) {
 }
 
 /** The caller's role on a host: the owner, or an active member. */
-async function roleOnHost(db: D1Database, hostId: string, uid: string): Promise<"owner" | "admin" | "member" | null> {
+async function roleOnHost(db: InviteDb, hostId: string, uid: string): Promise<"owner" | "admin" | "member" | null> {
   const host = await db.prepare("SELECT user_id FROM remote_hosts WHERE host_id=?").bind(hostId).first<any>();
   if (!host) return null;
   if (host.user_id === uid) return "owner";
