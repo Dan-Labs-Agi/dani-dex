@@ -78,8 +78,11 @@ jobs:
           set -uo pipefail
           APP=$(ls -d "$PWD"/dist/mac*/*.app | head -1)
           xattr -cr "$APP" || true
-          open -n "$APP" --args --no-sandbox
+          "$APP/Contents/MacOS/$(basename "$APP" .app)" --no-sandbox > dist/app-stdout.log 2>&1 &
+          APPPID=$!
           sleep 30
+          kill -0 $APPPID && echo "main process alive: $APPPID" || echo "main process exited"
+          tail -40 dist/app-stdout.log || true
           pgrep -fl "$(basename "$APP" .app)" | head -5 | tee dist/launch-processes.txt
           screencapture -x dist/launch.png || true
           test -s dist/launch-processes.txt
@@ -93,6 +96,8 @@ jobs:
             dist/*.dmg
             dist/*.zip
             dist/latest-mac.yml
+            dist/app-stdout.log
+            dist/launch.png
             dist/launch.png
             dist/launch-processes.txt
           if-no-files-found: warn
