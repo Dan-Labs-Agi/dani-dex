@@ -439,16 +439,26 @@ export async function handleRemote(
   }
   if ((p === "/v2/remote/hosts" || p === "/v2/remote/hosts/") && m === "GET") {
     const rs = await env.DB.prepare("SELECT * FROM remote_hosts WHERE user_id=?").bind(uid).all<any>();
+    const joined = await env.DB.prepare(
+      "SELECT h.*, m.membership_id AS mid, m.role AS mrole FROM remote_members m JOIN remote_hosts h ON h.host_id=m.host_id WHERE m.user_id=? AND m.status='active'",
+    )
+      .bind(uid)
+      .all<any>()
+      .catch(() => ({ results: [] as any[] }));
+    const view = (h: any, membershipId: string, role: string) => ({
+      hostId: h.host_id,
+      name: h.name,
+      logoKey: null,
+      devicePublicKey: h.device_public_key,
+      authEpoch: h.auth_epoch,
+      membershipId,
+      role,
+    });
     return json({
-      hosts: rs.results.map((h) => ({
-        hostId: h.host_id,
-        name: h.name,
-        logoKey: null,
-        devicePublicKey: h.device_public_key,
-        authEpoch: h.auth_epoch,
-        membershipId: h.membership_id,
-        role: "owner",
-      })),
+      hosts: [
+        ...rs.results.map((h) => view(h, h.membership_id, "owner")),
+        ...joined.results.map((h) => view(h, h.mid, h.mrole)),
+      ],
     });
   }
   r = p.match(/^\/v2\/remote\/hosts\/([^/]+)\/key-handover$/);
