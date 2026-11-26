@@ -1,7 +1,7 @@
 // @vitest-environment node
 
+import { DuplexPipeline, type DuplexState } from "@openbot/contracts/voice-duplex";
 import { describe, expect, it } from "vitest";
-import { DuplexPipeline, type DuplexState } from "./voice-duplex-pipeline";
 
 async function* pieces(parts: string[], signal: AbortSignal, gate?: Promise<void>) {
   for (const part of parts) {

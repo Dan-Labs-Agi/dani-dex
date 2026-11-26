@@ -731,6 +731,9 @@ export const messages = defineMessages("settings", {
   "settings.voice.speech.serverSpeaks": "Your voice server reads replies aloud now.",
   "settings.voice.speech.section": "Spoken replies",
   "settings.voice.speech.model.description": "Reads replies aloud on this computer, in 31 languages.",
+  "settings.voice.duplex.title": "Full-duplex voice (beta)",
+  "settings.voice.duplex.description":
+    "Talk and listen at the same time. Speak over a reply to cut it off. Uses the free OpenCode chat tier.",
   "settings.voice.speech.readReplies.title": "Read replies aloud",
   "settings.voice.speech.readReplies.description":
     "When you dictate a message, the reply is read aloud. Dictate again to stop it.",
