@@ -161,10 +161,15 @@ export async function handleRemote(
   if (p === "/v1/mobile-auth/redeem" && m === "POST") {
     const b = await body();
     const th = typeof b.ticket === "string" ? await sha256(b.ticket) : "";
-    const t = await env.DB.prepare("SELECT * FROM mobile_tickets WHERE ticket_hash=?").bind(th).first<any>();
-    if (!t || t.expires_at < now())
+    let t = await env.DB.prepare("SELECT * FROM mobile_tickets WHERE ticket_hash=?").bind(th).first<any>();
+    let permanent = false;
+    if (!t) {
+      t = await env.DB.prepare("SELECT * FROM mobile_links WHERE link_hash=?").bind(th).first<any>();
+      permanent = t !== null && t !== undefined;
+    }
+    if (!t || (!permanent && t.expires_at < now()))
       return json({ error: "ticket_expired", message: "This code expired. Show a new one on your computer." }, 400);
-    await env.DB.prepare("DELETE FROM mobile_tickets WHERE ticket_hash=?").bind(th).run();
+    if (!permanent) await env.DB.prepare("DELETE FROM mobile_tickets WHERE ticket_hash=?").bind(th).run();
     const token = rand(32);
     const hash = await sha256(token);
     await env.DB.prepare("INSERT INTO sessions(token_hash,user_id,created_at,expires_at) VALUES(?,?,?,?)")
@@ -314,6 +319,28 @@ export async function handleRemote(
         .bind(uid, url.searchParams.get("host") || "")
         .run();
       return json({ ok: true });
+    }
+  }
+  if (p === "/v1/mobile-auth/link") {
+    if (m === "POST") {
+      const b = await body();
+      const host = b.host;
+      if (!host || !HOST_ID.test(host.hostId || "") || !/^[A-Za-z0-9_-]{43}$/.test(host.fingerprint || ""))
+        return json({ error: "bad_host" }, 400);
+      const link = rand(32);
+      await env.DB.prepare("DELETE FROM mobile_links WHERE user_id=? AND host_id=?").bind(uid, host.hostId).run();
+      await env.DB.prepare(
+        "INSERT INTO mobile_links(link_hash,user_id,host_id,fingerprint,created_at) VALUES(?,?,?,?,?)",
+      )
+        .bind(await sha256(link), uid, host.hostId, host.fingerprint, now())
+        .run();
+      return json({ link, createdAt: now() * 1000 });
+    }
+    if (m === "DELETE") {
+      await env.DB.prepare("DELETE FROM mobile_links WHERE user_id=? AND host_id=?")
+        .bind(uid, url.searchParams.get("host") || "")
+        .run();
+      return new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
     }
   }
   if (p === "/v1/mobile-auth/session") {
