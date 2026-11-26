@@ -1,4 +1,4 @@
-import changelogSource from "../../../../docs/CHANGELOG.md?raw";
+import changelogSource from "virtual:desktop-changelog";
 import { type ChangelogPlatform, type ChangelogRelease, parseChangelog } from "./changelog";
 
 export const CHANGELOG_RELEASES: Readonly<Record<ChangelogPlatform, readonly ChangelogRelease[]>> = {

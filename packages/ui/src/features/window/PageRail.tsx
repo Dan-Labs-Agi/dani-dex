@@ -554,7 +554,7 @@ function RailLogo(props: { variant: AppLogoVariant; href: string | undefined }) 
   const { t } = useText();
   return (
     <div class="window-rail-logo">
-      <Show when={props.href} fallback={<AppLogo variant={props.variant} />}>
+      <Show when={props.href} fallback={<AppLogo variant={props.variant} class="window-rail-app-logo" />}>
         {(href) => (
           <MotionTooltip content={t("app.rail.website")}>
             <a
@@ -564,7 +564,7 @@ function RailLogo(props: { variant: AppLogoVariant; href: string | undefined }) 
               rel="noopener"
               aria-label={t("app.rail.website")}
             >
-              <AppLogo variant={props.variant} />
+              <AppLogo variant={props.variant} class="window-rail-app-logo" />
             </a>
           </MotionTooltip>
         )}

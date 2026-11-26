@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { cloudflare } from "@cloudflare/vite-plugin";
 import solidPlugin from "@solidjs/vite-plugin";
@@ -60,9 +61,28 @@ export default defineConfig(({ command }) => {
       solidPlugin({ ssr: true }),
       tailwindcss({ optimize: false }),
       contentImages(),
+      desktopChangelog(),
     ],
   };
 });
+
+const DESKTOP_CHANGELOG_MODULE = "virtual:desktop-changelog";
+const RESOLVED_DESKTOP_CHANGELOG_MODULE = `\0${DESKTOP_CHANGELOG_MODULE}`;
+
+function desktopChangelog(): Plugin {
+  const changelogPath = fileURLToPath(new URL("../../docs/CHANGELOG.md", import.meta.url));
+  return {
+    name: "openbot-desktop-changelog",
+    resolveId(id) {
+      return id === DESKTOP_CHANGELOG_MODULE ? RESOLVED_DESKTOP_CHANGELOG_MODULE : undefined;
+    },
+    load(id) {
+      if (id !== RESOLVED_DESKTOP_CHANGELOG_MODULE) return undefined;
+      this.addWatchFile(changelogPath);
+      return `export default ${JSON.stringify(readFileSync(changelogPath, "utf8"))};`;
+    },
+  };
+}
 
 function readApiPort(value: string | undefined): number {
   if (value === undefined || value.trim() === "") return 3_100;
