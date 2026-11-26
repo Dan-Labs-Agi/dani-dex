@@ -1272,11 +1272,12 @@ const V1MobileAuthEmailVerifyRoute = V1MobileAuthEmailVerifyRouteImport.update({
   path: '/v1/mobile-auth/email/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
-const V1MobileAuthGoogleExchangeRoute = V1MobileAuthGoogleExchangeRouteImport.update({
-  id: '/v1/mobile-auth/google/exchange',
-  path: '/v1/mobile-auth/google/exchange',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const V1MobileAuthGoogleExchangeRoute =
+  V1MobileAuthGoogleExchangeRouteImport.update({
+    id: '/v1/mobile-auth/google/exchange',
+    path: '/v1/mobile-auth/google/exchange',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const V1SkillsSkillIdCardRoute = V1SkillsSkillIdCardRouteImport.update({
   id: '/card',
   path: '/card',

@@ -28,7 +28,7 @@ import {
   providerDisplayName,
 } from "@openbot/contracts/ipc";
 import type { AppTextKey, AppTranslate } from "@openbot/i18n";
-import { planLimitWindowKind, spentUsageWindow } from "@openbot/team-client/plan-limits";
+import { planLimitWindowKind, spentUsageWindow, usageTone } from "@openbot/team-client/plan-limits";
 import {
   Badge,
   Button,
@@ -907,6 +907,14 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
                   modelAvailable(model) && (accountId() === null || available()) && !workspaceOnlyBlocked(model);
                 const effortLocked = () => !available();
                 const headingSpent = createMemo(() => (available() ? entrySpentWindow(key) : undefined));
+                const usageWindows = createMemo(() => {
+                  const windows = new Map<string, AccountUsageWindow>();
+                  for (const window of entrySpentWindows(key)) {
+                    if (!window) continue;
+                    windows.set(`${window.windowDurationMins}:${window.resetsAt ?? ""}`, window);
+                  }
+                  return [...windows.values()].sort((left, right) => resetTime(left) - resetTime(right));
+                });
                 const pickerModelOption = (model: PickerModel | undefined) =>
                   model && modelOption(model.provider, model.id);
                 const effortModel = createMemo(() => {
@@ -1069,6 +1077,23 @@ export function ProviderModelPicker(props: ProviderModelPickerProps) {
                         </Button>
                       </Show>
                     </div>
+                    <Show when={usageWindows().length > 0}>
+                      <section class="provider-model-usage" aria-label={t("account.usage.title")}>
+                        <strong>{t("account.usage.title")}</strong>
+                        <For each={usageWindows()}>
+                          {(window) => (
+                            <div
+                              class="provider-model-usage-window"
+                              data-usage-tone={usageTone(100 - window.usedPercent)}
+                            >
+                              <span>{usageWindowLabel(window.windowDurationMins, text)}</span>
+                              <b>{format.percent((100 - window.usedPercent) / 100)}</b>
+                              <small>{formatUsageReset(window.resetsAt, text)}</small>
+                            </div>
+                          )}
+                        </For>
+                      </section>
+                    </Show>
                     <Show when={!available()}>
                       <div class="provider-model-empty" role="status">
                         <span>{runtimeMessage()}</span>

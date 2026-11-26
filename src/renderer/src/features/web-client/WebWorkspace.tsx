@@ -156,7 +156,6 @@ import { classifyFailure } from "@openbot/telemetry";
 import { toast } from "@openbot/ui";
 import type { GlobalSearchRoutine } from "@openbot/ui/components/GlobalSearch";
 import type { AgentMessage, ComposerThreadMessageMatch } from "@openbot/ui/data";
-import { accountUsageProviderRows } from "@openbot/ui/features/account/account-usage-view";
 import { computeAgentAvatarMoods } from "@openbot/ui/features/agents/agent-avatar-mood";
 import {
   createAdditionalAgentDraft,
@@ -235,7 +234,6 @@ import {
 } from "../../lazy-views";
 import { PlatformProvider } from "../../platform";
 import { deviceSendShortcut } from "../../send-shortcut-preference";
-import { startupLoadingScene } from "../../startup-animation-preference";
 import { WorkspaceFrame } from "../../WorkspaceFrame";
 import {
   ChannelCreateOverlay,
@@ -1001,7 +999,6 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
   function agentAccountUsage() {
     return agentAccountChoice() ? accountUsage() : undefined;
   }
-  const usageRows = createMemo(() => accountUsageProviderRows(accountUsage(), providerAdmin.status().providers, text));
   createUsageRefreshPoll({
     target: () => (usageReading.usageReady() ? usageReading.usageTargetKey() : null),
     refreshAtStart: false,
@@ -2842,7 +2839,7 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
         onExited={cover ? () => setLoadingCover(false) : undefined}
         fullWindow={fullWindowLoading()}
         screen={!frameConnecting()}
-        loadingScene={startupLoadingScene()}
+        loadingScene="quiet"
         issue={workspace.state.hostedIssue}
         start={workspace.state.hostedStart}
         updateVersion={workspace.state.hostRestart?.version ?? null}
@@ -2891,7 +2888,6 @@ function WebWorkspaceFrame(props: WebWorkspaceProps) {
               current={railPage()}
               pinned={layout.railPinned()}
               onPinChange={layout.setRailPinned}
-              usageRows={usageRows()}
               onAgents={showAgentsPage}
               onTasks={
                 tasksSupported()

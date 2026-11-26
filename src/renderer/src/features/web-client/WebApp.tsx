@@ -34,7 +34,6 @@ import {
   webReportsEnabled,
 } from "../../error-reports";
 import { StaticI18nProvider } from "../../i18n-context";
-import { startupLoadingScene } from "../../startup-animation-preference";
 import { AnalyticsConsentRow, ConsentNotice } from "../onboarding/AnalyticsConsent";
 import { createOnboardingTeam, onboardingSessionSeed } from "../onboarding/onboarding-avatars";
 import { deleteRemoteWorkspaceFrames } from "../servers/remote-workspace-frame";
@@ -671,7 +670,7 @@ function WebAppContent(props: { createRuntime?: WebRuntimeFactory }) {
             <AppLoadingScreen
               label={text.t("app.loading")}
               title={text.t("app.loading")}
-              scene={startupLoadingScene()}
+              scene="quiet"
               ready={state.loaded}
               onExited={() => {
                 setLoadingShown(false);

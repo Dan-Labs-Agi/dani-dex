@@ -21,7 +21,6 @@ import { useI18n } from "./i18n-context";
 import { AccountLogin, FirstRunFlow, InitialSetup, LanguageStep } from "./lazy-views";
 import { usePlatform } from "./platform";
 import { reportWorkspaceReady } from "./renderer-timing";
-import { startupLoadingScene } from "./startup-animation-preference";
 import { WorkspaceShell } from "./WorkspaceShell";
 
 let startupSplashPlayed = false;
@@ -205,7 +204,7 @@ export function AppAccessGate() {
         <AppLoadingScreen
           label={t("app.loading")}
           title={t("app.loading")}
-          scene={startupLoadingScene()}
+          scene="quiet"
           ready={splashReady()}
           quickExit={!splashPlaysThrough}
           onMountViews={() => setSplashOpen(true)}

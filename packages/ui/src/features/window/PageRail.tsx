@@ -21,11 +21,11 @@ import {
   Store,
   Waypoints,
 } from "@openbot/ui";
-import { AccountUsageDetails, AccountUsageWindowList } from "@openbot/ui/features/account/AccountUsageDetails";
-import { type AccountUsageProviderRow, accountUsageRowKey } from "@openbot/ui/features/account/account-usage-view";
+import { AccountUsageWindowList } from "@openbot/ui/features/account/AccountUsageDetails";
+import type { AccountUsageProviderRow } from "@openbot/ui/features/account/account-usage-view";
 import { useText } from "@openbot/ui/text";
 import { Dynamic, type JSX } from "@solidjs/web";
-import { createMemo, createSignal, For, onSettled, Show } from "solid-js";
+import { createMemo, createSignal, For, Show } from "solid-js";
 import { CreditIcon } from "../credits/CreditIcon";
 
 interface RailMenuItem {
@@ -137,148 +137,6 @@ function RailButton(props: {
     </Show>
   );
 }
-
-function UsageCard(props: { rows: AccountUsageProviderRow[] }) {
-  const { t } = useText();
-  return (
-    <AccountUsageDetails
-      rows={props.rows}
-      loading={false}
-      error={null}
-      refreshActive={false}
-      refreshDisabled
-      onRefresh={() => undefined}
-      title={<h2 class="account-usage-popover-title">{t("account.usage.title")}</h2>}
-    />
-  );
-}
-
-const RING = { size: 34, stroke: 2.25, spacing: 4.5 };
-
-function UsageRings(props: {
-  row: AccountUsageProviderRow;
-  shared: readonly AccountUsageProviderRow[];
-  onOpen: (button: HTMLElement) => void;
-}) {
-  const { t, format } = useText();
-  const rows = () => [props.row, ...props.shared];
-  const label = () =>
-    unavailable()
-      ? t("app.rail.usageUnavailable", { name: format.list(rows().map((row) => row.name)) })
-      : t("app.rail.usageRings", {
-          name: format.list(rows().map((row) => row.name)),
-          windows: rows()
-            .flatMap((row) => row.windows)
-            .map((window) => t("account.usage.row.window", { window: window.label, percent: window.remainingPercent }))
-            .join(", "),
-        });
-  const ringRow = () => {
-    const read = rows().filter((row) => !row.readFailed);
-    return (read.length > 0 ? read : rows()).reduce((lowest, row) =>
-      (row.remainingPercent ?? 100) < (lowest.remainingPercent ?? 100) ? row : lowest,
-    );
-  };
-  const windows = () => [...ringRow().ringWindows].reverse().slice(0, 2);
-  const unavailable = () => props.row.readFailed && windows().length === 0;
-  const outerRadius = (RING.size - RING.stroke) / 2;
-  return (
-    <RailButton
-      label={label()}
-      card={() => <UsageCard rows={rows()} />}
-      class="window-rail-usage"
-      onClick={props.onOpen}
-    >
-      <svg class="window-rail-usage-ring" viewBox={`0 0 ${RING.size} ${RING.size}`} fill="none" aria-hidden="true">
-        <For each={windows()} keyed={false}>
-          {(window, index) => (
-            <g>
-              <circle
-                class="window-rail-usage-track"
-                cx={RING.size / 2}
-                cy={RING.size / 2}
-                r={outerRadius - index * RING.spacing}
-                stroke-width={RING.stroke}
-              />
-              <Show when={window().remainingPercent > 0}>
-                <circle
-                  class="window-rail-usage-arc"
-                  data-usage-tone={window().tone}
-                  cx={RING.size / 2}
-                  cy={RING.size / 2}
-                  r={outerRadius - index * RING.spacing}
-                  stroke-width={RING.stroke}
-                  stroke-linecap="round"
-                  pathLength={100}
-                  stroke-dasharray={`${window().remainingPercent} 100`}
-                />
-              </Show>
-            </g>
-          )}
-        </For>
-        <Show when={unavailable()}>
-          <circle
-            class="window-rail-usage-track"
-            cx={RING.size / 2}
-            cy={RING.size / 2}
-            r={outerRadius}
-            stroke-width={RING.stroke}
-            pathLength={100}
-            stroke-dasharray="4 6"
-          />
-        </Show>
-      </svg>
-      <ProviderLogo provider={props.row.provider} class="window-rail-usage-logo" />
-    </RailButton>
-  );
-}
-
-interface UsageRing {
-  row: AccountUsageProviderRow;
-  shared: AccountUsageProviderRow[];
-}
-
-function ringLeft(ring: UsageRing): number {
-  return Math.min(...[ring.row, ...ring.shared].map((row) => row.remainingPercent ?? 100));
-}
-
-function providerRings(rings: readonly UsageRing[]): UsageRing[] {
-  const byProvider = new Map<AccountUsageProviderRow["provider"], UsageRing>();
-  for (const ring of rings) {
-    const first = byProvider.get(ring.row.provider);
-    if (first) first.shared.push(ring.row, ...ring.shared);
-    else byProvider.set(ring.row.provider, { row: ring.row, shared: [...ring.shared] });
-  }
-  return [...byProvider.values()];
-}
-
-function MoreUsageRings(props: { rings: readonly UsageRing[]; onOpen: (button: HTMLElement) => void }) {
-  const { t } = useText();
-  const rows = () => props.rings.flatMap((ring) => [ring.row, ...ring.shared]);
-  return (
-    <RailButton
-      label={t("app.rail.moreUsage", { count: rows().length })}
-      card={() => <UsageCard rows={rows()} />}
-      class="window-rail-usage window-rail-usage-more"
-      onClick={props.onOpen}
-    >
-      <svg class="window-rail-usage-ring" viewBox={`0 0 ${RING.size} ${RING.size}`} fill="none" aria-hidden="true">
-        <circle
-          class="window-rail-usage-track"
-          cx={RING.size / 2}
-          cy={RING.size / 2}
-          r={(RING.size - RING.stroke) / 2}
-          stroke-width={RING.stroke}
-        />
-      </svg>
-      <span class="window-rail-usage-count" aria-hidden="true">
-        {t("app.rail.moreUsageCount", { count: rows().length })}
-      </span>
-    </RailButton>
-  );
-}
-
-const START_RING_PLACES = 5;
-const RAIL_MIN_FREE = 12;
 
 export interface CustomAgentUsageRailRow {
   id: string;
@@ -447,11 +305,11 @@ export const PAGE_RAIL_PINNABLE_PAGES = [
 export type PageRailPinnablePage = (typeof PAGE_RAIL_PINNABLE_PAGES)[number];
 
 export interface PageRailProps {
+  usageRows?: readonly AccountUsageProviderRow[];
   hidden: boolean;
   current: PageRailPage | null;
   pinned: readonly PageRailPinnablePage[];
   onPinChange: (page: PageRailPinnablePage, pinned: boolean) => void;
-  usageRows: readonly AccountUsageProviderRow[];
   customAgentUsage?: readonly CustomAgentUsageRailRow[] | undefined;
   mediaCredits?: readonly MediaCreditsRailRow[] | undefined;
   onMediaCredits?: ((provider: MediaCreditsRailRow["provider"]) => void) | undefined;
@@ -575,54 +433,6 @@ function RailLogo(props: { variant: AppLogoVariant; href: string | undefined }) 
 
 export function PageRail(props: PageRailProps) {
   const { t } = useText();
-  const rings = createMemo((): UsageRing[] => {
-    const rows = props.usageRows.filter((row) => row.reportsUsage && (row.windows.length > 0 || row.readFailed));
-    const owner = (row: AccountUsageProviderRow) =>
-      rows.find((other) => other.accountId === null && other.provider === row.sharedQuotaWith);
-    return rows
-      .filter((row) => !owner(row))
-      .map((row) => ({ row, shared: rows.filter((other) => owner(other) === row) }));
-  });
-  const [ringSlots, setRingSlots] = createSignal(START_RING_PLACES);
-  const ringLayout = createMemo(() => {
-    if (rings().length <= ringSlots()) return { shown: rings(), more: [] };
-    const all = providerRings(rings());
-    if (all.length <= ringSlots()) return { shown: all, more: [] };
-    const kept = new Set([...all].sort((a, b) => ringLeft(a) - ringLeft(b)).slice(0, ringSlots() - 1));
-    return { shown: all.filter((ring) => kept.has(ring)), more: all.filter((ring) => !kept.has(ring)) };
-  });
-  let rail: HTMLElement | undefined;
-  let pageGroup: HTMLElement | undefined;
-  let railEnd: HTMLElement | undefined;
-  let endGroup: HTMLElement | undefined;
-  onSettled(() => {
-    if (!rail || !pageGroup || !railEnd || !endGroup) return;
-    const [nav, pagesBox, endBox, end] = [rail, pageGroup, railEnd, endGroup];
-    const measure = () => {
-      const button = end.lastElementChild;
-      if (!(button instanceof HTMLElement) || nav.hidden) return;
-      const slot = button.offsetHeight + Number.parseFloat(getComputedStyle(end).rowGap);
-      const rendered = ringLayout().shown.length + (ringLayout().more.length > 0 ? 1 : 0);
-      const endWithoutRings = endBox.offsetHeight - rendered * slot;
-      const free =
-        nav.getBoundingClientRect().bottom -
-        Number.parseFloat(getComputedStyle(nav).paddingBlockEnd) -
-        pagesBox.getBoundingClientRect().bottom -
-        endWithoutRings -
-        RAIL_MIN_FREE;
-      setRingSlots(Math.max(1, Math.floor(free / slot)));
-    };
-    let frame = 0;
-    const observer = new ResizeObserver(() => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(measure);
-    });
-    for (const element of [nav, pagesBox, endBox]) observer.observe(element);
-    return () => {
-      observer.disconnect();
-      cancelAnimationFrame(frame);
-    };
-  });
   const pages = createMemo((): RailPage[] => {
     const list: RailPage[] = [];
     const { onWorkflows, onTasks, onSchedule } = props;
@@ -669,21 +479,9 @@ export function PageRail(props: PageRailProps) {
     return list;
   });
   return (
-    <nav
-      class="window-rail"
-      aria-label={t("app.rail.label")}
-      hidden={props.hidden}
-      ref={(element) => {
-        rail = element;
-      }}
-    >
+    <nav class="window-rail" aria-label={t("app.rail.label")} hidden={props.hidden}>
       <Show when={props.logo}>{(logo) => <RailLogo variant={logo().variant} href={logo().href} />}</Show>
-      <div
-        class="window-rail-group"
-        ref={(element) => {
-          pageGroup = element;
-        }}
-      >
+      <div class="window-rail-group">
         <RailButton label={t("app.rail.agents")} current={props.current === "agents"} onClick={props.onAgents}>
           <Bot aria-hidden="true" />
         </RailButton>
@@ -705,24 +503,8 @@ export function PageRail(props: PageRailProps) {
         </For>
         <RailMoreMenu pages={pages()} current={props.current} pinned={props.pinned} onPinChange={props.onPinChange} />
       </div>
-      <div
-        class="window-rail-end"
-        ref={(element) => {
-          railEnd = element;
-        }}
-      >
-        <div
-          class="window-rail-group"
-          ref={(element) => {
-            endGroup = element;
-          }}
-        >
-          <For each={ringLayout().shown} keyed={(ring) => accountUsageRowKey(ring.row)}>
-            {(ring) => <UsageRings row={ring().row} shared={ring().shared} onOpen={props.onUsage} />}
-          </For>
-          <Show when={ringLayout().more.length > 0}>
-            <MoreUsageRings rings={ringLayout().more} onOpen={props.onUsage} />
-          </Show>
+      <div class="window-rail-end">
+        <div class="window-rail-group">
           <For each={props.customAgentUsage ?? []} keyed={(row) => row.id}>
             {(row) => <CustomAgentUsageButton row={row()} onOpen={props.onUsage} />}
           </For>

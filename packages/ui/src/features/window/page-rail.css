@@ -181,43 +181,11 @@
   border-radius: var(--openbot-radius-pill);
 }
 
-.window-rail-button .window-rail-usage-ring {
-  position: absolute;
-  inset: 1px;
-  width: 34px;
-  height: 34px;
-  transform: rotate(-90deg);
-}
-
 .window-rail-button .window-rail-usage-logo {
   width: var(--openbot-icon-xs);
   height: var(--openbot-icon-xs);
   overflow: visible;
   fill: var(--openbot-provider-current);
-}
-
-.window-rail-usage-track {
-  stroke: currentcolor;
-  opacity: 0.15;
-}
-
-.window-rail-usage-arc {
-  stroke: var(--openbot-success);
-}
-
-.window-rail-usage-arc[data-usage-tone="warning"] {
-  stroke: var(--openbot-warning);
-}
-
-.window-rail-usage-arc[data-usage-tone="critical"] {
-  stroke: var(--openbot-danger);
-}
-
-.window-rail-usage-more .window-rail-usage-count {
-  color: var(--openbot-text-secondary);
-  font-size: var(--openbot-text-sm);
-  font-weight: var(--openbot-weight-semibold);
-  font-variant-numeric: tabular-nums;
 }
 
 .window-rail-button.window-rail-credits {

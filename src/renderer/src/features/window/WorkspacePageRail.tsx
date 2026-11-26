@@ -22,7 +22,6 @@ import { useServers } from "../servers/servers-context";
 import { useSettings } from "../settings/settings-context";
 import { useUpdates } from "../updates/updates-context";
 import { useWhatsNew } from "../updates/whats-new-context";
-import { usePlanLimitRows } from "../usage/plan-limit-rows";
 import { useUsage } from "../usage/usage-context";
 import { createWorkflowMediaCredits } from "../workflows/workflow-media-credits";
 import { desktopMediaCredits } from "../workflows/workflows-port";
@@ -45,7 +44,6 @@ export function WorkspacePageRail(props: { hidden: boolean }) {
     const info = platform.appInfo();
     return info && info.platform !== "darwin" ? { variant: info.variant } : undefined;
   };
-  const usageRows = usePlanLimitRows();
   const mediaCredits = createWorkflowMediaCredits(
     () => (windowPage.page() === "workflows" ? usage.state.serverId : null),
     desktopMediaCredits,
@@ -93,7 +91,6 @@ export function WorkspacePageRail(props: { hidden: boolean }) {
       current={current()}
       pinned={layout.railPinned()}
       onPinChange={layout.setRailPinned}
-      usageRows={usageRows()}
       customAgentUsage={localAgentUsage()}
       mediaCredits={mediaCredits()}
       onMediaCredits={(provider) => {

@@ -51,7 +51,6 @@ import { useWindowPage } from "./features/window/window-page-context";
 import { useWorkspaceShortcuts } from "./features/window/workspace-shortcuts";
 import { useLayout } from "./layout";
 import { usePlatform } from "./platform";
-import { startupLoadingScene } from "./startup-animation-preference";
 import { WorkspaceFrame } from "./WorkspaceFrame";
 import { WorkspaceOverlays } from "./WorkspaceOverlays";
 
@@ -271,7 +270,7 @@ export function WorkspaceShell(props: {
   const connectionNotice = (cover = false, screen = true) => (
     <ServerConnectionNotice
       screen={screen}
-      loadingScene={startupLoadingScene()}
+      loadingScene="quiet"
       name={activeServer()?.name ?? ""}
       initial={cover || !scope.connection.synced}
       ready={cover ? !fullWindowLoading() : undefined}

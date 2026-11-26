@@ -638,6 +638,57 @@
   text-overflow: ellipsis;
 }
 
+.provider-model-usage {
+  display: grid;
+  flex-shrink: 0;
+  gap: var(--openbot-space-1);
+  margin: 0 var(--ui-menu-inset) var(--openbot-space-2);
+  border-radius: var(--ui-menu-item-radius);
+  background: var(--ui-menu-item-hover);
+  padding: var(--openbot-space-2);
+}
+
+.provider-model-usage > strong {
+  color: var(--openbot-text-secondary);
+  font-size: var(--openbot-text-xs);
+  font-weight: 600;
+}
+
+.provider-model-usage-window {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: var(--openbot-space-1-5);
+  color: var(--openbot-text-muted);
+  font-size: var(--openbot-text-sm);
+}
+
+.provider-model-usage-window > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.provider-model-usage-window > b {
+  color: var(--openbot-text-primary);
+  font-weight: 600;
+}
+
+.provider-model-usage-window > small {
+  min-width: 48px;
+  text-align: end;
+  color: var(--openbot-text-muted);
+  font-size: inherit;
+}
+
+.provider-model-usage-window[data-usage-tone="warning"] > b {
+  color: var(--openbot-warning-text);
+}
+
+.provider-model-usage-window[data-usage-tone="danger"] > b {
+  color: var(--openbot-danger-text);
+}
+
 .provider-model-empty {
   display: grid;
   justify-items: start;
