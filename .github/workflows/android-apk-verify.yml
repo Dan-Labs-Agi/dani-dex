@@ -1,0 +1,62 @@
+name: Android APK verify
+
+# Installs the built Android APK on an emulator, opens it, and saves a screenshot and the log.
+on:
+  push:
+    branches:
+      - feat/apk-verify
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Install and launch the APK
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Download the APK
+        run: |
+          set -euo pipefail
+          curl -fsSL -o "$RUNNER_TEMP/app.apk" https://dl.dani.danlab.dev/android/dani-dex-new.apk
+          ls -la "$RUNNER_TEMP/app.apk"
+          sha256sum "$RUNNER_TEMP/app.apk"
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Install and launch on an emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          arch: x86_64
+          target: default
+          disable-animations: true
+          script: |
+            adb install -r "$RUNNER_TEMP/app.apk" 2>&1 | tee "$RUNNER_TEMP/install.txt"
+            adb shell pm list packages | grep dev.danlab.dani | tee -a "$RUNNER_TEMP/install.txt"
+            adb logcat -c
+            adb shell monkey -p dev.danlab.dani -c android.intent.category.LAUNCHER 1
+            sleep 25
+            adb exec-out screencap -p > "$RUNNER_TEMP/launch.png"
+            adb shell pidof dev.danlab.dani | tee "$RUNNER_TEMP/pid.txt"
+            adb logcat -d > "$RUNNER_TEMP/logcat.txt"
+            grep -E "FATAL EXCEPTION|ANR in" "$RUNNER_TEMP/logcat.txt" | head -5 | tee "$RUNNER_TEMP/crash.txt" || true
+
+      - name: Save the proof
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: apk-verify-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/launch.png
+            ${{ runner.temp }}/install.txt
+            ${{ runner.temp }}/logcat.txt
+            ${{ runner.temp }}/crash.txt
+            ${{ runner.temp }}/pid.txt
+          if-no-files-found: warn
+          retention-days: 7
