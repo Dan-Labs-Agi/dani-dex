@@ -4,8 +4,8 @@
  */
 
 const ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789";
-export const REFERRAL_LINK_BASE = "https://dani.danlab.dev/";
-export const REFERRAL_PAGE_SIZE = 20;
+const REFERRAL_LINK_BASE = "https://dani.danlab.dev/";
+const REFERRAL_PAGE_SIZE = 20;
 const REDEEM_WINDOW_MS = 7 * 86_400_000;
 
 export interface ReferralDb {
@@ -53,7 +53,7 @@ export function canRedeem(input: {
 }
 
 const ready = new WeakSet<object>();
-export async function ensureReferralTables(db: ReferralDb & { exec?: (sql: string) => Promise<unknown> }) {
+async function ensureReferralTables(db: ReferralDb & { exec?: (sql: string) => Promise<unknown> }) {
   if (ready.has(db)) return;
   await db
     .prepare("CREATE TABLE IF NOT EXISTS referral_codes (user_id TEXT PRIMARY KEY, code TEXT NOT NULL UNIQUE)")
