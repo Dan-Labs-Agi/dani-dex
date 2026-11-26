@@ -6,6 +6,7 @@ on:
   push:
     branches:
       - fix/mac-intel-build
+      - build/brand-verify
   workflow_dispatch:
 
 permissions:
@@ -59,6 +60,18 @@ jobs:
           file "$R/cua-driver/darwin/x64/cua-driver"
           file "$R/app.asar.unpacked/node_modules/@koromix/koffi-darwin-x64/darwin_x64/koffi.node"
           lipo -archs "$APP/Contents/MacOS/"* || true
+
+      - name: Check the driver runs, the app name and the icons
+        run: |
+          set -euo pipefail
+          APP=$(ls -d dist/mac*/*.app | head -1)
+          R="$APP/Contents/Resources"
+          "$R/cua-driver/darwin/x64/cua-driver" --version || true
+          /usr/libexec/PlistBuddy -c "Print :CFBundleName" -c "Print :CFBundleDisplayName" "$APP/Contents/Info.plist"
+          md5 build/icon-production.icns "$R/icon.icns"
+          md5 build/logo-colors/icon-blue.png "$R/icons/logo-colors/icon-blue.png"
+          md5 packages/ui/src/assets/plush/fishing-still.webp
+          cat dist/latest-mac.yml
 
       - name: Start the app
         run: |
