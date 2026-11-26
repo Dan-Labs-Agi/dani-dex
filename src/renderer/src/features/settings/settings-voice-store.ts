@@ -20,6 +20,11 @@ import {
   type VoiceTurnPause,
   type XaiSpeechVoice,
 } from "@openbot/contracts/ipc";
+import {
+  type CloudVoiceChoice,
+  type CloudVoiceProvider,
+  normalizeCloudVoice,
+} from "@openbot/contracts/voice-providers";
 import { toast } from "@openbot/ui";
 import { currentText } from "@openbot/ui/text";
 import { createEffect, createStore } from "solid-js";
@@ -350,6 +355,10 @@ export function createSettingsVoiceStore(active: () => boolean) {
     saveDictationApiKey: (provider: DictationKeyProvider, key: string) => setDictationApiKey(provider, key),
     removeDictationApiKey: (provider: DictationKeyProvider) => setDictationApiKey(provider, null),
     setElevenLabsVoice: (elevenLabsVoice: ElevenLabsSpeechVoice) => void saveSpeech({ elevenLabsVoice }),
+    setCloudVoice: (provider: CloudVoiceProvider, patch: Partial<CloudVoiceChoice>) => {
+      const current = normalizeCloudVoice(state.speech.settings?.cloudVoice);
+      void saveSpeech({ cloudVoice: { ...current, [provider]: { ...current[provider], ...patch } } });
+    },
     setXaiVoice: (xaiVoice: XaiSpeechVoice) => void saveSpeech({ xaiVoice }),
     setReadReplies,
     setCodexLive,

@@ -1,4 +1,5 @@
 import { isBoundedString } from "./ipc-bounded-values";
+import { type CloudVoiceOptions, DEFAULT_CLOUD_VOICE } from "./voice-providers";
 import { isBoolean, isDynamicRecord, isNumber, isOneOf, isString } from "./runtime-values";
 
 export const VOICE_AUDIO_LIMITS = {
@@ -515,6 +516,7 @@ export interface SpeechSettings {
   voice: SpeechVoice;
   elevenLabsVoice: ElevenLabsSpeechVoice;
   xaiVoice: XaiSpeechVoice;
+  cloudVoice: CloudVoiceOptions;
   speed: SpeechSpeed;
   codexLive: boolean;
   codexLiveVoice: CodexLiveVoice | null;
@@ -527,6 +529,7 @@ export const DEFAULT_SPEECH_SETTINGS: SpeechSettings = {
   voice: "F1",
   elevenLabsVoice: "alice",
   xaiVoice: "eve",
+  cloudVoice: DEFAULT_CLOUD_VOICE,
   speed: 1,
   codexLive: false,
   codexLiveVoice: null,

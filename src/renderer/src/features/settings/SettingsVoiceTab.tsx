@@ -30,6 +30,7 @@ import {
   type WhisperLanguage,
   XAI_SPEECH_VOICES,
 } from "@openbot/contracts/ipc";
+import { isCloudVoiceProvider, normalizeCloudVoice } from "@openbot/contracts/voice-providers";
 import { shortVoiceServerModel, voiceServerHost } from "@openbot/contracts/voice-server";
 import type { AppTextKey } from "@openbot/i18n";
 import {
@@ -56,6 +57,7 @@ import { createMemo, createSignal, Show } from "solid-js";
 import { setVoiceTalkKey, useVoiceTalkKey } from "../conversation/voice-talk-key";
 import type { CodexLiveAccess } from "../speech/codex-live-access";
 import { fullDuplexRunning, startFullDuplex, stopFullDuplex } from "../speech/full-duplex-session";
+import { CloudVoiceOptions } from "./CloudVoiceOptions";
 import { type LiveVoiceAccountChoice, LiveVoiceAccountRow } from "./LiveVoiceAccountRow";
 import type { SettingsVoiceStore } from "./settings-voice-store";
 import {
@@ -330,6 +332,10 @@ export function SettingsVoiceTab(props: SettingsVoiceTabProps) {
     return id ? SPEECH_MODEL_DESCRIPTION[id] : "settings.voice.speech.model.description";
   };
 
+  const cloudVoiceProvider = () => {
+    const provider = speechCloud()?.provider;
+    return provider && isCloudVoiceProvider(provider) ? provider : undefined;
+  };
   const voiceOptions = (): string[] => VOICE_OPTIONS[speechCloud()?.provider ?? "local"];
   const chosenVoice = (): string | null => {
     const saved = speech().settings;
@@ -544,7 +550,18 @@ export function SettingsVoiceTab(props: SettingsVoiceTabProps) {
             label={t("settings.voice.speech.readReplies.title")}
             description={t("settings.voice.speech.readReplies.description")}
           />
-          <Show when={!serverSpeaks()}>
+          <Show when={!serverSpeaks() ? cloudVoiceProvider() : undefined} keyed>
+            {(provider) => (
+              <CloudVoiceOptions
+                provider={provider}
+                choice={normalizeCloudVoice(speech().settings?.cloudVoice)[provider]}
+                disabled={!speech().settings}
+                mount={props.selectMount}
+                onChange={(patch) => props.store.setCloudVoice(provider, patch)}
+              />
+            )}
+          </Show>
+          <Show when={!serverSpeaks() && !cloudVoiceProvider()}>
             <Item data-settings-row="settings.voice.speech.voice.title" class="settings-modal-row">
               <ItemContent>
                 <ItemTitle>{t("settings.voice.speech.voice.title")}</ItemTitle>

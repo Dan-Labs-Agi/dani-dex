@@ -164,6 +164,7 @@ export class VoiceSpeechService extends EventEmitter<VoiceSpeechEvents> {
         language: input.language,
         elevenLabsVoice: settings.elevenLabsVoice,
         xaiVoice: settings.xaiVoice,
+        cloudVoice: settings.cloudVoice,
       }).pipe(
         Effect.tapError(() =>
           Effect.sync(() =>

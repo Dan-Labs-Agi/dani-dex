@@ -53,6 +53,7 @@
     "./speech-language": "./src/speech-language.ts",
     "./speech-models": "./src/speech-models.ts",
     "./voice-server": "./src/voice-server.ts",
+    "./voice-providers": "./src/voice-providers.ts",
     "./speech-text": "./src/speech-text.ts",
     "./agent-memory-context": "./src/agent-memory-context.ts",
     "./ipc": "./src/ipc.ts",

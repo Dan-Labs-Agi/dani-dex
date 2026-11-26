@@ -741,6 +741,11 @@ export const messages = defineMessages("settings", {
   "settings.voice.speech.codexLive.serverDescription":
     "Voice conversations with any agent use OpenAI live voice with the Codex sign-in of the server. Your voice, your requests and the agent's replies go to OpenAI.",
   "settings.voice.speech.speed.title": "Speed",
+  "settings.voice.cloud.model": "Model",
+  "settings.voice.cloud.free": "Free",
+  "settings.voice.cloud.paid": "Paid, uses your key",
+  "settings.voice.cloud.voiceId": "Voice ID",
+  "settings.voice.cloud.voiceIdPlaceholder": "Custom voice ID (optional)",
   "settings.voice.speech.voice.title": "Voice",
   "settings.voice.speech.voice.female": "Female voice {number}",
   "settings.voice.speech.voice.male": "Male voice {number}",
