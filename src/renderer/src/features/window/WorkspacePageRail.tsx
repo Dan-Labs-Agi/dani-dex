@@ -111,10 +111,6 @@ export function WorkspacePageRail(props: { hidden: boolean }) {
       onCrmConnectors={crmConnectorsAction()}
       onCredits={creditsRailAction()}
       creditBalance={windowPage.creditsMenu().state?.balance}
-      onMarketplace={() => {
-        windowPage.leavePricing();
-        setSkillsMarketplaceOpen(true);
-      }}
       onSettings={(button) => (updateNotice() ? openAppSettings(button, "updates") : windowPage.openSettings(button))}
       settingsNotice={updateNotice()}
       logo={logo()}

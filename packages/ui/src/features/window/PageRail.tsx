@@ -6,7 +6,6 @@ import {
   Button,
   buttonVariants,
   CalendarClock,
-  ChartArea,
   ContextMenu,
   DropdownMenu,
   Ellipsis,
@@ -18,7 +17,6 @@ import {
   Plug,
   Settings,
   Sparkles,
-  Store,
   Waypoints,
 } from "@openbot/ui";
 import { AccountUsageWindowList } from "@openbot/ui/features/account/AccountUsageDetails";
@@ -456,7 +454,6 @@ export function PageRail(props: PageRailProps) {
         open: onSchedule,
       });
     }
-    list.push({ id: "usage", label: t("app.rail.usage"), icon: ChartArea, open: props.onUsage });
     const onLibrary = props.onLibrary;
     if (onLibrary) {
       list.push({ id: "library", label: t("app.rail.library"), icon: GalleryVerticalEnd, open: onLibrary });
@@ -518,17 +515,6 @@ export function PageRail(props: PageRailProps) {
                 current={props.current === "credits"}
                 onOpen={() => onCredits()()}
               />
-            )}
-          </Show>
-          <Show when={props.onMarketplace}>
-            {(onMarketplace) => (
-              <RailButton
-                label={t("app.rail.marketplace")}
-                current={props.current === "marketplace"}
-                onClick={() => onMarketplace()()}
-              >
-                <Store aria-hidden="true" />
-              </RailButton>
             )}
           </Show>
           {props.help}
