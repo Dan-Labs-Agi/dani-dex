@@ -94,14 +94,7 @@ export const messages = {
   "app.socialFollow.draftPost":
     "Meine KI-Agenten arbeiten jetzt mit Dani Dex auf meinem eigenen Computer. Meine Chats und Dateien bleiben bei mir. Probier es aus: {site}",
   "app.socialFollow.redditTitle": "Wie ich Dani Dex nutze",
-  "app.rail.usageRings": "Nutzung von {name}: {windows}. Nutzung öffnen",
-  "app.rail.usageUnavailable": "Nutzung von {name} nicht verfügbar. Nutzung öffnen",
   "app.rail.customAgentUsage": "Nutzung von {name}. Nutzung öffnen",
-  "app.rail.moreUsage": {
-    one: "{count} weiteres Konto. Nutzung öffnen",
-    other: "{count} weitere Konten. Nutzung öffnen",
-  },
-  "app.rail.moreUsageCount": "+{count}",
   "app.rail.mediaCredits": "{name}: {credits} Credits übrig. {name} öffnen",
   "app.rail.mediaCreditsQuota": "{name}: {credits} von {quota} Team-Credits übrig. {name} öffnen",
   "app.rail.mediaCreditsMeta": "Credits",

@@ -93,10 +93,6 @@ export const messages = {
   "app.socialFollow.draftPost":
     "이제 dani-dex으로 AI 에이전트가 내 컴퓨터에서 일합니다. 채팅과 파일은 내 곁에 남습니다. 써 보세요: {site}",
   "app.socialFollow.redditTitle": "dani-dex을 쓰는 방법",
-  "app.rail.usageRings": "{name} 사용량: {windows}. 사용량 열기",
-  "app.rail.usageUnavailable": "{name} 사용량을 사용할 수 없음. 사용량 열기",
-  "app.rail.moreUsage": { other: "그 외 계정 {count}개. 사용량 열기" },
-  "app.rail.moreUsageCount": "+{count}",
   "app.rail.mediaCredits": "{name}: 남은 크레딧 {credits}. {name} 열기",
   "app.rail.mediaCreditsQuota": "{name}: 팀 크레딧 {quota} 중 {credits} 남음. {name} 열기",
   "app.rail.mediaCreditsMeta": "크레딧",

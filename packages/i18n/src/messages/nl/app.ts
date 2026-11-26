@@ -94,11 +94,7 @@ export const messages = {
   "app.socialFollow.draftPost":
     "Mijn AI-agents werken nu op mijn eigen computer met Dani Dex. Mijn chats en bestanden blijven bij mij. Probeer het: {site}",
   "app.socialFollow.redditTitle": "Hoe ik Dani Dex gebruik",
-  "app.rail.usageRings": "Gebruik van {name}: {windows}. Open gebruik",
-  "app.rail.usageUnavailable": "Gebruik van {name} niet beschikbaar. Open gebruik",
   "app.rail.customAgentUsage": "Gebruik van {name}. Open gebruik",
-  "app.rail.moreUsage": { one: "Nog {count} account. Open gebruik", other: "Nog {count} accounts. Open gebruik" },
-  "app.rail.moreUsageCount": "+{count}",
   "app.rail.mediaCredits": "{name}: nog {credits} credits. {name} openen",
   "app.rail.mediaCreditsQuota": "{name}: nog {credits} van je {quota} teamcredits. {name} openen",
   "app.rail.mediaCreditsMeta": "Credits",

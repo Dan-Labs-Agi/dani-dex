@@ -28,8 +28,6 @@ export const messages = {
   "settings.backgroundBlur.description": "Размытие за меню и диалогами. На компьютере без GPU сначала выключено.",
   "settings.movingFaces.title": "Подвижные лица агентов",
   "settings.movingFaces.description": "Лица агентов моргают и двигаются. На компьютере без GPU сначала неподвижны.",
-  "settings.startupAnimation.title": "Анимация запуска",
-  "settings.startupAnimation.description": "Показывать анимацию агентов, пока Dani Dex открывается.",
   "settings.logoColor.title": "Цвет логотипа",
   "settings.logoColor.description": "Отображается в Dock, на панели задач и в Dynamic Island.",
   "settings.logoColor.buildNote":

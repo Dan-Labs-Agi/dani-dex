@@ -30,8 +30,6 @@ export const messages = {
   "settings.movingFaces.title": "Ruchome twarze agentów",
   "settings.movingFaces.description":
     "Twarze agentów mrugają i się ruszają. Na komputerze bez GPU są na początku nieruchome.",
-  "settings.startupAnimation.title": "Animacja startowa",
-  "settings.startupAnimation.description": "Pokazuj animację agentów podczas otwierania Dani Dex.",
   "settings.logoColor.title": "Kolor logo",
   "settings.logoColor.description": "Widoczny w Docku, na pasku zadań i w Dynamic Island.",
   "settings.logoColor.buildNote": "Ta kompilacja ma własny kolor logo. Wybór dotyczy wersji wydanej.",

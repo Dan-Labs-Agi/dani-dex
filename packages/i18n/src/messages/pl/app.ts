@@ -94,16 +94,7 @@ export const messages = {
   "app.socialFollow.draftPost":
     "Moje agenty AI pracują teraz na moim komputerze z OpenBotem. Moje czaty i pliki zostają u mnie. Wypróbuj: {site}",
   "app.socialFollow.redditTitle": "Jak używam OpenBota",
-  "app.rail.usageRings": "Użycie {name}: {windows}. Otwórz użycie",
-  "app.rail.usageUnavailable": "Użycie {name} niedostępne. Otwórz użycie",
   "app.rail.customAgentUsage": "Użycie {name}. Otwórz użycie",
-  "app.rail.moreUsage": {
-    one: "Jeszcze {count} konto. Otwórz użycie",
-    few: "Jeszcze {count} konta. Otwórz użycie",
-    many: "Jeszcze {count} kont. Otwórz użycie",
-    other: "Jeszcze {count} konta. Otwórz użycie",
-  },
-  "app.rail.moreUsageCount": "+{count}",
   "app.rail.mediaCredits": "{name}: zostało {credits} kredytów. Otwórz {name}",
   "app.rail.mediaCreditsQuota": "{name}: zostało {credits} z {quota} kredytów zespołu. Otwórz {name}",
   "app.rail.mediaCreditsMeta": "Kredyty",

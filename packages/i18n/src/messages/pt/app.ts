@@ -94,11 +94,7 @@ export const messages = {
   "app.socialFollow.draftPost":
     "Meus agentes de IA agora trabalham no meu próprio computador com o Dani Dex. Minhas conversas e arquivos ficam comigo. Experimente: {site}",
   "app.socialFollow.redditTitle": "Como eu uso o Dani Dex",
-  "app.rail.usageRings": "Uso de {name}: {windows}. Abrir uso",
-  "app.rail.usageUnavailable": "Uso de {name} indisponível. Abrir uso",
   "app.rail.customAgentUsage": "Uso de {name}. Abrir uso",
-  "app.rail.moreUsage": { one: "Mais {count} conta. Abrir uso", other: "Mais {count} contas. Abrir uso" },
-  "app.rail.moreUsageCount": "+{count}",
   "app.rail.mediaCredits": "{name}: restam {credits} créditos. Abrir {name}",
   "app.rail.mediaCreditsQuota": "{name}: restam {credits} dos seus {quota} créditos da equipe. Abrir {name}",
   "app.rail.mediaCreditsMeta": "Créditos",

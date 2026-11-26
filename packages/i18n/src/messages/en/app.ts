@@ -95,11 +95,7 @@ export const messages = defineMessages("app", {
   "app.socialFollow.draftPost":
     "My AI agents now work on my own computer with Dani Dex. My chats and files stay with me. Try it: {site}",
   "app.socialFollow.redditTitle": "How I use Dani Dex",
-  "app.rail.usageRings": "{name} usage: {windows}. Open usage",
-  "app.rail.usageUnavailable": "{name} usage unavailable. Open usage",
   "app.rail.customAgentUsage": "{name} usage. Open usage",
-  "app.rail.moreUsage": { one: "{count} more account. Open usage", other: "{count} more accounts. Open usage" },
-  "app.rail.moreUsageCount": "+{count}",
   "app.rail.mediaCredits": "{name}: {credits} credits left. Open {name}",
   "app.rail.mediaCreditsQuota": "{name}: {credits} of your {quota} team credits left. Open {name}",
   "app.rail.mediaCreditsMeta": "Credits",

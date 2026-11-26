@@ -94,15 +94,7 @@ export const messages = {
   "app.socialFollow.draftPost":
     "סוכני ה-AI שלי עובדים עכשיו במחשב שלי עם Dani Dex. הצ'אטים והקבצים שלי נשארים אצלי. אפשר לנסות: {site}",
   "app.socialFollow.redditTitle": "איך אני משתמש ב-dani-dex",
-  "app.rail.usageRings": "שימוש ב-{name}: {windows}. פתיחת השימוש",
-  "app.rail.usageUnavailable": "השימוש ב-{name} לא זמין. פתיחת השימוש",
   "app.rail.customAgentUsage": "שימוש ב-{name}. פתיחת השימוש",
-  "app.rail.moreUsage": {
-    one: "חשבון נוסף אחד. פתיחת השימוש",
-    two: "שני חשבונות נוספים. פתיחת השימוש",
-    other: "{count} חשבונות נוספים. פתיחת השימוש",
-  },
-  "app.rail.moreUsageCount": "+{count}",
   "app.rail.mediaCredits": "{name}: נותרו {credits} קרדיטים. פתיחת {name}",
   "app.rail.mediaCreditsQuota": "{name}: נותרו {credits} מתוך {quota} קרדיטי הצוות שלך. פתיחת {name}",
   "app.rail.mediaCreditsMeta": "קרדיטים",

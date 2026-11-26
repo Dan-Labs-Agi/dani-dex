@@ -94,18 +94,7 @@ export const messages = {
   "app.socialFollow.draftPost":
     "وكلائي للذكاء الاصطناعي يعملون الآن على حاسوبي مع Dani Dex. محادثاتي وملفاتي تبقى معي. جرّبه: {site}",
   "app.socialFollow.redditTitle": "كيف أستخدم Dani Dex",
-  "app.rail.usageRings": "استخدام {name}: {windows}. فتح الاستخدام",
-  "app.rail.usageUnavailable": "استخدام {name} غير متاح. فتح الاستخدام",
   "app.rail.customAgentUsage": "استخدام {name}. فتح الاستخدام",
-  "app.rail.moreUsage": {
-    zero: "لا حسابات أخرى. فتح الاستخدام",
-    one: "حساب واحد آخر. فتح الاستخدام",
-    two: "حسابان آخران. فتح الاستخدام",
-    few: "{count} حسابات أخرى. فتح الاستخدام",
-    many: "{count} حسابًا آخر. فتح الاستخدام",
-    other: "{count} حساب آخر. فتح الاستخدام",
-  },
-  "app.rail.moreUsageCount": "+{count}",
   "app.rail.mediaCredits": "{name}: بقي {credits} من الأرصدة. فتح {name}",
   "app.rail.mediaCreditsQuota": "{name}: بقي {credits} من أرصدة فريقك البالغة {quota}. فتح {name}",
   "app.rail.mediaCreditsMeta": "الأرصدة",
