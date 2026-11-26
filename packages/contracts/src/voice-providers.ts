@@ -1,3 +1,5 @@
+import { isDynamicRecord } from "./runtime-values";
+
 /**
  * Per-provider options for cloud spoken replies. Values come from each provider's public API reference:
  * Cartesia (docs.cartesia.ai/api-reference/tts/bytes), Fish Audio (docs.fish.audio text-to-speech) and
@@ -85,28 +87,26 @@ export const DEFAULT_CLOUD_VOICE: CloudVoiceOptions = {
 
 const VOICE_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/u;
 
-function field(value: unknown, key: string): unknown {
-  return typeof value === "object" && value !== null && !Array.isArray(value) ? Reflect.get(value, key) : undefined;
-}
-
 function normalizeChoice(provider: CloudVoiceProvider, value: unknown): CloudVoiceChoice {
   const fallback = DEFAULT_CLOUD_VOICE[provider];
   const catalog = CLOUD_VOICE_CATALOG[provider];
-  const rawModel = field(value, "model");
-  const rawVoice = field(value, "voice");
+  const raw = isDynamicRecord(value) ? value : {};
+  const rawModel = raw.model;
+  const rawVoice = raw.voice;
   const model = catalog.models.find((item) => item.id === rawModel)?.id ?? fallback.model;
   const voice =
     typeof rawVoice === "string" && (rawVoice === "" || VOICE_ID_PATTERN.test(rawVoice)) ? rawVoice : fallback.voice;
-  const speed = catalog.speeds.find((item) => item === field(value, "speed")) ?? fallback.speed;
+  const speed = catalog.speeds.find((item) => item === raw.speed) ?? fallback.speed;
   return { model, voice, speed };
 }
 
 /** Never throws: anything unknown falls back to the provider default, so old settings files keep loading. */
 export function normalizeCloudVoice(value: unknown): CloudVoiceOptions {
+  const raw = isDynamicRecord(value) ? value : {};
   return {
-    cartesia: normalizeChoice("cartesia", field(value, "cartesia")),
-    fish: normalizeChoice("fish", field(value, "fish")),
-    gradium: normalizeChoice("gradium", field(value, "gradium")),
+    cartesia: normalizeChoice("cartesia", raw.cartesia),
+    fish: normalizeChoice("fish", raw.fish),
+    gradium: normalizeChoice("gradium", raw.gradium),
   };
 }
 
