@@ -602,6 +602,16 @@ export interface SpeechInput {
   language: SpeechLanguage | null;
 }
 
+export const VOICE_CHAT_LIMIT = 2_000;
+
+export interface VoiceChatInput {
+  text: string;
+}
+
+export interface VoiceChatReply {
+  text: string;
+}
+
 export interface SpeechAudio {
   pcm: Uint8Array;
   sampleRate: number;

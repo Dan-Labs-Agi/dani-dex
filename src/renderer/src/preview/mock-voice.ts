@@ -242,6 +242,7 @@ export function createMockVoice(options: MockVoiceOptions, { emit, schedule }: M
       sampleRate: MOCK_SPEECH_SAMPLE_RATE,
     }),
     warmSpeech: async () => undefined,
+    chatReply: async ({ text }) => ({ text: `You said: ${text}` }),
     keepRecording: async ({ audio }) => ({
       id: `mock-voice-recording-${audio.byteLength}`,
       name: "voice.webm",

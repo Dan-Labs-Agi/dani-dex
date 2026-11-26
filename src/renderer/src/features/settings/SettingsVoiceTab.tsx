@@ -55,6 +55,7 @@ import { useText } from "@openbot/ui/text";
 import { createMemo, createSignal, Show } from "solid-js";
 import { setVoiceTalkKey, useVoiceTalkKey } from "../conversation/voice-talk-key";
 import type { CodexLiveAccess } from "../speech/codex-live-access";
+import { fullDuplexRunning, startFullDuplex, stopFullDuplex } from "../speech/full-duplex-session";
 import { type LiveVoiceAccountChoice, LiveVoiceAccountRow } from "./LiveVoiceAccountRow";
 import type { SettingsVoiceStore } from "./settings-voice-store";
 import {
@@ -379,6 +380,20 @@ export function SettingsVoiceTab(props: SettingsVoiceTabProps) {
   };
 
   const [editingServer, setEditingServer] = createSignal(false);
+  const [duplexOn, setDuplexOn] = createSignal(fullDuplexRunning());
+  const toggleDuplex = async (on: boolean) => {
+    if (!on) {
+      stopFullDuplex();
+      setDuplexOn(false);
+      return;
+    }
+    try {
+      await startFullDuplex();
+      setDuplexOn(true);
+    } catch {
+      setDuplexOn(false);
+    }
+  };
 
   const liveVoice = (): LiveVoiceChoice => speech().settings?.codexLiveVoice ?? "automatic";
   const liveVoiceName = (voice: LiveVoiceChoice) =>
@@ -514,6 +529,13 @@ export function SettingsVoiceTab(props: SettingsVoiceTabProps) {
               />
             )}
           </Show>
+          <SwitchField
+            data-settings-row="settings.voice.duplex.title"
+            checked={duplexOn()}
+            onChange={(checked) => void toggleDuplex(checked)}
+            label={t("settings.voice.duplex.title")}
+            description={t("settings.voice.duplex.description")}
+          />
           <SwitchField
             data-settings-row="settings.voice.speech.readReplies.title"
             checked={speech().settings?.readReplies ?? false}

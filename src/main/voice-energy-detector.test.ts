@@ -1,7 +1,12 @@
 // @vitest-environment node
 
+import {
+  DEFAULT_ENERGY_OPTIONS,
+  EnergyDetector,
+  type EnergyEvent,
+  frameLoudness,
+} from "@openbot/contracts/voice-duplex";
 import { describe, expect, it } from "vitest";
-import { DEFAULT_ENERGY_OPTIONS, EnergyDetector, type EnergyEvent, frameLoudness } from "./voice-energy-detector";
 
 const loud = new Float32Array(160).fill(0.2);
 const quiet = new Float32Array(160).fill(0.001);

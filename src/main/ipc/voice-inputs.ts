@@ -18,10 +18,12 @@ import {
   type SpeechSettings,
   VOICE_API_KEY_MAX_LENGTH,
   VOICE_AUDIO_LIMITS,
+  VOICE_CHAT_LIMIT,
   VOICE_LIVE_LIMITS,
   VOICE_SERVER_LIMITS,
   VOICE_STREAM_LIMITS,
   type VoiceApiKeyInput,
+  type VoiceChatInput,
   type VoiceLiveStart,
   type VoiceLiveStop,
   type VoiceModelRequest,
@@ -179,6 +181,13 @@ export function parseSpeechInput(input: unknown): SpeechInput {
     throw new Error("Speech needs text and a known language.");
   if (input.text.length > SPEECH_LIMITS.maximumTextLength) throw new Error("The speech text is too long.");
   return { text: input.text, language: input.language };
+}
+
+export function parseVoiceChatInput(input: unknown): VoiceChatInput {
+  if (!isObject(input) || typeof input.text !== "string" || !input.text.trim())
+    throw new Error("Chat needs some text.");
+  if (input.text.length > VOICE_CHAT_LIMIT) throw new Error("The chat text is too long.");
+  return { text: input.text };
 }
 
 export function parseVoiceServerConnection(input: unknown): VoiceServerConnection {

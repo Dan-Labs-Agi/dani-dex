@@ -27,7 +27,7 @@ export async function recordingToSamples(recording: Blob): Promise<Float32Array>
   }
 }
 
-function encodePcmWav(samples: Float32Array, sampleRate: number): Uint8Array {
+export function encodePcmWav(samples: Float32Array, sampleRate: number): Uint8Array {
   const output = new Uint8Array(44 + samples.length * 2);
   const view = new DataView(output.buffer);
   writeAscii(output, 0, "RIFF");

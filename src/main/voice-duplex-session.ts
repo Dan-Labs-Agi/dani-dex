@@ -1,5 +1,5 @@
+import { DuplexPipeline, type DuplexState } from "@openbot/contracts/voice-duplex";
 import { type ChatFetch, type ChatStreamRequest, streamChat } from "./voice-chat-stream";
-import { DuplexPipeline, type DuplexState } from "./voice-duplex-pipeline";
 
 export interface DuplexSessionOptions {
   fetcher: ChatFetch;
