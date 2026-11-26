@@ -106,6 +106,37 @@ jobs:
         working-directory: mobile/apps/mobile
         run: bunx expo prebuild --platform android --non-interactive --no-install
 
+      # One private signing key for every build, so each build installs over the last one.
+      # The version goes up with every run, so the app sees that a newer build exists.
+      - name: Sign with the project key and set the version
+        working-directory: mobile/apps/mobile
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          KS_PW: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          RUN_NO: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          echo "$KS_B64" | base64 -d > android/app/dani.keystore
+          python3 - <<'PY'
+          import json, os, re
+          g = open("android/app/build.gradle").read()
+          g = g.replace("    signingConfigs {", "    signingConfigs {\n        dani {\n            storeFile file('dani.keystore')\n            storePassword System.getenv('KS_PW')\n            keyAlias 'dani'\n            keyPassword System.getenv('KS_PW')\n        }", 1)
+          i = g.index("release {", g.index("buildTypes"))
+          j = g.index("signingConfig signingConfigs.", i)
+          g = g[:j] + "signingConfig signingConfigs.dani" + g[g.index("\n", j):]
+          open("android/app/build.gradle", "w").write(g)
+          n = int(os.environ["RUN_NO"])
+          base = json.load(open("app.json"))["expo"]["version"].split(".")
+          version = f"{base[0]}.{base[1]}.{int(base[2]) + n}"
+          g = open("android/app/build.gradle").read()
+          g = re.sub(r"versionCode \d+", f"versionCode {1000 + n}", g)
+          g = re.sub(r'versionName "[^"]*"', f'versionName "{version}"', g)
+          open("android/app/build.gradle", "w").write(g)
+          open(os.environ["RUNNER_TEMP"] + "/version.txt", "w").write(version)
+          print("version", version, "code", 1000 + n)
+          PY
+          grep -n "dani.keystore\|signingConfig signingConfigs\|versionCode\|versionName" android/app/build.gradle
+
       # A test APK for phones people hold today: skip the x86 emulator ABIs.
       - name: Build the arm64 ABI only
         working-directory: mobile/apps/mobile/android
@@ -123,6 +154,8 @@ jobs:
       - name: Assemble the release APK
         working-directory: mobile/apps/mobile/android
         shell: bash
+        env:
+          KS_PW: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
           set -o pipefail
           ./gradlew assembleRelease --no-daemon --max-workers=1 --console=plain 2>&1 | tee "$RUNNER_TEMP/gradle.log"
@@ -157,6 +190,12 @@ jobs:
           src = os.environ["RUNNER_TEMP"] + "/dani-dex.apk"
           c.upload_file(src, os.environ["R2_BUCKET"], "android/dani-dex-new.apk", ExtraArgs={"ContentType": "application/vnd.android.package-archive"})
           print("uploaded android/dani-dex-new.apk")
+          import hashlib, json
+          data = open(src, "rb").read()
+          version = open(os.environ["RUNNER_TEMP"] + "/version.txt").read().strip()
+          meta = {"version": version, "size": len(data), "sha256": hashlib.sha256(data).hexdigest(), "apk": "https://dl.dani.danlab.dev/android/dani-dex-new.apk"}
+          c.put_object(Bucket=os.environ["R2_BUCKET"], Key="android/latest.json", Body=json.dumps(meta).encode(), ContentType="application/json", CacheControl="no-cache")
+          print("uploaded android/latest.json", meta)
           PY
           code=$(curl -s -o /dev/null -w '%{http_code}' "https://dl.dani.danlab.dev/android/dani-dex-new.apk")
           echo "https://dl.dani.danlab.dev/android/dani-dex-new.apk -> $code"
