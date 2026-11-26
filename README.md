@@ -7,15 +7,15 @@
 <br>
 <br>
 
-<a href="https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-x64.dmg"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-mac-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-mac-light.png"><img src="docs/assets/readme/btn-mac-light.png" width="210" alt="Download for Mac (Intel)"></picture></a>&nbsp;
-<a href="https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-arm64.dmg"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-macs-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-macs-light.png"><img src="docs/assets/readme/btn-macs-light.png" width="210" alt="Download for Mac (Apple silicon, M1 and newer)"></picture></a>&nbsp;
-<a href="https://dl.dani.danlab.dev/desktop/Dani-Dex-win-x64.exe"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-win-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-win-light.png"><img src="docs/assets/readme/btn-win-light.png" width="210" alt="Download for Windows (installer)"></picture></a>&nbsp;
+<a href="https://dani.danlab.dev/mac-intel"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-mac-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-mac-light.png"><img src="docs/assets/readme/btn-mac-light.png" width="210" alt="Download for Mac (Intel)"></picture></a>&nbsp;
+<a href="https://dani.danlab.dev/mac-silicon"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-macs-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-macs-light.png"><img src="docs/assets/readme/btn-macs-light.png" width="210" alt="Download for Mac (Apple silicon, M1 and newer)"></picture></a>&nbsp;
+<a href="https://dani.danlab.dev/windows"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-win-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-win-light.png"><img src="docs/assets/readme/btn-win-light.png" width="210" alt="Download for Windows (installer)"></picture></a>&nbsp;
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-lin-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-lin-light.png"><img src="docs/assets/readme/btn-lin-light.png" width="210" alt="Linux, coming soon"></picture>
 
-<a href="https://dl.dani.danlab.dev/android/dani-dex.apk"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-and-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-and-light.png"><img src="docs/assets/readme/btn-and-light.png" width="210" alt="Download for Android (APK)"></picture></a>&nbsp;
+<a href="https://dl.dani.danlab.dev/android/dani-dex-new.apk"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-and-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-and-light.png"><img src="docs/assets/readme/btn-and-light.png" width="210" alt="Download for Android (APK)"></picture></a>&nbsp;
 <picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/readme/btn-ios-dark.png"><source media="(prefers-color-scheme: light)" srcset="docs/assets/readme/btn-ios-light.png"><img src="docs/assets/readme/btn-ios-light.png" width="210" alt="iOS, coming soon"></picture>
 
-<sub>Not sure which Mac you have? Apple menu > About This Mac: "Chip Apple M..." means [Apple silicon](https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-arm64.dmg), "Intel" means [Intel](https://dl.dani.danlab.dev/desktop/Dani-Dex-mac-x64.dmg).</sub>
+<sub>Not sure which Mac you have? Apple menu > About This Mac: "Chip Apple M..." means [Apple silicon](https://dani.danlab.dev/mac-silicon), "Intel" means [Intel](https://dani.danlab.dev/mac-intel).</sub>
 
 <sub>Also: [Checksums and versions](https://dl.dani.danlab.dev/latest.json) · [All releases](https://github.com/Dan-Labs-Agi/dani-dex/releases)</sub>
 
