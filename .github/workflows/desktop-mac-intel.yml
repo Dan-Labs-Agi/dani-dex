@@ -78,11 +78,14 @@ jobs:
           set -uo pipefail
           APP=$(ls -d "$PWD"/dist/mac*/*.app | head -1)
           xattr -cr "$APP" || true
-          "$APP/Contents/MacOS/$(basename "$APP" .app)" --no-sandbox > dist/app-stdout.log 2>&1 &
+          "$APP/Contents/MacOS/$(basename "$APP" .app)" --no-sandbox --enable-logging=stderr --v=0 > dist/app-stdout.log 2>&1 &
           APPPID=$!
           sleep 30
           kill -0 $APPPID && echo "main process alive: $APPPID" || echo "main process exited"
+          export ELECTRON_ENABLE_LOGGING=1
           tail -40 dist/app-stdout.log || true
+          ls -t "$HOME/Library/Logs/DiagnosticReports/" 2>/dev/null | head -3
+          for f in $(ls -t "$HOME/Library/Logs/DiagnosticReports/"* 2>/dev/null | head -1); do head -c 3500 "$f"; grep -E '"(exception|termination|asi)"' -A6 "$f" | head -40; done
           pgrep -fl "$(basename "$APP" .app)" | head -5 | tee dist/launch-processes.txt
           screencapture -x dist/launch.png || true
           test -s dist/launch-processes.txt
