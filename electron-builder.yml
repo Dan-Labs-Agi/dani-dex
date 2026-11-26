@@ -113,15 +113,17 @@ mac:
   darkModeSupport: true
   extendInfo:
     CFBundleIconName: Icon
+    CFBundleName: Dani Dex
+    CFBundleDisplayName: Dani Dex
     ElectronTeamID: ZTRDTUL87R
-    NSMicrophoneUsageDescription: dani-dex uses the microphone to transcribe voice prompts locally on this Mac.
-    NSScreenCaptureUsageDescription: dani-dex captures the screen so an agent can see the app windows you ask it to control.
-    NSAppleEventsUsageDescription: dani-dex sends Automation events so an agent can control the apps you ask it to control.
-    NSCalendarsFullAccessUsageDescription: dani-dex lets the commands that an agent runs read and change your calendar events.
-    NSCalendarsWriteOnlyAccessUsageDescription: dani-dex lets the commands that an agent runs add events to your calendars.
-    NSCalendarsUsageDescription: dani-dex lets the commands that an agent runs use your calendars.
-    NSRemindersFullAccessUsageDescription: dani-dex lets the commands that an agent runs read and change your reminders.
-    NSRemindersUsageDescription: dani-dex lets the commands that an agent runs use your reminders.
+    NSMicrophoneUsageDescription: Dani Dex uses the microphone to transcribe voice prompts locally on this Mac.
+    NSScreenCaptureUsageDescription: Dani Dex captures the screen so an agent can see the app windows you ask it to control.
+    NSAppleEventsUsageDescription: Dani Dex sends Automation events so an agent can control the apps you ask it to control.
+    NSCalendarsFullAccessUsageDescription: Dani Dex lets the commands that an agent runs read and change your calendar events.
+    NSCalendarsWriteOnlyAccessUsageDescription: Dani Dex lets the commands that an agent runs add events to your calendars.
+    NSCalendarsUsageDescription: Dani Dex lets the commands that an agent runs use your calendars.
+    NSRemindersFullAccessUsageDescription: Dani Dex lets the commands that an agent runs read and change your reminders.
+    NSRemindersUsageDescription: Dani Dex lets the commands that an agent runs use your reminders.
     NSUserActivityTypes:
       - NSUserActivityTypeBrowsingWeb
   target:
