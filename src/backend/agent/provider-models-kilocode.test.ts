@@ -1,5 +1,6 @@
 // @vitest-environment node
 
+import { isFreeKilocodeModel } from "@openbot/contracts/agent-providers";
 import { describe, expect, it } from "vitest";
 import { BUILT_IN_PROVIDER_DRIVERS } from "../provider-drivers";
 import { modelsAfterKilocodeDiscoveryFailure, PREFERRED_MODEL_ORDER } from "./provider-models";
@@ -10,6 +11,13 @@ describe("KiloCode models in the model picker", () => {
     expect(models.length).toBeGreaterThan(0);
     expect(models.every((model) => model.provider === "kilocode")).toBe(true);
     expect(models.map((model) => model.id)).toContain("kilo/kilo-auto/free");
+  });
+
+  it("lists the real free KiloCode catalog, each one free and unique", () => {
+    const models = modelsAfterKilocodeDiscoveryFailure([]);
+    expect(models.length).toBeGreaterThanOrEqual(10);
+    expect(new Set(models.map((model) => model.id)).size).toBe(models.length);
+    expect(models.every((model) => isFreeKilocodeModel(model.id, model.name))).toBe(true);
   });
 
   it("keeps models already discovered", () => {
