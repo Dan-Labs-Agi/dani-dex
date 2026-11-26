@@ -135,6 +135,7 @@ import {
   type UpdateStatus,
   type VoiceLiveEvent,
   type VoiceLiveSession,
+  type VoiceChatReply,
   type VoiceModelStatus,
   type VoiceServerProbe,
   type VoiceServerSettings,
@@ -678,6 +679,10 @@ export function decodeSpeechAudio(value: unknown): SpeechAudio {
     throw new Error("Invalid speech audio.");
   }
   return { pcm, sampleRate };
+}
+
+export function decodeVoiceChatReply(value: unknown): VoiceChatReply {
+  return { text: requiredString(decodeRecord(value, "voice chat reply"), "text") };
 }
 
 export function decodeVoiceServerSettings(value: unknown): VoiceServerSettings | null {

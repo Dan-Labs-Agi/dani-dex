@@ -3,6 +3,7 @@ import type {
   SpeechAudio,
   SpeechModelStatus,
   SpeechSettings,
+  VoiceChatReply,
   VoiceLiveEvent,
   VoiceLiveSession,
   VoiceModelStatus,
@@ -26,6 +27,7 @@ import { liveVoiceOf } from "../live-voice-choice";
 import { acceptEmpty } from "../remote-host-decoding";
 import type { RemoteServerManager } from "../remote-server-manager";
 import { voiceLiveEventFromWire } from "../team-api/route-live-voice";
+import { OPENCODE_ZEN_URL, streamChat } from "../voice-chat-stream";
 import type { VoiceServerService } from "../voice-server-service";
 import type { VoiceSpeechService } from "../voice-speech-service";
 import type { VoiceTranscriptionService } from "../voice-transcription-service";
@@ -35,6 +37,7 @@ import { routeToServer } from "./route-to-server";
 import {
   parseSpeechApiKey,
   parseSpeechInput,
+  parseVoiceChatInput,
   parseSpeechSettings,
   parseVoiceApiKey,
   parseVoiceLiveStart,
@@ -48,6 +51,9 @@ import {
   parseVoiceStreamAudio,
   parseVoiceTranscription,
 } from "./voice-inputs";
+
+const VOICE_CHAT_MODEL = "mimo-v2.6-flash-free";
+const VOICE_CHAT_SYSTEM = "You are Dani, a voice assistant. Answer in one or two short spoken sentences.";
 
 export interface VoiceIpcDependencies {
   voice: VoiceTranscriptionService;
@@ -183,6 +189,20 @@ export function voiceIpcHandlers({
           runCauseEffect(server.speaks() ? server.speak(input.text) : speech.speak(input)),
       ),
       warmSpeech: handler((): Promise<void> => (server.speaks() ? Promise.resolve() : runCauseEffect(speech.warm()))),
+      chatReply: payloadHandler(parseVoiceChatInput, async ({ text }): Promise<VoiceChatReply> => {
+        const pieces: string[] = [];
+        for await (const piece of streamChat(fetch, {
+          url: OPENCODE_ZEN_URL,
+          key: "public",
+          model: VOICE_CHAT_MODEL,
+          system: VOICE_CHAT_SYSTEM,
+          user: text,
+          signal: AbortSignal.timeout(30_000),
+        })) {
+          pieces.push(piece);
+        }
+        return { text: pieces.join("").trim() };
+      }),
       keepRecording: payloadHandler(parseVoiceRecording, async ({ audio }): Promise<DraftAttachment> => {
         const [draft] = await runCauseEffect(service.prepareVoiceRecording(audio));
         if (!draft) throw new Error(sourceText("error.voice.recordingNotKept"));
