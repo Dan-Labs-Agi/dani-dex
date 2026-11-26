@@ -14,9 +14,9 @@ const updater = createMacDirectUpdater({
 });
 updater.on("download-progress", () => undefined);
 const checked = await updater.checkForUpdates();
-console.log("check:", JSON.stringify(checked));
+process.stdout.write(`check: ${JSON.stringify(checked)}\n`);
 if (!checked?.isUpdateAvailable) throw new Error("the feed did not offer a newer version");
 await updater.downloadUpdate();
-console.log("downloaded, installing");
+process.stdout.write("downloaded, installing\n");
 updater.quitAndInstall();
 await new Promise((resolve) => setTimeout(resolve, 10_000));
