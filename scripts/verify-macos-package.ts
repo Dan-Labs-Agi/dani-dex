@@ -114,7 +114,7 @@ await assertAbsent(
 
 const plist = JSON.parse(run("plutil", ["-convert", "json", "-o", "-", plistPath]));
 if (!isDynamicRecord(plist)) throw new Error("Info.plist is not a JSON object.");
-expectEqual(plist.CFBundleDisplayName, "dani-dex", "display name");
+expectEqual(plist.CFBundleDisplayName, "Dani Dex", "display name");
 expectEqual(plist.CFBundleExecutable, "dani-dex", "executable name");
 expectEqual(plist.CFBundleIdentifier, "app.openbot.desktop", "bundle identifier");
 expectEqual(plist.CFBundleIconFile, "icon.icns", "application icon");
