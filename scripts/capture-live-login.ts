@@ -284,6 +284,14 @@ await step("settings voice", async () => {
     await page.getByText(/Parakeet TDT/).first().click({ timeout: 3_000 }).catch(() => console.log("MISS dictation dropdown"));
     await page.waitForTimeout(800);
     await shot(page, "voice-dictation-model-list", 1_200);
+    {
+      const sc2 = await page.evaluate(() => window.innerWidth / 1429);
+      for (let k = 0; k < 3; k++) {
+        await page.mouse.move(1146 * sc2, 380 * sc2);
+        await page.mouse.wheel(0, 220);
+        await shot(page, `voice-dictation-list-scroll-${k + 1}`, 700);
+      }
+    }
     console.log("DICTATION TEXT", ((await page.evaluate(() => document.body?.innerText ?? "")) || "").slice(0, 1200).replace(/\n/g, " | "));
     await page.keyboard.press("Escape").catch(() => {});
   }
