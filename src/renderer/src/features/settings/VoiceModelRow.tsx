@@ -44,7 +44,16 @@ export const MODEL_DESCRIPTION = {
 
 export type ModelPlace = "local" | VoiceKeyProvider;
 
-const PLACE_ORDER: readonly ModelPlace[] = ["local", "elevenlabs", "groq", "xai", "cartesia", "fish", "gradium", "sarvam"];
+const PLACE_ORDER: readonly ModelPlace[] = [
+  "local",
+  "elevenlabs",
+  "groq",
+  "xai",
+  "cartesia",
+  "fish",
+  "gradium",
+  "sarvam",
+];
 
 export interface ModelChoice<Id extends string> {
   id: Id;
