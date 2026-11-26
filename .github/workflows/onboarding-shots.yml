@@ -27,9 +27,9 @@ jobs:
         run: |
           set -euo pipefail
           uname -m
-          gh run download 45732990664 -R "$GITHUB_REPOSITORY" -n mac-x64-45732990664 -D /tmp/art
-          shasum -a 256 /tmp/art/*.zip
-          ditto -x -k /tmp/art/dani-dex-0.76.1-x64.zip /tmp/inst
+          curl -fsSL -o /tmp/art.zip https://dl.dani.danlab.dev/desktop/dani-dex-0.76.2-x64.zip
+          shasum -a 512 /tmp/art.zip | cut -c1-20
+          ditto -x -k /tmp/art.zip /tmp/inst
           ls /tmp/inst
           xattr -cr /tmp/inst/*.app || true
       - name: Walk the onboarding
