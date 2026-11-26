@@ -2681,6 +2681,7 @@ export async function createApplicationServices({
   } else {
     providerRuntimes.startUpdateChecks();
   }
+  Effect.runFork(providerRuntimes.installDefaultRuntimes());
   providerRuntimes.on("ready", (runtime) => {
     if (isManagedToolRuntime(runtime)) Effect.runFork(service.refreshAllAgentRuntimes("after-background-work"));
   });

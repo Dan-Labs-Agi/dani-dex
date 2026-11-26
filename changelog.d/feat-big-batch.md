@@ -12,3 +12,5 @@
 ### Added
 
 - Invite friends now creates a personal link and code, and records friends who sign up with it. Free, no credit involved.
+
+- KiloCode and OpenCode now download in the background on first launch, so no manual install is needed.

@@ -723,6 +723,20 @@ export class ProviderRuntimeManager extends EventEmitter<ProviderRuntimeManagerE
     if (!isKeyOnlyProvider(provider)) return Effect.succeed(false);
     return this.#startMissingCli("pi");
   }
+  /** Downloads the free default runtimes in the background when they are missing. Safe to call every launch. */
+  installDefaultRuntimes(): Effect.Effect<void> {
+    return Effect.forEach(
+      AUTO_INSTALLED_RUNTIMES,
+      (runtime) =>
+        Effect.suspend(() => {
+          const status = this.#statuses[runtime];
+          const missing = status.phase === "not-downloaded" && status.version === null;
+          if (!missing || this.#systemVersions.has(runtime) || !this.#isProviderOn(runtime)) return Effect.void;
+          return this.download(runtime).pipe(Effect.ignore);
+        }),
+      { discard: true },
+    ).pipe(Effect.forkIn(this.#scope), Effect.asVoid);
+  }
   startCustomProviderHarness(harness: CustomProviderHarness): Effect.Effect<void> {
     if (!this.#isProviderOn(harness)) return Effect.void;
     return this.#startMissingCli(harness).pipe(Effect.ignore, Effect.forkIn(this.#scope), Effect.asVoid);
@@ -1451,6 +1465,9 @@ export class ProviderRuntimeManager extends EventEmitter<ProviderRuntimeManagerE
     }).pipe(Effect.catch(() => Effect.succeed(false)));
   }
 }
+
+/** Free runtimes every install gets without a manual download. */
+export const AUTO_INSTALLED_RUNTIMES = ["opencode", "kilocode"] as const satisfies readonly ManagedProviderId[];
 
 export function runtimeTarget(platform: NodeJS.Platform, architecture: string): RuntimeTarget | null {
   if (platform === "darwin" && architecture === "arm64") return "darwin-arm64";
