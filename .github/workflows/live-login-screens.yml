@@ -1,0 +1,53 @@
+name: Live login screenshots
+
+# Real run: fresh profile, live account service, Google sign-in completed through the handoff
+# branch, then every screen after login. Pushing to this branch starts it.
+
+on:
+  push:
+    branches:
+      - build/live-login
+
+permissions:
+  contents: write
+
+jobs:
+  shots:
+    name: Capture the live sign-in run
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up Bun and Node
+        uses: ./.github/actions/setup-bun
+
+      - name: Build the app
+        run: |
+          set -euo pipefail
+          bun run voice:prepare-runtime
+          bun run prepare:remote-desktop-runtime
+          bun run prepare:cua-driver
+          bun run build
+
+      - name: Browser opener stand-in
+        run: |
+          mkdir -p /tmp/xdgbin
+          printf '#!/bin/sh\necho "$1" > /tmp/auth-url.txt\n' > /tmp/xdgbin/xdg-open
+          chmod +x /tmp/xdgbin/xdg-open
+
+      - name: Run the live sign-in capture
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: xvfb-run -a --server-args="-screen 0 1600x900x24" bun scripts/capture-live-login.ts
+
+      - name: Save the screenshots
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: live-login-screens-${{ github.run_id }}
+          path: shots/
+          retention-days: 14
