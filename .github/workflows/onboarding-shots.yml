@@ -1,0 +1,47 @@
+name: Onboarding screenshots (Intel Mac)
+
+# Installs the Intel test build from a pre-release on an Intel Mac runner, opens it and saves a real
+# screenshot of each onboarding screen as an artifact. Publishes nothing.
+on:
+  push:
+    branches:
+      - build/onboarding-shots
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  shots:
+    runs-on: macos-15-intel
+    timeout-minutes: 30
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install the app from the test dmg
+        run: |
+          set -euo pipefail
+          uname -m
+          curl -fsSL -o /tmp/app.dmg "https://github.com/Dan-Labs-Agi/dani-dex/releases/download/desktop-test-intel-45732990664/Dani-Dex-mac-x64-test.dmg"
+          shasum -a 256 /tmp/app.dmg
+          hdiutil attach /tmp/app.dmg -mountpoint /tmp/vol -nobrowse -quiet
+          cp -R /tmp/vol/*.app /Applications/
+          hdiutil detach /tmp/vol -quiet
+          ls /Applications
+          xattr -cr /Applications/*.app || true
+      - name: Walk the onboarding
+        run: |
+          set -euo pipefail
+          npm init -y >/dev/null
+          npm i playwright-core >/dev/null 2>&1
+          APP=$(ls -d /Applications/dani-dex.app /Applications/*.app | head -1)
+          node scripts/onboarding-walk.mjs "$APP"
+      - name: Save
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: onboarding-shots
+          path: shots/
+          retention-days: 7
