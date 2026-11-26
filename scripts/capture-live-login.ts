@@ -236,8 +236,10 @@ await step("team starter", async () => {
   if ((await sec.count()) > 0) {
     await sec.scrollIntoViewIfNeeded().catch(() => {});
     await shot(page, "team-starter-top", 1_500);
-    await page.mouse.wheel(0, 700).catch(() => {});
-    await shot(page, "team-starter-scrolled", 1_500);
+    await page.getByText("Life admin crew", { exact: true }).first().scrollIntoViewIfNeeded().catch(() => {});
+    await shot(page, "team-starter-life-admin", 1_500);
+    await page.getByText("Research crew", { exact: true }).first().scrollIntoViewIfNeeded().catch(() => {});
+    await shot(page, "team-starter-research", 1_000);
     await sec.screenshot({ path: "shots/zz-team-starter-section.png" }).catch(() => {});
     console.log("TEAM SECTION", ((await sec.innerText().catch(() => "")) || "").slice(0, 600).replace(/\n/g, " | "));
   } else console.log("MISS team starter section");
@@ -276,12 +278,14 @@ await step("settings voice", async () => {
     await page.mouse.move(860, 450);
     await page.mouse.wheel(0, -4000);
     await page.waitForTimeout(500);
-    const dd = page.locator("main button, [role=combobox]").filter({ hasText: /Parakeet|Whisper|Cartesia|Gradium|Fish/i }).first();
-    if (await dd.click({ timeout: 3_000 }).then(() => true).catch(() => false)) {
-      await shot(page, "voice-dictation-model-list", 1_200);
-      console.log("DICTATION OPTIONS", ((await page.evaluate(() => document.body?.innerText ?? "")) || "").slice(0, 900).replace(/\n/g, " | "));
-      await page.keyboard.press("Escape").catch(() => {});
-    }
+    console.log("SELECTS", await page.locator("select").count());
+    const opts = await page.evaluate(() => Array.from(document.querySelectorAll("select option")).map((o) => (o as HTMLOptionElement).textContent));
+    console.log("SELECT OPTIONS", JSON.stringify(opts).slice(0, 1500));
+    await page.getByText(/Parakeet TDT/).first().click({ timeout: 3_000 }).catch(() => console.log("MISS dictation dropdown"));
+    await page.waitForTimeout(800);
+    await shot(page, "voice-dictation-model-list", 1_200);
+    console.log("DICTATION TEXT", ((await page.evaluate(() => document.body?.innerText ?? "")) || "").slice(0, 1200).replace(/\n/g, " | "));
+    await page.keyboard.press("Escape").catch(() => {});
   }
 });
 await step("settings billing and invite", async () => {
@@ -318,6 +322,16 @@ await step("model picker kilo", async () => {
     if ((await search.count()) > 0) {
       await search.fill("kilo").catch(() => {});
       await shot(page, "model-picker-kilo-search", 2_000);
+      await search.fill("").catch(() => {});
+    }
+    const sc = await page.evaluate(() => window.innerWidth / 1429);
+    await page.mouse.click(1042 * sc, 98 * sc);
+    await page.waitForTimeout(1_500);
+    await shot(page, "model-picker-kilo-tab", 2_000);
+    const s2 = page.locator('input[placeholder*="earch" i]').first();
+    if ((await s2.count()) > 0) {
+      await s2.fill("kilo").catch(() => {});
+      await shot(page, "model-picker-kilo-tab-search", 1_500);
     }
   }
 });
