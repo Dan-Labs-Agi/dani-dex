@@ -293,10 +293,100 @@ export default {
         .run();
       return json({ version });
     }
-    // Marketplace catalogs: no public listings yet, so reads return empty pages instead of an error.
-    if (req.method === "GET" && /^\/v1\/marketplace\/agents\/?$/.test(p)) return json({ agents: [], nextCursor: null });
-    if (req.method === "GET" && /^\/v1\/skills\/?$/.test(p)) return json({ skills: [], nextCursor: null });
+    // Marketplace catalog: launch Skills and Agents served from the account database.
     if (req.method === "GET" && (p === "/v1/marketplace/agents/mine" || p === "/v1/skills/mine")) return json([]);
+    const catalog = await catalogRoute(req, env, p);
+    if (catalog) return catalog;
     return json({ error: "not_found" }, 404);
   },
 };
+
+type CatalogRow = {
+  id: string;
+  kind: string;
+  slug: string;
+  version_id: string;
+  name: string;
+  description: string;
+  category: string;
+  featured: number;
+  installs: number;
+  updated_at: number;
+  summary: string;
+  detail: string;
+};
+
+async function catalogBlob(env: Env, id: string, kind: string): Promise<Uint8Array | null> {
+  const rows = await env.DB.prepare("SELECT data FROM catalog_blobs WHERE id = ? AND kind = ? ORDER BY part")
+    .bind(id, kind)
+    .all<{ data: string }>();
+  if (!rows.results.length) return null;
+  const bin = atob(rows.results.map((r) => r.data).join(""));
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+async function catalogRoute(req: Request, env: Env, p: string): Promise<Response | null> {
+  const agents = p.startsWith("/v1/marketplace/agents/");
+  const skills = p.startsWith("/v1/skills");
+  if (!agents && !skills) return null;
+  const kind = agents ? "agent" : "skill";
+  const base = agents ? "/v1/marketplace/agents" : "/v1/skills";
+  const rest = p.slice(base.length).replace(/^\/+/, "").replace(/\/+$/, "");
+  const url = new URL(req.url);
+  const get = req.method === "GET";
+  if (get && rest === "") {
+    const q = (url.searchParams.get("query") ?? "").trim().toLowerCase();
+    const category = url.searchParams.get("category");
+    const featured = url.searchParams.get("featured") === "true";
+    const sort = url.searchParams.get("sort");
+    const limit = Math.min(Math.max(Number(url.searchParams.get("limit")) || 24, 1), 60);
+    const offset = Math.max(Number(url.searchParams.get("cursor")) || 0, 0);
+    const all = await env.DB.prepare("SELECT * FROM catalog_items WHERE kind = ?").bind(kind).all<CatalogRow>();
+    const rows = all.results.filter(
+      (r) =>
+        (!q || `${r.name} ${r.description}`.toLowerCase().includes(q) || "dani dex".includes(q)) &&
+        (!category || r.category === category) &&
+        (!featured || r.featured === 1),
+    );
+    rows.sort((a, b) =>
+      sort === "installs"
+        ? b.installs - a.installs || a.name.localeCompare(b.name)
+        : b.featured - a.featured || a.name.localeCompare(b.name),
+    );
+    const page = rows.slice(offset, offset + limit).map((r) => JSON.parse(r.summary));
+    const next = offset + limit < rows.length ? String(offset + limit) : null;
+    return json(agents ? { agents: page, nextCursor: next } : { skills: page, nextCursor: next });
+  }
+  const m = rest.match(/^(slug\/)?([^/]+)(?:\/(listing|icon|content|install|versions\/[^/]+(?:\/content)?))?$/);
+  if (!m) return null;
+  const bySlug = !!m[1];
+  const key = decodeURIComponent(m[2] ?? "");
+  const row = await env.DB.prepare(`SELECT * FROM catalog_items WHERE kind = ? AND ${bySlug ? "slug" : "id"} = ?`)
+    .bind(kind, key)
+    .first<CatalogRow>();
+  if (!row)
+    return json({ error: { code: agents ? "agent_not_found" : "skill_not_found", message: "Not found." } }, 404);
+  const sub = m[3];
+  if (get && !sub) return json(JSON.parse(row.detail));
+  if (get && agents && sub === "listing") return json(JSON.parse(row.detail));
+  if (get && skills && sub === "icon") {
+    const bytes = await catalogBlob(env, row.id, "icon");
+    return bytes
+      ? new Response(bytes, { headers: { "content-type": "image/svg+xml", "cache-control": "public, max-age=86400" } })
+      : json({ error: "not_found" }, 404);
+  }
+  if (get && skills && (sub === "content" || sub?.startsWith("versions/"))) {
+    if (sub.startsWith("versions/") && sub.split("/")[1] !== row.version_id) return json({ error: "not_found" }, 404);
+    const bytes = await catalogBlob(env, row.id, "zip");
+    return bytes
+      ? new Response(bytes, { headers: { "content-type": "application/zip" } })
+      : json({ error: "not_found" }, 404);
+  }
+  if (req.method === "POST" && sub === "install") {
+    await env.DB.prepare("UPDATE catalog_items SET installs = installs + 1 WHERE id = ?").bind(row.id).run();
+    return json({ installed: true });
+  }
+  return null;
+}
