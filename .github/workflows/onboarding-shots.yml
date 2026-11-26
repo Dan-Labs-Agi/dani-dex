@@ -1,6 +1,6 @@
 name: Onboarding screenshots (Intel Mac)
 
-# Installs the Intel test build from a pre-release on an Intel Mac runner, opens it and saves a real
+# Installs the Intel test build from an earlier run artifact on an Intel Mac runner, opens it and saves a real
 # screenshot of each onboarding screen as an artifact. Publishes nothing.
 on:
   push:
@@ -10,6 +10,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
   shots:
@@ -20,23 +21,23 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Install the app from the test dmg
+      - name: Install the app from the Intel test zip
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           uname -m
-          curl -fsSL -o /tmp/app.dmg "https://github.com/Dan-Labs-Agi/dani-dex/releases/download/desktop-test-intel-45732990664/Dani-Dex-mac-x64-test.dmg"
-          shasum -a 256 /tmp/app.dmg
-          hdiutil attach /tmp/app.dmg -mountpoint /tmp/vol -nobrowse -quiet
-          cp -R /tmp/vol/*.app /Applications/
-          hdiutil detach /tmp/vol -quiet
-          ls /Applications
-          xattr -cr /Applications/*.app || true
+          gh run download 45732990664 -R "$GITHUB_REPOSITORY" -n mac-x64-45732990664 -D /tmp/art
+          shasum -a 256 /tmp/art/*.zip
+          ditto -x -k /tmp/art/dani-dex-0.76.1-x64.zip /tmp/inst
+          ls /tmp/inst
+          xattr -cr /tmp/inst/*.app || true
       - name: Walk the onboarding
         run: |
           set -euo pipefail
           npm init -y >/dev/null
           npm i playwright-core >/dev/null 2>&1
-          APP=$(ls -d /Applications/dani-dex.app /Applications/*.app | head -1)
+          APP=$(ls -d /tmp/inst/*.app | head -1)
           node scripts/onboarding-walk.mjs "$APP"
       - name: Save
         if: always()
