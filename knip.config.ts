@@ -82,6 +82,9 @@ const config: KnipConfig = {
       project: ["src/**/*.{ts,tsx,css}", "test/**/*.ts", "scripts/**/*.ts", "*.ts"],
       ignoreDependencies: ["cloudflare"],
     },
+    "apps/dani-account": {
+      entry: ["scripts/*.ts"],
+    },
     "apps/site-router": {
       project: ["src/**/*.ts"],
     },
