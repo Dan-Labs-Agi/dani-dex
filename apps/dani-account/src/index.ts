@@ -8,6 +8,7 @@ import { freeAccountState } from "./free-state";
 import { PRIVACY_HTML, TERMS_HTML } from "./legal";
 import { recordReferral, referralState } from "./referrals";
 import { handleRemote, type REnv, SignalRoom } from "./remote";
+import { handleRemoteInvites } from "./remote-invites";
 
 export { SignalRoom };
 export interface Env extends REnv {
@@ -246,6 +247,8 @@ export default {
     const bearer = (req.headers.get("authorization") || "").slice(7);
     const rr = await handleRemote(req, env, url, uid, bearer);
     if (rr) return rr;
+    const invites = await handleRemoteInvites(req, env, url, uid);
+    if (invites) return invites;
     if (!uid) return apiError(401, "unauthorized", "Sign in to continue.");
 
     if (p === "/v1/me") {
