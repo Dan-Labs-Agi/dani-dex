@@ -4,6 +4,7 @@
 // Secrets and provider tokens are never synced: kinds below are the only accepted ones.
 
 import { emailStart, emailVerify } from "./emailcode";
+import { freeAccountState } from "./free-state";
 import { PRIVACY_HTML, TERMS_HTML } from "./legal";
 import { handleRemote, type REnv, SignalRoom } from "./remote";
 
@@ -293,6 +294,8 @@ export default {
         .run();
       return json({ version });
     }
+    const free = freeAccountState(p, req.method);
+    if (free) return json(free);
     // Marketplace catalog: launch Skills and Agents served from the account database.
     if (req.method === "GET" && (p === "/v1/marketplace/agents/mine" || p === "/v1/skills/mine")) return json([]);
     const catalog = await catalogRoute(req, env, p);
