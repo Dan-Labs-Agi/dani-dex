@@ -184,7 +184,8 @@ export function parseSpeechInput(input: unknown): SpeechInput {
 }
 
 export function parseVoiceChatInput(input: unknown): VoiceChatInput {
-  if (!isObject(input) || typeof input.text !== "string" || !input.text.trim()) throw new Error("Chat needs some text.");
+  if (!isObject(input) || typeof input.text !== "string" || !input.text.trim())
+    throw new Error("Chat needs some text.");
   if (input.text.length > VOICE_CHAT_LIMIT) throw new Error("The chat text is too long.");
   return { text: input.text };
 }
