@@ -190,6 +190,8 @@ jobs:
           src = os.environ["RUNNER_TEMP"] + "/dani-dex.apk"
           c.upload_file(src, os.environ["R2_BUCKET"], "android/dani-dex-new.apk", ExtraArgs={"ContentType": "application/vnd.android.package-archive"})
           print("uploaded android/dani-dex-new.apk")
+          c.upload_file(src, os.environ["R2_BUCKET"], "android/dani-dex.apk", ExtraArgs={"ContentType": "application/vnd.android.package-archive"})
+          print("uploaded android/dani-dex.apk")
           import hashlib, json
           data = open(src, "rb").read()
           version = open(os.environ["RUNNER_TEMP"] + "/version.txt").read().strip()
