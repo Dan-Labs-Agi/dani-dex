@@ -65,6 +65,20 @@ export function createDisabledUpdateAdapter(): UpdateAdapter {
 
 export async function loadElectronUpdater(): Promise<UpdateAdapter | null> {
   try {
+    if (process.platform === "darwin") {
+      const { app } = await import("electron");
+      const bundlePath = join(app.getPath("exe"), "..", "..", "..");
+      const direct = await import("./mac-direct-updater");
+      if (app.isPackaged && !direct.isDeveloperIdSigned(bundlePath)) {
+        return direct.createMacDirectUpdater({
+          currentVersion: app.getVersion(),
+          bundlePath,
+          feedBase: "https://dl.dani.danlab.dev/desktop/",
+          arch: process.arch,
+          quit: () => app.quit(),
+        });
+      }
+    }
     const updaterModule = await import("electron-updater");
     const adapter = updaterModule.autoUpdater ?? updaterModule.default?.autoUpdater ?? updaterModule.default;
     const NsisUpdater = updaterModule.NsisUpdater ?? updaterModule.default?.NsisUpdater;

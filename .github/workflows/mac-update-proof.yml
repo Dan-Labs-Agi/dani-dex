@@ -1,0 +1,82 @@
+name: Mac update proof
+
+# Takes the live Mac app as the old build, serves a newer build from a local feed, runs the update
+# steps, and checks that the installed app became the newer version and opens. It publishes nothing.
+on:
+  push:
+    branches:
+      - feat/mac-direct-update
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  proof:
+    name: Old build updates to the new build
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Install the live app as the old build
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/Applications" "$RUNNER_TEMP/feed"
+          curl -fsSL -o "$RUNNER_TEMP/old.zip" https://dl.dani.danlab.dev/desktop/dani-dex-0.76.1-arm64.zip
+          ditto -x -k "$RUNNER_TEMP/old.zip" "$HOME/Applications"
+          APP="$HOME/Applications/dani-dex.app"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Contents/Info.plist"
+          echo "--- signature of the old build"
+          codesign -dv --verbose=2 "$APP" 2>&1 | grep -E "Signature|TeamIdentifier|Identifier|flags" || true
+          codesign -d -r- "$APP" 2>&1 | tail -2 || true
+
+      - name: Make a newer build and a feed for it
+        run: |
+          set -euo pipefail
+          APP="$HOME/Applications/dani-dex.app"
+          NEWROOT="$RUNNER_TEMP/new"; mkdir -p "$NEWROOT"
+          ditto "$APP" "$NEWROOT/dani-dex.app"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString 0.76.99" -c "Set :CFBundleVersion 0.76.99" "$NEWROOT/dani-dex.app/Contents/Info.plist"
+          codesign --force --deep -s - "$NEWROOT/dani-dex.app"
+          (cd "$NEWROOT" && ditto -c -k --sequesterRsrc --keepParent dani-dex.app "$RUNNER_TEMP/feed/dani-dex-0.76.99-arm64.zip")
+          SHA=$(openssl dgst -sha512 -binary "$RUNNER_TEMP/feed/dani-dex-0.76.99-arm64.zip" | openssl base64 -A)
+          SIZE=$(stat -f%z "$RUNNER_TEMP/feed/dani-dex-0.76.99-arm64.zip")
+          printf "version: 0.76.99\nfiles:\n  - url: dani-dex-0.76.99-arm64.zip\n    sha512: %s\n    size: %s\npath: dani-dex-0.76.99-arm64.zip\nsha512: %s\nreleaseDate: '2026-11-26T00:00:00.000Z'\n" "$SHA" "$SIZE" "$SHA" > "$RUNNER_TEMP/feed/latest-mac.yml"
+          cat "$RUNNER_TEMP/feed/latest-mac.yml"
+          (cd "$RUNNER_TEMP/feed" && nohup python3 -m http.server 8099 > "$RUNNER_TEMP/feed.log" 2>&1 &)
+          sleep 2; curl -fsS http://127.0.0.1:8099/latest-mac.yml | head -2
+
+      - name: Run the update
+        run: |
+          set -euo pipefail
+          bun scripts/mac-direct-update-e2e.ts http://127.0.0.1:8099/ "$HOME/Applications/dani-dex.app" 0.76.1
+          sleep 15
+
+      - name: Check the installed app is the newer build and opens
+        run: |
+          set -uo pipefail
+          APP="$HOME/Applications/dani-dex.app"
+          V=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$APP/Contents/Info.plist")
+          echo "installed version: $V"
+          ls -d "$HOME/Applications/"*
+          sleep 10
+          pgrep -fl "dani-dex" | head -3 | tee "$RUNNER_TEMP/proc.txt" || true
+          screencapture -x "$RUNNER_TEMP/proof.png" || true
+          test "$V" = "0.76.99"
+          test -s "$RUNNER_TEMP/proc.txt"
+
+      - name: Save the screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-update-proof
+          path: ${{ runner.temp }}/proof.png
+          if-no-files-found: ignore
