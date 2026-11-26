@@ -85,35 +85,33 @@ export const DEFAULT_CLOUD_VOICE: CloudVoiceOptions = {
 
 const VOICE_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/u;
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
+function field(value: unknown, key: string): unknown {
+  return typeof value === "object" && value !== null && !Array.isArray(value) ? Reflect.get(value, key) : undefined;
 }
 
 function normalizeChoice(provider: CloudVoiceProvider, value: unknown): CloudVoiceChoice {
   const fallback = DEFAULT_CLOUD_VOICE[provider];
-  if (!isRecord(value)) return { ...fallback };
   const catalog = CLOUD_VOICE_CATALOG[provider];
-  const model = catalog.models.some((item) => item.id === value.model) ? String(value.model) : fallback.model;
+  const rawModel = field(value, "model");
+  const rawVoice = field(value, "voice");
+  const model = catalog.models.find((item) => item.id === rawModel)?.id ?? fallback.model;
   const voice =
-    typeof value.voice === "string" && (value.voice === "" || VOICE_ID_PATTERN.test(value.voice))
-      ? value.voice
-      : fallback.voice;
-  const speed = catalog.speeds.find((item) => item === value.speed) ?? fallback.speed;
+    typeof rawVoice === "string" && (rawVoice === "" || VOICE_ID_PATTERN.test(rawVoice)) ? rawVoice : fallback.voice;
+  const speed = catalog.speeds.find((item) => item === field(value, "speed")) ?? fallback.speed;
   return { model, voice, speed };
 }
 
 /** Never throws: anything unknown falls back to the provider default, so old settings files keep loading. */
 export function normalizeCloudVoice(value: unknown): CloudVoiceOptions {
-  const source = isRecord(value) ? value : {};
   return {
-    cartesia: normalizeChoice("cartesia", source.cartesia),
-    fish: normalizeChoice("fish", source.fish),
-    gradium: normalizeChoice("gradium", source.gradium),
+    cartesia: normalizeChoice("cartesia", field(value, "cartesia")),
+    fish: normalizeChoice("fish", field(value, "fish")),
+    gradium: normalizeChoice("gradium", field(value, "gradium")),
   };
 }
 
 export function isCloudVoiceProvider(value: string): value is CloudVoiceProvider {
-  return (CLOUD_VOICE_PROVIDERS as readonly string[]).includes(value);
+  return CLOUD_VOICE_PROVIDERS.some((provider) => provider === value);
 }
 
 /** Gradium has no speed field: a negative padding_bonus speaks faster (range -4 to 4). */

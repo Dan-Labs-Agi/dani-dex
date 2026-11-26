@@ -271,13 +271,9 @@ export function SettingsVoiceTab(props: SettingsVoiceTabProps) {
     return id ? props.store.state.statuses[id]?.phase === "ready" : false;
   };
   const saveCloudKey = (provider: DictationKeyProvider, key: string) =>
-    provider === "groq"
-      ? props.store.saveDictationApiKey(provider, key)
-      : props.store.saveSpeechApiKey(provider, key);
+    provider === "groq" ? props.store.saveDictationApiKey(provider, key) : props.store.saveSpeechApiKey(provider, key);
   const removeCloudKey = (provider: DictationKeyProvider) =>
-    void (provider === "groq"
-      ? props.store.removeDictationApiKey(provider)
-      : props.store.removeSpeechApiKey(provider));
+    void (provider === "groq" ? props.store.removeDictationApiKey(provider) : props.store.removeSpeechApiKey(provider));
   const dictationChoices = createMemo((): ModelChoice<VoiceModelId>[] =>
     shownModels().map((model) => ({
       id: model.id,

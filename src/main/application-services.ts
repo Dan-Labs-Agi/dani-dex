@@ -2079,7 +2079,10 @@ export async function createApplicationServices({
         if (voiceServer.dictates()) return voiceServer.transcribe(audio, voice.getSettings().language);
         return voice.getModelStatus().pipe(
           Effect.flatMap((status) =>
-            status.phase === "ready" && (isLocalVoiceModelId(status.modelId) || isGroqVoiceModelId(status.modelId) || isRestVoiceModelId(status.modelId))
+            status.phase === "ready" &&
+            (isLocalVoiceModelId(status.modelId) ||
+              isGroqVoiceModelId(status.modelId) ||
+              isRestVoiceModelId(status.modelId))
               ? voice.transcribe(audio)
               : Effect.fail(
                   new VoiceOperationError({

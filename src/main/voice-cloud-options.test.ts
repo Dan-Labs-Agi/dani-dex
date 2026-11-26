@@ -1,6 +1,5 @@
 // @vitest-environment node
 
-import { Effect } from "effect";
 import { cloudSpeechModel } from "@openbot/contracts/ipc";
 import {
   CLOUD_VOICE_CATALOG,
@@ -8,14 +7,28 @@ import {
   gradiumPaddingBonus,
   normalizeCloudVoice,
 } from "@openbot/contracts/voice-providers";
+import { Effect } from "effect";
 import { describe, expect, it } from "vitest";
 import { speakInCloud } from "./voice-cloud-speech";
 
 function capture() {
-  const calls: Array<{ url: string; headers: Record<string, string>; body: Record<string, unknown> }> = [];
+  interface Sent {
+    url: string;
+    headers: Record<string, string>;
+    body: {
+      model_id?: string;
+      voice_id?: string;
+      generation_config?: object;
+      prosody?: object;
+      reference_id?: string;
+      json_config?: object;
+    };
+  }
+  const calls: Sent[] = [];
   const fetcher = async (input: string | URL | Request, init?: RequestInit) => {
     calls.push({
       url: String(input),
+      // biome-ignore lint/nursery/noUnsafeTypeAssertion: the code under test always passes a plain header object
       headers: init?.headers as Record<string, string>,
       body: JSON.parse(String(init?.body)),
     });

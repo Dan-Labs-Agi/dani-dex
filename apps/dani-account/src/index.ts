@@ -5,8 +5,8 @@
 
 import { emailStart, emailVerify } from "./emailcode";
 import { freeAccountState } from "./free-state";
-import { recordReferral, referralState } from "./referrals";
 import { PRIVACY_HTML, TERMS_HTML } from "./legal";
+import { recordReferral, referralState } from "./referrals";
 import { handleRemote, type REnv, SignalRoom } from "./remote";
 
 export { SignalRoom };

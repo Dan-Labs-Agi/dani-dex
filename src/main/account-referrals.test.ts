@@ -30,9 +30,12 @@ function database(): ReferralDb {
       return {
         bind(...values: unknown[]) {
           const statement = sqlite.prepare(sql);
+          // biome-ignore lint/nursery/noUnsafeTypeAssertion: test double over node:sqlite
           const args = values as never[];
           return {
+            // biome-ignore lint/nursery/noUnsafeTypeAssertion: test double over node:sqlite
             first: async <T>() => (statement.get(...args) as T | undefined) ?? null,
+            // biome-ignore lint/nursery/noUnsafeTypeAssertion: test double over node:sqlite
             all: async <T>() => ({ results: statement.all(...args) as T[] }),
             run: async () => ({ meta: { changes: Number(statement.run(...args).changes) } }),
           };

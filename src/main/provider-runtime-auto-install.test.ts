@@ -3,7 +3,7 @@
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { runCauseEffect } from "../backend/effect-boundary";
 import { AUTO_INSTALLED_RUNTIMES, ProviderRuntimeManager } from "./provider-runtime-manager";
 
@@ -40,8 +40,7 @@ describe("default runtime install", () => {
     });
     await runCauseEffect(manager.initialize());
     await runCauseEffect(manager.installDefaultRuntimes());
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    expect(started.has("kilocode")).toBe(true);
+    await vi.waitFor(() => expect(started.has("kilocode")).toBe(true));
     expect(started.has("opencode")).toBe(false);
   });
 });

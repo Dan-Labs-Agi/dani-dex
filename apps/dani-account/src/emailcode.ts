@@ -11,6 +11,7 @@ export interface EmailEnv {
 }
 type Json = (b: unknown, s?: number) => Response;
 type Err = (s: number, c: string, m: string) => Response;
+
 import { recordReferral } from "./referrals";
 
 const enc = new TextEncoder();

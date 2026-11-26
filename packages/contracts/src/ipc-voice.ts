@@ -1,6 +1,6 @@
 import { isBoundedString } from "./ipc-bounded-values";
-import { type CloudVoiceOptions, DEFAULT_CLOUD_VOICE } from "./voice-providers";
 import { isBoolean, isDynamicRecord, isNumber, isOneOf, isString } from "./runtime-values";
+import { type CloudVoiceOptions, DEFAULT_CLOUD_VOICE } from "./voice-providers";
 
 export const VOICE_AUDIO_LIMITS = {
   sampleRate: 16_000,
