@@ -73,94 +73,104 @@ export function SettingsMobileConnectTab(props: SettingsMobileConnectTabProps) {
     </Button>
   );
   return (
-    <SettingsSection
-      title={t("settings.mobileConnect.phones.title")}
-      description={t("settings.mobileConnect.phones.description")}
-      actions={
-        <>
-          <Show when={props.store.state.devices.loading}>
-            <Text as="span" variant="caption" tone="muted" role="status">
-              {t("settings.mobileConnect.devices.refreshing")}
+    <>
+      <SettingsSection
+        title={t("settings.mobileConnect.phones.title")}
+        description={t("settings.mobileConnect.phones.description")}
+        actions={
+          <>
+            <Show when={props.store.state.devices.loading}>
+              <Text as="span" variant="caption" tone="muted" role="status">
+                {t("settings.mobileConnect.devices.refreshing")}
+              </Text>
+            </Show>
+            <RouteChip store={props.store} disabled={!props.canSetRoute} />
+            <Show when={devices().length > 0}>{addButton()}</Show>
+          </>
+        }
+      >
+        <Show when={props.store.state.route.error}>
+          {(error) => (
+            <Text class="settings-modal-error" variant="caption" role="alert">
+              {error()}
             </Text>
+          )}
+        </Show>
+        <div class="settings-mobile-phones" data-settings-row="settings.mobileConnect.phones.title">
+          <Show when={devices().length === 0}>
+            <div class="settings-mobile-phones-empty">
+              <span class="settings-mobile-phones-empty-icon" aria-hidden="true">
+                <Smartphone />
+              </span>
+              <Text variant="body" class="settings-mobile-phones-empty-title">
+                {t("settings.mobileConnect.phones.empty.title")}
+              </Text>
+              <Text variant="caption" tone="muted">
+                {t("settings.mobileConnect.phones.empty.description")}
+              </Text>
+              {addButton()}
+            </div>
           </Show>
-          <RouteChip store={props.store} disabled={!props.canSetRoute} />
-          <Show when={devices().length > 0}>{addButton()}</Show>
-        </>
-      }
-    >
-      <Show when={props.store.state.route.error}>
-        {(error) => (
-          <Text class="settings-modal-error" variant="caption" role="alert">
-            {error()}
-          </Text>
-        )}
-      </Show>
-      <div class="settings-mobile-phones" data-settings-row="settings.mobileConnect.phones.title">
-        <Show when={devices().length === 0}>
-          <div class="settings-mobile-phones-empty">
-            <span class="settings-mobile-phones-empty-icon" aria-hidden="true">
-              <Smartphone />
-            </span>
-            <Text variant="body" class="settings-mobile-phones-empty-title">
-              {t("settings.mobileConnect.phones.empty.title")}
+          <For each={devices()}>
+            {(device) => <PhoneCard store={props.store} device={device} canRevoke={props.canRevokeDevice} />}
+          </For>
+          <Show when={props.canManageLink}>
+            <LinkCard store={props.store} onOpen={() => setLinkOpen(true)} />
+          </Show>
+        </div>
+        <Show when={props.store.state.devices.error}>
+          {(error) => (
+            <Text class="settings-modal-error" variant="caption" role="alert">
+              {error()}
             </Text>
-            <Text variant="caption" tone="muted">
-              {t("settings.mobileConnect.phones.empty.description")}
-            </Text>
-            {addButton()}
-          </div>
+          )}
         </Show>
-        <For each={devices()}>
-          {(device) => <PhoneCard store={props.store} device={device} canRevoke={props.canRevokeDevice} />}
-        </For>
-        <Show when={props.canManageLink}>
-          <LinkCard store={props.store} onOpen={() => setLinkOpen(true)} />
-        </Show>
-      </div>
-      <Show when={props.store.state.devices.error}>
-        {(error) => (
-          <Text class="settings-modal-error" variant="caption" role="alert">
-            {error()}
+        <Show when={devices().length > 0}>
+          <Text variant="caption" tone="muted">
+            {t("settings.mobileConnect.disconnectInfo.description")}
           </Text>
-        )}
-      </Show>
-      <Show when={devices().length > 0}>
-        <Text variant="caption" tone="muted">
-          {t("settings.mobileConnect.disconnectInfo.description")}
-        </Text>
-      </Show>
+        </Show>
 
-      <MobileConnectAddPhoneDialog
-        open={adding()}
-        store={props.store}
-        canCancelTicket={props.canCancelTicket}
-        installRequest={dialogInstallRequest()}
-        onClose={() => setAdding(false)}
-      />
-      <Show when={props.canManageLink}>
-        <MobileConnectLinkDialog open={linkOpen()} store={props.store} onClose={() => setLinkOpen(false)} />
-        <ConfirmDialog
-          open={props.store.state.link.confirm === "replace"}
-          onCancel={() => props.store.setLinkConfirm(null)}
-          onConfirm={async () => {
-            await props.store.createLink();
-            if (props.store.state.link.revealed) setLinkOpen(true);
-          }}
-          tone="default"
-          title={t("settings.mobileConnect.link.replaceConfirm.title")}
-          description={t("settings.mobileConnect.link.confirm.description")}
-          confirmLabel={t("settings.mobileConnect.link.replace")}
+        <MobileConnectAddPhoneDialog
+          open={adding()}
+          store={props.store}
+          canCancelTicket={props.canCancelTicket}
+          installRequest={dialogInstallRequest()}
+          onClose={() => setAdding(false)}
         />
-        <ConfirmDialog
-          open={props.store.state.link.confirm === "revoke"}
-          onCancel={() => props.store.setLinkConfirm(null)}
-          onConfirm={() => props.store.revokeLink()}
-          title={t("settings.mobileConnect.link.revokeConfirm.title")}
-          description={t("settings.mobileConnect.link.revokeConfirm.description")}
-          confirmLabel={t("settings.mobileConnect.link.revoke")}
-        />
-      </Show>
-    </SettingsSection>
+        <Show when={props.canManageLink}>
+          <MobileConnectLinkDialog open={linkOpen()} store={props.store} onClose={() => setLinkOpen(false)} />
+          <ConfirmDialog
+            open={props.store.state.link.confirm === "replace"}
+            onCancel={() => props.store.setLinkConfirm(null)}
+            onConfirm={async () => {
+              await props.store.createLink();
+              if (props.store.state.link.revealed) setLinkOpen(true);
+            }}
+            tone="default"
+            title={t("settings.mobileConnect.link.replaceConfirm.title")}
+            description={t("settings.mobileConnect.link.confirm.description")}
+            confirmLabel={t("settings.mobileConnect.link.replace")}
+          />
+          <ConfirmDialog
+            open={props.store.state.link.confirm === "revoke"}
+            onCancel={() => props.store.setLinkConfirm(null)}
+            onConfirm={() => props.store.revokeLink()}
+            title={t("settings.mobileConnect.link.revokeConfirm.title")}
+            description={t("settings.mobileConnect.link.revokeConfirm.description")}
+            confirmLabel={t("settings.mobileConnect.link.revoke")}
+          />
+        </Show>
+      </SettingsSection>
+      <SettingsSection
+        title={t("settings.mobileConnect.glasses.title")}
+        description={t("settings.mobileConnect.glasses.description")}
+      >
+        <Button type="button" size="sm" disabled>
+          {t("settings.mobileConnect.glasses.button")}
+        </Button>
+      </SettingsSection>
+    </>
   );
 }
 

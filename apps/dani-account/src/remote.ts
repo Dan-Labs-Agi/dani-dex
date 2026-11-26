@@ -8,6 +8,8 @@ export interface REnv {
   REMOTE_TICKET_PRIVATE_JWK: string;
   SIGNAL: DurableObjectNamespace;
   TELEGRAM_CLAIM_SECRET?: string;
+  TELEGRAM_BOT_TOKEN?: string;
+  TELEGRAM_WEBHOOK_SECRET?: string;
 }
 
 const enc = new TextEncoder();
@@ -17,6 +19,26 @@ const SESSION_MS = 12 * 60 * 60 * 1000;
 const json = (b: unknown, status = 200) =>
   new Response(JSON.stringify(b), { status, headers: { "content-type": "application/json" } });
 const now = () => Math.floor(Date.now() / 1000);
+
+async function claimTelegramCode(
+  env: REnv,
+  code: string,
+  chatId: string,
+  botId: string,
+  title: string,
+): Promise<{ hostName: string } | null> {
+  const ch = await sha256(code);
+  const row = await env.DB.prepare("SELECT * FROM telegram_codes WHERE code_hash=?").bind(ch).first<any>();
+  if (!row || row.expires_at < now()) return null;
+  await env.DB.prepare("DELETE FROM telegram_codes WHERE code_hash=?").bind(ch).run();
+  await env.DB.prepare(
+    "INSERT OR REPLACE INTO telegram_chats(host_id,chat_id,bot_id,user_id,title,linked_at) VALUES(?,?,?,?,?,?)",
+  )
+    .bind(row.host_id, chatId, botId, row.user_id, title, now())
+    .run();
+  const h = await env.DB.prepare("SELECT name FROM remote_hosts WHERE host_id=?").bind(row.host_id).first<any>();
+  return { hostName: h?.name ?? "your computer" };
+}
 
 function b64u(buf: ArrayBuffer | Uint8Array): string {
   const b = buf instanceof Uint8Array ? buf : new Uint8Array(buf);
@@ -179,18 +201,37 @@ export async function handleRemote(
       return json({ error: "invalid_code" }, 400);
     if (typeof b.chatId !== "string" || !/^-?[0-9]{1,20}$/.test(b.chatId)) return json({ error: "invalid_chat" }, 400);
     const botId = typeof b.botId === "string" && /^[0-9]{1,20}$/.test(b.botId) ? b.botId : "0";
-    const ch = await sha256(b.code);
-    const row = await env.DB.prepare("SELECT * FROM telegram_codes WHERE code_hash=?").bind(ch).first<any>();
-    if (!row || row.expires_at < now()) return json({ error: "code_expired" }, 400);
-    await env.DB.prepare("DELETE FROM telegram_codes WHERE code_hash=?").bind(ch).run();
     const title = typeof b.title === "string" && b.title.trim() ? b.title.trim().slice(0, 80) : b.chatId;
-    await env.DB.prepare(
-      "INSERT OR REPLACE INTO telegram_chats(host_id,chat_id,bot_id,user_id,title,linked_at) VALUES(?,?,?,?,?,?)",
-    )
-      .bind(row.host_id, b.chatId, botId, row.user_id, title, now())
-      .run();
-    const h = await env.DB.prepare("SELECT name FROM remote_hosts WHERE host_id=?").bind(row.host_id).first<any>();
-    return json({ ok: true, hostName: h?.name ?? "your computer" });
+    const claimed = await claimTelegramCode(env, b.code, b.chatId, botId, title);
+    if (!claimed) return json({ error: "code_expired" }, 400);
+    return json({ ok: true, hostName: claimed.hostName });
+  }
+  // Telegram webhook for the Dani Dex bot: the user sends the code from the app, the bot links the chat.
+  if (p === "/v1/telegram/webhook" && m === "POST") {
+    const secret = env.TELEGRAM_WEBHOOK_SECRET || "";
+    const token = env.TELEGRAM_BOT_TOKEN || "";
+    if (!secret || !token || req.headers.get("x-telegram-bot-api-secret-token") !== secret)
+      return json({ error: "unauthorized" }, 401);
+    const update = await body();
+    const msg = update.message;
+    const chatId = msg?.chat?.id !== undefined ? String(msg.chat.id) : "";
+    const text = typeof msg?.text === "string" ? msg.text.trim() : "";
+    if (!chatId || !text) return json({ ok: true });
+    const code = text.replace(/^\/start(@\w+)?\s*/i, "").trim();
+    let reply = "Open Dani Dex on your computer, go to Settings, and copy your Telegram code. Then send it here.";
+    if (/^[A-Za-z0-9_-]{32,64}$/.test(code)) {
+      const title = String(msg.chat.title || msg.chat.username || msg.from?.first_name || chatId).slice(0, 80);
+      const claimed = await claimTelegramCode(env, code, chatId, token.split(":")[0] || "0", title);
+      reply = claimed
+        ? `Linked to ${claimed.hostName}. You can message your agents here now.`
+        : "That code expired or was already used. Get a new one in Dani Dex and send it again.";
+    }
+    await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ chat_id: chatId, text: reply }),
+    });
+    return json({ ok: true });
   }
   const tg = p.match(/^\/v2\/remote\/hosts\/([^/]+)\/(telegram-link|telegram-route|telegram-disconnect)\/?$/);
   if (tg && m === "POST") {
@@ -203,7 +244,7 @@ export async function handleRemote(
       await env.DB.prepare("INSERT INTO telegram_codes(code_hash,host_id,user_id,expires_at) VALUES(?,?,?,?)")
         .bind(await sha256(code), h.host_id, h.user_id, now() + 15 * 60)
         .run();
-      return json({ botUsername: "danirex_bot", code });
+      return json({ botUsername: "danidexbot", code });
     }
     if (tg[2] === "telegram-disconnect") {
       if (typeof b.chatId === "string")

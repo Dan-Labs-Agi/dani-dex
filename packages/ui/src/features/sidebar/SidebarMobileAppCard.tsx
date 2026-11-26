@@ -1,10 +1,10 @@
 import { type MobilePlatformLogoVariant, PlatformLogo } from "@openbot/brand";
-import type { AvatarHue } from "@openbot/contracts/ipc";
 import { Button, IconButton, X } from "@openbot/ui";
 import { createSignal, For, onSettled } from "solid-js";
 import type { AgentProfile } from "../../data";
 import { useText } from "../../text";
 import { AgentAvatar } from "../agents/AgentAvatar";
+import { CHIEF_SEED, OPTIONAL_CHARACTER_SEEDS } from "../agents/character-faces";
 
 type CrewAgent = Pick<AgentProfile, "avatarSeed" | "avatarHue" | "avatarColor" | "avatarUrl">;
 
@@ -12,15 +12,13 @@ const CREW_SIZE = 5;
 const LEAD_INDEX = Math.floor(CREW_SIZE / 2);
 const CENTER_FIRST_PLACES = [2, 1, 3, 0, 4];
 
-const STAND_IN_CREW: readonly CrewAgent[] = (
-  [
-    { seed: "research", hue: 215 },
-    { seed: "inbox", hue: 30 },
-    { seed: "planner", hue: 150 },
-    { seed: "design", hue: 320 },
-    { seed: "writer", hue: 280 },
-  ] satisfies { seed: string; hue: AvatarHue }[]
-).map((member) => ({ avatarSeed: member.seed, avatarHue: member.hue, avatarColor: null, avatarUrl: null }));
+const STAND_IN_CREW: readonly CrewAgent[] = [
+  OPTIONAL_CHARACTER_SEEDS[0],
+  OPTIONAL_CHARACTER_SEEDS[1],
+  CHIEF_SEED,
+  OPTIONAL_CHARACTER_SEEDS[3],
+  OPTIONAL_CHARACTER_SEEDS[4],
+].map((seed): CrewAgent => ({ avatarSeed: seed ?? CHIEF_SEED, avatarHue: null, avatarColor: null, avatarUrl: null }));
 
 const PLATFORMS: readonly {
   platform: MobilePlatformLogoVariant;

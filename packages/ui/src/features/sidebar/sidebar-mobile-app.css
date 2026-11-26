@@ -55,11 +55,9 @@
   gap: var(--openbot-space-1);
   overflow: hidden;
   border-color: transparent;
-  background:
-    radial-gradient(110% 80% at 50% 0%, color-mix(in srgb, var(--openbot-paper) 40%, transparent), transparent 70%),
-    var(--openbot-logo-production);
+  background: linear-gradient(180deg, var(--openbot-promo-top) 0%, var(--openbot-promo-bottom) 100%);
   padding-top: 0;
-  color: var(--openbot-logo-eye);
+  color: var(--openbot-promo-accent);
   text-align: center;
 }
 
@@ -69,12 +67,12 @@
   top: var(--openbot-space-1-5);
   right: var(--openbot-space-1-5);
   margin: 0;
-  color: color-mix(in srgb, var(--openbot-logo-eye) 60%, transparent);
+  color: var(--openbot-promo-dismiss);
 }
 
 .sidebar-mobile-app-crew > .sidebar-mobile-app-dismiss:hover {
-  background: color-mix(in srgb, var(--openbot-logo-eye) 10%, transparent);
-  color: var(--openbot-logo-eye);
+  background: var(--openbot-promo-dismiss-hover);
+  color: var(--openbot-promo-on-card);
 }
 
 .sidebar-mobile-app-crew-stage {
@@ -131,14 +129,14 @@
   min-width: 0;
   height: 36px;
   gap: var(--openbot-space-1-5);
-  border-color: var(--openbot-logo-eye);
-  background: var(--openbot-logo-eye);
-  color: var(--openbot-logo-production);
+  border-color: var(--openbot-promo-accent);
+  background: var(--openbot-promo-accent);
+  color: var(--openbot-promo-on-accent);
   font-weight: var(--openbot-weight-semibold);
 }
 
 .sidebar-mobile-app-platforms > .ui-button:hover {
-  background: color-mix(in srgb, var(--openbot-logo-eye) 86%, var(--openbot-logo-production));
+  background: var(--openbot-promo-accent-hover);
 }
 
 .sidebar-mobile-app-platform-logo {

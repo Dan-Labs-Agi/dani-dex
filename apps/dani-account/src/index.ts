@@ -293,6 +293,10 @@ export default {
         .run();
       return json({ version });
     }
+    // Marketplace catalogs: no public listings yet, so reads return empty pages instead of an error.
+    if (req.method === "GET" && /^\/v1\/marketplace\/agents\/?$/.test(p)) return json({ agents: [], nextCursor: null });
+    if (req.method === "GET" && /^\/v1\/skills\/?$/.test(p)) return json({ skills: [], nextCursor: null });
+    if (req.method === "GET" && (p === "/v1/marketplace/agents/mine" || p === "/v1/skills/mine")) return json([]);
     return json({ error: "not_found" }, 404);
   },
 };
