@@ -113,7 +113,6 @@ mac:
   darkModeSupport: true
   extendInfo:
     CFBundleIconName: Icon
-    CFBundleName: Dani Dex
     CFBundleDisplayName: Dani Dex
     ElectronTeamID: ZTRDTUL87R
     NSMicrophoneUsageDescription: Dani Dex uses the microphone to transcribe voice prompts locally on this Mac.
