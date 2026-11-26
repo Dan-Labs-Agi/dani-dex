@@ -7,6 +7,7 @@ import {
   VOICE_KEY_PROVIDER_NAMES,
   type XaiSpeechVoice,
 } from "@openbot/contracts/ipc";
+import { type CloudVoiceOptions, DEFAULT_CLOUD_VOICE, gradiumPaddingBonus } from "@openbot/contracts/voice-providers";
 import { sourceText } from "@openbot/i18n/source";
 import { createOpenBotLogger } from "@openbot/logging";
 import { Effect, Option, Schema } from "effect";
@@ -80,9 +81,7 @@ const decodeErrorDetail = Schema.decodeUnknownOption(
     }),
   ),
 );
-const CARTESIA_VOICE_ID = "f786b574-daa5-4673-aa0c-cbe3e8534c02";
-const GRADIUM_VOICE_ID = "Bla6SbVMczYnOhfK";
-const FISH_MODEL = "s2-pro";
+const CARTESIA_VERSION = "2026-08-14";
 const SARVAM_MODEL = "bulbul:v3";
 const SARVAM_SPEAKER = "shubh";
 const SARVAM_LANGUAGES: Partial<Record<SpeechLanguage, string>> = {
@@ -104,6 +103,7 @@ export interface CloudSpeechRequest {
   language: SpeechLanguage | null;
   elevenLabsVoice: ElevenLabsSpeechVoice;
   xaiVoice: XaiSpeechVoice;
+  cloudVoice?: CloudVoiceOptions;
 }
 
 export function speakInCloud(
@@ -122,32 +122,45 @@ export function speakInCloud(
       },
     });
   }
+  const choices = request.cloudVoice ?? DEFAULT_CLOUD_VOICE;
   if (request.model.provider === "cartesia") {
+    const choice = choices.cartesia;
     return exchange(fetcher, request, "https://api.cartesia.ai/tts/bytes", {
-      headers: { "X-API-Key": request.key, "Cartesia-Version": "2025-04-16" },
+      headers: { "X-API-Key": request.key, "Cartesia-Version": CARTESIA_VERSION },
       body: {
-        model_id: "sonic-3",
+        model_id: choice.model,
         transcript: request.text,
-        voice: { mode: "id", id: CARTESIA_VOICE_ID },
+        voice: { mode: "id", id: choice.voice },
+        generation_config: { speed: choice.speed },
         output_format: { container: "raw", encoding: "pcm_s16le", sample_rate: SAMPLE_RATE },
         ...(request.language ? { language: request.language } : {}),
       },
     });
   }
   if (request.model.provider === "fish") {
+    const choice = choices.fish;
     return exchange(fetcher, request, "https://api.fish.audio/v1/tts", {
-      headers: { Authorization: `Bearer ${request.key}`, model: FISH_MODEL },
-      body: { text: request.text, format: "pcm", sample_rate: SAMPLE_RATE },
+      headers: { Authorization: `Bearer ${request.key}`, model: choice.model },
+      body: {
+        text: request.text,
+        format: "pcm",
+        sample_rate: SAMPLE_RATE,
+        prosody: { speed: choice.speed },
+        ...(choice.voice ? { reference_id: choice.voice } : {}),
+      },
     });
   }
   if (request.model.provider === "gradium") {
-    return exchange(fetcher, request, "https://api.gradium.ai/api/post/speech/tts", {
+    const choice = choices.gradium;
+    return exchange(fetcher, request, "https://api.gradium.ai/api/speech/tts", {
       headers: { "x-api-key": request.key },
       body: {
         text: request.text,
-        voice_id: GRADIUM_VOICE_ID,
+        voice_id: choice.voice,
+        model_name: choice.model,
         only_audio: true,
         output_format: `pcm_${SAMPLE_RATE}`,
+        json_config: { padding_bonus: gradiumPaddingBonus(choice.speed) },
       },
     });
   }

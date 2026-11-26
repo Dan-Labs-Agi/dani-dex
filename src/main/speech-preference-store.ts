@@ -10,6 +10,7 @@ import {
   type SpeechSettings,
 } from "@openbot/contracts/ipc";
 import { isDynamicRecord } from "@openbot/contracts/runtime-values";
+import { normalizeCloudVoice } from "@openbot/contracts/voice-providers";
 import { Effect, Result, Semaphore } from "effect";
 import { isMissingFileError } from "../backend/file-errors";
 import { type PreferenceFileFailure, readPreferenceFile, writePreferenceFile } from "./preference-file";
@@ -39,6 +40,7 @@ export class SpeechPreferenceStore {
                   ? parsed.elevenLabsVoice
                   : DEFAULT_SPEECH_SETTINGS.elevenLabsVoice,
                 xaiVoice: isXaiSpeechVoice(parsed.xaiVoice) ? parsed.xaiVoice : DEFAULT_SPEECH_SETTINGS.xaiVoice,
+                cloudVoice: normalizeCloudVoice(parsed.cloudVoice),
                 speed: isSpeechSpeed(parsed.speed) ? parsed.speed : DEFAULT_SPEECH_SETTINGS.speed,
                 codexLive: parsed.codexLive === true,
                 codexLiveVoice: isCodexLiveVoice(parsed.codexLiveVoice) ? parsed.codexLiveVoice : null,
@@ -67,6 +69,7 @@ export class SpeechPreferenceStore {
       voice: input.voice,
       elevenLabsVoice: input.elevenLabsVoice,
       xaiVoice: input.xaiVoice,
+      cloudVoice: normalizeCloudVoice(input.cloudVoice),
       speed: input.speed,
       codexLive: input.codexLive,
       codexLiveVoice: input.codexLiveVoice,

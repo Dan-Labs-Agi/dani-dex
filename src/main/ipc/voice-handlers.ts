@@ -154,7 +154,7 @@ export function voiceIpcHandlers({
       ),
       setApiKey: payloadHandler(parseVoiceApiKey, async ({ provider, key }): Promise<VoiceModelStatus> => {
         const status = await runCauseEffect(voice.setApiKey(provider, key));
-        if (provider === "elevenlabs") await runCauseEffect(speech.announceStatus());
+        if (provider !== "groq") await runCauseEffect(speech.announceStatus());
         return status;
       }),
       startStream: handler((): Promise<VoiceStream> => runCauseEffect(voice.startStream())),
@@ -174,9 +174,15 @@ export function voiceIpcHandlers({
       ),
       getSpeechModelStatus: handler((): Promise<SpeechModelStatus> => runCauseEffect(speech.getModelStatus())),
       setSpeechApiKey: payloadHandler(parseSpeechApiKey, async ({ provider, key }): Promise<SpeechModelStatus> => {
-        if (provider !== "elevenlabs") return runCauseEffect(speech.setProviderApiKey(provider, key));
-        await runCauseEffect(voice.setApiKey("elevenlabs", key));
-        return runCauseEffect(speech.announceStatus());
+        if (provider === "elevenlabs") {
+          await runCauseEffect(voice.setApiKey("elevenlabs", key));
+          return runCauseEffect(speech.announceStatus());
+        }
+        const status = await runCauseEffect(speech.setProviderApiKey(provider, key));
+        // Cartesia, Fish Audio and Gradium share one key for dictation and spoken replies.
+        if (provider === "cartesia" || provider === "fish" || provider === "gradium")
+          await runCauseEffect(voice.setApiKey(provider, key));
+        return status;
       }),
       downloadSpeechModel: handler((): Promise<SpeechModelStatus> => runCauseEffect(speech.downloadModel())),
       cancelSpeechModelDownload: handler(

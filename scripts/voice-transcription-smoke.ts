@@ -226,6 +226,18 @@ async function main(): Promise<void> {
         path: join(temporary, "groq-api-key.json"),
         cipher: { canPersist: () => false, encrypt: () => Buffer.alloc(0), decrypt: () => "" },
       }),
+      cartesia: new VoiceApiKeyStore({
+        path: join(temporary, "cartesia-api-key.json"),
+        cipher: { canPersist: () => false, encrypt: () => Buffer.alloc(0), decrypt: () => "" },
+      }),
+      fish: new VoiceApiKeyStore({
+        path: join(temporary, "fish-api-key.json"),
+        cipher: { canPersist: () => false, encrypt: () => Buffer.alloc(0), decrypt: () => "" },
+      }),
+      gradium: new VoiceApiKeyStore({
+        path: join(temporary, "gradium-api-key.json"),
+        cipher: { canPersist: () => false, encrypt: () => Buffer.alloc(0), decrypt: () => "" },
+      }),
     },
     spawnHost,
     openStreamSocket: openScribeSocket,

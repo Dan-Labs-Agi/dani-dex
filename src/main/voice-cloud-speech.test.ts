@@ -55,7 +55,7 @@ describe("bring-your-own-key speech providers", () => {
   it("sends Gradium its key", async () => {
     const { audio, seen } = run("gradium-tts", () => new Response(pcm));
     await audio;
-    expect(seen[0]?.url).toBe("https://api.gradium.ai/api/post/speech/tts");
+    expect(seen[0]?.url).toBe("https://api.gradium.ai/api/speech/tts");
     expect(JSON.stringify(seen[0]?.init?.headers)).toContain("test-key");
   });
   it("sends Sarvam its subscription key and unwraps the wav", async () => {

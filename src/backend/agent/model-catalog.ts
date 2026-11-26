@@ -151,8 +151,10 @@ export class ModelCatalog {
           const previous = this.#models.filter((model) => model.provider === provider);
           const client = this.#options.client(provider);
           const signedOut = this.#options.isSignedOut(provider);
-          if (catalog.hiddenWhenSignedOut && signedOut && !client)
-            return { provider, models: [], fresh: false, timedOut: false, failed: false };
+          if (catalog.hiddenWhenSignedOut && signedOut && !client) {
+            const listed = catalog.listFallbackWhenUnavailable && catalog.fallback ? catalog.fallback(previous) : [];
+            return { provider, models: listed, fresh: false, timedOut: false, failed: false };
+          }
           if (!client) return { provider, models: previous, fresh: false, timedOut: false, failed: false };
           const startedAt = performance.now();
           return yield* Effect.gen({ self: this }, function* () {

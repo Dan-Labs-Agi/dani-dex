@@ -27,8 +27,6 @@ export const messages = defineMessages("settings", {
   "settings.backgroundBlur.description": "Blur behind menus and dialogs. It starts off on a computer with no GPU.",
   "settings.movingFaces.title": "Moving agent faces",
   "settings.movingFaces.description": "Agent faces blink and move. They start still on a computer with no GPU.",
-  "settings.startupAnimation.title": "Startup animation",
-  "settings.startupAnimation.description": "Show the agent animation while Dani Dex opens.",
   "settings.logoColor.title": "Logo color",
   "settings.logoColor.description": "Shown in the Dock, the taskbar and the Dynamic Island.",
   "settings.logoColor.buildNote": "This build keeps its own logo color. The choice applies to the release app.",
@@ -695,6 +693,14 @@ export const messages = defineMessages("settings", {
     "Sends each recording to Groq when you stop. Fast, and knows many languages. Uses your own API key, and Groq bills each use.",
   "settings.voice.model.groqLarge.description":
     "Sends each recording to Groq when you stop. More accurate than turbo, but slower. Uses your own API key, and Groq bills each use.",
+  "settings.voice.model.cartesiaInk.description":
+    "Sends each recording to Cartesia when you stop. Uses your own API key, and Cartesia bills each use.",
+  "settings.voice.model.fishPro.description":
+    "Sends each recording to Fish Audio when you stop. The more accurate model. Uses your own API key, and Fish Audio bills each use.",
+  "settings.voice.model.fish.description":
+    "Sends each recording to Fish Audio when you stop. Best for short recordings. Uses your own API key, and Fish Audio bills each use.",
+  "settings.voice.model.gradium.description":
+    "Sends each recording to Gradium when you stop. Knows English, French, German, Spanish and Portuguese. Uses your own API key, and Gradium bills each use.",
   "settings.voice.apiKey.placeholder": "Paste the key",
   "settings.voice.apiKey.save": "Save key",
   "settings.voice.apiKey.remove": "Remove key",
@@ -743,6 +749,11 @@ export const messages = defineMessages("settings", {
   "settings.voice.speech.codexLive.serverDescription":
     "Voice conversations with any agent use OpenAI live voice with the Codex sign-in of the server. Your voice, your requests and the agent's replies go to OpenAI.",
   "settings.voice.speech.speed.title": "Speed",
+  "settings.voice.cloud.model": "Model",
+  "settings.voice.cloud.free": "Free",
+  "settings.voice.cloud.paid": "Paid, uses your key",
+  "settings.voice.cloud.voiceId": "Voice ID",
+  "settings.voice.cloud.voiceIdPlaceholder": "Custom voice ID (optional)",
   "settings.voice.speech.voice.title": "Voice",
   "settings.voice.speech.voice.female": "Female voice {number}",
   "settings.voice.speech.voice.male": "Male voice {number}",

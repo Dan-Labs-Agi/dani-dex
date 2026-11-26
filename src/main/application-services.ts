@@ -40,6 +40,7 @@ import {
   isGroqVoiceModelId,
   isLocalVoiceModelId,
   isManagedToolRuntime,
+  isRestVoiceModelId,
   isUpdateBusyPhase,
   LOCAL_SERVER_ID,
   latestTurnAnswer,
@@ -2078,7 +2079,10 @@ export async function createApplicationServices({
         if (voiceServer.dictates()) return voiceServer.transcribe(audio, voice.getSettings().language);
         return voice.getModelStatus().pipe(
           Effect.flatMap((status) =>
-            status.phase === "ready" && (isLocalVoiceModelId(status.modelId) || isGroqVoiceModelId(status.modelId))
+            status.phase === "ready" &&
+            (isLocalVoiceModelId(status.modelId) ||
+              isGroqVoiceModelId(status.modelId) ||
+              isRestVoiceModelId(status.modelId))
               ? voice.transcribe(audio)
               : Effect.fail(
                   new VoiceOperationError({
@@ -2681,6 +2685,7 @@ export async function createApplicationServices({
   } else {
     providerRuntimes.startUpdateChecks();
   }
+  Effect.runFork(providerRuntimes.installDefaultRuntimes());
   providerRuntimes.on("ready", (runtime) => {
     if (isManagedToolRuntime(runtime)) Effect.runFork(service.refreshAllAgentRuntimes("after-background-work"));
   });
@@ -3934,6 +3939,19 @@ export async function createApplicationServices({
     cipher: secretCipher,
   });
   await runCauseEffect(groqVoiceKeys.load());
+  const speechKeyStore = async (name: string) => {
+    const store = new VoiceApiKeyStore({
+      path: join(app.getPath("userData"), `${name}-api-key.json`),
+      cipher: secretCipher,
+    });
+    await runCauseEffect(store.load());
+    return store;
+  };
+  const xaiSpeechKeys = await speechKeyStore("xai");
+  const cartesiaSpeechKeys = await speechKeyStore("cartesia");
+  const fishSpeechKeys = await speechKeyStore("fish");
+  const gradiumSpeechKeys = await speechKeyStore("gradium");
+  const sarvamSpeechKeys = await speechKeyStore("sarvam");
   const voiceModelFetch = (input: string | URL | Request, init?: RequestInit) =>
     net.fetch(input instanceof URL ? input.href : input, init);
   const voice = new VoiceTranscriptionService({
@@ -3956,7 +3974,13 @@ export async function createApplicationServices({
         : resolve(".openbot-build/voice", COHERE_TRANSCRIBE_MODEL_DIRECTORY),
     },
     preferences: voicePreferences,
-    apiKeys: { elevenlabs: voiceApiKeys, groq: groqVoiceKeys },
+    apiKeys: {
+      elevenlabs: voiceApiKeys,
+      groq: groqVoiceKeys,
+      cartesia: cartesiaSpeechKeys,
+      fish: fishSpeechKeys,
+      gradium: gradiumSpeechKeys,
+    },
     spawnHost: spawnVoiceTranscriptionHost,
     openStreamSocket: openScribeSocket,
     modelFetch: voiceModelFetch,
@@ -3975,19 +3999,6 @@ export async function createApplicationServices({
   voice.on("streamTranscript", forwardVoiceStreamTranscript);
   const speechPreferences = new SpeechPreferenceStore(join(app.getPath("userData"), "speech-preference.json"));
   await runCauseEffect(speechPreferences.load());
-  const speechKeyStore = async (name: string) => {
-    const store = new VoiceApiKeyStore({
-      path: join(app.getPath("userData"), `${name}-api-key.json`),
-      cipher: secretCipher,
-    });
-    await runCauseEffect(store.load());
-    return store;
-  };
-  const xaiSpeechKeys = await speechKeyStore("xai");
-  const cartesiaSpeechKeys = await speechKeyStore("cartesia");
-  const fishSpeechKeys = await speechKeyStore("fish");
-  const gradiumSpeechKeys = await speechKeyStore("gradium");
-  const sarvamSpeechKeys = await speechKeyStore("sarvam");
   const speech = new VoiceSpeechService({
     resourcesRoot: app.isPackaged ? join(process.resourcesPath, "voice") : resolve(".openbot-build/voice"),
     modelDirectory: app.isPackaged

@@ -1,6 +1,7 @@
 // @vitest-environment node
 
 import { describe, expect, it } from "vitest";
+import { BUILT_IN_PROVIDER_DRIVERS } from "../provider-drivers";
 import { modelsAfterKilocodeDiscoveryFailure, PREFERRED_MODEL_ORDER } from "./provider-models";
 
 describe("KiloCode models in the model picker", () => {
@@ -24,5 +25,12 @@ describe("KiloCode models in the model picker", () => {
     if (!free || !other) throw new Error("need two models");
     const paid = { ...other, id: "kilo/some/paid-model", name: "Paid Model" };
     expect(rank(free)).toBeLessThan(rank(paid));
+  });
+
+  it("keeps listing the free fallback before the runtime is downloaded", () => {
+    const driver = BUILT_IN_PROVIDER_DRIVERS.find((item) => item.id === "kilocode");
+    expect(driver?.catalog?.listFallbackWhenUnavailable).toBe(true);
+    const opencode = BUILT_IN_PROVIDER_DRIVERS.find((item) => item.id === "opencode");
+    expect(opencode?.catalog?.listFallbackWhenUnavailable).toBeUndefined();
   });
 });

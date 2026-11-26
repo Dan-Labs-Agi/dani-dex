@@ -174,6 +174,7 @@ import {
   isOneOf,
   isString,
 } from "@openbot/contracts/runtime-values";
+import { normalizeCloudVoice } from "@openbot/contracts/voice-providers";
 
 export function decodeAppInfo(value: unknown): AppInfo {
   const info = decodeRecord(value, "app info");
@@ -644,6 +645,7 @@ export function decodeSpeechSettings(value: unknown): SpeechSettings {
     voice,
     elevenLabsVoice,
     xaiVoice,
+    cloudVoice: normalizeCloudVoice(settings.cloudVoice),
     speed,
     codexLive: requiredBoolean(settings, "codexLive"),
     codexLiveVoice,

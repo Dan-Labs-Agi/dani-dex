@@ -300,6 +300,9 @@ function noDictationKeys(temporary: string) {
   return {
     elevenlabs: new VoiceApiKeyStore({ path: join(temporary, "voice-api-key.json"), cipher: NO_CIPHER }),
     groq: new VoiceApiKeyStore({ path: join(temporary, "groq-api-key.json"), cipher: NO_CIPHER }),
+    cartesia: new VoiceApiKeyStore({ path: join(temporary, "cartesia-api-key.json"), cipher: NO_CIPHER }),
+    fish: new VoiceApiKeyStore({ path: join(temporary, "fish-api-key.json"), cipher: NO_CIPHER }),
+    gradium: new VoiceApiKeyStore({ path: join(temporary, "gradium-api-key.json"), cipher: NO_CIPHER }),
   };
 }
 

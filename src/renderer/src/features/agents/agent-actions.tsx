@@ -1,5 +1,6 @@
 import type { ClientAgentSummary } from "@openbot/contracts/ipc";
 import { AGENT_WELCOME_CAPABILITY, TEAM_AGENT_CREATE_MODEL_CAPABILITY } from "@openbot/contracts/team-protocol/current";
+import { type TeamTemplate, teamInstallPlan } from "@openbot/contracts/team-templates";
 import { classifyFailure } from "@openbot/telemetry";
 import { toast } from "@openbot/ui";
 import type { AgentProfile } from "@openbot/ui/data";
@@ -101,6 +102,45 @@ const AgentActions = createSimpleContext({
         analytics.track("agent_action", { action: "create", result: "failed", failure_code: "create_failed" });
         const { t, errorMessage } = currentText();
         setAgentSetupError(errorMessage(error, t("agent.error.createFailed")));
+      } finally {
+        setCreatingAgent(false);
+      }
+    }
+
+    async function addTeam(team: TeamTemplate): Promise<boolean> {
+      if (creatingAgent()) return false;
+      setCreatingAgent(true);
+      setAgentSetupError(null);
+      let headId: string | null = null;
+      try {
+        const base = agentSetupDraft();
+        const plan = teamInstallPlan(team);
+        for (const member of [...plan].reverse()) {
+          const stored = await requestNewAgent({
+            name: member.name,
+            purpose: member.description,
+            avatarSeed: member.avatarSeed,
+            avatarHue: member.avatarHue,
+            avatarColor: null,
+            ...(base.provider && base.model
+              ? {
+                  provider: base.provider,
+                  model: base.model,
+                  ...(base.reasoningEffort ? { reasoningEffort: base.reasoningEffort } : {}),
+                  ...(base.providerAccountId ? { providerAccountId: base.providerAccountId } : {}),
+                }
+              : {}),
+          });
+          const added = addNewAgent(stored);
+          if (member === plan[0]) headId = added.id;
+        }
+        if (headId) openCreatedAgent(headId);
+        desktopAnalytics.scope().track("agent_action", { action: "create", result: "succeeded" });
+        return true;
+      } catch (error) {
+        const { t, errorMessage } = currentText();
+        setAgentSetupError(errorMessage(error, t("app.team.failed")));
+        return false;
       } finally {
         setCreatingAgent(false);
       }
@@ -423,6 +463,7 @@ const AgentActions = createSimpleContext({
 
     return {
       createAgent,
+      addTeam,
       editAgent,
       duplicateAgent,
       duplicateSection,

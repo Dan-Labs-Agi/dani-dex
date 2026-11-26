@@ -4,7 +4,9 @@
 // Secrets and provider tokens are never synced: kinds below are the only accepted ones.
 
 import { emailStart, emailVerify } from "./emailcode";
+import { freeAccountState } from "./free-state";
 import { PRIVACY_HTML, TERMS_HTML } from "./legal";
+import { recordReferral, referralState } from "./referrals";
 import { handleRemote, type REnv, SignalRoom } from "./remote";
 
 export { SignalRoom };
@@ -293,6 +295,17 @@ export default {
         .run();
       return json({ version });
     }
+    if (p === "/v1/me/referrals" && req.method === "GET") {
+      const filter = url.searchParams.get("filter") ?? "all";
+      const page = Number(url.searchParams.get("page") ?? 0) || 0;
+      return json(await referralState(env.DB, uid, filter, page));
+    }
+    if (p === "/v1/me/referrals/redeem" && req.method === "POST") {
+      const body = (await req.json().catch(() => null)) as { code?: unknown } | null;
+      return json({ recorded: await recordReferral(env.DB, uid, body?.code, Date.now()) });
+    }
+    const free = freeAccountState(p, req.method);
+    if (free) return json(free);
     // Marketplace catalog: launch Skills and Agents served from the account database.
     if (req.method === "GET" && (p === "/v1/marketplace/agents/mine" || p === "/v1/skills/mine")) return json([]);
     const catalog = await catalogRoute(req, env, p);

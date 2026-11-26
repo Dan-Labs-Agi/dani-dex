@@ -125,7 +125,7 @@ const HOST_ID = /^[A-Za-z0-9-]{1,128}$/;
 async function hostByMachineToken(env: REnv, hostId: string, token: unknown) {
   if (typeof token !== "string") return null;
   const h = await env.DB.prepare("SELECT * FROM remote_hosts WHERE host_id=?").bind(hostId.toLowerCase()).first<any>();
-  if (!h || !h.machine_token_hash || h.machine_token_hash !== (await sha256(token))) return null;
+  if (!h?.machine_token_hash || h.machine_token_hash !== (await sha256(token))) return null;
   return h;
 }
 const signalUrl = (hostId: string) =>

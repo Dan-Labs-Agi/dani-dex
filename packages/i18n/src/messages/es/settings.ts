@@ -30,8 +30,6 @@ export const messages = {
   "settings.movingFaces.title": "Caras de agentes en movimiento",
   "settings.movingFaces.description":
     "Las caras de los agentes parpadean y se mueven. Empiezan quietas en un equipo sin GPU.",
-  "settings.startupAnimation.title": "Animación de inicio",
-  "settings.startupAnimation.description": "Muestra la animación de agentes mientras se abre Dani Dex.",
   "settings.logoColor.title": "Color del logotipo",
   "settings.logoColor.description": "Se muestra en el Dock, la barra de tareas y Dynamic Island.",
   "settings.logoColor.buildNote":

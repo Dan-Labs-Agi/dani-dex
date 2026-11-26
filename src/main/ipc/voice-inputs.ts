@@ -35,6 +35,7 @@ import {
   type VoiceTranscriptionInput,
 } from "@openbot/contracts/ipc";
 import { isString } from "@openbot/contracts/runtime-values";
+import { normalizeCloudVoice } from "@openbot/contracts/voice-providers";
 import { sourceText } from "@openbot/i18n/source";
 import { parseBaseUrl } from "./custom-provider-inputs";
 import { isObject } from "./validation";
@@ -151,6 +152,7 @@ export function parseSpeechSettings(input: unknown): SpeechSettings {
     voice: input.voice,
     elevenLabsVoice: input.elevenLabsVoice,
     xaiVoice: input.xaiVoice,
+    cloudVoice: normalizeCloudVoice(input.cloudVoice),
     speed: input.speed,
     codexLive: input.codexLive,
     codexLiveVoice: input.codexLiveVoice,

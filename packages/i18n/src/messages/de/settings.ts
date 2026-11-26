@@ -30,8 +30,6 @@ export const messages = {
   "settings.movingFaces.title": "Bewegte Agentengesichter",
   "settings.movingFaces.description":
     "Agentengesichter blinzeln und bewegen sich. Auf einem Computer ohne GPU sind sie anfangs still.",
-  "settings.startupAnimation.title": "Startanimation",
-  "settings.startupAnimation.description": "Zeigt die Agentenanimation, während Dani Dex startet.",
   "settings.logoColor.title": "Logofarbe",
   "settings.logoColor.description": "Im Dock, in der Taskleiste und in Dynamic Island.",
   "settings.logoColor.buildNote":

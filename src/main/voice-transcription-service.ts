@@ -12,9 +12,11 @@ import {
   type GroqVoiceModelId,
   isGroqVoiceModelId,
   isLocalVoiceModelId,
+  isRestVoiceModelId,
   LOCAL_VOICE_MODEL_IDS,
   type LocalVoiceModelId,
   modelLanguage,
+  type RestVoiceModelId,
   VOICE_AUDIO_LIMITS,
   VOICE_KEY_PROVIDER_NAMES,
   VOICE_MODEL_IDS,
@@ -31,6 +33,7 @@ import { sourceText } from "@openbot/i18n/source";
 import { createOpenBotLogger } from "@openbot/logging";
 import { Effect, Exit, Fiber, Scope, Semaphore } from "effect";
 import { savedKeyError, type VoiceApiKeyStore } from "./voice-api-key-store";
+import { transcribeAtRestProvider } from "./voice-cloud-dictation";
 import {
   type OpenVoiceStreamSocket,
   ScribeRealtimeSession,
@@ -240,6 +243,8 @@ export class VoiceTranscriptionService extends EventEmitter<VoiceTranscriptionEv
                 const { modelId } = settings;
                 if (isGroqVoiceModelId(modelId))
                   return yield* this.#transcribeAtGroq(audio, modelId, settings.language);
+                if (isRestVoiceModelId(modelId))
+                  return yield* this.#transcribeAtRest(audio, modelId, settings.language);
                 if (!isLocalVoiceModelId(modelId))
                   return yield* new VoiceOperationError({
                     cause: new Error(sourceText("error.voice.transcriptionFailed")),
@@ -382,6 +387,30 @@ export class VoiceTranscriptionService extends EventEmitter<VoiceTranscriptionEv
           progress: null,
           message: sourceText("error.voice.cloud.keyRequired", { provider: VOICE_KEY_PROVIDER_NAMES[provider] }),
         };
+  }
+
+  #transcribeAtRest(
+    audio: Uint8Array,
+    modelId: RestVoiceModelId,
+    language: VoiceSettings["language"],
+  ): Effect.Effect<VoiceTranscriptionResult, VoiceOperationError> {
+    const provider = cloudProvider(modelId);
+    const key = this.#apiKeys[provider].get();
+    if (!key)
+      return Effect.fail(
+        new VoiceOperationError({
+          cause: new Error(
+            sourceText("error.voice.cloud.keyRequired", { provider: VOICE_KEY_PROVIDER_NAMES[provider] }),
+          ),
+        }),
+      );
+    return transcribeAtRestProvider(this.#fetch, { modelId, key, wav: audio, language }).pipe(
+      Effect.flatMap((result) =>
+        result.text.length > INPUT_LIMITS.messageText
+          ? Effect.fail(new VoiceOperationError({ cause: new Error("The voice transcript is too long.") }))
+          : Effect.succeed(result),
+      ),
+    );
   }
 
   #transcribeAtGroq(
