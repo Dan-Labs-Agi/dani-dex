@@ -1,0 +1,27 @@
+[
+ {
+  "step": "01",
+  "text": "Dani Dex\nChoose your language\n🇺🇸\nEnglish\n🇸🇦\nالعربية\n🇩🇪\nDeutsch\n🇪🇸\nEspañol\n🇫🇷\nFrançais\n🇮🇱\nעברית\n🇮🇹\nItaliano\n🇯🇵\n日本語\n🇰🇷\n한국어\n🇳🇱\nNederlands\n🇵🇱\nPolski\n🇧🇷\nPortuguês (Brasil)\n🇷🇺\nРусский\n🇹🇷\nTürkçe\n🇨🇳\n简体中文\nContinue",
+  "buttons": [
+   "Continue"
+  ]
+ },
+ {
+  "step": "02",
+  "text": "Dani Dex\nSign in to Dani Dex\n\nUse your email to sign in or create an account. We’ll send you a one-time code.\n\nContinue with Google\n\nor\n\nEmail\nSend sign-in code\nEnglish\nInvite code\n\nYour chats and files stay on the computer that runs Dani Dex.",
+  "buttons": [
+   "Continue with Google",
+   "Send sign-in code",
+   "English",
+   "Invite code"
+  ]
+ },
+ {
+  "step": "03",
+  "text": "Dani Dex\nContinue in your browser\n\nFinish signing in with Google on the page that opened in your browser.\n\nWaiting for your browser…\nOpen the sign-in page again\nUse another email",
+  "buttons": [
+   "Open the sign-in page again",
+   "Use another email"
+  ]
+ }
+]
