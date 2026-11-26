@@ -102,7 +102,8 @@ export function createMacDirectUpdater(options: MacDirectUpdaterOptions): Update
     allowPrerelease: false,
     autoDownload: false,
     autoInstallOnAppQuit: false,
-    on: (event: string, listener: (...args: never[]) => void) => emitter.on(event, listener),
+    // biome-ignore lint/suspicious/noExplicitAny: EventEmitter listeners take any arguments, and the adapter's overloads narrow them
+    on: (event: string, listener: (...args: any[]) => void) => emitter.on(event, listener),
     async checkForUpdates(): Promise<UpdateCheckOutcome | null> {
       emitter.emit("checking-for-update");
       try {
