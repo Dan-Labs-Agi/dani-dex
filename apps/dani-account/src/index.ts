@@ -301,10 +301,25 @@ export default {
   },
 };
 
-type CatalogRow = { id: string; kind: string; slug: string; version_id: string; name: string; description: string; category: string; featured: number; installs: number; updated_at: number; summary: string; detail: string };
+type CatalogRow = {
+  id: string;
+  kind: string;
+  slug: string;
+  version_id: string;
+  name: string;
+  description: string;
+  category: string;
+  featured: number;
+  installs: number;
+  updated_at: number;
+  summary: string;
+  detail: string;
+};
 
 async function catalogBlob(env: Env, id: string, kind: string): Promise<Uint8Array | null> {
-  const rows = await env.DB.prepare("SELECT data FROM catalog_blobs WHERE id = ? AND kind = ? ORDER BY part").bind(id, kind).all<{ data: string }>();
+  const rows = await env.DB.prepare("SELECT data FROM catalog_blobs WHERE id = ? AND kind = ? ORDER BY part")
+    .bind(id, kind)
+    .all<{ data: string }>();
   if (!rows.results.length) return null;
   const bin = atob(rows.results.map((r) => r.data).join(""));
   const bytes = new Uint8Array(bin.length);
@@ -329,7 +344,7 @@ async function catalogRoute(req: Request, env: Env, p: string): Promise<Response
     const limit = Math.min(Math.max(Number(url.searchParams.get("limit")) || 24, 1), 60);
     const offset = Math.max(Number(url.searchParams.get("cursor")) || 0, 0);
     const all = await env.DB.prepare("SELECT * FROM catalog_items WHERE kind = ?").bind(kind).all<CatalogRow>();
-    let rows = all.results.filter(
+    const rows = all.results.filter(
       (r) =>
         (!q || `${r.name} ${r.description}`.toLowerCase().includes(q) || "dani dex".includes(q)) &&
         (!category || r.category === category) &&
@@ -351,18 +366,23 @@ async function catalogRoute(req: Request, env: Env, p: string): Promise<Response
   const row = await env.DB.prepare(`SELECT * FROM catalog_items WHERE kind = ? AND ${bySlug ? "slug" : "id"} = ?`)
     .bind(kind, key)
     .first<CatalogRow>();
-  if (!row) return json({ error: { code: agents ? "agent_not_found" : "skill_not_found", message: "Not found." } }, 404);
+  if (!row)
+    return json({ error: { code: agents ? "agent_not_found" : "skill_not_found", message: "Not found." } }, 404);
   const sub = m[3];
   if (get && !sub) return json(JSON.parse(row.detail));
   if (get && agents && sub === "listing") return json(JSON.parse(row.detail));
   if (get && skills && sub === "icon") {
     const bytes = await catalogBlob(env, row.id, "icon");
-    return bytes ? new Response(bytes, { headers: { "content-type": "image/svg+xml", "cache-control": "public, max-age=86400" } }) : json({ error: "not_found" }, 404);
+    return bytes
+      ? new Response(bytes, { headers: { "content-type": "image/svg+xml", "cache-control": "public, max-age=86400" } })
+      : json({ error: "not_found" }, 404);
   }
   if (get && skills && (sub === "content" || sub?.startsWith("versions/"))) {
     if (sub.startsWith("versions/") && sub.split("/")[1] !== row.version_id) return json({ error: "not_found" }, 404);
     const bytes = await catalogBlob(env, row.id, "zip");
-    return bytes ? new Response(bytes, { headers: { "content-type": "application/zip" } }) : json({ error: "not_found" }, 404);
+    return bytes
+      ? new Response(bytes, { headers: { "content-type": "application/zip" } })
+      : json({ error: "not_found" }, 404);
   }
   if (req.method === "POST" && sub === "install") {
     await env.DB.prepare("UPDATE catalog_items SET installs = installs + 1 WHERE id = ?").bind(row.id).run();
