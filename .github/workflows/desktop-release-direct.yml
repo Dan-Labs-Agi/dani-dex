@@ -115,7 +115,7 @@ jobs:
           grep -q -- '-arm64.zip' latest-mac.yml
           grep -q -- '-x64.zip' latest-mac.yml
           # The zips and blockmaps go first, the feed last, so the feed never names a missing file.
-          python3 scripts/publish-updater-files.py mac-files/mac-arm64/*.zip mac-files/mac-x64/*.zip mac-files/mac-arm64/*.blockmap mac-files/mac-x64/*.blockmap
+          python3 scripts/publish-updater-files.py mac-files/mac-arm64/*.zip mac-files/mac-x64/*.zip mac-files/mac-arm64/*.blockmap mac-files/mac-x64/*.blockmap mac-files/mac-arm64/*.dmg mac-files/mac-x64/*.dmg
           python3 scripts/publish-updater-files.py latest-mac.yml
 
       - name: Verify the public URL
