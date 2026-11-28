@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "catalogVersion": "v6",
+  "catalogVersion": "v7",
   "sources": {
     "openai": {
       "repository": "https://github.com/openai/skills",
@@ -13,6 +13,10 @@
     "cursor": {
       "repository": "https://github.com/cursor/plugins",
       "commit": "792440e8a560a4a3f63748cdee70491ecd412982"
+    },
+    "seedskill": {
+      "repository": "https://github.com/Jakeschincariol/seed-skill",
+      "commit": "fde88957238bd3bc28e80e1fe0b252a64507b108"
     }
   },
   "skills": [
@@ -239,6 +243,86 @@
       "slug": "working-with-teammate-agents",
       "category": "automation",
       "source": "openbot",
+      "featured": false
+    },
+    {
+      "slug": "seed-coach",
+      "category": "productivity",
+      "source": "seedskill",
+      "upstreamSkill": "seed-coach",
+      "description": "Pitch Coach. Rehearses an investor call with you: asks the hard questions on market, competition, traction and unit economics, scores each answer against your own plan, and shows where to tighten. Use before a pitch or a practice call.",
+      "featured": false
+    },
+    {
+      "slug": "seed-dataroom",
+      "category": "documents",
+      "source": "seedskill",
+      "upstreamSkill": "seed-dataroom",
+      "description": "Data Room Builder. Lays out the standard data room folders, checks which documents you already have, and lists what is missing before an investor asks for it.",
+      "featured": false
+    },
+    {
+      "slug": "seed-deck",
+      "category": "documents",
+      "source": "seedskill",
+      "upstreamSkill": "seed-deck",
+      "description": "Pitch Deck Designer. Turns your business plan into a 10-slide pitch deck in the order investors expect, from title and problem to the ask, with the numbers taken from your own plan.",
+      "featured": false
+    },
+    {
+      "slug": "seed-investors",
+      "category": "research",
+      "source": "seedskill",
+      "upstreamSkill": "seed-investors",
+      "description": "Investor Finder. Researches investors who fit your idea from public sources only, ranks them against your stage and sector, and writes the list to a file. It never contacts anyone.",
+      "featured": false
+    },
+    {
+      "slug": "seed-market",
+      "category": "research",
+      "source": "seedskill",
+      "upstreamSkill": "seed-market",
+      "description": "Market Sizer. Sizes your market top-down and bottom-up with every assumption written out, so the TAM, SAM and SOM can be checked line by line.",
+      "featured": false
+    },
+    {
+      "slug": "seed-model",
+      "category": "data-analytics",
+      "source": "seedskill",
+      "upstreamSkill": "seed-model",
+      "description": "Financial Modeler. Builds a 36-month model from your assumptions: customers, revenue, costs and cash, with a clear list of what you assumed and what moves the result most.",
+      "featured": false
+    },
+    {
+      "slug": "seed-plan",
+      "category": "documents",
+      "source": "seedskill",
+      "upstreamSkill": "seed-plan",
+      "description": "Business Planner. Turns your idea into a readable business plan with the standard sections, from summary and problem to market, model and risks, built from what you tell it.",
+      "featured": false
+    },
+    {
+      "slug": "seed-scout",
+      "category": "research",
+      "source": "seedskill",
+      "upstreamSkill": "seed-scout",
+      "description": "Competitor Scout. Reads recent public App Store reviews of rival apps, groups the one- and two-star ones into themes, and names each rival's weak point with the counts as evidence.",
+      "featured": false
+    },
+    {
+      "slug": "seed-terms",
+      "category": "documents",
+      "source": "seedskill",
+      "upstreamSkill": "seed-terms",
+      "description": "Term Sheet Reader. Reads a SAFE or term sheet in plain English, does the dilution math, and flags the clauses to ask a lawyer about. It is not legal advice.",
+      "featured": false
+    },
+    {
+      "slug": "seed-updates",
+      "category": "documents",
+      "source": "seedskill",
+      "upstreamSkill": "seed-updates",
+      "description": "Investor Updates. Writes a monthly investor update from your numbers: a short summary, each metric with its month-over-month change, wins, misses and asks.",
       "featured": false
     }
   ],

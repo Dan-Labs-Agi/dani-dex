@@ -32,11 +32,12 @@ interface UpstreamSource {
   commit: string;
 }
 
-type UpstreamProvider = "openai" | "anthropic" | "cursor";
+type PackProvider = "openai" | "anthropic" | "cursor";
+type UpstreamProvider = PackProvider | "seedskill";
 
 interface PackSpec {
   slug: string;
-  source: UpstreamProvider;
+  source: PackProvider;
   upstreamPath: string;
   aliasPrefixes: string[];
   category: SkillCategory;
@@ -52,7 +53,7 @@ type SkillSpec = {
   slug: string;
   category: SkillCategory;
   featured: boolean;
-} & ({ source: "openbot" } | { source: UpstreamProvider; upstreamSkill: string; pack?: Pack });
+} & ({ source: "openbot" } | { source: UpstreamProvider; upstreamSkill: string; pack?: Pack; description?: string });
 
 interface AgentSpec {
   category: SkillCategory;
@@ -107,7 +108,7 @@ export async function buildProductionCatalog(outputArgument?: string): Promise<s
   validateOutputTarget(output);
   const version = catalogVersionNumber(spec.catalogVersion);
   const license = await readFile(join(sourceRoot, "licenses", "APACHE-2.0.txt"), "utf8");
-  const openbotLicense = await readFile(join(projectRoot, "LICENSE"), "utf8");
+  const openbotLicense = await readFile(join(projectRoot, "docs", "LICENSE"), "utf8");
   const staging = await mkdtemp(join(tmpdir(), "openbot-production-catalog-"));
 
   try {
@@ -117,11 +118,14 @@ export async function buildProductionCatalog(outputArgument?: string): Promise<s
 
     for (const skill of spec.skills) {
       const pack = skill.source === "openbot" ? undefined : skill.pack;
+      const vendored = skill.source === "seedskill";
       const archive =
         skill.source !== "openbot" && pack
           ? await packArchive(pack, spec.sources[skill.source])
-          : await promptArchive(skill, skill.source === "openbot" ? openbotLicense : license, spec.sources);
-      const preview = inspectGeneratedArchive(archive, pack !== undefined);
+          : skill.source === "seedskill"
+            ? await vendoredArchive(skill, spec.sources.seedskill)
+            : await promptArchive(skill, skill.source === "openbot" ? openbotLicense : license, spec.sources);
+      const preview = inspectGeneratedArchive(archive, pack !== undefined || vendored);
       if (preview.slug !== skill.slug) {
         throw new Error(`Skill folder ${skill.slug} does not match its SKILL.md name (${preview.slug}).`);
       }
@@ -213,6 +217,68 @@ async function promptArchive(skill: SkillSpec, license: string, sources: Catalog
     },
     { level: 9 },
   );
+}
+
+async function vendoredArchive(
+  skill: Extract<SkillSpec, { upstreamSkill: string }>,
+  upstream: UpstreamSource,
+): Promise<Uint8Array> {
+  if (!skill.description || skill.description.length > 500) {
+    throw new Error(`Vendored skill ${skill.slug} needs a description of at most 500 characters.`);
+  }
+  const root = join(sourceRoot, "bundles", "seed-skill", skill.upstreamSkill);
+  const license = await readFile(join(sourceRoot, "licenses", "MIT.txt"), "utf8");
+  const entries: Record<string, [Uint8Array, { mtime: Date }]> = {};
+  for (const file of await listRelativeFiles(root)) {
+    if (file === "SKILL.md") continue;
+    entries[file] = [new Uint8Array(await readFile(join(root, file))), { mtime: zipTimestamp }];
+  }
+  entries["SKILL.md"] = [
+    utf8Bytes(vendoredSkillMarkdown(skill, await readFile(join(root, "SKILL.md"), "utf8"))),
+    { mtime: zipTimestamp },
+  ];
+  entries["LICENSE.txt"] = [utf8Bytes(license), { mtime: zipTimestamp }];
+  entries["NOTICE.txt"] = [utf8Bytes(vendoredNotice(skill, upstream)), { mtime: zipTimestamp }];
+  return zipSync(entries, { level: 9 });
+}
+
+function vendoredSkillMarkdown(skill: Extract<SkillSpec, { upstreamSkill: string }>, markdown: string): string {
+  const end = markdown.indexOf("\n---", 3);
+  if (!markdown.startsWith("---\n") || end < 0)
+    throw new Error(`${skill.slug}/SKILL.md must start with YAML frontmatter.`);
+  const metadata = parseYaml(markdown.slice(4, end));
+  if (!isDynamicRecord(metadata) || !isString(metadata.description)) {
+    throw new Error(`${skill.slug}/SKILL.md has no description.`);
+  }
+  const fullDescription = metadata.description.replace(/\s+/gu, " ").trim();
+  const kept: string[] = [];
+  let inDescription = false;
+  for (const line of markdown.slice(4, end).split("\n")) {
+    if (/^description:/u.test(line)) {
+      inDescription = true;
+      kept.push(`description: ${JSON.stringify(skill.description)}`);
+    } else if (inDescription && /^\s/u.test(line)) {
+      continue;
+    } else {
+      inDescription = false;
+      kept.push(line);
+    }
+  }
+  const body = markdown
+    .slice(end + 4)
+    .replace(/^\r?\n/u, "")
+    .trimEnd();
+  const notes = [
+    "`${CLAUDE_SKILL_DIR}` in the commands above is the folder this skill is installed in.",
+    "The scripts use only the Python 3 standard library. Run them with `python3`; installed files are not executable.",
+    "The skill reads and writes files in a `seed/` folder in the working folder. Nothing leaves the computer except the public web requests the skill names (App Store reviews, SEC filings), and nothing is sent to the skill's author.",
+    "The license and notice are in `LICENSE.txt` and `NOTICE.txt` in this skill's folder.",
+  ];
+  return `---\n${kept.join("\n")}\n---\n\n${body}\n\n## When to use\n\n${fullDescription}\n\n## ${skill.upstreamSkill} in dani-dex\n\n${notes.map((note) => `- ${note}`).join("\n")}\n`;
+}
+
+function vendoredNotice(skill: Extract<SkillSpec, { upstreamSkill: string }>, upstream: UpstreamSource): string {
+  return `dani-dex production catalog\n\nThis skill is ${skill.upstreamSkill} from ${upstream.repository} at commit ${upstream.commit}, by Jake Schincariol.\n\nThe files are copied unchanged. The changes are in SKILL.md only: the frontmatter description is shortened to fit the marketplace limit (the full text is kept under "When to use"), and a "${skill.upstreamSkill} in dani-dex" section is added.\n\nUpstream source: ${upstreamSkillUrl(skill, upstream)}\nLicense: MIT License, Copyright (c) 2026 Jake Schincariol (included as LICENSE.txt)\n`;
 }
 
 async function packArchive(pack: Pack, upstream: UpstreamSource): Promise<Uint8Array> {
@@ -372,7 +438,7 @@ function escapeRegExp(value: string): string {
 
 function skillLicense(source: SkillSpec["source"]): BuiltSkill["license"] {
   if (source === "openbot") return "PolyForm-Noncommercial-1.0.0";
-  return source === "cursor" ? "MIT" : "Apache-2.0";
+  return source === "cursor" || source === "seedskill" ? "MIT" : "Apache-2.0";
 }
 
 function inspectGeneratedArchive(archive: Uint8Array, vendored: boolean) {
@@ -535,6 +601,7 @@ function parseSources(value: unknown): CatalogSpec["sources"] {
     openai: parseSource(value.openai, "openai"),
     anthropic: parseSource(value.anthropic, "anthropic"),
     cursor: parseSource(value.cursor, "cursor"),
+    seedskill: parseSource(value.seedskill, "seedskill"),
   };
 }
 
@@ -555,8 +622,13 @@ function parseSkillSpec(value: unknown): SkillSpec {
     !isDynamicRecord(value) ||
     !isString(value.slug) ||
     !isSkillCategory(value.category) ||
-    (value.source !== "openai" && value.source !== "anthropic" && value.source !== "openbot") ||
+    (value.source !== "openai" &&
+      value.source !== "anthropic" &&
+      value.source !== "seedskill" &&
+      value.source !== "openbot") ||
     (value.source !== "openbot" && !isString(value.upstreamSkill)) ||
+    (value.description !== undefined && !isString(value.description)) ||
+    (value.source === "seedskill" && !isString(value.description)) ||
     (value.featured !== undefined && typeof value.featured !== "boolean")
   ) {
     throw new Error("Production catalog contains an invalid skill.");
@@ -568,7 +640,12 @@ function parseSkillSpec(value: unknown): SkillSpec {
   };
   if (value.source === "openbot") return { ...base, source: "openbot" };
   if (!isString(value.upstreamSkill)) throw new Error("Upstream skill is required.");
-  return { ...base, source: value.source, upstreamSkill: value.upstreamSkill };
+  return {
+    ...base,
+    source: value.source,
+    upstreamSkill: value.upstreamSkill,
+    ...(isString(value.description) ? { description: value.description } : {}),
+  };
 }
 
 function parseAgentSpec(value: unknown): AgentSpec {
@@ -616,15 +693,19 @@ function createUpstreamNotices(spec: CatalogSpec, skills: BuiltSkill[]): string 
   const entries = skills.map((skill) =>
     skill.source.provider === "openbot"
       ? `- **${skill.slug}** — original dani-dex team instructions; PolyForm Noncommercial 1.0.0.`
-      : skill.source.provider === "cursor"
-        ? `- **${skill.slug}** — copy of [${skill.source.upstreamSkill}](${skill.source.url}) from cursor commit \`${skill.source.commit}\`, with pstack skill names prefixed; MIT.`
-        : `- **${skill.slug}** — derivative of [${skill.source.upstreamSkill}](${skill.source.url}) from ${skill.source.provider} commit \`${skill.source.commit}\`.`,
+      : skill.source.provider === "seedskill"
+        ? `- **${skill.slug}** — copy of [${skill.source.upstreamSkill}](${skill.source.url}) from seed-skill commit \`${skill.source.commit}\` by Jake Schincariol, with a shortened description and a dani-dex section added; MIT.`
+        : skill.source.provider === "cursor"
+          ? `- **${skill.slug}** — copy of [${skill.source.upstreamSkill}](${skill.source.url}) from cursor commit \`${skill.source.commit}\`, with pstack skill names prefixed; MIT.`
+          : `- **${skill.slug}** — derivative of [${skill.source.upstreamSkill}](${skill.source.url}) from ${skill.source.provider} commit \`${skill.source.commit}\`.`,
   );
-  return `# Upstream Notices\n\nThis catalog contains original dani-dex team skills under PolyForm Noncommercial 1.0.0, derivatives from the pinned OpenAI and Anthropic repositories under Apache License 2.0, and the skills of the pinned Cursor pstack plugin, with their names prefixed, under the MIT License. Each bundle includes its applicable license and notice.\n\n${entries.join("\n")}\n\nCatalog version: \`${spec.catalogVersion}\`\n`;
+  return `# Upstream Notices\n\nThis catalog contains original dani-dex team skills under PolyForm Noncommercial 1.0.0, derivatives from the pinned OpenAI and Anthropic repositories under Apache License 2.0, the skills of the pinned Cursor pstack plugin, with their names prefixed, and the seed skills of Jake Schincariol's pinned seed-skill repository, both under the MIT License. Each bundle includes its applicable license and notice.\n\n${entries.join("\n")}\n\nCatalog version: \`${spec.catalogVersion}\`\n`;
 }
 
 function upstreamSkillUrl(skill: Extract<SkillSpec, { upstreamSkill: string }>, upstream: UpstreamSource): string {
-  if (skill.source === "cursor") return `${upstream.repository}/tree/${upstream.commit}/${skill.upstreamSkill}`;
+  if (skill.source === "cursor" || skill.source === "seedskill") {
+    return `${upstream.repository}/tree/${upstream.commit}/${skill.upstreamSkill}`;
+  }
   const segment = skill.source === "openai" ? "skills/.curated" : "skills";
   return `${upstream.repository}/tree/${upstream.commit}/${segment}/${skill.upstreamSkill}`;
 }
